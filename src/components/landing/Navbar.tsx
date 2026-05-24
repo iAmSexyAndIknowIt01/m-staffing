@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Navbar() {
   return (
     <header
@@ -193,16 +195,17 @@ export default function Navbar() {
             >
               Нэвтрэх
             </button> */}
+            <Link href="/login">
+              <button
+                className="
+                orange-btn
 
-            <button
-              className="
-              orange-btn
-
-              px-7
-            "
-            >
-              Нэвтрэх
-            </button>
+                px-7
+              "
+              >
+                Нэвтрэх
+              </button>
+            </Link>
 
           </div>
 
