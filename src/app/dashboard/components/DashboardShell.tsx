@@ -70,11 +70,11 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
               </>
             ) : (
               <>
-                <Link href="/dashboard/post-job" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
+                <Link href="/dashboard/company/post-job" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
                   <span className="text-xl p-1.5 rounded-xl block">➕</span>
                   {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
                 </Link>
-                <Link href="/dashboard/applicants" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
+                <Link href="/dashboard/company/applicants" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
                   <span className="text-xl p-1.5 rounded-xl block">👥</span>
                   {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
                 </Link>
