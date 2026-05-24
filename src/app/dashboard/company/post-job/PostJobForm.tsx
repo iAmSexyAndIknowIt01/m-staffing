@@ -16,29 +16,50 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
   const [description, setDescription] = useState("")
   const [requirements, setRequirements] = useState("")
 
-  async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     
     if (!title || !category || !description || !requirements) {
-      alert("Заавал бөглөх талбаруудыг бөглөнө үү!")
-      return
+        alert("Заавал бөглөх талбаруудыг бөглөнө үү!")
+        return
     }
 
     try {
-      setLoading(true)
-      
-      // Энд өөрийн Supabase эсвэл дотоод API руу датагаа илгээнэ
-      // Жишээ нь: await fetch("/api/jobs/create", { method: "POST", body: JSON.stringify({...}) })
-      
-      alert("Ажлын байр амжилттай зарлагдлаа!")
-      window.location.href = "/dashboard"
-      
-    } catch (error) {
-      alert("Зарыг нийтлэх үед алдаа гарлаа.")
+        setLoading(true)
+        
+        // Манай шинээр үүсгэсэн API рүү хүсэлт илгээх
+        const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            title,
+            category,
+            jobType,
+            location,
+            salary,
+            description,
+            requirements,
+        }),
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+        throw new Error(result.error || "Алдаа гарлаа")
+        }
+        
+        alert("Ажлын байр амжилттай зарлагдаж, mt_openJob баазад хадгалагдлаа! 🚀")
+        window.location.href = "/dashboard"
+        
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        alert(error.message || "Зарыг нийтлэх үед алдаа гарлаа.")
     } finally {
-      setLoading(false)
+        setLoading(false)
     }
-  }
+    }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

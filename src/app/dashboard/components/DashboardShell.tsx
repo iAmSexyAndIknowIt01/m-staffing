@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 interface DashboardShellProps {
   userId: string
@@ -11,8 +12,23 @@ interface DashboardShellProps {
 }
 
 export default function DashboardShell({ userId, userRole, onLogout, children }: DashboardShellProps) {
-  // true үед зурган дээрх шиг зөвхөн айконууд харагдана
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const pathname = usePathname()
+
+  // Идэвхтэй болон идэвхгүй үеийн стилийг тодорхойлох туслах функц
+  const getLinkStyles = (href: string) => {
+    const isActive = pathname === href
+    return {
+      linkClass: `flex items-center gap-4 p-3 rounded-2xl transition-all duration-200 justify-center lg:justify-start ${
+        isActive 
+          ? "bg-indigo-50 text-indigo-600 font-semibold shadow-sm"
+          : "text-gray-500 hover:bg-gray-50 hover:text-indigo-600"
+      }`,
+      iconClass: `text-xl p-1.5 rounded-xl block transition-colors ${
+        isActive ? "bg-indigo-100/60 text-indigo-600" : "text-gray-400"
+      }`
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f8faff] flex">
@@ -24,7 +40,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         }`}
       >
         <div className="space-y-8">
-          {/* Дээд хэсэг: Төгсгөл дэх Хянах/Хумих Товч */}
+          {/* Дээд хэсэг */}
           <div className="flex items-center justify-between px-2 py-2">
             {!isCollapsed && (
               <span className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in">
@@ -42,42 +58,66 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
           {/* Цэсний линкүүд */}
           <nav className="space-y-3 flex flex-col">
-            {/* 1. Dashboard (Идэвхтэй төлөв - Зурган дээрх шиг фиолетово/цэнхэр туяатай) */}
-            <Link 
-              href="/dashboard" 
-              className="flex items-center gap-4 p-3 rounded-2xl bg-indigo-50 text-indigo-600 font-semibold transition justify-center lg:justify-start"
-            >
-              <span className="text-xl bg-indigo-100/50 p-1.5 rounded-xl block">
-                {/* Зурган дээрх Grid айкон */}
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </span>
-              {!isCollapsed && <span className="text-sm truncate">Хянах самбар</span>}
-            </Link>
+            
+            {/* 1. Dashboard Хянах самбар (Бусадтай адилхан emoji айконтой болгов) */}
+            {(() => {
+              const { linkClass, iconClass } = getLinkStyles("/dashboard")
+              return (
+                <Link href="/dashboard" className={linkClass}>
+                  <span className={iconClass}>📊</span>
+                  {!isCollapsed && <span className="text-sm truncate">Хянах самбар</span>}
+                </Link>
+              )
+            })()}
 
             {/* Ролиос хамаарсан бусад линкүүд */}
             {userRole === "staff" ? (
               <>
-                <Link href="/dashboard/jobs" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
-                  <span className="text-xl p-1.5 rounded-xl block">💼</span>
-                  {!isCollapsed && <span className="text-sm truncate">Ажлын байрууд</span>}
-                </Link>
-                <Link href="/dashboard/profile" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
-                  <span className="text-xl p-1.5 rounded-xl block">📄</span>
-                  {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
-                </Link>
+                {/* Ажлын байрууд */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/jobs")
+                  return (
+                    <Link href="/dashboard/staff/jobs" className={linkClass}>
+                      <span className={iconClass}>💼</span>
+                      {!isCollapsed && <span className="text-sm truncate">Ажлын байрууд</span>}
+                    </Link>
+                  )
+                })()}
+
+                {/* Миний CV */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
+                  return (
+                    <Link href="/dashboard/staff/profile" className={linkClass}>
+                      <span className={iconClass}>📄</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
+                    </Link>
+                  )
+                })()}
               </>
             ) : (
               <>
-                <Link href="/dashboard/company/post-job" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
-                  <span className="text-xl p-1.5 rounded-xl block">➕</span>
-                  {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
-                </Link>
-                <Link href="/dashboard/company/applicants" className="flex items-center gap-4 p-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-orange-500 transition">
-                  <span className="text-xl p-1.5 rounded-xl block">👥</span>
-                  {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
-                </Link>
+                {/* Зар нэмэх */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/post-job")
+                  return (
+                    <Link href="/dashboard/company/post-job" className={linkClass}>
+                      <span className={iconClass}>➕</span>
+                      {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
+                    </Link>
+                  )
+                })()}
+
+                {/* Ирсэн Анкетууд */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/applicants")
+                  return (
+                    <Link href="/dashboard/company/applicants" className={linkClass}>
+                      <span className={iconClass}>👥</span>
+                      {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
+                    </Link>
+                  )
+                })()}
               </>
             )}
           </nav>
