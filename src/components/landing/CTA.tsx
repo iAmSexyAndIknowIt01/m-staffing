@@ -1,215 +1,338 @@
+import Link from "next/link"
+
+const steps = [
+  {
+    no: "01",
+    title: "Бүртгүүлэх",
+    desc: "Ажил хайгч эсвэл байгууллагаар хэдхэн секундэд эхэлнэ.",
+  },
+  {
+    no: "02",
+    title: "Хайлт хийх",
+    desc: "Өөрт тохирох ажил эсвэл ажилтан хайна.",
+  },
+  {
+    no: "03",
+    title: "Холбогдох",
+    desc: "Шууд чатлаж тохиролцоонд хүрнэ.",
+  },
+  {
+    no: "04",
+    title: "Ажил эхлэх",
+    desc: "Хурдан бөгөөд найдвартай эхлүүлнэ.",
+  },
+]
+
 export default function CTA() {
   return (
-    <section className="section py-[180px]">
+    <section
+      className="
+        relative
+        overflow-hidden
+        py-[140px]
+      "
+    >
+
+      {/* BG */}
 
       <div
         className="
-        relative
+          absolute
+          inset-0
 
-        overflow-hidden
+          bg-gradient-to-b
+          from-white
+          via-[#fffaf6]
+          to-white
+        "
+      />
 
-        rounded-[48px]
+      <div
+        className="
+          absolute
+          top-[10%]
+          left-[10%]
 
-        glass
+          w-[600px]
+          h-[600px]
 
-        px-8
-        py-24
+          rounded-full
+          bg-orange-300/10
 
-        md:px-20
+          blur-[150px]
+        "
+      />
 
-        text-center
-      "
-      >
+      <div
+        className="
+          absolute
+          inset-0
 
-        {/* BACKGROUND GLOW */}
+          opacity-[0.03]
+
+          bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]
+
+          bg-[size:70px_70px]
+        "
+      />
+
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6">
 
         <div
           className="
-          absolute
+            rounded-[44px]
 
-          -top-40
-          -right-40
+            bg-white/65
+            backdrop-blur-xl
 
-          w-[500px]
+            border
+            border-white
 
-          h-[500px]
+            px-8
+            py-20
 
-          rounded-full
+            md:px-14
 
-          bg-orange-200/40
-
-          blur-[120px]
-        "
-        />
-
-        <div
-          className="
-          absolute
-
-          -bottom-40
-          -left-40
-
-          w-[400px]
-
-          h-[400px]
-
-          rounded-full
-
-          bg-orange-100
-
-          blur-[120px]
-        "
-        />
-
-        {/* CONTENT */}
-
-        <div className="relative z-10">
-
-          <p
-            className="
-            orange-text
-
-            font-bold
-
-            tracking-[8px]
+            shadow-[0_40px_120px_rgba(0,0,0,.06)]
           "
-          >
-            ӨНӨӨДРӨӨС ЭХЭЛ
-          </p>
+        >
 
-          <h2
+          {/* HEADER */}
+
+          <div className="text-center">
+
+            <div
+              className="
+                inline-flex
+
+                rounded-full
+
+                bg-white
+
+                px-5
+                py-2
+
+                text-sm
+                font-semibold
+
+                shadow
+              "
+            >
+              HOW MSTAFFING WORKS
+            </div>
+
+            <h2
+              className="
+                mt-5
+
+                text-4xl
+                md:text-6xl
+
+                font-black
+
+                leading-tight
+              "
+            >
+              Хэдхэн алхмаар
+
+              <span className="orange-text">
+                {" "}ажил эхэлнэ
+              </span>
+
+            </h2>
+
+            <p
+              className="
+                mt-5
+
+                text-lg
+
+                text-gray-500
+
+                max-w-[700px]
+
+                mx-auto
+              "
+            >
+              Бүртгэлээс эхлээд ажил эхлэх хүртэл —
+              бүх процесс хэдхэн минут.
+            </p>
+
+          </div>
+
+          {/* ROADMAP */}
+
+          <div
             className="
-            mt-8
+              mt-14
 
-            text-5xl
+              grid
 
-            md:text-7xl
+              md:grid-cols-4
 
-            font-black
-
-            leading-tight
-          "
+              gap-5
+            "
           >
-            Хэдхэн минутын дараа
 
-            <br />
+            {steps.map((step, index) => (
 
-            <span className="orange-text">
-              дараагийн боломж
-            </span>
+              <div
+                key={step.title}
+                className="
+                  relative
 
-            таны өмнө.
-          </h2>
+                  text-center
 
-          <p
-            className="
-            mt-8
+                  px-4
+                "
+              >
 
-            text-gray-500
+                {/* LINE */}
 
-            text-xl
+                {index !== 3 && (
 
-            max-w-3xl
+                  <div
+                    className="
+                      hidden
+                      md:block
 
-            mx-auto
-          "
-          >
-            Ажил хайгч эсвэл ажил олгогч
-            байхаас үл хамааран
-            өнөөдрөөс эхлүүлээрэй.
-          </p>
+                      absolute
+
+                      top-[34px]
+                      left-[60%]
+
+                      w-full
+                      h-[1px]
+
+                      bg-gradient-to-r
+                      from-orange-300
+                      to-transparent
+                    "
+                  />
+
+                )}
+
+                {/* STEP */}
+
+                <div
+                  className="
+                    relative
+
+                    w-[68px]
+                    h-[68px]
+
+                    mx-auto
+
+                    rounded-full
+
+                    bg-white
+
+                    border
+
+                    shadow-lg
+
+                    flex
+                    items-center
+                    justify-center
+
+                    text-orange-500
+
+                    font-black
+                  "
+                >
+                  {step.no}
+                </div>
+
+                <h3
+                  className="
+                    mt-5
+
+                    text-xl
+
+                    font-black
+                  "
+                >
+                  {step.title}
+                </h3>
+
+                <p
+                  className="
+                    mt-3
+
+                    text-gray-500
+
+                    leading-7
+
+                    text-sm
+                  "
+                >
+                  {step.desc}
+                </p>
+
+              </div>
+
+            ))}
+
+          </div>
 
           {/* BUTTONS */}
 
           <div
             className="
-            mt-14
+              mt-14
 
-            flex
+              flex
+              justify-center
 
-            justify-center
+              gap-4
 
-            gap-5
-
-            flex-wrap
-          "
+              flex-wrap
+            "
           >
 
-            <button
-              className="
-              orange-btn
+            <Link href="/jobs">
 
-              px-10
+              <button
+                className="
+                  w-[220px]
+                  h-[56px]
 
-              hover:scale-105
-            "
-            >
-              Ажил Хайх
-            </button>
+                  orange-btn
 
-            <button
-              className="
-              glass
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                Ажил Хайх
+              </button>
 
-              px-10
+            </Link>
 
-              py-4
+            <Link href="/staff">
 
-              rounded-2xl
+              <button
+                className="
+                  w-[220px]
+                  h-[56px]
 
-              hover:-translate-y-1
+                  rounded-2xl
 
-              transition
-            "
-            >
-              Ажилтан Авах
-            </button>
+                  bg-white
 
-          </div>
+                  border
 
-          {/* BADGE */}
+                  font-semibold
 
-          <div
-            className="
-            mt-14
+                  hover:-translate-y-1
 
-            inline-flex
+                  transition
+                "
+              >
+                Staff Хайх
+              </button>
 
-            items-center
-
-            gap-3
-
-            rounded-full
-
-            bg-orange-50
-
-            px-8
-
-            py-4
-          "
-          >
-
-            <div
-              className="
-              text-3xl
-            "
-            >
-              ⚡
-            </div>
-
-            <div
-              className="
-              text-left
-            "
-            >
-              <div className="font-bold">
-                10,000+ хэрэглэгч
-              </div>
-
-              <div className="text-gray-500">
-                өдөр бүр шинэ боломж
-              </div>
-            </div>
+            </Link>
 
           </div>
 

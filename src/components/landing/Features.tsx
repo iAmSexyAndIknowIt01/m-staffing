@@ -1,228 +1,408 @@
 const items = [
   {
-    icon: "⚡",
-    title: "CV шаардлагагүй",
-    desc: "Хэдхэн товшилтоор бүртгүүлээд ажлаа эхлүүлээрэй.",
+    icon: "CV",
+    title: "Хурдан бүртгэл",
+    desc: "Хэдхэн алхмаар бүртгүүлж ажлын боломжтой холбогдоно.",
   },
 
   {
-    icon: "🚀",
-    title: "Ажлын бүртгэл хурдан",
-    desc: "Урт процессгүйгээр ажилд хурдан холбогдоно.",
+    icon: "AI",
+    title: "Шууд холболт",
+    desc: "Ажил хайгч болон ажил олгогчийг нэг дор холбодог.",
   },
 
   {
-    icon: "🕒",
-    title: "Шууд ажил эхлэх",
-    desc: "Өөрт тохирох ажлаа сонгоод шууд ажиллана.",
+    icon: "24",
+    title: "Уян хатан ажил",
+    desc: "Өөрт тохирох цаг, нөхцөлөөр ажил сонгоно.",
   },
 
   {
-    icon: "🛡️",
-    title: "Найдвартай ажил олгогч",
-    desc: "Баталгаажсан байгууллагуудтай ажиллах боломж.",
+    icon: "✓",
+    title: "Баталгаатай орчин",
+    desc: "Шалгагдсан байгууллагуудтай найдвартай хамтран ажиллана.",
   },
 ]
 
 export default function Features() {
   return (
-    <section className="section py-[160px]">
+    <section
+      className="
+        relative
+        overflow-hidden
+        py-[180px]
+      "
+    >
 
-      {/* TITLE */}
+      {/* BACKGROUND */}
 
-      <div className="text-center">
-
-        <p
-          className="
-          orange-text
-          font-bold
-          tracking-[8px]
+      <div
+        className="
+          absolute
+          inset-0
+          bg-gradient-to-b
+          from-white
+          via-[#fffaf6]
+          to-white
         "
-        >
-          ЯАГААД MSTAFFING
-        </p>
+      />
 
-        <h2
-          className="
-          mt-6
-          text-5xl
-          md:text-7xl
-          font-black
+      {/* GLOW */}
+
+      <div
+        className="
+          absolute
+          top-[10%]
+          left-[5%]
+
+          w-[600px]
+          h-[600px]
+
+          rounded-full
+
+          bg-orange-300/10
+
+          blur-[140px]
+
+          animate-pulse
         "
-        >
-          Монголын
+      />
 
-          <span className="orange-text">
-            {" "}шинэ үеийн ажил
-          </span>
-        </h2>
+      <div
+        className="
+          absolute
+          bottom-[10%]
+          right-[5%]
 
-        <p
-          className="
-          mt-8
-          text-gray-500
-          text-xl
-          max-w-3xl
-          mx-auto
+          w-[700px]
+          h-[700px]
+
+          rounded-full
+
+          bg-black/5
+
+          blur-[180px]
         "
-        >
-          Ажил хайх процессыг илүү
-          хурдан, ойлгомжтой,
-          найдвартай болголоо.
-        </p>
-
-      </div>
+      />
 
       {/* GRID */}
 
       <div
         className="
-        mt-20
+          absolute
+          inset-0
 
-        grid
+          opacity-[0.03]
 
-        grid-cols-1
+          bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]
 
-        md:grid-cols-2
+          bg-[size:70px_70px]
+        "
+      />
 
-        xl:grid-cols-4
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6">
 
-        gap-8
-      "
-      >
+        {/* HEADER */}
 
-        {items.map((item) => (
+        <div className="text-center">
 
           <div
-            key={item.title}
-
             className="
-
-            glass
-
-            relative
-
-            overflow-hidden
-
-            rounded-[40px]
-
-            p-10
-
-            transition-all
-
-            duration-300
-
-            hover:-translate-y-4
-
-            hover:scale-[1.02]
-
-            hover:shadow-[0_40px_100px_rgba(255,122,0,.15)]
-
-            cursor-pointer
-          "
-          >
-
-            {/* ORANGE TOP */}
-
-            <div
-              className="
-              absolute
-
-              top-0
-
-              left-0
-
-              w-full
-
-              h-[6px]
-
-              bg-gradient-to-r
-
-              from-orange-400
-
-              to-orange-200
-            "
-            />
-
-            {/* ICON */}
-
-            <div
-              className="
-              w-[90px]
-
-              h-[90px]
-
-              rounded-[28px]
-
-              bg-orange-50
-
-              flex
-
+              inline-flex
               items-center
 
-              justify-center
+              rounded-full
 
-              text-5xl
+              border
+              border-white
+
+              bg-white/70
+
+              backdrop-blur
+
+              px-6
+              py-3
+
+              text-sm
+              font-semibold
+
+              shadow-lg
             "
-            >
-              {item.icon}
-            </div>
+          >
+            WHY MSTAFFING
+          </div>
 
-            {/* TITLE */}
-
-            <h3
-              className="
+          <h2
+            className="
               mt-8
-
-              text-2xl
-
+              text-5xl
+              md:text-7xl
               font-black
+              leading-tight
             "
-            >
-              {item.title}
-            </h3>
+          >
+            Ажлын хайлтыг
 
-            {/* DESC */}
+            <br />
 
-            <p
-              className="
-              mt-5
+            <span className="orange-text">
+              шинэ түвшинд
+            </span>
+          </h2>
+
+          <p
+            className="
+              mt-8
 
               text-gray-500
 
-              leading-8
-            "
-            >
-              {item.desc}
-            </p>
+              text-xl
 
-            {/* HOVER EFFECT */}
+              max-w-[800px]
+
+              mx-auto
+
+              leading-9
+            "
+          >
+            Илүү хурдан. Илүү ухаалаг.
+            Илүү мэргэжлийн ажлын экосистем.
+          </p>
+
+        </div>
+
+        {/* CARDS */}
+
+        <div
+          className="
+            mt-28
+
+            grid
+
+            md:grid-cols-2
+            xl:grid-cols-4
+
+            gap-8
+          "
+        >
+
+          {items.map((item) => (
 
             <div
+              key={item.title}
               className="
-              mt-10
+                group
 
-              orange-text
+                relative
 
-              font-bold
+                overflow-hidden
 
-              opacity-0
+                rounded-[36px]
 
-              translate-y-3
+                bg-white/65
 
-              transition
+                backdrop-blur-xl
 
-              duration-300
+                border
+                border-white
 
-              group-hover:opacity-100
-            "
+                p-10
+
+                flex
+                flex-col
+
+                min-h-[430px]
+
+                transition-all
+                duration-500
+
+                hover:-translate-y-3
+                hover:shadow-[0_40px_120px_rgba(0,0,0,.08)]
+              "
             >
-              →
+
+              {/* TOP LIGHT */}
+
+              <div
+                className="
+                  absolute
+                  inset-x-0
+                  top-0
+
+                  h-[1px]
+
+                  bg-gradient-to-r
+                  from-transparent
+                  via-orange-400
+                  to-transparent
+
+                  opacity-0
+                  group-hover:opacity-100
+
+                  transition
+                "
+              />
+
+              {/* FLOAT GLOW */}
+
+              <div
+                className="
+                  absolute
+
+                  -top-24
+                  -right-24
+
+                  w-[180px]
+                  h-[180px]
+
+                  rounded-full
+
+                  bg-orange-100/40
+
+                  blur-[80px]
+
+                  opacity-0
+
+                  group-hover:opacity-100
+
+                  transition
+                "
+              />
+
+              {/* ICON */}
+
+              <div
+                className="
+                  relative
+
+                  w-[78px]
+                  h-[78px]
+
+                  rounded-[26px]
+
+                  bg-gradient-to-br
+                  from-white
+                  to-gray-50
+
+                  border
+
+                  shadow-[0_20px_50px_rgba(0,0,0,.08)]
+
+                  flex
+                  items-center
+                  justify-center
+
+                  text-[22px]
+                  font-black
+                "
+              >
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+
+                    rounded-[26px]
+
+                    bg-gradient-to-br
+
+                    from-orange-100
+                    to-transparent
+                  "
+                />
+
+                <span className="relative">
+                  {item.icon}
+                </span>
+
+              </div>
+
+              {/* CONTENT */}
+
+              <div className="flex-1">
+
+                <h3
+                  className="
+                    mt-10
+                    text-[28px]
+                    font-black
+                    leading-tight
+                  "
+                >
+                  {item.title}
+                </h3>
+
+                <p
+                  className="
+                    mt-5
+                    text-gray-500
+                    leading-8
+                  "
+                >
+                  {item.desc}
+                </p>
+
+              </div>
+
+              {/* FOOTER */}
+
+              <div
+                className="
+                  mt-auto
+                  pt-10
+
+                  flex
+                  justify-center
+                "
+              >
+
+                <div
+                  className="
+                    flex
+                    items-center
+                    gap-3
+
+                    text-sm
+                    font-semibold
+
+                    text-gray-800
+                  "
+                >
+
+                  Explore
+
+                  <div
+                    className="
+                      w-8
+                      h-8
+
+                      rounded-full
+
+                      bg-orange-500
+
+                      text-white
+
+                      flex
+                      items-center
+                      justify-center
+
+                      transition
+
+                      group-hover:translate-x-1
+                    "
+                  >
+                    →
+                  </div>
+
+                </div>
+
+              </div>
+
             </div>
 
-          </div>
+          ))}
 
-        ))}
+        </div>
 
       </div>
 

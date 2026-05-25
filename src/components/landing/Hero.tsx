@@ -1,169 +1,219 @@
 import Image from "next/image"
+import Link from "next/link"
 
 export default function Hero() {
   return (
-    <section className="min-h-screen pt-[170px]">
+    <section
+      className="
+        relative
+        min-h-screen
+        overflow-hidden
+        pt-[160px]
+      "
+    >
+
+      {/* BG */}
+
+      <Image
+        src="/hero-ub.png"
+        alt="Ulaanbaatar"
+        fill
+        priority
+        className="
+          object-cover
+          scale-[1.03]
+          blur-[10px]
+        "
+      />
+
+      {/* Overlay */}
+
       <div
         className="
-        max-w-[1400px]
-        mx-auto
-        px-6
-        grid
-        lg:grid-cols-2
-        gap-20
-        items-center
-      "
-      >
-        {/* LEFT */}
+          absolute
+          inset-0
+          bg-black/35
+        "
+      />
 
-        <div>
-          {/* <p
-            className="
-            orange-text
-            font-bold
-            tracking-[6px]
+      {/* Orange Glow */}
+
+      <div
+        className="
+          absolute
+          top-[15%]
+          left-1/2
+          -translate-x-1/2
+
+          w-[500px]
+          h-[500px]
+
+          bg-orange-500/10
+          blur-[120px]
+        "
+      />
+
+      {/* CONTENT */}
+
+      <div
+        className="
+          relative
+          z-10
+
+          min-h-[calc(100vh-160px)]
+
+          flex
+          items-center
+          justify-center
+
+          px-6
+        "
+      >
+
+        <div
+          className="
+            max-w-[900px]
+            mx-auto
+            text-center
           "
+        >
+
+          <p
+            className="
+              orange-text
+              tracking-[8px]
+              font-bold
+              text-sm
+            "
           >
-            МОНГОЛЫН ЦАГИЙН АЖЛЫН ПЛАТФОРМ
-          </p> */}
+            MONGOLIA • FUTURE OF WORK
+          </p>
 
           <h1
             className="
-            mt-8
-            text-5xl
-            md:text-7xl
-            font-black
-            leading-[1]
-          "
+              mt-8
+              text-4xl
+              md:text-6xl
+              font-black
+              leading-[1.05]
+              text-white
+            "
           >
             Хүссэн үедээ
 
             <br />
 
-            Ажилла.
+            ажилла.
 
             <br />
 
-            <span className="orange-text">
+            <span className="text-orange-400">
               Хэдхэн минутанд.
             </span>
+
           </h1>
 
           <p
             className="
-            mt-10
-            text-gray-600
-            text-xl
-            max-w-xl
-          "
+              mt-8
+              text-lg
+              md:text-xl
+              leading-8
+
+              text-white/90
+
+              max-w-[700px]
+              mx-auto
+            "
           >
             Монголын ажил хайгч болон
-            ажил олгогчийг хурдан бөгөөд
-            найдвартай холбодог платформ.
+            ажил олгогчийг нэг платформ дээр
+            хурдан бөгөөд найдвартай холбоно.
           </p>
 
-          <div className="mt-12 flex gap-5">
-            <button className="orange-btn">
-              Ажил Хайх
-            </button>
-
-            <button
-              className="
-              glass
-              px-8
-              py-4
-              rounded-2xl
-            "
-            >
-              Ажилтан Авах
-            </button>
-          </div>
-        </div>
-
-        {/* RIGHT */}
-
-        <div className="relative">
+          {/* BUTTONS */}
 
           <div
             className="
-            glass
-            rounded-[50px]
-            p-8
-            relative
-            overflow-hidden
-          "
+              mt-12
+              flex
+              justify-center
+              gap-5
+              flex-wrap
+            "
           >
-            <Image
-              src="/hero-worker.png"
-              alt="MStaffing Hero"
-              width={1600}
-              height={1600}
-              className="
-                w-full
-                h-auto
-                object-contain
 
-                -translate-x-10
+            <Link href="/jobs">
 
-                lg:-translate-x-20
-              "
-            />
-
-            {/* Bubble */}
-
-            <div
-              className="
-              absolute
-              top-10
-              right-10
-              bg-orange-500
-              text-white
-              rounded-[30px]
-              px-8
-              py-6
-              shadow-2xl
-            "
-            >
-              <div className="text-4xl font-black">
-                10,000+
-              </div>
-
-              <div>
-                Ажил хайгч
-              </div>
-            </div>
-
-            <div
-              className="
-              absolute
-              bottom-10
-              left-10
-              bg-white
-              rounded-[30px]
-              px-8
-              py-6
-              shadow-xl
-            "
-            >
-              <div
+              <button
                 className="
-                text-4xl
-                font-black
-                orange-text
-              "
-              >
-                24/7
-              </div>
+                  orange-btn
 
-              <div>
-                Шууд холболт
-              </div>
-            </div>
+                  w-[220px]
+                  h-[60px]
+
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                Ажил Хайх
+              </button>
+
+            </Link>
+
+            <Link href="/staff">
+
+              <button
+                className="
+                  glass
+
+                  w-[220px]
+                  h-[60px]
+
+                  rounded-2xl
+
+                  text-white
+
+                  flex
+                  items-center
+                  justify-center
+
+                  hover:bg-white/10
+                  hover:-translate-y-1
+
+                  transition
+                  duration-300
+                "
+              >
+                Staff Хайх
+              </button>
+
+            </Link>
+
+          </div>
+
+          {/* STATS */}
+
+          <div
+            className="
+              mt-16
+
+              flex
+              justify-center
+
+              gap-5
+
+              flex-wrap
+            "
+          >
 
           </div>
 
         </div>
+
       </div>
+
     </section>
   )
 }

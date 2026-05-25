@@ -91,3 +91,62 @@ body {
 .text-muted {
   color: var(--muted);
 }
+
+@keyframes float {
+  0%{
+    transform:translateY(0px);
+  }
+
+  50%{
+    transform:translateY(-16px);
+  }
+
+  100%{
+    transform:translateY(0px);
+  }
+}
+
+.animate-float{
+  animation:float 6s ease-in-out infinite;
+}
+
+.animate-float-slow{
+  animation:float 10s ease-in-out infinite;
+}
+
+@keyframes pulseGlow{
+  0%{
+    opacity:.5;
+  }
+
+  50%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:.5;
+  }
+}
+
+.animate-glow{
+  animation:pulseGlow 4s infinite;
+}
+
+.hero-bg{
+
+background:
+radial-gradient(
+circle at 20% 20%,
+rgba(255,140,0,.12),
+transparent 40%
+),
+
+radial-gradient(
+circle at 80% 50%,
+rgba(255,170,0,.15),
+transparent 40%
+),
+
+white;
+
+}

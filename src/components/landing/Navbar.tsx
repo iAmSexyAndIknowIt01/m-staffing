@@ -1,83 +1,79 @@
-import Link from "next/link";
+import Link from "next/link"
 
 export default function Navbar() {
   return (
     <header
       className="
-      fixed
-      top-0
-      left-0
-      w-full
-      z-50
-    "
+        fixed
+        top-0
+        left-0
+        w-full
+        z-50
+      "
     >
+
       <div
         className="
-        max-w-[1440px]
-        mx-auto
-        px-6
-        pt-6
-      "
+          max-w-[1440px]
+          mx-auto
+
+          px-6
+          pt-5
+        "
       >
+
         <div
           className="
-          glass
+            glass
 
-          rounded-full
+            h-[64px]
 
-          px-8
+            rounded-full
 
-          h-[82px]
+            px-6
 
-          flex
+            flex
+            items-center
+            justify-between
 
-          items-center
+            border
+            border-white/20
 
-          justify-between
+            backdrop-blur-xl
 
-          shadow-[0_20px_80px_rgba(255,140,0,.08)]
-
-          border
-
-          border-orange-100
-        "
+            shadow-[0_20px_60px_rgba(255,120,0,.08)]
+          "
         >
 
           {/* LEFT */}
 
-          <div
+          <Link
+            href="/"
             className="
-            flex
-            items-center
-            gap-4
-          "
+              flex
+              items-center
+              gap-3
+            "
           >
 
             <div
               className="
-              w-12
-              h-12
+                w-10
+                h-10
 
-              rounded-2xl
+                rounded-xl
 
-              bg-gradient-to-br
+                bg-gradient-to-br
+                from-orange-500
+                to-orange-300
 
-              from-orange-500
+                flex
+                items-center
+                justify-center
 
-              to-orange-300
-
-              flex
-
-              items-center
-
-              justify-center
-
-              text-white
-
-              font-black
-
-              text-lg
-            "
+                text-white
+                font-black
+              "
             >
               M
             </div>
@@ -86,9 +82,10 @@ export default function Navbar() {
 
               <h1
                 className="
-                text-2xl
-                font-black
-              "
+                  text-xl
+                  font-black
+                  leading-none
+                "
               >
                 <span className="orange-text">
                   MStaffing
@@ -97,70 +94,78 @@ export default function Navbar() {
 
               <p
                 className="
-                text-xs
-                text-gray-400
-              "
+                  text-[11px]
+                  text-gray-400
+                "
               >
-                Монголын цагийн ажил
+                Future of Work
               </p>
 
             </div>
 
-          </div>
+          </Link>
 
           {/* CENTER */}
 
           <nav
             className="
-            hidden
+              hidden
+              lg:flex
 
-            md:flex
+              items-center
 
-            items-center
-
-            gap-10
-          "
+              gap-8
+            "
           >
 
             {[
-              "Ажил Хайх",
-              "Ажилтан Авах",
-              "Яагаад MStaffing",
+              {
+                label: "Ажил Хайх",
+                href: "/jobs",
+              },
+
+              {
+                label: "Staff Хайх",
+                href: "/staff",
+              },
+
+              {
+                label: "Яагаад MStaffing",
+                href: "#features",
+              },
             ].map((item) => (
 
-              <a
-                key={item}
-
+              <Link
+                key={item.label}
+                href={item.href}
                 className="
-                relative
+                  relative
 
-                font-medium
+                  text-[15px]
 
-                cursor-pointer
+                  text-gray-700
 
-                hover:text-orange-500
+                  hover:text-orange-500
 
-                transition
+                  transition
 
-                after:absolute
+                  after:absolute
+                  after:left-0
+                  after:-bottom-1
 
-                after:left-0
+                  after:h-[2px]
 
-                after:-bottom-2
+                  after:w-0
 
-                after:h-[2px]
+                  after:bg-orange-500
 
-                after:w-0
+                  hover:after:w-full
 
-                after:bg-orange-500
-
-                hover:after:w-full
-
-                after:transition-all
-              "
+                  after:transition-all
+                "
               >
-                {item}
-              </a>
+                {item.label}
+              </Link>
 
             ))}
 
@@ -170,47 +175,43 @@ export default function Navbar() {
 
           <div
             className="
-            flex
-            items-center
-            gap-4
-          "
+              flex
+              items-center
+              gap-3
+            "
           >
 
-            {/* <button
-              className="
-              hidden
-
-              md:block
-
-              px-6
-
-              py-3
-
-              rounded-xl
-
-              hover:bg-orange-50
-
-              transition
-            "
-            >
-              Нэвтрэх
-            </button> */}
             <Link href="/login">
+
               <button
                 className="
-                orange-btn
+                  orange-btn
 
-                px-7
-              "
+                  h-[44px]
+                  px-7
+
+                  text-sm
+
+                  flex
+                  items-center
+                  justify-center
+
+                  hover:scale-[1.03]
+
+                  transition
+                "
               >
                 Нэвтрэх
               </button>
+
             </Link>
 
           </div>
 
         </div>
+
       </div>
+
     </header>
   )
 }
