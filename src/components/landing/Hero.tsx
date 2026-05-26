@@ -143,7 +143,7 @@ export default function Hero() {
             "
           >
 
-            <Link href="/jobs">
+            <Link href="/dashboard/staff/jobs">
 
               <button
                 className="
@@ -162,7 +162,7 @@ export default function Hero() {
 
             </Link>
 
-            <Link href="/staff">
+            <Link href="/dashboard/company/applicants">
 
               <button
                 className="

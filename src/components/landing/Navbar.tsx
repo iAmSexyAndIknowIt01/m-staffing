@@ -121,12 +121,12 @@ export default function Navbar() {
             {[
               {
                 label: "Ажил Хайх",
-                href: "/jobs",
+                href: "/dashboard/staff/jobs",
               },
 
               {
                 label: "Staff Хайх",
-                href: "/staff",
+                href: "/dashboard/company/applicants",
               },
 
               {
@@ -138,6 +138,7 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
+                scroll={true}
                 className="
                   relative
 
