@@ -68,7 +68,7 @@ export default function CTA() {
           absolute
           inset-0
 
-          opacity-[0.03]
+          opacity-[0.09]
 
           bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]
 
