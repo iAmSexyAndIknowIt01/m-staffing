@@ -205,6 +205,8 @@ export async function POST(
 
     const {
 
+      fullName,
+
       email,
 
       phone,
@@ -220,7 +222,46 @@ export async function POST(
     } =
       body
 
+    // ========================================
+    // UPDATE STAFF NAME
+    // ========================================
+
+    const splittedName =
+      fullName
+        ?.trim()
+        .split(" ") || []
+
+    const first_name =
+      splittedName.slice(1).join(" ")
+
+    const last_name =
+      splittedName[0] || ""
+
     const {
+      error: staffUpdateError,
+    } =
+      await supabase
+        .from("mt_staff")
+        .update({
+
+          first_name,
+
+          last_name,
+
+        })
+        .eq(
+          "id",
+          userId
+        )
+
+    if (staffUpdateError) {
+
+      throw staffUpdateError
+
+    }
+    
+    
+      const {
       data,
       error,
     } =

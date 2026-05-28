@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 
 export default function StaffProfilePage() {
 
+  const [isEditing, setIsEditing] =
+    useState(false)
+  
   const [loading, setLoading] =
     useState(true)
 
@@ -159,6 +162,8 @@ export default function StaffProfilePage() {
 
             body: JSON.stringify({
 
+              fullName,
+              
               email,
 
               phone,
@@ -433,12 +438,16 @@ export default function StaffProfilePage() {
             <input
               type="text"
               value={fullName}
-              disabled
+              onChange={(e) =>
+                setFullName(
+                  e.target.value
+                )
+              }
               className="
                 w-full
                 px-4
                 py-3
-                bg-gray-100
+                bg-gray-50
                 rounded-2xl
                 text-sm
                 outline-none
