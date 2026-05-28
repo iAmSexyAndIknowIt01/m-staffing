@@ -2,78 +2,289 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { supabase } from "@/lib/supabase"
 
-// 1. Профайлын мэдээллийг баазаас татах (GET)
+// ========================================
+// GET PROFILE
+// ========================================
+
 export async function GET() {
+
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
 
-    if (!userId || userRole !== "staff") {
-      return NextResponse.json({ error: "Хандах эрхгүй байна." }, { status: 403 })
+    const cookieStore =
+      await cookies()
+
+    const userId =
+      cookieStore
+        .get("user_id")
+        ?.value
+
+    const userRole =
+      cookieStore
+        .get("user_role")
+        ?.value
+
+    if (
+      !userId ||
+      userRole !== "staff"
+    ) {
+
+      return NextResponse.json(
+        {
+          error:
+            "Хандах эрхгүй байна.",
+        },
+        {
+          status: 403,
+        }
+      )
+
     }
 
-    const { data: profile, error } = await supabase
-      .from("mt_staff_profile")
-      .select("*")
-      .eq("user_id", userId)
-      .single() // Нэг мөр өгөгдөл авна
+    // ========================================
+    // 1. STAFF NAME
+    // ========================================
 
-    // Хэрэв анх удаа орж байгаа бол профайл байхгүй байж болно, алдаа биш
-    if (error && error.code !== "PGRST116") {
-      throw error
+    const {
+      data: staffData,
+      error: staffError,
+    } =
+      await supabase
+        .from("mt_staff")
+        .select(`
+          first_name,
+          last_name
+        `)
+        .eq(
+          "id",
+          userId
+        )
+        .single()
+
+    if (staffError) {
+
+      throw staffError
+
     }
 
-    return NextResponse.json({ success: true, profile: profile || null }, { status: 200 })
+    // ========================================
+    // 2. PROFILE DATA
+    // ========================================
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error("Профайл татахад алдаа гарлаа:", error)
-    return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
+    const {
+      data: profileData,
+      error: profileError,
+    } =
+      await supabase
+        .from("mt_profile")
+        .select(`
+          user_id,
+          email,
+          phone,
+          bio,
+          skills,
+          experience,
+          education
+        `)
+        .eq(
+          "user_id",
+          userId
+        )
+        .maybeSingle()
+
+    if (
+      profileError &&
+      profileError.code !== "PGRST116"
+    ) {
+
+      throw profileError
+
+    }
+
+    // ========================================
+    // MERGE DATA
+    // ========================================
+
+    const profile = {
+
+      full_name:
+        `${staffData?.last_name || ""} ${staffData?.first_name || ""}`.trim(),
+
+      email:
+        profileData?.email || "",
+
+      phone:
+        profileData?.phone || "",
+
+      bio:
+        profileData?.bio || "",
+
+      skills:
+        profileData?.skills || "",
+
+      experience:
+        profileData?.experience || "",
+
+      education:
+        profileData?.education || "",
+
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        profile,
+      }
+    )
+
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  catch (error: any) {
+
+    console.error(
+      "GET PROFILE ERROR:",
+      error
+    )
+
+    return NextResponse.json(
+      {
+        error:
+          error.message ||
+          "Серверийн алдаа",
+      },
+      {
+        status: 500,
+      }
+    )
+
+  }
+
 }
 
-// 2. Профайлын мэдээллийг хадгалах / шинэчлэх (POST)
-export async function POST(request: Request) {
+// ========================================
+// SAVE PROFILE
+// ========================================
+
+export async function POST(
+  request: Request
+) {
+
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
 
-    if (!userId || userRole !== "staff") {
-      return NextResponse.json({ error: "Хандах эрхгүй байна." }, { status: 403 })
+    const cookieStore =
+      await cookies()
+
+    const userId =
+      cookieStore
+        .get("user_id")
+        ?.value
+
+    const userRole =
+      cookieStore
+        .get("user_role")
+        ?.value
+
+    if (
+      !userId ||
+      userRole !== "staff"
+    ) {
+
+      return NextResponse.json(
+        {
+          error:
+            "Хандах эрхгүй байна.",
+        },
+        {
+          status: 403,
+        }
+      )
+
     }
 
-    const body = await request.json()
-    const { full_name, email, phone, bio, skills, experience, education } = body
+    const body =
+      await request.json()
 
-    if (!full_name) {
-      return NextResponse.json({ error: "Бүтэн нэрийг заавал бөглөнө үү." }, { status: 400 })
+    const {
+
+      email,
+
+      phone,
+
+      bio,
+
+      skills,
+
+      experience,
+
+      education,
+
+    } =
+      body
+
+    const {
+      data,
+      error,
+    } =
+      await supabase
+        .from("mt_profile")
+        .update({
+
+          email,
+
+          phone,
+
+          bio,
+
+          skills,
+
+          experience,
+
+          education,
+
+          updated_at:
+            new Date()
+              .toISOString(),
+
+        })
+        .eq("user_id", userId)
+        .select()
+
+    if (error) {
+
+      throw error
+
     }
 
-    // upsert нь тухайн user_id байвал UPDATE хийнэ, байхгүй бол INSERT хийнэ
-    const { data, error } = await supabase
-      .from("mt_staff_profile")
-      .upsert({
-        user_id: userId,
-        full_name,
-        email,
-        phone,
-        bio,
-        skills,
-        experience,
-        education,
-        updated_at: new Date().toISOString()
-      })
-      .select()
+    return NextResponse.json({
 
-    if (error) throw error
+      success: true,
 
-    return NextResponse.json({ success: true, message: "Профайл амжилттай хадгалагдлаа.", data }, { status: 200 })
+      message:
+        "Профайл хадгалагдлаа.",
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error("Профайл хадгалахад алдаа гарлаа:", error)
-    return NextResponse.json({ error: error.message || "Серверт алдаа гарлаа." }, { status: 500 })
+      data,
+
+    })
+
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  catch (error: any) {
+
+    console.error(
+      "SAVE PROFILE ERROR:",
+      error
+    )
+
+    return NextResponse.json(
+      {
+        error:
+          error.message ||
+          "Серверийн алдаа",
+      },
+      {
+        status: 500,
+      }
+    )
+
+  }
+
 }

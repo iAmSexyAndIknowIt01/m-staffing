@@ -150,6 +150,8 @@ export async function POST(
 
     }
 
+    // STAFF INSERT
+
     if (
       role === "staff"
     ) {
@@ -193,7 +195,59 @@ export async function POST(
 
       }
 
+      // PROFILE INSERT
+
+      const {
+        error:
+          profileInsertError,
+      } =
+        await supabase
+          .from(
+            "mt_profile"
+          )
+          .insert({
+
+            user_id:
+              user.id,
+
+            email,
+
+            phone:
+              "",
+
+            bio:
+              "",
+
+            skills:
+              "",
+
+            experience:
+              "",
+
+            education:
+              "",
+
+          })
+
+      if (
+        profileInsertError
+      ) {
+
+        return NextResponse.json(
+          {
+            message:
+              profileInsertError.message,
+          },
+          {
+            status: 500,
+          }
+        )
+
+      }
+
     }
+
+    // COMPANY INSERT
 
     if (
       role === "company"
