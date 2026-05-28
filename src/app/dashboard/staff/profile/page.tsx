@@ -4,9 +4,6 @@ import { useEffect, useState } from "react"
 
 export default function StaffProfilePage() {
 
-  const [isEditing, setIsEditing] =
-    useState(false)
-  
   const [loading, setLoading] =
     useState(true)
 
