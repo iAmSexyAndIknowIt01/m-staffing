@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo, useRef } from "react"
 
 interface Job {
   id: string
@@ -29,6 +29,8 @@ export default function StaffJobsPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const jobsPerPage = 10
+
+  const jobsTopRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function fetchJobs() {
@@ -94,9 +96,9 @@ export default function StaffJobsPage() {
   ])
 
   useEffect(() => {
-    window.scrollTo({
-      top: 340,
+    jobsTopRef.current?.scrollIntoView({
       behavior: "smooth",
+      block: "start",
     })
   }, [currentPage])
 
@@ -163,7 +165,7 @@ if (loading) {
 }
 
   return (
-    <div className="space-y-8 min-h-screen pb-12">
+    <div ref={jobsTopRef} className="space-y-8 min-h-screen pb-12">
       
       {/* ТӨРӨЛ, ГАРЧИГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
