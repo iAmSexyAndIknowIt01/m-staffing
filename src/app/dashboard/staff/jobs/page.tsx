@@ -141,6 +141,43 @@ if (loading) {
         </div>
       )}
 
+      <div
+        className="
+          bg-gradient-to-r
+          from-orange-500
+          to-red-500
+          text-white
+          rounded-3xl
+          p-8
+          shadow-lg
+        "
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black">
+              🇯🇵 Японд ажиллах боломж
+            </h2>
+
+            <p className="mt-2 text-white/90">
+              IT, Engineer, Tokutei Ginou ажлын байр
+            </p>
+          </div>
+
+          <button
+            className="
+              px-6
+              py-3
+              bg-white
+              text-orange-600
+              rounded-2xl
+              font-bold
+            "
+          >
+            Дэлгэрэнгүй
+          </button>
+        </div>
+      </div>
+
       {/* АЖЛЫН БАЙРНЫ ЖАГСААЛТ */}
       {filteredJobs.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center text-gray-400 shadow-sm flex flex-col items-center">
