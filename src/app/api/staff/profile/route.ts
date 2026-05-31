@@ -83,7 +83,8 @@ export async function GET() {
           bio,
           skills,
           experience,
-          education
+          education,
+          availability
         `)
         .eq(
           "user_id",
@@ -126,6 +127,9 @@ export async function GET() {
 
       education:
         profileData?.education || "",
+
+      availability:
+        profileData?.availability || {},
 
     }
 
@@ -219,6 +223,8 @@ export async function POST(
 
       education,
 
+      availability,
+
     } =
       body
 
@@ -280,6 +286,8 @@ export async function POST(
           experience,
 
           education,
+
+          availability,
 
           updated_at:
             new Date()

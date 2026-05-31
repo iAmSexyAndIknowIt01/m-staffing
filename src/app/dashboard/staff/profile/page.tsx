@@ -43,6 +43,17 @@ export default function StaffProfilePage() {
 
   const [education, setEducation] =
     useState("")
+  
+  const [availability, setAvailability] =
+    useState({
+      monday: { enabled: false, from: "", to: "" },
+      tuesday: { enabled: false, from: "", to: "" },
+      wednesday: { enabled: false, from: "", to: "" },
+      thursday: { enabled: false, from: "", to: "" },
+      friday: { enabled: false, from: "", to: "" },
+      saturday: { enabled: false, from: "", to: "" },
+      sunday: { enabled: false, from: "", to: "" },
+    })
 
   // ========================================
   // FETCH PROFILE
@@ -98,6 +109,18 @@ export default function StaffProfilePage() {
 
         setEducation(
           result.profile.education || ""
+        )
+
+        setAvailability(
+          result.profile.availability || {
+            monday: { enabled: false, from: "", to: "" },
+            tuesday: { enabled: false, from: "", to: "" },
+            wednesday: { enabled: false, from: "", to: "" },
+            thursday: { enabled: false, from: "", to: "" },
+            friday: { enabled: false, from: "", to: "" },
+            saturday: { enabled: false, from: "", to: "" },
+            sunday: { enabled: false, from: "", to: "" },
+          }
         )
 
       }
@@ -175,6 +198,8 @@ export default function StaffProfilePage() {
               experience,
 
               education,
+
+              availability,
 
             }),
 
@@ -705,6 +730,137 @@ export default function StaffProfilePage() {
                 text-sm
               "
             />
+
+          </div>
+
+          <div>
+
+            <label className="text-sm font-bold">
+              🕒 Ажиллах боломжтой цаг
+            </label>
+
+            <div className="mt-4 space-y-3">
+
+              {[
+                ["monday", "Даваа"],
+                ["tuesday", "Мягмар"],
+                ["wednesday", "Лхагва"],
+                ["thursday", "Пүрэв"],
+                ["friday", "Баасан"],
+                ["saturday", "Бямба"],
+                ["sunday", "Ням"],
+              ].map(([key, label]) => (
+
+                <div
+                  key={key}
+                  className="
+                    flex
+                    items-center
+                    gap-4
+                    bg-gray-50
+                    p-3
+                    rounded-2xl
+                  "
+                >
+
+                  <input
+                    type="checkbox"
+                    disabled={!isEditMode}
+                    checked={
+                      availability[
+                        key as keyof typeof availability
+                      ].enabled
+                    }
+                    onChange={(e) =>
+                      setAvailability({
+                        ...availability,
+                        [key]: {
+                          ...availability[
+                            key as keyof typeof availability
+                          ],
+                          enabled: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+
+                  <span className="w-24 text-sm font-medium">
+                    {label}
+                  </span>
+
+                  <input
+                    type="time"
+                    disabled={
+                      !isEditMode ||
+                      !availability[
+                        key as keyof typeof availability
+                      ].enabled
+                    }
+                    value={
+                      availability[
+                        key as keyof typeof availability
+                      ].from
+                    }
+                    onChange={(e) =>
+                      setAvailability({
+                        ...availability,
+                        [key]: {
+                          ...availability[
+                            key as keyof typeof availability
+                          ],
+                          from: e.target.value,
+                        },
+                      })
+                    }
+                    className="
+                      px-3
+                      py-2
+                      rounded-xl
+                      bg-white
+                      border
+                    "
+                  />
+
+                  <span>~</span>
+
+                  <input
+                    type="time"
+                    disabled={
+                      !isEditMode ||
+                      !availability[
+                        key as keyof typeof availability
+                      ].enabled
+                    }
+                    value={
+                      availability[
+                        key as keyof typeof availability
+                      ].to
+                    }
+                    onChange={(e) =>
+                      setAvailability({
+                        ...availability,
+                        [key]: {
+                          ...availability[
+                            key as keyof typeof availability
+                          ],
+                          to: e.target.value,
+                        },
+                      })
+                    }
+                    className="
+                      px-3
+                      py-2
+                      rounded-xl
+                      bg-white
+                      border
+                    "
+                  />
+
+                </div>
+
+              ))}
+
+            </div>
 
           </div>
 
