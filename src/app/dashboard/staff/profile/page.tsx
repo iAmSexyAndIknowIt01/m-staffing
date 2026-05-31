@@ -734,12 +734,19 @@ export default function StaffProfilePage() {
           </div>
 
           <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <label className="text-sm font-bold">
+                  🕒 Ажиллах боломжтой цаг
+                </label>
 
-            <label className="text-sm font-bold">
-              🕒 Ажиллах боломжтой цаг
-            </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  Аль өдөр хэдээс хэдэн цагийн хооронд ажиллах боломжтой вэ?
+                </p>
+              </div>
+            </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
 
               {[
                 ["monday", "Даваа"],
@@ -749,119 +756,162 @@ export default function StaffProfilePage() {
                 ["friday", "Баасан"],
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
-              ].map(([key, label]) => (
+              ].map(([key, label]) => {
 
-                <div
-                  key={key}
-                  className="
-                    flex
-                    items-center
-                    gap-4
-                    bg-gray-50
-                    p-3
-                    rounded-2xl
-                  "
-                >
+                const day =
+                  availability[
+                    key as keyof typeof availability
+                  ]
 
-                  <input
-                    type="checkbox"
-                    disabled={!isEditMode}
-                    checked={
-                      availability[
-                        key as keyof typeof availability
-                      ].enabled
-                    }
-                    onChange={(e) =>
-                      setAvailability({
-                        ...availability,
-                        [key]: {
-                          ...availability[
-                            key as keyof typeof availability
-                          ],
-                          enabled: e.target.checked,
-                        },
-                      })
-                    }
-                  />
+                return (
 
-                  <span className="w-24 text-sm font-medium">
-                    {label}
-                  </span>
-
-                  <input
-                    type="time"
-                    disabled={
-                      !isEditMode ||
-                      !availability[
-                        key as keyof typeof availability
-                      ].enabled
-                    }
-                    value={
-                      availability[
-                        key as keyof typeof availability
-                      ].from
-                    }
-                    onChange={(e) =>
-                      setAvailability({
-                        ...availability,
-                        [key]: {
-                          ...availability[
-                            key as keyof typeof availability
-                          ],
-                          from: e.target.value,
-                        },
-                      })
-                    }
-                    className="
-                      px-3
-                      py-2
-                      rounded-xl
-                      bg-white
+                  <div
+                    key={key}
+                    className={`
                       border
-                    "
-                  />
+                      rounded-2xl
+                      p-4
+                      transition
+                      ${
+                        day.enabled
+                          ? "border-indigo-200 bg-indigo-50/50"
+                          : "border-gray-100 bg-gray-50"
+                      }
+                    `}
+                  >
 
-                  <span>~</span>
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
 
-                  <input
-                    type="time"
-                    disabled={
-                      !isEditMode ||
-                      !availability[
-                        key as keyof typeof availability
-                      ].enabled
-                    }
-                    value={
-                      availability[
-                        key as keyof typeof availability
-                      ].to
-                    }
-                    onChange={(e) =>
-                      setAvailability({
-                        ...availability,
-                        [key]: {
-                          ...availability[
-                            key as keyof typeof availability
-                          ],
-                          to: e.target.value,
-                        },
-                      })
-                    }
-                    className="
-                      px-3
-                      py-2
-                      rounded-xl
-                      bg-white
-                      border
-                    "
-                  />
+                      {/* LEFT */}
 
-                </div>
+                      <div className="flex items-center justify-between md:w-48">
 
-              ))}
+                        <span className="font-semibold text-gray-800">
+                          {label}
+                        </span>
+
+                        <label className="relative inline-flex items-center cursor-pointer">
+
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            disabled={!isEditMode}
+                            checked={day.enabled}
+                            onChange={(e) =>
+                              setAvailability({
+                                ...availability,
+                                [key]: {
+                                  ...day,
+                                  enabled:
+                                    e.target.checked,
+                                },
+                              })
+                            }
+                          />
+
+                          <div
+                            className="
+                              w-11
+                              h-6
+                              bg-gray-300
+                              rounded-full
+                              peer
+                              peer-checked:bg-indigo-600
+                              transition
+                            "
+                          />
+
+                        </label>
+
+                      </div>
+
+                      {/* RIGHT */}
+
+                      {day.enabled ? (
+
+                        <div className="flex items-center gap-3 flex-wrap">
+
+                          <input
+                            type="time"
+                            disabled={!isEditMode}
+                            value={day.from}
+                            onChange={(e) =>
+                              setAvailability({
+                                ...availability,
+                                [key]: {
+                                  ...day,
+                                  from:
+                                    e.target.value,
+                                },
+                              })
+                            }
+                            className="
+                              px-4
+                              py-2
+                              bg-white
+                              border
+                              border-gray-200
+                              rounded-xl
+                            "
+                          />
+
+                          <span className="text-gray-400">
+                            →
+                          </span>
+
+                          <input
+                            type="time"
+                            disabled={!isEditMode}
+                            value={day.to}
+                            onChange={(e) =>
+                              setAvailability({
+                                ...availability,
+                                [key]: {
+                                  ...day,
+                                  to:
+                                    e.target.value,
+                                },
+                              })
+                            }
+                            className="
+                              px-4
+                              py-2
+                              bg-white
+                              border
+                              border-gray-200
+                              rounded-xl
+                            "
+                          />
+
+                        </div>
+
+                      ) : (
+
+                        <span
+                          className="
+                            text-xs
+                            font-medium
+                            px-3
+                            py-1
+                            rounded-full
+                            bg-gray-200
+                            text-gray-500
+                          "
+                        >
+                          Амарна
+                        </span>
+
+                      )}
+
+                    </div>
+
+                  </div>
+
+                )
+
+              })}
 
             </div>
-
           </div>
 
           {/* SAVE BUTTON */}
