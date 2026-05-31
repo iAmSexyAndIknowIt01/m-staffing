@@ -26,6 +26,9 @@ export default function StaffJobsPage() {
   
   // Модалд сонгогдсон ажлын байр
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const jobsPerPage = 10
 
   useEffect(() => {
     async function fetchJobs() {
@@ -52,14 +55,81 @@ export default function StaffJobsPage() {
   // Хайлт болон шүүлтүүр хийх логик (Client-side)
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
-      const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            job.description.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = selectedCategory === "" || job.category === selectedCategory
-      const matchesType = selectedJobType === "" || job.job_type === selectedJobType
-      return matchesSearch && matchesCategory && matchesType
-    })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType])
+      const matchesSearch =
+        job.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        job.description
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
 
+      const matchesCategory =
+        selectedCategory === "" ||
+        job.category === selectedCategory
+
+      const matchesType =
+        selectedJobType === "" ||
+        job.job_type === selectedJobType
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesType
+      )
+    })
+  }, [
+    jobs,
+    searchQuery,
+    selectedCategory,
+    selectedJobType,
+  ])
+
+  useEffect(() => {    
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentPage(1)
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedJobType,
+  ])
+
+  const totalPages = useMemo(
+    () => Math.ceil(filteredJobs.length / jobsPerPage),
+    [filteredJobs.length]
+  )
+
+  const visiblePages = useMemo(() => {
+    const maxVisible = 5
+
+    let startPage = Math.max(
+      currentPage - Math.floor(maxVisible / 2),
+      1
+    )
+
+    let endPage = startPage + maxVisible - 1
+
+    if (endPage > totalPages) {
+      endPage = totalPages
+      startPage = Math.max(
+        totalPages - maxVisible + 1,
+        1
+      )
+    }
+
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, i) => startPage + i
+    )
+  }, [currentPage, totalPages])
+
+  const paginatedJobs = useMemo(
+    () =>
+      filteredJobs.slice(
+        (currentPage - 1) * jobsPerPage,
+        currentPage * jobsPerPage
+      ),
+    [filteredJobs, currentPage]
+  )
   // --- Скелетон Лоудер (Loading State) ---
 if (loading) {
   return (
@@ -92,7 +162,11 @@ if (loading) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
-          <p className="text-sm text-gray-400 mt-1">Танд тохирох {filteredJobs.length} ажлын санал байна</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Танд тохирох {filteredJobs.length} ажлын санал байна
+            {" • "}
+            Хуудас {currentPage} / {totalPages || 1}
+          </p>
         </div>
       </div>
 
@@ -187,7 +261,7 @@ if (loading) {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredJobs.map((job) => (
+          {paginatedJobs.map((job) => (
             <div
               key={job.id}
               onClick={() => setSelectedJob(job)}
@@ -275,6 +349,118 @@ if (loading) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* PAGINATION */}
+      {filteredJobs.length > 0 && totalPages > 1 && (
+        <div
+          className="
+            flex
+            flex-wrap
+            justify-center
+            items-center
+            gap-2
+            mt-8
+          "
+        >
+          <button
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.max(prev - 1, 1)
+              )
+            }
+            disabled={currentPage === 1}
+            className="
+              px-4
+              py-2
+              rounded-xl
+              border
+              bg-white
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
+          >
+            ← Өмнөх
+          </button>
+          
+          {visiblePages[0] > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentPage(1)}
+                className="w-10 h-10 rounded-xl border bg-white"
+              >
+                1
+              </button>
+
+              {visiblePages[0] > 2 && (
+                <span className="px-2">...</span>
+              )}
+            </>
+          )}
+
+          {visiblePages.map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`
+                w-10
+                h-10
+                rounded-xl
+                text-sm
+                font-bold
+                transition
+                ${
+                  currentPage === page
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white border border-gray-200 hover:border-indigo-300"
+                }
+              `}
+            >
+              {page}
+            </button>
+          ))}
+
+          {visiblePages[
+            visiblePages.length - 1
+          ] < totalPages && (
+            <>
+              {visiblePages[
+                visiblePages.length - 1
+              ] < totalPages - 1 && (
+                <span className="px-2">...</span>
+              )}
+
+              <button
+                onClick={() =>
+                  setCurrentPage(totalPages)
+                }
+                className="w-10 h-10 rounded-xl border bg-white"
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.min(prev + 1, totalPages)
+              )
+            }
+            disabled={currentPage === totalPages}
+            className="
+              px-4
+              py-2
+              rounded-xl
+              border
+              bg-white
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
+          >
+            Дараах →
+          </button>
         </div>
       )}
 
