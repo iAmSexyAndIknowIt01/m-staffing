@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 
 interface Job {
   id: string
@@ -92,6 +92,13 @@ export default function StaffJobsPage() {
     selectedCategory,
     selectedJobType,
   ])
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 340,
+      behavior: "smooth",
+    })
+  }, [currentPage])
 
   const totalPages = useMemo(
     () => Math.ceil(filteredJobs.length / jobsPerPage),
