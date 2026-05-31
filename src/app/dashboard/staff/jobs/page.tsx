@@ -61,104 +61,29 @@ export default function StaffJobsPage() {
   }, [jobs, searchQuery, selectedCategory, selectedJobType])
 
   // --- Скелетон Лоудер (Loading State) ---
-  if (loading) {
-    return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-12 w-64 bg-gray-200 rounded-2xl" />
-        <div className="h-16 w-full bg-gray-100 rounded-2xl" />
-        <div className="space-y-4">
-          {filteredJobs.map((job) => (
-            <div
-              key={job.id}
-              onClick={() => setSelectedJob(job)}
-              className="
-                bg-white
-                border
-                border-gray-100
-                rounded-3xl
-                p-6
-                hover:border-indigo-200
-                hover:shadow-lg
-                transition
-                cursor-pointer
-              "
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-                {/* LEFT */}
-                <div className="flex-1">
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">
-                      {job.category}
-                    </span>
-
-                    <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                      {job.job_type === "fulltime"
-                        ? "Бүтэн цаг"
-                        : job.job_type === "parttime"
-                        ? "Хагас цаг"
-                        : "Remote"}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {job.title}
-                  </h3>
-
-                  <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-                    <span>📍 {job.location || "Улаанбаатар"}</span>
-
-                    <span className="text-emerald-600 font-semibold">
-                      💰 {job.salary || "Тохиролцоно"}
-                    </span>
-
-                    <span>
-                      📅{" "}
-                      {new Date(
-                        job.created_at
-                      ).toLocaleDateString("mn-MN")}
-                    </span>
-                  </div>
-
-                  <p className="mt-4 text-sm text-gray-600 line-clamp-2">
-                    {job.description}
-                  </p>
-
-                </div>
-
-                {/* RIGHT */}
-                <div className="flex flex-col items-end justify-between min-w-[180px]">
-
-                  <div className="text-xs text-gray-400">
-                    Нээлттэй ажлын байр
-                  </div>
-
-                  <button
-                    className="
-                      mt-4
-                      px-5
-                      py-3
-                      bg-indigo-600
-                      hover:bg-indigo-700
-                      text-white
-                      rounded-2xl
-                      text-sm
-                      font-bold
-                    "
-                  >
-                    Дэлгэрэнгүй →
-                  </button>
-
-                </div>
-
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+if (loading) {
+  return (
+    <div
+      className="
+        flex
+        items-center
+        justify-center
+        min-h-[400px]
+      "
+    >
+      <div
+        className="
+          h-10
+          w-10
+          border-b-2
+          border-indigo-600
+          rounded-full
+          animate-spin
+        "
+      />
+    </div>
+  )
+}
 
   return (
     <div className="space-y-8 min-h-screen pb-12">
