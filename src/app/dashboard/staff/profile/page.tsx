@@ -16,6 +16,9 @@ export default function StaffProfilePage() {
   const [message, setMessage] =
     useState<string | null>(null)
 
+  const [isEditMode, setIsEditMode] =
+    useState(false)
+
   // ========================================
   // FORM STATE
   // ========================================
@@ -195,6 +198,8 @@ export default function StaffProfilePage() {
 
       await fetchProfile()
 
+      setIsEditMode(false)
+
       setMessage(
         "Профайл амжилттай хадгалагдлаа 🎉"
       )
@@ -273,27 +278,63 @@ export default function StaffProfilePage() {
 
       {/* HEADER */}
 
-      <div>
+      <div
+        className="
+          flex
+          items-start
+          justify-between
+        "
+      >
 
-        <h1
-          className="
-            text-3xl
-            font-black
-            text-gray-900
-          "
-        >
-          Миний CV / Профайл
-        </h1>
+        <div>
 
-        <p
+          <h1
+            className="
+              text-3xl
+              font-black
+              text-gray-900
+            "
+          >
+            Миний CV / Профайл
+          </h1>
+
+          <p
+            className="
+              text-sm
+              text-gray-400
+              mt-1
+            "
+          >
+            Ажил олгогчдод харагдах таны мэдээлэл
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            setIsEditMode(
+              !isEditMode
+            )
+          }
           className="
+            px-5
+            py-2
+            rounded-2xl
             text-sm
-            text-gray-400
-            mt-1
+            font-bold
+            border
+            border-indigo-200
+            text-indigo-600
+            hover:bg-indigo-50
           "
         >
-          Ажил олгогчдод харагдах таны мэдээлэл
-        </p>
+          {
+            isEditMode
+              ? "Харах горим"
+              : "Засах"
+          }
+        </button>
 
       </div>
 
@@ -435,6 +476,7 @@ export default function StaffProfilePage() {
             <input
               type="text"
               value={fullName}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setFullName(
                   e.target.value
@@ -473,6 +515,7 @@ export default function StaffProfilePage() {
             <input
               type="text"
               value={phone}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setPhone(
                   e.target.value
@@ -510,6 +553,7 @@ export default function StaffProfilePage() {
             <input
               type="email"
               value={email}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setEmail(
                   e.target.value
@@ -555,6 +599,7 @@ export default function StaffProfilePage() {
             <textarea
               rows={3}
               value={bio}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setBio(
                   e.target.value
@@ -584,6 +629,7 @@ export default function StaffProfilePage() {
             <input
               type="text"
               value={skills}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setSkills(
                   e.target.value
@@ -613,6 +659,7 @@ export default function StaffProfilePage() {
             <textarea
               rows={4}
               value={experience}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setExperience(
                   e.target.value
@@ -642,6 +689,7 @@ export default function StaffProfilePage() {
             <textarea
               rows={3}
               value={education}
+              disabled={!isEditMode}
               onChange={(e) =>
                 setEducation(
                   e.target.value
@@ -661,6 +709,8 @@ export default function StaffProfilePage() {
           </div>
 
           {/* SAVE BUTTON */}
+          {isEditMode && (
+
 
           <div
             className="
@@ -696,6 +746,7 @@ export default function StaffProfilePage() {
             </button>
 
           </div>
+          )}
 
         </div>
 
