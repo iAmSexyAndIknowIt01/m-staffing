@@ -19,6 +19,9 @@ export default function StaffProfilePage() {
   const [isEditMode, setIsEditMode] =
     useState(false)
 
+  const [validationErrors, setValidationErrors] =
+    useState<Record<string, string>>({})
+
   // ========================================
   // FORM STATE
   // ========================================
@@ -142,6 +145,110 @@ export default function StaffProfilePage() {
 
   }
 
+  function validateForm() {
+
+    const errors: Record<string, string> = {}
+
+    if (!fullName.trim()) {
+      errors.fullName =
+        "Бүтэн нэрээ оруулна уу"
+    }
+
+    if (!email.trim()) {
+
+      errors.email =
+        "Имэйлээ оруулна уу"
+
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email
+      )
+    ) {
+
+      errors.email =
+        "Имэйл хаяг буруу байна"
+
+    }
+
+    if (!phone.trim()) {
+      errors.phone =
+        "Утасны дугаараа оруулна уу"
+    }
+
+    if (!bio.trim()) {
+      errors.bio =
+        "Bio бөглөнө үү"
+    }
+
+    if (!skills.trim()) {
+      errors.skills =
+        "Ур чадвараа оруулна уу"
+    }
+
+    if (!experience.trim()) {
+      errors.experience =
+        "Туршлагаа оруулна уу"
+    }
+
+    if (!education.trim()) {
+      errors.education =
+        "Боловсролоо оруулна уу"
+    }
+
+    const enabledDays =
+      Object.values(
+        availability
+      ).filter(
+        (day) => day.enabled
+      )
+
+    if (
+      enabledDays.length === 0
+    ) {
+
+      errors.availability =
+        "Дор хаяж нэг ажиллах өдөр сонгоно уу"
+
+    }
+
+    enabledDays.forEach(
+      (day) => {
+
+        if (
+          !day.from ||
+          !day.to
+        ) {
+
+          errors.availability =
+            "Ажиллах цагийг бүрэн оруулна уу"
+
+        }
+
+        if (
+          day.from &&
+          day.to &&
+          day.from >= day.to
+        ) {
+
+          errors.availability =
+            "Эхлэх цаг дуусах цагаас бага байх ёстой"
+
+        }
+
+      }
+    )
+
+    setValidationErrors(
+      errors
+    )
+
+    return (
+      Object.keys(errors)
+        .length === 0
+    )
+
+  }
+
   // ========================================
   // FIRST LOAD
   // ========================================
@@ -162,6 +269,18 @@ export default function StaffProfilePage() {
   ) {
 
     e.preventDefault()
+
+    setError(null)
+
+    if (!validateForm()) {
+
+      setError(
+        "Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу."
+      )
+
+      return
+
+    }
 
     try {
 
@@ -502,12 +621,21 @@ export default function StaffProfilePage() {
               type="text"
               value={fullName}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setFullName(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    fullName: "",
+                  })
+                )
+
+              }}
+              className={`
                 w-full
                 px-4
                 py-3
@@ -515,8 +643,20 @@ export default function StaffProfilePage() {
                 rounded-2xl
                 text-sm
                 outline-none
-              "
+                ${
+                  validationErrors.fullName
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.fullName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.fullName}
+                </p>
+              )
+            }
 
           </div>
 
@@ -541,20 +681,41 @@ export default function StaffProfilePage() {
               type="text"
               value={phone}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setPhone(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    phone: "",
+                  })
+                )
+
+              }}
+              className={`
                 w-full
                 px-4
                 py-3
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.phone
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.phone && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.phone}
+                </p>
+              )
+            }
 
           </div>
 
@@ -579,20 +740,41 @@ export default function StaffProfilePage() {
               type="email"
               value={email}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setEmail(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    email: "",
+                  })
+                )
+
+              }}
+              className={`
                 w-full
                 px-4
                 py-3
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.email
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.email}
+                </p>
+              )
+            }
 
           </div>
 
@@ -625,12 +807,21 @@ export default function StaffProfilePage() {
               rows={3}
               value={bio}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setBio(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    bio: "",
+                  })
+                )
+
+              }}
+              className={`
                 mt-2
                 w-full
                 px-4
@@ -638,9 +829,20 @@ export default function StaffProfilePage() {
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.bio
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
-
+            {
+              validationErrors.bio && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.bio}
+                </p>
+              )
+            }
           </div>
 
           {/* SKILLS */}
@@ -655,12 +857,21 @@ export default function StaffProfilePage() {
               type="text"
               value={skills}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setSkills(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    skills: "",
+                  })
+                )
+
+              }}
+              className={`
                 mt-2
                 w-full
                 px-4
@@ -668,8 +879,20 @@ export default function StaffProfilePage() {
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.skills
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.skills && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.skills}
+                </p>
+              )
+            }
 
           </div>
 
@@ -685,12 +908,21 @@ export default function StaffProfilePage() {
               rows={4}
               value={experience}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setExperience(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    experience: "",
+                  })
+                )
+
+              }}
+              className={`
                 mt-2
                 w-full
                 px-4
@@ -698,8 +930,20 @@ export default function StaffProfilePage() {
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.experience
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.experience && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.experience}
+                </p>
+              )
+            }
 
           </div>
 
@@ -715,12 +959,21 @@ export default function StaffProfilePage() {
               rows={3}
               value={education}
               disabled={!isEditMode}
-              onChange={(e) =>
+              onChange={(e) => {
+
                 setEducation(
                   e.target.value
                 )
-              }
-              className="
+
+                setValidationErrors(
+                  (prev) => ({
+                    ...prev,
+                    education: "",
+                  })
+                )
+
+              }}
+              className={`
                 mt-2
                 w-full
                 px-4
@@ -728,8 +981,20 @@ export default function StaffProfilePage() {
                 bg-gray-50
                 rounded-2xl
                 text-sm
-              "
+                ${
+                  validationErrors.education
+                    ? "border border-red-500 bg-red-50"
+                    : "border border-gray-200"
+                }
+              `}
             />
+            {
+              validationErrors.education && (
+                <p className="text-red-500 text-xs mt-1">
+                  {validationErrors.education}
+                </p>
+              )
+            }
 
           </div>
 
@@ -797,7 +1062,7 @@ export default function StaffProfilePage() {
                             className="sr-only peer"
                             disabled={!isEditMode}
                             checked={day.enabled}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setAvailability({
                                 ...availability,
                                 [key]: {
@@ -806,7 +1071,13 @@ export default function StaffProfilePage() {
                                     e.target.checked,
                                 },
                               })
-                            }
+                              setValidationErrors(
+                                (prev) => ({
+                                  ...prev,
+                                  availability: "",
+                                })
+                              )
+                            }}
                           />
 
                           <div
@@ -835,7 +1106,7 @@ export default function StaffProfilePage() {
                             type="time"
                             disabled={!isEditMode}
                             value={day.from}
-                            onChange={(e) =>
+                            onChange={(e) =>{
                               setAvailability({
                                 ...availability,
                                 [key]: {
@@ -844,7 +1115,13 @@ export default function StaffProfilePage() {
                                     e.target.value,
                                 },
                               })
-                            }
+                              setValidationErrors(
+                                (prev) => ({
+                                  ...prev,
+                                  availability: "",
+                                })
+                              )
+                            }}
                             className="
                               px-4
                               py-2
@@ -913,6 +1190,26 @@ export default function StaffProfilePage() {
 
             </div>
           </div>
+          {
+            validationErrors.availability && (
+
+              <div
+                className="
+                  mt-3
+                  p-3
+                  rounded-xl
+                  bg-red-50
+                  border
+                  border-red-200
+                  text-red-600
+                  text-sm
+                "
+              >
+                {validationErrors.availability}
+              </div>
+
+            )
+          }
 
           {/* SAVE BUTTON */}
           {isEditMode && (
