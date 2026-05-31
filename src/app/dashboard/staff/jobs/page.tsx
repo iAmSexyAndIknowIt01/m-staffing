@@ -66,13 +66,93 @@ export default function StaffJobsPage() {
       <div className="space-y-8 animate-pulse">
         <div className="h-12 w-64 bg-gray-200 rounded-2xl" />
         <div className="h-16 w-full bg-gray-100 rounded-2xl" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-3xl p-6 h-[260px] space-y-4">
-              <div className="flex gap-2"><div className="h-6 w-16 bg-gray-200 rounded-xl" /><div className="h-6 w-20 bg-gray-100 rounded-xl" /></div>
-              <div className="h-6 w-3/4 bg-gray-200 rounded-xl" />
-              <div className="h-4 w-1/2 bg-gray-100 rounded-xl" />
-              <div className="space-y-2 pt-4"><div className="h-3 w-full bg-gray-100 rounded-lg" /><div className="h-3 w-5/6 bg-gray-100 rounded-lg" /></div>
+        <div className="space-y-4">
+          {filteredJobs.map((job) => (
+            <div
+              key={job.id}
+              onClick={() => setSelectedJob(job)}
+              className="
+                bg-white
+                border
+                border-gray-100
+                rounded-3xl
+                p-6
+                hover:border-indigo-200
+                hover:shadow-lg
+                transition
+                cursor-pointer
+              "
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                {/* LEFT */}
+                <div className="flex-1">
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">
+                      {job.category}
+                    </span>
+
+                    <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
+                      {job.job_type === "fulltime"
+                        ? "Бүтэн цаг"
+                        : job.job_type === "parttime"
+                        ? "Хагас цаг"
+                        : "Remote"}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {job.title}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
+                    <span>📍 {job.location || "Улаанбаатар"}</span>
+
+                    <span className="text-emerald-600 font-semibold">
+                      💰 {job.salary || "Тохиролцоно"}
+                    </span>
+
+                    <span>
+                      📅{" "}
+                      {new Date(
+                        job.created_at
+                      ).toLocaleDateString("mn-MN")}
+                    </span>
+                  </div>
+
+                  <p className="mt-4 text-sm text-gray-600 line-clamp-2">
+                    {job.description}
+                  </p>
+
+                </div>
+
+                {/* RIGHT */}
+                <div className="flex flex-col items-end justify-between min-w-[180px]">
+
+                  <div className="text-xs text-gray-400">
+                    Нээлттэй ажлын байр
+                  </div>
+
+                  <button
+                    className="
+                      mt-4
+                      px-5
+                      py-3
+                      bg-indigo-600
+                      hover:bg-indigo-700
+                      text-white
+                      rounded-2xl
+                      text-sm
+                      font-bold
+                    "
+                  >
+                    Дэлгэрэнгүй →
+                  </button>
+
+                </div>
+
+              </div>
             </div>
           ))}
         </div>
@@ -144,47 +224,92 @@ export default function StaffJobsPage() {
           <p className="text-xs text-gray-400 mt-1">Хайлтын үг эсвэл шүүлтүүрээ өөрчилж үзнэ үү.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {filteredJobs.map((job) => (
-            <div 
-              key={job.id} 
-              onClick={() => setSelectedJob(job)} // Дарахад модал нээгдэнэ
-              className="bg-white border border-gray-50 rounded-3xl p-6 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_20px_-8px_rgba(79,70,229,0.15)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+            <div
+              key={job.id}
+              onClick={() => setSelectedJob(job)}
+              className="
+                bg-white
+                border
+                border-gray-100
+                rounded-3xl
+                p-6
+                hover:border-indigo-200
+                hover:shadow-lg
+                transition
+                cursor-pointer
+              "
             >
-              <div className="space-y-4">
-                <div className="flex gap-2 flex-wrap">
-                  <span className="text-[10px] font-black text-indigo-600 bg-indigo-50/80 px-2.5 py-1 rounded-xl uppercase tracking-wider">
-                    {job.category}
-                  </span>
-                  <span className="text-[10px] font-semibold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-xl">
-                    {job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type === "parttime" ? "Хагас цаг" : "Зайнаас"}
-                  </span>
-                </div>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                <div>
-                  <h3 className="text-md font-bold text-gray-800 group-hover:text-indigo-600 transition line-clamp-1">
+                {/* LEFT */}
+                <div className="flex-1">
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">
+                      {job.category}
+                    </span>
+
+                    <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
+                      {job.job_type === "fulltime"
+                        ? "Бүтэн цаг"
+                        : job.job_type === "parttime"
+                        ? "Хагас цаг"
+                        : "Remote"}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900">
                     {job.title}
                   </h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-400 mt-2 font-medium">
+
+                  <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
                     <span>📍 {job.location || "Улаанбаатар"}</span>
-                    <span>•</span>
-                    <span className="text-emerald-600 font-semibold">💵 {job.salary || "Тохиролцоно"}</span>
+
+                    <span className="text-emerald-600 font-semibold">
+                      💰 {job.salary || "Тохиролцоно"}
+                    </span>
+
+                    <span>
+                      📅{" "}
+                      {new Date(
+                        job.created_at
+                      ).toLocaleDateString("mn-MN")}
+                    </span>
                   </div>
+
+                  <p className="mt-4 text-sm text-gray-600 line-clamp-2">
+                    {job.description}
+                  </p>
+
                 </div>
 
-                <hr className="border-gray-50" />
-                <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">
-                  {job.description}
-                </p>
-              </div>
+                {/* RIGHT */}
+                <div className="flex flex-col items-end justify-between min-w-[180px]">
 
-              <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400 font-medium">
-                  📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}
-                </span>
-                <span className="text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                  Унших →
-                </span>
+                  <div className="text-xs text-gray-400">
+                    Нээлттэй ажлын байр
+                  </div>
+
+                  <button
+                    className="
+                      mt-4
+                      px-5
+                      py-3
+                      bg-indigo-600
+                      hover:bg-indigo-700
+                      text-white
+                      rounded-2xl
+                      text-sm
+                      font-bold
+                    "
+                  >
+                    Дэлгэрэнгүй →
+                  </button>
+
+                </div>
+
               </div>
             </div>
           ))}
