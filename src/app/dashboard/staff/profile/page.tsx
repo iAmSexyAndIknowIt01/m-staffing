@@ -278,6 +278,11 @@ export default function StaffProfilePage() {
         "Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу."
       )
 
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+
       return
 
     }
@@ -456,11 +461,26 @@ export default function StaffProfilePage() {
 
         <button
           type="button"
-          onClick={() =>
-            setIsEditMode(
-              !isEditMode
-            )
-          }
+          onClick={async () => {
+
+            if (isEditMode) {
+
+              // Edit -> View
+              await fetchProfile()
+
+              setValidationErrors({})
+              setError(null)
+
+              setIsEditMode(false)
+
+            } else {
+
+              // View -> Edit
+              setIsEditMode(true)
+
+            }
+
+          }}
           className="
             px-5
             py-2
