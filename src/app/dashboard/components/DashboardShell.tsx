@@ -14,6 +14,7 @@ interface DashboardShellProps {
 export default function DashboardShell({ userId, userRole, onLogout, children }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Идэвхтэй болон идэвхгүй үеийн стилийг тодорхойлох туслах функц
   const getLinkStyles = (href: string) => {
@@ -35,9 +36,9 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       
       {/* СИДЕМЕНЮ (SIDEMENU) */}
       <aside 
-        className={`bg-white border-r border-gray-100 flex flex-col justify-between sticky top-0 h-screen p-4 transition-all duration-300 z-50 ${
-          isCollapsed ? "w-[88px]" : "w-64"
-        }`}
+          className={`hidden lg:flex bg-white border-r border-gray-100 flex-col justify-between sticky top-0 h-screen p-4 transition-all duration-300 z-50 ${
+            isCollapsed ? "w-[88px]" : "w-64"
+          }`}
       >
         <div className="space-y-8">
           {/* Дээд хэсэг */}
@@ -149,10 +150,90 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       </aside>
 
       {/* БАРУУН ТАЛЫН ҮНДСЭН КОНТЕНТ */}
-      <main className="flex-1 p-8 md:p-12 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-12 pt-24 lg:pt-12 overflow-y-auto">
         {children}
       </main>
 
+      {/* MOBILE NAVBAR */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 z-50 flex items-center justify-between px-4">
+        <div className="font-black text-orange-500">
+          MSTAFFING
+        </div>
+
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="text-2xl"
+        >
+          ☰
+        </button>
+      </div>
+
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed top-16 left-0 right-0 bg-white border-b border-gray-100 z-40 shadow-lg">
+          
+          <nav className="p-4 space-y-3">
+
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block p-3 rounded-xl hover:bg-gray-50"
+            >
+              📊 Хянах самбар
+            </Link>
+
+            {userRole === "staff" ? (
+              <>
+                <Link
+                  href="/dashboard/staff/jobs"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  💼 Ажлын байрууд
+                </Link>
+
+                <Link
+                  href="/dashboard/staff/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  📄 Миний CV
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/dashboard/company/post-job"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  ➕ Зар нэмэх
+                </Link>
+
+                <Link
+                  href="/dashboard/company/applicants"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  👥 Анкетууд
+                </Link>
+              </>
+            )}
+
+            <button
+              onClick={() => onLogout()}
+              className="w-full text-left p-3 rounded-xl text-red-500 hover:bg-red-50"
+            >
+              🚪 Гарах
+            </button>
+
+          </nav>
+        </div>
+      )}
+
     </div>
+
+    
+
+    
   )
 }
