@@ -1,6 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import BioModal from "@/components/profile/modals/BioModal"
+import SkillsModal from "@/components/profile/modals/SkillsModal"
+import ExperienceModal from "@/components/profile/modals/ExperienceModal"
+import EducationModal from "@/components/profile/modals/EducationModal"
 
 export default function StaffProfilePage() {
 
@@ -22,6 +26,9 @@ export default function StaffProfilePage() {
   const [validationErrors, setValidationErrors] =
     useState<Record<string, string>>({})
 
+  const [activeModal, setActiveModal] =
+    useState<string | null>(null)
+
   // ========================================
   // FORM STATE
   // ========================================
@@ -38,8 +45,13 @@ export default function StaffProfilePage() {
   const [bio, setBio] =
     useState("")
 
-  const [skills, setSkills] =
-    useState("")
+  const [skills, setSkills] = useState<{
+    technical: string[]
+    languages: string[]
+  }>({
+    technical: [],
+    languages: [],
+  })
 
   const [experience, setExperience] =
     useState("")
@@ -57,6 +69,9 @@ export default function StaffProfilePage() {
       saturday: { enabled: false, from: "", to: "" },
       sunday: { enabled: false, from: "", to: "" },
     })
+  const [isSkillsOpen, setIsSkillsOpen] =
+    useState(false)
+
 
   // ========================================
   // FETCH PROFILE
@@ -103,8 +118,13 @@ export default function StaffProfilePage() {
         )
 
         setSkills(
-          result.profile.skills || ""
+          result.profile.skills || {
+            technical: [],
+            languages: [],
+          }
         )
+
+        console.log("fetched skills:", result.profile.skills)
 
         setExperience(
           result.profile.experience || ""
@@ -180,7 +200,10 @@ export default function StaffProfilePage() {
         "Bio бөглөнө үү"
     }
 
-    if (!skills.trim()) {
+    if (
+      skills.technical.length === 0 &&
+      skills.languages.length === 0
+    ) {
       errors.skills =
         "Ур чадвараа оруулна уу"
     }
@@ -267,113 +290,75 @@ export default function StaffProfilePage() {
   async function handleSave(
     e: React.FormEvent
   ) {
-
     e.preventDefault()
-
     setError(null)
 
     if (!validateForm()) {
-
       setError(
         "Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу."
       )
-
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       })
-
       return
-
     }
 
     try {
-
       setSaving(true)
-
       setError(null)
-
       setMessage(null)
 
       const response =
         await fetch(
           "/api/staff/profile",
           {
-
             method: "POST",
-
             headers: {
               "Content-Type":
                 "application/json",
             },
-
             body: JSON.stringify({
-
               fullName,
-              
               email,
-
               phone,
-
               bio,
-
               skills,
-
               experience,
-
               education,
-
               availability,
-
             }),
-
           }
         )
-
       const result =
         await response.json()
-
       if (!response.ok) {
 
         throw new Error(
           result.error
         )
-
       }
-
       // ========================================
       // RELOAD PROFILE AFTER SAVE
       // ========================================
-
       await fetchProfile()
-
       setIsEditMode(false)
-
       setMessage(
         "Профайл амжилттай хадгалагдлаа 🎉"
       )
-
       setTimeout(() => {
-
         setMessage(null)
-
       }, 4000)
-
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (err: any) {
-
       setError(
         err.message
       )
-
     }
     finally {
-
       setSaving(false)
-
     }
-
   }
 
   // ========================================
@@ -389,7 +374,7 @@ export default function StaffProfilePage() {
           flex
           items-center
           justify-center
-          min-h-[400px]
+          min-h-100
         "
       >
 
@@ -819,14 +804,34 @@ export default function StaffProfilePage() {
 
           <div>
 
-            <label className="text-sm font-bold">
-              🚀 Bio
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold">
+                🚀 Bio
+              </label>
+
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("bio")}
+                  className="
+                    w-9
+                  h-9
+                  rounded-xl
+                  hover:bg-gray-100
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                ✏️
+              </button>
+              )}
+            </div>
 
             <textarea
               rows={3}
               value={bio}
-              disabled={!isEditMode}
+              disabled
               onChange={(e) => {
 
                 setBio(
@@ -868,44 +873,90 @@ export default function StaffProfilePage() {
           {/* SKILLS */}
 
           <div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold">
+                🛠️ Ур чадвар
+              </label>
 
-            <label className="text-sm font-bold">
-              🛠️ Ур чадвар
-            </label>
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("skills")}
+                  className="
+                    w-9
+                  h-9
+                  rounded-xl
+                  hover:bg-gray-100
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                ✏️
+              </button>
+              )}
+            </div>
 
-            <input
-              type="text"
-              value={skills}
-              disabled={!isEditMode}
-              onChange={(e) => {
+            <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 mt-2">
+              <div className="mb-5">
 
-                setSkills(
-                  e.target.value
-                )
+                <h4 className="font-semibold mb-3">
+                  Техникийн ур чадвар
+                </h4>
 
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    skills: "",
-                  })
-                )
+                <div className="flex flex-wrap gap-2">
 
-              }}
-              className={`
-                mt-2
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.skills
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
-            />
+                  {skills.technical.map((skill) => (
+                    <span
+                      key={skill}
+                      className="
+                        px-3
+                        py-2
+                        border
+                        border-gray-200
+                        rounded-lg
+                        text-sm
+                        bg-gray-50
+                      "
+                    >
+                      {skill}
+                    </span>
+                  ))}
+
+                </div>
+
+              </div>
+
+              <div>
+
+                <h4 className="font-semibold mb-3">
+                  Хэлний мэдлэг
+                </h4>
+
+                <div className="flex flex-wrap gap-2">
+
+                  {skills.languages.map((skill) => (
+                    <span
+                      key={skill}
+                      className="
+                        px-3
+                        py-2
+                        border
+                        border-gray-200
+                        rounded-lg
+                        text-sm
+                        bg-gray-50
+                      "
+                    >
+                      {skill}
+                    </span>
+                  ))}
+
+                </div>
+
+              </div>
+
+            </div>
             {
               validationErrors.skills && (
                 <p className="text-red-500 text-xs mt-1">
@@ -919,15 +970,34 @@ export default function StaffProfilePage() {
           {/* EXPERIENCE */}
 
           <div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold">
+                💼 Туршлага
+              </label>
 
-            <label className="text-sm font-bold">
-              💼 Туршлага
-            </label>
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("experience")}
+                  className="
+                    w-9
+                    h-9
+                    rounded-xl
+                    hover:bg-gray-100
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  ✏️
+                </button>
+              )}
+            </div>
 
             <textarea
               rows={4}
               value={experience}
-              disabled={!isEditMode}
+              disabled
               onChange={(e) => {
 
                 setExperience(
@@ -970,15 +1040,34 @@ export default function StaffProfilePage() {
           {/* EDUCATION */}
 
           <div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold">
+                🎓 Боловсрол
+              </label>
 
-            <label className="text-sm font-bold">
-              🎓 Боловсрол
-            </label>
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("education")}
+                  className="
+                    w-9
+                    h-9
+                    rounded-xl
+                    hover:bg-gray-100
+                    flex
+                    items-center
+                    justify-center
+                "
+              >
+                ✏️
+              </button>
+              )}
+            </div>
 
             <textarea
               rows={3}
               value={education}
-              disabled={!isEditMode}
+              disabled
               onChange={(e) => {
 
                 setEducation(
@@ -1274,6 +1363,61 @@ export default function StaffProfilePage() {
         </div>
 
       </form>
+
+      {/* BIO */}
+      <BioModal
+        open={activeModal === "bio"}
+        value={bio}
+        onSave={(value) => {
+          setBio(value)
+          setActiveModal(null)
+        }}
+        onClose={() => setActiveModal(null)}
+      />
+
+      {/* SKILLS */}
+      <SkillsModal
+        open={activeModal === "skills"}
+        value={skills}
+        onSave={(data) => {
+          setSkills(data)
+          setActiveModal(null)
+        }}
+        onClose={() => setActiveModal(null)}
+      />
+
+      {/* EXPERIENCE */}
+      <ExperienceModal
+        open={activeModal === "experience"}
+        value={{
+          company: "",
+          position: "",
+          startDate: "",
+          endDate: "",
+          description: experience,
+        }}
+        onSave={(data) => {
+          setExperience(data.description)
+          setActiveModal(null)
+        }}
+        onClose={() => setActiveModal(null)}
+      />
+
+      {/* EDUCATION */}
+      <EducationModal
+        open={activeModal === "education"}
+        value={{
+          school: education,
+          degree: "",
+          field: "",
+          graduationYear: "",
+        }}
+        onSave={(data) => {
+          setEducation(data.school)
+          setActiveModal(null)
+        }}
+        onClose={() => setActiveModal(null)}
+      />
 
     </div>
 
