@@ -6,44 +6,39 @@ import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
 import EducationModal from "@/components/profile/modals/EducationModal"
 
+type Experience = {
+  company: string
+  position: string
+  startDate: string
+  endDate: string
+  description: string
+}
+
+// 1. Боловсролын төрлийг тодорхойлно (isCurrent талбарыг багтаасан)
+type Education = {
+  school: string
+  degree: string
+  field: string
+  graduationYear: string
+  isCurrent?: boolean 
+}
+
 export default function StaffProfilePage() {
-
-  const [loading, setLoading] =
-    useState(true)
-
-  const [saving, setSaving] =
-    useState(false)
-
-  const [error, setError] =
-    useState<string | null>(null)
-
-  const [message, setMessage] =
-    useState<string | null>(null)
-
-  const [isEditMode, setIsEditMode] =
-    useState(false)
-
-  const [validationErrors, setValidationErrors] =
-    useState<Record<string, string>>({})
-
-  const [activeModal, setActiveModal] =
-    useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [activeModal, setActiveModal] = useState<string | null>(null)
 
   // ========================================
   // FORM STATE
   // ========================================
-
-  const [fullName, setFullName] =
-    useState("")
-
-  const [email, setEmail] =
-    useState("")
-
-  const [phone, setPhone] =
-    useState("")
-
-  const [bio, setBio] =
-    useState("")
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [bio, setBio] = useState("")
 
   const [skills, setSkills] = useState<{
     technical: string[]
@@ -53,254 +48,104 @@ export default function StaffProfilePage() {
     languages: [],
   })
 
-  const [experience, setExperience] =
-    useState("")
-
-  const [education, setEducation] =
-    useState("")
+  const [experience, setExperience] = useState<Experience[]>([])
+  const [education, setEducation] = useState<Education[]>([])
   
-  const [availability, setAvailability] =
-    useState({
-      monday: { enabled: false, from: "", to: "" },
-      tuesday: { enabled: false, from: "", to: "" },
-      wednesday: { enabled: false, from: "", to: "" },
-      thursday: { enabled: false, from: "", to: "" },
-      friday: { enabled: false, from: "", to: "" },
-      saturday: { enabled: false, from: "", to: "" },
-      sunday: { enabled: false, from: "", to: "" },
-    })
-  const [isSkillsOpen, setIsSkillsOpen] =
-    useState(false)
-
+  // Өдрүүдийн түлхүүр (key) нэрс бүгд жижиг үсгээр байх ёстой
+  const [availability, setAvailability] = useState({
+    monday: { enabled: false, from: "", to: "" },
+    tuesday: { enabled: false, from: "", to: "" },
+    wednesday: { enabled: false, from: "", to: "" },
+    thursday: { enabled: false, from: "", to: "" },
+    friday: { enabled: false, from: "", to: "" },
+    saturday: { enabled: false, from: "", to: "" },
+    sunday: { enabled: false, from: "", to: "" },
+  })
 
   // ========================================
   // FETCH PROFILE
   // ========================================
-
   async function fetchProfile() {
-
     try {
-
       setLoading(true)
+      const response = await fetch("/api/staff/profile")
+      const result = await response.json()
 
-      const response =
-        await fetch(
-          "/api/staff/profile"
-        )
-
-      const result =
-        await response.json()
-
-      if (!response.ok) {
-
-        throw new Error(
-          result.error
-        )
-
-      }
+      if (!response.ok) throw new Error(result.error)
 
       if (result.profile) {
-
-        setFullName(
-          result.profile.full_name || ""
-        )
-
-        setEmail(
-          result.profile.email || ""
-        )
-
-        setPhone(
-          result.profile.phone || ""
-        )
-
-        setBio(
-          result.profile.bio || ""
-        )
-
-        setSkills(
-          result.profile.skills || {
-            technical: [],
-            languages: [],
-          }
-        )
-
-        console.log("fetched skills:", result.profile.skills)
-
-        setExperience(
-          result.profile.experience || ""
-        )
-
-        setEducation(
-          result.profile.education || ""
-        )
-
-        setAvailability(
-          result.profile.availability || {
-            monday: { enabled: false, from: "", to: "" },
-            tuesday: { enabled: false, from: "", to: "" },
-            wednesday: { enabled: false, from: "", to: "" },
-            thursday: { enabled: false, from: "", to: "" },
-            friday: { enabled: false, from: "", to: "" },
-            saturday: { enabled: false, from: "", to: "" },
-            sunday: { enabled: false, from: "", to: "" },
-          }
-        )
-
+        setFullName(result.profile.full_name || "")
+        setEmail(result.profile.email || "")
+        setPhone(result.profile.phone || "")
+        setBio(result.profile.bio || "")
+        setSkills(result.profile.skills || { technical: [], languages: [] })
+        setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
+        setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
+        
+        setAvailability(result.profile.availability || {
+          monday: { enabled: false, from: "", to: "" },
+          tuesday: { enabled: false, from: "", to: "" },
+          wednesday: { enabled: false, from: "", to: "" },
+          thursday: { enabled: false, from: "", to: "" },
+          friday: { enabled: false, from: "", to: "" },
+          saturday: { enabled: false, from: "", to: "" },
+          sunday: { enabled: false, from: "", to: "" },
+        })
       }
-
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (err: any) {
-
-      setError(
-        err.message
-      )
-
-    }
-    finally {
-
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
       setLoading(false)
-
     }
-
   }
 
   function validateForm() {
-
     const errors: Record<string, string> = {}
 
-    if (!fullName.trim()) {
-      errors.fullName =
-        "Бүтэн нэрээ оруулна уу"
-    }
-
+    if (!fullName.trim()) errors.fullName = "Бүтэн нэрээ оруулна уу"
     if (!email.trim()) {
-
-      errors.email =
-        "Имэйлээ оруулна уу"
-
-    } else if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        email
-      )
-    ) {
-
-      errors.email =
-        "Имэйл хаяг буруу байна"
-
+      errors.email = "Имэйлээ оруулна уу"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Имэйл хаяг буруу байна"
     }
-
-    if (!phone.trim()) {
-      errors.phone =
-        "Утасны дугаараа оруулна уу"
+    if (!phone.trim()) errors.phone = "Утасны дугаараа оруулна уу"
+    if (!bio.trim()) errors.bio = "Bio бөглөнө үү"
+    if (skills.technical.length === 0 && skills.languages.length === 0) {
+      errors.skills = "Ур чадвараа оруулна уу"
     }
-
-    if (!bio.trim()) {
-      errors.bio =
-        "Bio бөглөнө үү"
+    if (experience.length === 0) {
+      errors.experience = "Ажлын туршлагаа оруулна уу"
     }
+    if (education.length === 0) errors.education = "Боловсролын мэдээллээ оруулна уу"
 
-    if (
-      skills.technical.length === 0 &&
-      skills.languages.length === 0
-    ) {
-      errors.skills =
-        "Ур чадвараа оруулна уу"
-    }
+    const enabledDays = Object.values(availability).filter((day) => day.enabled)
+    if (enabledDays.length === 0) errors.availability = "Дор хаяж нэг ажиллах өдөр сонгоно уу"
 
-    if (!experience.trim()) {
-      errors.experience =
-        "Туршлагаа оруулна уу"
-    }
-
-    if (!education.trim()) {
-      errors.education =
-        "Боловсролоо оруулна уу"
-    }
-
-    const enabledDays =
-      Object.values(
-        availability
-      ).filter(
-        (day) => day.enabled
-      )
-
-    if (
-      enabledDays.length === 0
-    ) {
-
-      errors.availability =
-        "Дор хаяж нэг ажиллах өдөр сонгоно уу"
-
-    }
-
-    enabledDays.forEach(
-      (day) => {
-
-        if (
-          !day.from ||
-          !day.to
-        ) {
-
-          errors.availability =
-            "Ажиллах цагийг бүрэн оруулна уу"
-
-        }
-
-        if (
-          day.from &&
-          day.to &&
-          day.from >= day.to
-        ) {
-
-          errors.availability =
-            "Эхлэх цаг дуусах цагаас бага байх ёстой"
-
-        }
-
+    enabledDays.forEach((day) => {
+      if (!day.from || !day.to) errors.availability = "Ажиллах цагийг бүрэн оруулна уу"
+      if (day.from && day.to && day.from >= day.to) {
+        errors.availability = "Эхлэх цаг дуусах цагаас бага байх ёстой"
       }
-    )
+    })
 
-    setValidationErrors(
-      errors
-    )
-
-    return (
-      Object.keys(errors)
-        .length === 0
-    )
-
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
-  // ========================================
-  // FIRST LOAD
-  // ========================================
-
   useEffect(() => {
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProfile()
-
   }, [])
 
   // ========================================
   // SAVE PROFILE
   // ========================================
-
-  async function handleSave(
-    e: React.FormEvent
-  ) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
     if (!validateForm()) {
-      setError(
-        "Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу."
-      )
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
+      setError("Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу.")
+      window.scrollTo({ top: 0, behavior: "smooth" })
       return
     }
 
@@ -309,819 +154,273 @@ export default function StaffProfilePage() {
       setError(null)
       setMessage(null)
 
-      const response =
-        await fetch(
-          "/api/staff/profile",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              fullName,
-              email,
-              phone,
-              bio,
-              skills,
-              experience,
-              education,
-              availability,
-            }),
-          }
-        )
-      const result =
-        await response.json()
-      if (!response.ok) {
+      const response = await fetch("/api/staff/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone,
+          bio,
+          skills,
+          experience,
+          education, 
+          availability,
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error)
 
-        throw new Error(
-          result.error
-        )
-      }
-      // ========================================
-      // RELOAD PROFILE AFTER SAVE
-      // ========================================
       await fetchProfile()
       setIsEditMode(false)
-      setMessage(
-        "Профайл амжилттай хадгалагдлаа 🎉"
-      )
-      setTimeout(() => {
-        setMessage(null)
-      }, 4000)
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (err: any) {
-      setError(
-        err.message
-      )
-    }
-    finally {
+      setMessage("Профайл амжилттай хадгалагдлаа 🎉")
+      setTimeout(() => setMessage(null), 4000)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
       setSaving(false)
     }
   }
 
-  // ========================================
-  // LOADING
-  // ========================================
-
   if (loading) {
-
     return (
-
-      <div
-        className="
-          flex
-          items-center
-          justify-center
-          min-h-100
-        "
-      >
-
-        <div
-          className="
-            h-10
-            w-10
-            border-b-2
-            border-indigo-600
-            rounded-full
-            animate-spin
-          "
-        />
-
+      <div className="flex items-center justify-center min-h-100">
+        <div className="h-10 w-10 border-b-2 border-indigo-600 rounded-full animate-spin" />
       </div>
-
     )
-
   }
 
-  // ========================================
-  // UI
-  // ========================================
-
   return (
-
-    <div
-      className="
-        max-w-5xl
-        mx-auto
-        space-y-8
-        pb-12
-      "
-    >
-
+    <div className="max-w-5xl mx-auto space-y-8 pb-12">
       {/* HEADER */}
-
-      <div
-        className="
-          flex
-          items-start
-          justify-between
-        "
-      >
-
+      <div className="flex items-start justify-between">
         <div>
-
-          <h1
-            className="
-              text-3xl
-              font-black
-              text-gray-900
-            "
-          >
-            Миний CV / Профайл
-          </h1>
-
-          <p
-            className="
-              text-sm
-              text-gray-400
-              mt-1
-            "
-          >
-            Ажил олгогчдод харагдах таны мэдээлэл
-          </p>
-
+          <h1 className="text-3xl font-black text-gray-900">Миний CV / Профайл</h1>
+          <p className="text-sm text-gray-400 mt-1">Ажил олгогчдод харагдах таны мэдээлэл</p>
         </div>
-
         <button
           type="button"
           onClick={async () => {
-
             if (isEditMode) {
-
-              // Edit -> View
               await fetchProfile()
-
               setValidationErrors({})
               setError(null)
-
               setIsEditMode(false)
-
             } else {
-
-              // View -> Edit
               setIsEditMode(true)
-
             }
-
           }}
-          className="
-            px-5
-            py-2
-            rounded-2xl
-            text-sm
-            font-bold
-            border
-            border-indigo-200
-            text-indigo-600
-            hover:bg-indigo-50
-          "
+          className="px-5 py-2 rounded-2xl text-sm font-bold border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
         >
-          {
-            isEditMode
-              ? "Харах горим"
-              : "Засах"
-          }
+          {isEditMode ? "Харах горим" : "Засах"}
         </button>
-
       </div>
 
-      {/* ALERT */}
-
-      {message && (
-
-        <div
-          className="
-            bg-emerald-50
-            border
-            border-emerald-100
-            text-emerald-700
-            p-4
-            rounded-2xl
-            text-sm
-          "
-        >
-          {message}
-        </div>
-
-      )}
-
-      {error && (
-
-        <div
-          className="
-            bg-red-50
-            border
-            border-red-100
-            text-red-600
-            p-4
-            rounded-2xl
-            text-sm
-          "
-        >
-          ⚠️ {error}
-        </div>
-
-      )}
+      {message && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">{message}</div>}
+      {error && <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">⚠️ {error}</div>}
 
       {/* FORM */}
-
-      <form
-        onSubmit={handleSave}
-        className="
-          grid
-          grid-cols-1
-          lg:grid-cols-3
-          gap-8
-        "
-      >
-
+      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* LEFT */}
-
-        <div
-          className="
-            lg:col-span-1
-            bg-white
-            p-6
-            rounded-3xl
-            border
-            border-gray-100
-            shadow-sm
-            space-y-6
-          "
-        >
-
-          <div
-            className="
-              flex
-              flex-col
-              items-center
-              text-center
-              pb-4
-              border-b
-              border-gray-50
-            "
-          >
-
-            <div
-              className="
-                w-20
-                h-20
-                bg-indigo-50
-                text-indigo-600
-                rounded-2xl
-                flex
-                items-center
-                justify-center
-                text-3xl
-                font-black
-                mb-3
-              "
-            >
-              {fullName
-                ? fullName.charAt(0)
-                : "👤"}
+        <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+          <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
+            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl font-black mb-3">
+              {fullName ? fullName.charAt(0) : "👤"}
             </div>
-
-            <h3
-              className="
-                font-bold
-                text-gray-800
-                text-lg
-              "
-            >
-              {fullName || "Таны нэр"}
-            </h3>
-
-            <p
-              className="
-                text-xs
-                text-gray-400
-              "
-            >
-              Ажил хайгч ажилтан
-            </p>
-
+            <h3 className="font-bold text-gray-800 text-lg">{fullName || "Таны нэр"}</h3>
+            <p className="text-xs text-gray-400">Ажил хайгч ажилтан</p>
           </div>
 
-          {/* FULL NAME */}
-
           <div>
-
-            <label
-              className="
-                text-xs
-                font-bold
-                text-gray-400
-                uppercase
-                block
-                mb-1
-              "
-            >
-              Бүтэн нэр
-            </label>
-
+            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Бүтэн нэр</label>
             <input
               type="text"
               value={fullName}
               disabled={!isEditMode}
               onChange={(e) => {
-
-                setFullName(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    fullName: "",
-                  })
-                )
-
+                setFullName(e.target.value)
+                setValidationErrors((prev) => ({ ...prev, fullName: "" }))
               }}
-              className={`
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                outline-none
-                ${
-                  validationErrors.fullName
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
+              className={`w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm outline-none ${validationErrors.fullName ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
             />
-            {
-              validationErrors.fullName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.fullName}
-                </p>
-              )
-            }
-
+            {validationErrors.fullName && <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>}
           </div>
 
-          {/* PHONE */}
-
           <div>
-
-            <label
-              className="
-                text-xs
-                font-bold
-                text-gray-400
-                uppercase
-                block
-                mb-1
-              "
-            >
-              Утас
-            </label>
-
+            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Утас</label>
             <input
               type="text"
               value={phone}
               disabled={!isEditMode}
               onChange={(e) => {
-
-                setPhone(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    phone: "",
-                  })
-                )
-
+                setPhone(e.target.value)
+                setValidationErrors((prev) => ({ ...prev, phone: "" }))
               }}
-              className={`
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.phone
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
+              className={`w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.phone ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
             />
-            {
-              validationErrors.phone && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.phone}
-                </p>
-              )
-            }
-
+            {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
           </div>
 
-          {/* EMAIL */}
-
           <div>
-
-            <label
-              className="
-                text-xs
-                font-bold
-                text-gray-400
-                uppercase
-                block
-                mb-1
-              "
-            >
-              Имэйл
-            </label>
-
+            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл</label>
             <input
               type="email"
               value={email}
               disabled={!isEditMode}
               onChange={(e) => {
-
-                setEmail(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    email: "",
-                  })
-                )
-
+                setEmail(e.target.value)
+                setValidationErrors((prev) => ({ ...prev, email: "" }))
               }}
-              className={`
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.email
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
+              className={`w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.email ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
             />
-            {
-              validationErrors.email && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.email}
-                </p>
-              )
-            }
-
+            {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
           </div>
-
         </div>
 
         {/* RIGHT */}
-
-        <div
-          className="
-            lg:col-span-2
-            bg-white
-            p-6
-            rounded-3xl
-            border
-            border-gray-100
-            shadow-sm
-            space-y-6
-          "
-        >
-
+        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           {/* BIO */}
-
           <div>
-
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">
-                🚀 Bio
-              </label>
-
+              <label className="text-sm font-bold">🚀 Bio</label>
               {isEditMode && (
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("bio")}
-                  className="
-                    w-9
-                  h-9
-                  rounded-xl
-                  hover:bg-gray-100
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                ✏️
-              </button>
+                <button type="button" onClick={() => setActiveModal("bio")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
               )}
             </div>
-
             <textarea
               rows={3}
               value={bio}
               disabled
-              onChange={(e) => {
-
-                setBio(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    bio: "",
-                  })
-                )
-
-              }}
-              className={`
-                mt-2
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.bio
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
+              className={`mt-2 w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.bio ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
             />
-            {
-              validationErrors.bio && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.bio}
-                </p>
-              )
-            }
+            {validationErrors.bio && <p className="text-red-500 text-xs mt-1">{validationErrors.bio}</p>}
           </div>
 
           {/* SKILLS */}
-
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">
-                🛠️ Ур чадвар
-              </label>
-
+              <label className="text-sm font-bold">🛠️ Ур чадвар</label>
               {isEditMode && (
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("skills")}
-                  className="
-                    w-9
-                  h-9
-                  rounded-xl
-                  hover:bg-gray-100
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                ✏️
-              </button>
+                <button type="button" onClick={() => setActiveModal("skills")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
               )}
             </div>
-
             <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 mt-2">
               <div className="mb-5">
-
-                <h4 className="font-semibold mb-3">
-                  Техникийн ур чадвар
-                </h4>
-
+                <h4 className="font-semibold mb-3">Техникийн ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
-
                   {skills.technical.map((skill) => (
-                    <span
-                      key={skill}
-                      className="
-                        px-3
-                        py-2
-                        border
-                        border-gray-200
-                        rounded-lg
-                        text-sm
-                        bg-gray-50
-                      "
-                    >
-                      {skill}
-                    </span>
+                    <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">{skill}</span>
                   ))}
-
                 </div>
-
               </div>
-
               <div>
-
-                <h4 className="font-semibold mb-3">
-                  Хэлний мэдлэг
-                </h4>
-
+                <h4 className="font-semibold mb-3">Хэлний мэдлэг</h4>
                 <div className="flex flex-wrap gap-2">
-
                   {skills.languages.map((skill) => (
-                    <span
-                      key={skill}
-                      className="
-                        px-3
-                        py-2
-                        border
-                        border-gray-200
-                        rounded-lg
-                        text-sm
-                        bg-gray-50
-                      "
-                    >
-                      {skill}
-                    </span>
+                    <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50">{skill}</span>
                   ))}
-
                 </div>
-
               </div>
-
             </div>
-            {
-              validationErrors.skills && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.skills}
-                </p>
-              )
-            }
-
+            {validationErrors.skills && <p className="text-red-500 text-xs mt-1">{validationErrors.skills}</p>}
           </div>
 
           {/* EXPERIENCE */}
-
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">
-                💼 Туршлага
-              </label>
-
+              <label className="text-sm font-bold">💼 Ажлын туршлага</label>
               {isEditMode && (
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("experience")}
-                  className="
-                    w-9
-                    h-9
-                    rounded-xl
-                    hover:bg-gray-100
-                    flex
-                    items-center
-                    justify-center
-                  "
+                <button 
+                  type="button" 
+                  onClick={() => setActiveModal("experience")} 
+                  className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"
                 >
                   ✏️
                 </button>
               )}
             </div>
 
-            <textarea
-              rows={4}
-              value={experience}
-              disabled
-              onChange={(e) => {
-
-                setExperience(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    experience: "",
-                  })
-                )
-
-              }}
-              className={`
-                mt-2
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.experience
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
-            />
-            {
-              validationErrors.experience && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.experience}
-                </p>
-              )
-            }
-
+            {experience.length > 0 ? (
+              <div className="space-y-3 mt-2">
+                {experience.map((item, idx) => (
+                  <div key={idx} className={`border rounded-2xl p-5 bg-gray-50/50 relative border-gray-200`}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-base font-bold text-gray-900">{item.position}</h4>
+                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">{item.company}</p>
+                      </div>
+                      <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2.5 py-1 rounded-lg shrink-0">
+                        {item.startDate} — {item.endDate || "Одоог хүртэл"}
+                      </span>
+                    </div>
+                    {item.description && (
+                      <p className="text-sm text-gray-600 mt-3 bg-white p-3 rounded-xl border border-gray-100 whitespace-pre-wrap">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`mt-2 border border-dashed rounded-2xl p-6 text-center text-gray-400 text-sm bg-gray-50 ${validationErrors.experience ? "border-red-500 bg-red-50" : "border-gray-200"}`}>
+                Ажлын туршлага оруулаагүй байна. {isEditMode && "Туршлага удирдах товч дээр дарж оруулна уу."}
+              </div>
+            )}
+            {validationErrors.experience && <p className="text-red-500 text-xs mt-1">{validationErrors.experience}</p>}
           </div>
 
           {/* EDUCATION */}
-
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">
-                🎓 Боловсрол
-              </label>
-
+              <label className="text-sm font-bold">🎓 Боловсрол</label>
               {isEditMode && (
-                <button
-                  type="button"
-                  onClick={() => setActiveModal("education")}
-                  className="
-                    w-9
-                    h-9
-                    rounded-xl
-                    hover:bg-gray-100
-                    flex
-                    items-center
-                    justify-center
-                "
-              >
-                ✏️
-              </button>
+                <button 
+                  type="button" 
+                  onClick={() => setActiveModal("education")} 
+                  className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"
+                >
+                  ✏️
+                </button>
               )}
             </div>
 
-            <textarea
-              rows={3}
-              value={education}
-              disabled
-              onChange={(e) => {
-
-                setEducation(
-                  e.target.value
-                )
-
-                setValidationErrors(
-                  (prev) => ({
-                    ...prev,
-                    education: "",
-                  })
-                )
-
-              }}
-              className={`
-                mt-2
-                w-full
-                px-4
-                py-3
-                bg-gray-50
-                rounded-2xl
-                text-sm
-                ${
-                  validationErrors.education
-                    ? "border border-red-500 bg-red-50"
-                    : "border border-gray-200"
-                }
-              `}
-            />
-            {
-              validationErrors.education && (
-                <p className="text-red-500 text-xs mt-1">
-                  {validationErrors.education}
-                </p>
-              )
-            }
-
+            {education.length > 0 ? (
+              <div className="space-y-3 mt-2">
+                {education.map((item, idx) => (
+                  <div key={idx} className="border rounded-2xl p-5 bg-gray-50/50 relative border-gray-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-base font-bold text-gray-900">{item.school}</h4>
+                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">
+                          {item.degree} {item.field ? `— ${item.field}` : ""}
+                        </p>
+                      </div>
+                      {/* Одоо суралцаж буй эсэх статус баж */}
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 bg-gray-100'}`}>
+                        {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`mt-2 border border-dashed rounded-2xl p-6 text-center text-gray-400 text-sm bg-gray-50 ${validationErrors.education ? "border-red-500 bg-red-50" : "border-gray-200"}`}>
+                Боловсролын мэдээлэл оруулаагүй байна. {isEditMode && "Боловсрол удирдах товч дээр дарж оруулна уу."}
+              </div>
+            )}
+            {validationErrors.education && <p className="text-red-500 text-xs mt-1">{validationErrors.education}</p>}
           </div>
 
+          {/* AVAILABILITY (Засагдсан: Түлхүүр үгнүүд бүгд жижиг үсгээр болсон) */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <label className="text-sm font-bold">
-                  🕒 Ажиллах боломжтой цаг
-                </label>
-
-                <p className="text-xs text-gray-400 mt-1">
-                  Аль өдөр хэдээс хэдэн цагийн хооронд ажиллах боломжтой вэ?
-                </p>
+                <label className="text-sm font-bold">🕒 Ажиллах боломжтой цаг</label>
+                <p className="text-xs text-gray-400 mt-1">Аль өдөр хэдээс хэдэн цагийн хооронд ажиллах боломжтой вэ?</p>
               </div>
             </div>
 
             <div className="space-y-3">
-
               {[
                 ["monday", "Даваа"],
                 ["tuesday", "Мягмар"],
@@ -1131,41 +430,13 @@ export default function StaffProfilePage() {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-
-                const day =
-                  availability[
-                    key as keyof typeof availability
-                  ]
-
+                const day = availability[key as keyof typeof availability]
                 return (
-
-                  <div
-                    key={key}
-                    className={`
-                      border
-                      rounded-2xl
-                      p-4
-                      transition
-                      ${
-                        day.enabled
-                          ? "border-indigo-200 bg-indigo-50/50"
-                          : "border-gray-100 bg-gray-50"
-                      }
-                    `}
-                  >
-
+                  <div key={key} className={`border rounded-2xl p-4 transition ${day.enabled ? "border-indigo-200 bg-indigo-50/50" : "border-gray-100 bg-gray-50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
-
-                      {/* LEFT */}
-
                       <div className="flex items-center justify-between md:w-48">
-
-                        <span className="font-semibold text-gray-800">
-                          {label}
-                        </span>
-
+                        <span className="font-semibold text-gray-800">{label}</span>
                         <label className="relative inline-flex items-center cursor-pointer">
-
                           <input
                             type="checkbox"
                             className="sr-only peer"
@@ -1174,77 +445,31 @@ export default function StaffProfilePage() {
                             onChange={(e) => {
                               setAvailability({
                                 ...availability,
-                                [key]: {
-                                  ...day,
-                                  enabled:
-                                    e.target.checked,
-                                },
+                                [key]: { ...day, enabled: e.target.checked },
                               })
-                              setValidationErrors(
-                                (prev) => ({
-                                  ...prev,
-                                  availability: "",
-                                })
-                              )
+                              setValidationErrors((prev) => ({ ...prev, availability: "" }))
                             }}
                           />
-
-                          <div
-                            className="
-                              w-11
-                              h-6
-                              bg-gray-300
-                              rounded-full
-                              peer
-                              peer-checked:bg-indigo-600
-                              transition
-                            "
-                          />
-
+                          <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition" />
                         </label>
-
                       </div>
 
-                      {/* RIGHT */}
-
                       {day.enabled ? (
-
                         <div className="flex items-center gap-3 flex-wrap">
-
                           <input
                             type="time"
                             disabled={!isEditMode}
                             value={day.from}
-                            onChange={(e) =>{
+                            onChange={(e) => {
                               setAvailability({
                                 ...availability,
-                                [key]: {
-                                  ...day,
-                                  from:
-                                    e.target.value,
-                                },
+                                [key]: { ...day, from: e.target.value },
                               })
-                              setValidationErrors(
-                                (prev) => ({
-                                  ...prev,
-                                  availability: "",
-                                })
-                              )
+                              setValidationErrors((prev) => ({ ...prev, availability: "" }))
                             }}
-                            className="
-                              px-4
-                              py-2
-                              bg-white
-                              border
-                              border-gray-200
-                              rounded-xl
-                            "
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl"
                           />
-
-                          <span className="text-gray-400">
-                            →
-                          </span>
-
+                          <span className="text-gray-400">→</span>
                           <input
                             type="time"
                             disabled={!isEditMode}
@@ -1252,119 +477,35 @@ export default function StaffProfilePage() {
                             onChange={(e) =>
                               setAvailability({
                                 ...availability,
-                                [key]: {
-                                  ...day,
-                                  to:
-                                    e.target.value,
-                                },
+                                [key]: { ...day, to: e.target.value },
                               })
                             }
-                            className="
-                              px-4
-                              py-2
-                              bg-white
-                              border
-                              border-gray-200
-                              rounded-xl
-                            "
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl"
                           />
-
                         </div>
-
                       ) : (
-
-                        <span
-                          className="
-                            text-xs
-                            font-medium
-                            px-3
-                            py-1
-                            rounded-full
-                            bg-gray-200
-                            text-gray-500
-                          "
-                        >
-                          Амарна
-                        </span>
-
+                        <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-200 text-gray-500">Амарна</span>
                       )}
-
                     </div>
-
                   </div>
-
                 )
-
               })}
-
             </div>
           </div>
-          {
-            validationErrors.availability && (
-
-              <div
-                className="
-                  mt-3
-                  p-3
-                  rounded-xl
-                  bg-red-50
-                  border
-                  border-red-200
-                  text-red-600
-                  text-sm
-                "
-              >
-                {validationErrors.availability}
-              </div>
-
-            )
-          }
+          {validationErrors.availability && <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{validationErrors.availability}</div>}
 
           {/* SAVE BUTTON */}
           {isEditMode && (
-
-
-          <div
-            className="
-              flex
-              justify-end
-              pt-4
-              border-t
-              border-gray-100
-            "
-          >
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="
-                px-8
-                py-3
-                bg-indigo-600
-                hover:bg-indigo-700
-                disabled:bg-indigo-400
-                text-white
-                rounded-2xl
-                text-sm
-                font-bold
-                transition
-              "
-            >
-              {
-                saving
-                  ? "Хадгалж байна..."
-                  : "Профайл хадгалах ✨"
-              }
-            </button>
-
-          </div>
+            <div className="flex justify-end pt-4 border-t border-gray-100">
+              <button type="submit" disabled={saving} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl text-sm font-bold transition">
+                {saving ? "Хадгалж байна..." : "Профайл хадгалах ✨"}
+              </button>
+            </div>
           )}
-
         </div>
-
       </form>
 
-      {/* BIO */}
+      {/* MODALS */}
       <BioModal
         open={activeModal === "bio"}
         value={bio}
@@ -1375,7 +516,6 @@ export default function StaffProfilePage() {
         onClose={() => setActiveModal(null)}
       />
 
-      {/* SKILLS */}
       <SkillsModal
         open={activeModal === "skills"}
         value={skills}
@@ -1386,41 +526,27 @@ export default function StaffProfilePage() {
         onClose={() => setActiveModal(null)}
       />
 
-      {/* EXPERIENCE */}
       <ExperienceModal
         open={activeModal === "experience"}
-        value={{
-          company: "",
-          position: "",
-          startDate: "",
-          endDate: "",
-          description: experience,
-        }}
-        onSave={(data) => {
-          setExperience(data.description)
+        value={experience}
+        onSave={(updatedList) => {
+          setExperience(updatedList)
+          setValidationErrors((prev) => ({ ...prev, experience: "" }))
           setActiveModal(null)
         }}
         onClose={() => setActiveModal(null)}
       />
 
-      {/* EDUCATION */}
       <EducationModal
         open={activeModal === "education"}
-        value={{
-          school: education,
-          degree: "",
-          field: "",
-          graduationYear: "",
-        }}
-        onSave={(data) => {
-          setEducation(data.school)
+        value={education} 
+        onSave={(updatedList) => {
+          setEducation(updatedList) 
+          setValidationErrors((prev) => ({ ...prev, education: "" }))
           setActiveModal(null)
         }}
         onClose={() => setActiveModal(null)}
       />
-
     </div>
-
   )
-
 }
