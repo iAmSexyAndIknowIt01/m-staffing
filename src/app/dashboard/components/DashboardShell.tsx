@@ -37,7 +37,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       {/* СИДЕМЕНЮ (SIDEMENU) */}
       <aside 
           className={`hidden lg:flex bg-white border-r border-gray-100 flex-col justify-between sticky top-0 h-screen p-4 transition-all duration-300 z-50 ${
-            isCollapsed ? "w-[88px]" : "w-64"
+            isCollapsed ? "w-22" : "w-64"
           }`}
       >
         <div className="space-y-8">
@@ -127,7 +127,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         {/* Доод хэсэг: Хэрэглэгч болон Гарах товч */}
         <div className="pt-4 border-t border-gray-100 space-y-4">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 min-w-[40px] rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold">
+            <div className="w-10 h-10 min-w-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold">
               {userRole === "staff" ? "👤" : "🏢"}
             </div>
             {!isCollapsed && (
