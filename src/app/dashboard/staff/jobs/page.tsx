@@ -54,16 +54,15 @@ export default function StaffJobsPage() {
     fetchJobs()
   }, [])
 
-  // Анкет илгээх функц
+  // Анкет илгээх функц (Цэвэрлэж шинэчилсэн)
   const handleApplyJob = async (jobId: string) => {
     setSubmitting(true)
     try {
+      // Dummy датануудыг устгаж, зөвхөн шаардлагатай ID-г илгээнэ. 
+      // Сервер өөрөө сессийн cookie-ээс хэрэглэгчийн мэдээллийг олж авна.
       const applicationData = {
         job_id: jobId,
-        applicant_name: "Бат-Эрдэнэ", 
-        applicant_email: "bat@example.com",
-        applicant_phone: "99112233",
-        resume_url: "" 
+        resume_url: "" // СV файлын URL холбох шаардлагатай бол энд дамжуулна
       }
 
       const response = await fetch("/api/jobRequest", {
