@@ -12,16 +12,20 @@ interface JobItem {
   created_at: string
 }
 
-const ITEMS_PER_PAGE = 5 // Нэг хуудсанд харагдах зарын тоо
-
 export default function PostJobPage() {
   const [jobs, setJobs] = useState<JobItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  // Хайлт болон Хуудаслалтын state-үүд
+  // ОЛОН НӨХЦӨЛТ ШҮҮЛТҮҮРИЙН STATE-ҮҮД
   const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all") // all, active, draft, closed
+  const [salaryFilter, setSalaryFilter] = useState("all") // all, specified, negotiate
+  const [dateSort, setDateSort] = useState("newest") // newest, oldest
+  
+  // ХУУДАСЛАЛТЫН ДИНАМИК STATE-ҮҮД
   const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10) // Анхны утга 10
 
   // API-аас дата татах хэсэг
   useEffect(() => {
@@ -46,28 +50,49 @@ export default function PostJobPage() {
     fetchJobs()
   }, [])
 
-  // Хайлтын утга өөрчлөгдөх бүрт хуудсыг 1-ээс эхлүүлнэ
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
+  // Бүх шүүлтүүрийг цэвэрлэх функц
+  const handleResetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("all")
+    setSalaryFilter("all")
+    setDateSort("newest")
     setCurrentPage(1)
-  };
+  }
 
-  // 1. ШҮҮЛТҮҮР: Хайлтын үгэнд тохирох ажлуудыг шүүх
-  const filteredJobs = jobs.filter((job) => {
-    const query = searchQuery.toLowerCase()
-    return (
-      job.title?.toLowerCase().includes(query) ||
-      job.category?.toLowerCase().includes(query)
-    )
-  })
+  // ОЛОН НӨХЦӨЛТ ШҮҮЛТҮҮР БОЛОН ЭРЭМБЭЛЭЛТИЙН ЛОГИК
+  const filteredAndSortedJobs = jobs
+    .filter((job) => {
+      const query = searchQuery.toLowerCase()
+      const matchesText =
+        job.title?.toLowerCase().includes(query) ||
+        job.category?.toLowerCase().includes(query)
 
-  // 2. ХУУДАСЛАЛТ: Шүүгдсэн дата дээр суурилан хуудасны өгөгдлийг салгах
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE)
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE
-  const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem)
+      const matchesStatus = statusFilter === "all" || job.status === statusFilter
 
-  // 3. УХААЛАГ ХУУДАСНЫ ДУГААРЛАЛТ СҮҮДЭРЛЭХ ЛОГИК
+      let matchesSalary = true
+      if (salaryFilter === "specified") {
+        matchesSalary = !!job.salary && !job.salary.toLowerCase().includes("тохиролц")
+      } else if (salaryFilter === "negotiate") {
+        matchesSalary = !job.salary || job.salary.toLowerCase().includes("тохиролц")
+      }
+
+      return matchesText && matchesStatus && matchesSalary
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime()
+      const dateB = new Date(b.created_at).getTime()
+      return dateSort === "newest" ? dateB - dateA : dateA - dateB
+    })
+
+  const isFilterActive = searchQuery !== "" || statusFilter !== "all" || salaryFilter !== "all" || dateSort !== "newest"
+
+  // ХУУДАСЛАЛТ: Динамик хуудасны өгөгдлийг салгах
+  const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentJobs = filteredAndSortedJobs.slice(indexOfFirstItem, indexOfLastItem)
+
+  // УХААЛАГ ХУУДАСНЫ ДУГААРЛАЛТ СҮҮДЭРЛЭХ ЛОГИК
   const getPaginationRange = () => {
     const current = currentPage
     const total = totalPages
@@ -77,11 +102,8 @@ export default function PostJobPage() {
     }
 
     const range: (number | string)[] = []
-    
-    // Эхний хуудсыг үргэлж харуулна
     range.push(1)
 
-    // Гол хэсгийн логик
     if (current > 3) {
       range.push("...")
     }
@@ -97,16 +119,14 @@ export default function PostJobPage() {
       range.push("...")
     }
 
-    // Сүүлийн хуудсыг үргэлж харуулна
     range.push(total)
-
     return range
   }
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-in space-y-8">
       
-      {/* ТОЛГОЙ ХΕΣЭГ & БАРУУН ДЭЭД БУЛАНД БАЙРЛАХ ТОВЧ */}
+      {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага 💼</h1>
@@ -123,26 +143,74 @@ export default function PostJobPage() {
         </Link>
       </div>
 
-      {/* ХАЙЛТЫН ХЭСЭГ */}
+      {/* ОЛОН НӨХЦӨЛТ ШҮҮЛТҮҮРИЙН ПАНЕЛЬ */}
       {!loading && jobs.length > 0 && (
-        <div className="relative max-w-md animate-fade-in">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-            🔍
-          </span>
-          <input
-            type="text"
-            placeholder="Ажлын байрны нэрээр хайх..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full pl-11 pr-5 py-3.5 bg-white border border-gray-100 text-sm font-medium rounded-2xl outline-none focus:border-indigo-400 shadow-sm transition-all"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-gray-400 hover:text-gray-600"
-            >
-              Арилгах
-            </button>
+        <div className="bg-white border border-gray-100 p-5 rounded-4xl shadow-sm space-y-4 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            {/* Текстэн хайлт */}
+            <div className="relative md:col-span-1">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">🔍</span>
+              <input
+                type="text"
+                placeholder="Нэр, чиглэлээр хайх..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-inner"
+              />
+            </div>
+
+            {/* Статус шүүлтүүр */}
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+              >
+                <option value="all">Бүх статус (Төлөв)</option>
+                <option value="active">Идэвхтэй</option>
+                <option value="draft">Ноорог</option>
+                <option value="closed">Хаагдсан</option>
+              </select>
+            </div>
+
+            {/* Цалин шүүлтүүр */}
+            <div>
+              <select
+                value={salaryFilter}
+                onChange={(e) => { setSalaryFilter(e.target.value); setCurrentPage(1); }}
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+              >
+                <option value="all">Бүх цалингийн төрөл</option>
+                <option value="specified">Цалин заасан зарууд</option>
+                <option value="negotiate">Тохиролцох зарууд</option>
+              </select>
+            </div>
+
+            {/* Огнооны эрэмбэ */}
+            <div>
+              <select
+                value={dateSort}
+                onChange={(e) => { setDateSort(e.target.value); setCurrentPage(1); }}
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+              >
+                <option value="newest">Сүүлд нэмэгдсэн (Шинэ нь эхэндээ)</option>
+                <option value="oldest">Анх нэмэгдсэн (Хуучин нь эхэндээ)</option>
+              </select>
+            </div>
+
+          </div>
+
+          {/* Идэвхтэй шүүлтүүр устгах хэсэг */}
+          {isFilterActive && (
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={handleResetFilters}
+                className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition"
+              >
+                🔄 Шүүлтүүрүүдийг цэвэрлэх
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -151,11 +219,11 @@ export default function PostJobPage() {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
           <h2 className="text-lg font-bold text-gray-800">
-            {searchQuery ? "Олдсон үр дүн" : "Нийт зарласан ажлууд"} ({loading ? "..." : filteredJobs.length})
+            {isFilterActive ? "Шүүгдсэн үр дүн" : "Нийт зарласан ажлууд"} ({loading ? "..." : filteredAndSortedJobs.length})
           </h2>
-          {searchQuery && (
+          {isFilterActive && (
             <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">
-              Хайлт идэвхтэй байна
+              Шүүлтүүр идэвхтэй байна
             </span>
           )}
         </div>
@@ -171,11 +239,11 @@ export default function PostJobPage() {
             ))}
           </div>
         ) : error ? (
-          /* 2. АЛДAA ГАРАХ ҮЕИЙН ТӨЛӨВ */
+          /* 2. АЛДАА ГАРАХ ҮЕИЙН ТӨЛӨВ */
           <div className="text-center p-8 bg-red-50 text-red-600 rounded-2xl font-semibold">
             ❌ Алдаа гарлаа: {error}
           </div>
-        ) : filteredJobs.length > 0 ? (
+        ) : filteredAndSortedJobs.length > 0 ? (
           /* 3. БОДИТ ДАТА ХАРАГДАХ ХЭСЭГ */
           <>
             <div className="bg-white border border-gray-100 rounded-[2.5rem] shadow-sm overflow-hidden divide-y divide-gray-50">
@@ -235,51 +303,72 @@ export default function PostJobPage() {
               ))}
             </div>
 
-            {/* ХУУДАСЛАЛТЫН ТОВЧНУУД (Шинэ ухаалаг загвартай хэсэг) */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 pt-6 animate-fade-in">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition select-none"
+            {/* ХУУДАСЛАЛТЫН ХЭСЭГ (ДИНАМИК СҮҮДЭРЛЭЛТ БОЛОН СОНГОЛТТОЙ) */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 animate-fade-in">
+              
+              {/* Хуудасны тоог сонгох хэсэг (10, 20, 50) */}
+              <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                <span>Харуулах хэмжээ:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // Хуудасны хэмжээ өөрчлөгдвөл 1-р хуудас руу шилжинэ
+                  }}
+                  className="px-3 py-1.5 bg-white border border-gray-100 rounded-xl font-bold text-gray-700 shadow-sm outline-none focus:border-indigo-400"
                 >
-                  ← Өмнөх
-                </button>
-                
-                <div className="flex items-center gap-1.5">
-                  {getPaginationRange().map((page, index) => {
-                    if (page === "...") {
-                      return (
-                        <span key={`dots-${index}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm font-bold select-none">
-                          ...
-                        </span>
-                      )
-                    }
-                    return (
-                      <button
-                        key={`page-${page}`}
-                        onClick={() => setCurrentPage(page as number)}
-                        className={`w-9 h-9 text-xs font-bold rounded-xl transition shadow-sm ${
-                          currentPage === page
-                            ? "bg-slate-950 text-white"
-                            : "bg-white border border-gray-100 text-gray-600 hover:border-gray-200"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition select-none"
-                >
-                  Дараах →
-                </button>
+                  <option value={10}>10-аар</option>
+                  <option value={20}>20-иор</option>
+                  <option value={50}>50-иар</option>
+                </select>
               </div>
-            )}
+
+              {/* Хуудасны дугаарууд */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 select-none">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition"
+                  >
+                    ← Өмнөх
+                  </button>
+                  
+                  <div className="flex items-center gap-1.5">
+                    {getPaginationRange().map((page, index) => {
+                      if (page === "...") {
+                        return (
+                          <span key={`dots-${index}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm font-bold">
+                            ...
+                          </span>
+                        )
+                      }
+                      return (
+                        <button
+                          key={`page-${page}`}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`w-9 h-9 text-xs font-bold rounded-xl transition shadow-sm ${
+                            currentPage === page
+                              ? "bg-slate-950 text-white"
+                              : "bg-white border border-gray-100 text-gray-600 hover:border-gray-200"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition"
+                  >
+                    Дараах →
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           /* 4. ХООСОН ҮЕИЙН ТӨЛӨВ */
@@ -287,15 +376,22 @@ export default function PostJobPage() {
             <div className="text-4xl">📭</div>
             <div className="max-w-sm mx-auto space-y-1">
               <h3 className="font-bold text-gray-800 text-lg">
-                {searchQuery ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
+                {isFilterActive ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
               </h3>
               <p className="text-sm text-gray-400 leading-relaxed">
-                {searchQuery 
-                  ? "Та хайлтын үгээ өөрчлөөд эсвэл 'Арилгах' товчийг дарж дахин оролдоно уу."
+                {isFilterActive 
+                  ? "Та хайлтын нөхцөлөө өөрчлөөд эсвэл 'Шүүлтүүрүүдийг цэвэрлэх' товчийг дарж дахин оролдоно уу."
                   : "Та баруун дээд булан дахь товчийг ашиглан анхны ажлын байрны зараа үүсгээрэй."}
               </p>
             </div>
-            {!searchQuery && (
+            {isFilterActive ? (
+              <button
+                onClick={handleResetFilters}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+              >
+                Бүх зарыг буцааж харах 🔄
+              </button>
+            ) : (
               <Link
                 href="/dashboard/company/post-job/add"
                 className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
