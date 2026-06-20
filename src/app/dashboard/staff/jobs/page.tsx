@@ -54,16 +54,15 @@ export default function StaffJobsPage() {
     fetchJobs()
   }, [])
 
-  // Анкет илгээх функц
+  // Анкет илгээх функц (Цэвэрлэж шинэчилсэн)
   const handleApplyJob = async (jobId: string) => {
     setSubmitting(true)
     try {
+      // Dummy датануудыг устгаж, зөвхөн шаардлагатай ID-г илгээнэ. 
+      // Сервер өөрөө сессийн cookie-ээс хэрэглэгчийн мэдээллийг олж авна.
       const applicationData = {
         job_id: jobId,
-        applicant_name: "Бат-Эрдэнэ", 
-        applicant_email: "bat@example.com",
-        applicant_phone: "99112233",
-        resume_url: "" 
+        resume_url: "" // СV файлын URL холбох шаардлагатай бол энд дамжуулна
       }
 
       const response = await fetch("/api/jobRequest", {
@@ -156,7 +155,7 @@ export default function StaffJobsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="h-10 w-10 border-b-2 border-indigo-600 rounded-full animate-spin" />
       </div>
     )
@@ -223,7 +222,7 @@ export default function StaffJobsPage() {
               checked={showApplied}
               onChange={(e) => setShowApplied(e.target.checked)}
             />
-            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             <span className="ms-3 text-sm font-semibold text-gray-600">
               Хүсэлт илгээсэн ажлуудыг хамт харуулах
             </span>
@@ -237,7 +236,7 @@ export default function StaffJobsPage() {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-3xl p-8 shadow-lg">
+      <div className="bg-linear-to-r from-orange-500 to-red-500 text-white rounded-3xl p-8 shadow-lg">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-black">🇯🇵 Японд ажиллах боломж</h2>
@@ -290,7 +289,7 @@ export default function StaffJobsPage() {
                     </div>
                     <p className="mt-4 text-sm text-gray-600 line-clamp-2">{job.description}</p>
                   </div>
-                  <div className="flex flex-col items-end justify-between min-w-[180px]">
+                  <div className="flex flex-col items-end justify-between min-w-45">
                     <div className="text-xs text-gray-400">Нээлттэй ажлын байр</div>
                     <button className="mt-4 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold">
                       Дэлгэрэнгүй →

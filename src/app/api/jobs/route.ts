@@ -71,3 +71,39 @@ export async function POST(request: Request) {
     )
   }
 }
+
+
+// Дээрх таны POST кодтой цуг нэг файл дотор байрлана
+export async function GET() {
+  try {
+    const cookieStore = await cookies()
+    const userId = cookieStore.get("user_id")?.value
+    const userRole = cookieStore.get("user_role")?.value
+
+    // Хамгаалалт: Эрхгүй бол буцаах
+    if (!userId || userRole !== "company") {
+      return NextResponse.json(
+        { error: "Энэ мэдээллийг үзэх эрх танд байхгүй байна." },
+        { status: 403 }
+      )
+    }
+
+    // mt_openjob хүснэгтээс датагаа татах
+    const { data: jobs, error } = await supabase
+      .from("mt_openjob")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true, data: jobs }, { status: 200 })
+
+  } catch (error: any) {
+    console.error("Жагсаалт татахад алдаа гарлаа:", error)
+    return NextResponse.json(
+      { error: error.message || "Серверт алдаа гарлаа." },
+      { status: 500 }
+    )
+  }
+}
