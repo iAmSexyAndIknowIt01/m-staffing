@@ -18,6 +18,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Next.js хуудас хооронд шилжих үед smooth scroll-ийг түр идэвхгүй болгох хэсэг */
+html[data-nextjs-scroll-sandbox] {
+  scroll-behavior: auto !important;
+}
+
 body {
   background: #ffffff;
 
