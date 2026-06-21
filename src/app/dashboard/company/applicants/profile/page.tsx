@@ -19,7 +19,16 @@ type Education = {
   isCurrent?: boolean 
 }
 
-// Next.js-д useSearchParams ашиглах үед Suspense-ээр ороох шаардлагатай байдаг
+const initialAvailability = {
+  monday: { enabled: false, from: "", to: "" },
+  tuesday: { enabled: false, from: "", to: "" },
+  wednesday: { enabled: false, from: "", to: "" },
+  thursday: { enabled: false, from: "", to: "" },
+  friday: { enabled: false, from: "", to: "" },
+  saturday: { enabled: false, from: "", to: "" },
+  sunday: { enabled: false, from: "", to: "" },
+}
+
 export default function ApplicantProfilePage() {
   return (
     <Suspense fallback={
@@ -52,15 +61,7 @@ function ApplicantProfileContent() {
   })
   const [experience, setExperience] = useState<Experience[]>([])
   const [education, setEducation] = useState<Education[]>([])
-  const [availability, setAvailability] = useState({
-    monday: { enabled: false, from: "", to: "" },
-    tuesday: { enabled: false, from: "", to: "" },
-    wednesday: { enabled: false, from: "", to: "" },
-    thursday: { enabled: false, from: "", to: "" },
-    friday: { enabled: false, from: "", to: "" },
-    saturday: { enabled: false, from: "", to: "" },
-    sunday: { enabled: false, from: "", to: "" },
-  })
+  const [availability, setAvailability] = useState(initialAvailability)
 
   // ========================================
   // FETCH APPLICANT PROFILE
@@ -75,7 +76,6 @@ function ApplicantProfileContent() {
 
       try {
         setLoading(true)
-        // Компани харах зориулалттай шинэ API маршрут руу хүсэлт илгээнэ
         const response = await fetch(`/api/company/staffprofile?id=${applicantId}`)
         const result = await response.json()
 
@@ -89,7 +89,12 @@ function ApplicantProfileContent() {
           setSkills(result.profile.skills || { technical: [], languages: [] })
           setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
           setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
-          setAvailability(result.profile.availability || availability)
+          
+          // Дата дутуу ирэхээс сэргийлж нэгтгэх (Deep Merge fallback)
+          setAvailability({
+            ...initialAvailability,
+            ...(result.profile.availability || {})
+          })
         }
       } catch (err: any) {
         setError(err.message)
@@ -175,7 +180,7 @@ function ApplicantProfileContent() {
               <div className="mb-5">
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Техникийн ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.technical.length > 0 ? (
+                  {skills.technical && skills.technical.length > 0 ? (
                     skills.technical.map((skill) => (
                       <span key={skill} className="px-3 py-1.5 border border-gray-200 rounded-xl text-xs bg-white font-semibold text-gray-700">{skill}</span>
                     ))
@@ -185,7 +190,7 @@ function ApplicantProfileContent() {
               <div>
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Хэлний мэдлэг</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.languages.length > 0 ? (
+                  {skills.languages && skills.languages.length > 0 ? (
                     skills.languages.map((skill) => (
                       <span key={skill} className="px-3 py-1.5 border border-gray-200 rounded-xl text-xs bg-white font-semibold text-gray-700">{skill}</span>
                     ))
@@ -254,7 +259,7 @@ function ApplicantProfileContent() {
             )}
           </div>
 
-          {/* AVAILABILITY */}
+          {/* AVAILABILITY (ЗАСВАР ОРСОН ХЭСЭГ) */}
           <div>
             <label className="text-sm font-bold block mb-1">🕒 Ажиллах боломжтой цаг</label>
             <div className="space-y-2.5 mt-2">
@@ -267,15 +272,18 @@ function ApplicantProfileContent() {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-                const day = availability[key as keyof typeof availability]
+                // optional chaining (?.) болон fallback хоосон объект ашиглан undefined болохоос сэргийлэв
+                const currentAvailability = availability || initialAvailability
+                const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
+                
                 return (
-                  <div key={key} className={`border rounded-xl px-4 py-3 flex items-center justify-between text-sm ${day.enabled ? "border-indigo-100 bg-indigo-50/30" : "border-gray-50 bg-gray-50/50"}`}>
+                  <div key={key} className={`border rounded-xl px-4 py-3 flex items-center justify-between text-sm ${day?.enabled ? "border-indigo-100 bg-indigo-50/30" : "border-gray-50 bg-gray-50/50"}`}>
                     <span className="font-semibold text-gray-700">{label}</span>
-                    {day.enabled ? (
+                    {day?.enabled ? (
                       <div className="flex items-center gap-2 font-bold text-indigo-600">
-                        <span>{day.from}</span>
+                        <span>{day?.from}</span>
                         <span className="text-gray-400">→</span>
-                        <span>{day.to}</span>
+                        <span>{day?.to}</span>
                       </div>
                     ) : (
                       <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-400">Амарна</span>
