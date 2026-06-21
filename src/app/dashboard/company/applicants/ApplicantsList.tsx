@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState, useMemo } from "react"
 
 interface Applicant {
@@ -173,7 +174,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                         <div className="text-xs text-gray-400 mt-0.5">{app.email}</div>
                       </td>
                       
-                      {/* ОГНООНЫ АЛДААГ suppressHydrationWarning-ЭЭР ЗАССАН ХЭСЭГ 🛠️ */}
+                      {/* ОГНООНЫ АЛДААГ suppressHydrationWarning-ЭЭР ЗАССАН ХЭСЭГ */}
                       <td className="px-6 py-5 text-gray-500 font-medium" suppressHydrationWarning>
                         {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </td>
@@ -197,9 +198,13 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                       </td>
 
                       <td className="px-8 py-5 text-right space-x-2 whitespace-nowrap">
-                        <button className="text-xs font-bold bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-xl transition">
-                          CV үзэх
-                        </button>
+                        {/* ШИНЭЧЛЭГДСЭН ХЭСЭГ (Дэлгэрэнгүй товч) ✨ */}
+                        <Link 
+                            href={`/dashboard/company/applicants/profile?id=${app.id}`}
+                            className="text-xs font-bold bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-xl transition inline-block"
+                          >
+                            Дэлгэрэнгүй
+                          </Link>
                         
                         {["new", "pending", ""].includes(currentStatus) && (
                           <>
