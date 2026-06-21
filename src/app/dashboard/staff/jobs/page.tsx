@@ -7,12 +7,13 @@ interface Job {
   title: string
   category: string
   job_type: string
+  salary_type: string
   location: string
   salary: string
   description: string
   requirements: string
   created_at: string
-  is_applied: boolean // API-аас ирэх шинэ талбар
+  is_applied: boolean
 }
 
 export default function StaffJobsPage() {
@@ -24,7 +25,7 @@ export default function StaffJobsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedJobType, setSelectedJobType] = useState("")
-  const [showApplied, setShowApplied] = useState(true) // Хүсэлт илгээсэн ажлыг харуулах эсэх state
+  const [filterApplied, setFilterApplied] = useState("all") // "all" | "applied" | "not_applied"
   
   // Модалд сонгогдсон ажлын байр
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
@@ -32,8 +33,8 @@ export default function StaffJobsPage() {
 
   // Анкет илгээх үед ашиглах state-үүд
   const [submitting, setSubmitting] = useState(false)
-  const [appliedJobIds, setAppliedJobIds] = useState<string[]>([]) // Шинээр анкет илгээсэн ажлын ID-нуудыг түр хадгалах
-  const [showSuccessModal, setShowSuccessModal] = useState(false) // Амжилттай болсон модалыг удирдах state
+  const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
@@ -54,15 +55,12 @@ export default function StaffJobsPage() {
     fetchJobs()
   }, [])
 
-  // Анкет илгээх функц (Цэвэрлэж шинэчилсэн)
   const handleApplyJob = async (jobId: string) => {
     setSubmitting(true)
     try {
-      // Dummy датануудыг устгаж, зөвхөн шаардлагатай ID-г илгээнэ. 
-      // Сервер өөрөө сессийн cookie-ээс хэрэглэгчийн мэдээллийг олж авна.
       const applicationData = {
         job_id: jobId,
-        resume_url: "" // СV файлын URL холбох шаардлагатай бол энд дамжуулна
+        resume_url: ""
       }
 
       const response = await fetch("/api/jobRequest", {
@@ -79,9 +77,9 @@ export default function StaffJobsPage() {
         throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
       }
 
-      setAppliedJobIds((prev) => [...prev, jobId]) // Амжилттай болбол ID-г жагсаалтад нэмнэ
-      setSelectedJob(null) // Үндсэн дэлгэрэнгүй модалыг хаана
-      setShowSuccessModal(true) // Амжилтын модалыг нээнэ
+      setAppliedJobIds((prev) => [...prev, jobId])
+      setSelectedJob(null)
+      setShowSuccessModal(true)
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -89,24 +87,43 @@ export default function StaffJobsPage() {
     }
   }
 
-  // Датабаазаас ирсэн датаг ашиглан динамикаар категориудыг ялгаж авах
   const categories = useMemo(() => {
     return Array.from(new Set(jobs.map((j) => j.category)))
   }, [jobs])
 
-  // Хайлт болон шүүлтүүр хийх логик (Client-side)
+  const getJobTypeText = (type: string) => {
+    switch (type) {
+      case "fulltime": return "Бүтэн цаг"
+      case "parttime": return "Хагас цаг"
+      case "remote": return "Зайнаас (Remote)"
+      default: return type
+    }
+  }
+
+  const getSalaryTypeText = (type: string) => {
+    switch (type) {
+      case "monthly": return "Сарын"
+      case "hourly": return "Цагийн"
+      case "yearly": return "Жилийн"
+      case "negotiable": return "Тохиролцоно"
+      default: return type || ""
+    }
+  }
+
+  // Хайлт болон шүүлтүүр хийх логик
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       const isJobApplied = job.is_applied || appliedJobIds.includes(job.id)
 
-      // Хэрэв хүсэлт илгээсэн ажлыг харуулахгүй гэж сонгосон бөгөөд тухайн ажилд хүсэлт илгээсэн бол алгасна
-      if (!showApplied && isJobApplied) {
-        return false
-      }
+      // Хүсэлт илгээсэн эсэхээр шүүх нөхцөл
+      if (filterApplied === "applied" && !isJobApplied) return false
+      if (filterApplied === "not_applied" && isJobApplied) return false
 
+      // Хайлт (Гарчиг, Тайлбар, болон БАЙРШИЛ-аар хайх логик оруулсан)
       const matchesSearch =
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchQuery.toLowerCase())
+        job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesCategory =
         selectedCategory === "" || job.category === selectedCategory
@@ -116,12 +133,12 @@ export default function StaffJobsPage() {
 
       return matchesSearch && matchesCategory && matchesType
     })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, showApplied, appliedJobIds])
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
 
   // Шүүлтүүр өөрчлөгдөх бүрт хуудаслалтыг 1 болгоно
   useEffect(() => {    
     setCurrentPage(1)
-  }, [searchQuery, selectedCategory, selectedJobType, showApplied])
+  }, [searchQuery, selectedCategory, selectedJobType, filterApplied])
 
   useEffect(() => {
     jobsTopRef.current?.scrollIntoView({
@@ -178,12 +195,12 @@ export default function StaffJobsPage() {
 
       {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН СЕКЦ */}
       <div className="space-y-4">
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="relative flex items-center">
+        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="relative flex items-center col-span-1 md:col-span-1">
             <span className="absolute left-4 text-gray-400">🔍</span>
             <input
               type="text"
-              placeholder="Ажлын нэр, түлхүүр үгээр хайх..."
+              placeholder="Ажил, тайлбар, байршлаар..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition"
@@ -211,22 +228,16 @@ export default function StaffJobsPage() {
             <option value="parttime">Хагас цаг</option>
             <option value="remote">Зайнаас (Remote)</option>
           </select>
-        </div>
 
-        {/* ХҮСЭЛТ ИЛГЭЭСЭН АЖЛЫГ ХАРАХ / НУУХ ТОГГЛ ШҮҮЛТҮҮР */}
-        <div className="flex justify-end px-2">
-          <label className="inline-flex items-center cursor-pointer bg-white border border-gray-100 rounded-2xl py-2 px-4 shadow-sm select-none hover:border-gray-200 transition">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={showApplied}
-              onChange={(e) => setShowApplied(e.target.checked)}
-            />
-            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            <span className="ms-3 text-sm font-semibold text-gray-600">
-              Хүсэлт илгээсэн ажлуудыг хамт харуулах
-            </span>
-          </label>
+          <select
+            value={filterApplied}
+            onChange={(e) => setFilterApplied(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition text-gray-600 appearance-none cursor-pointer font-medium"
+          >
+            <option value="all">Бүх ажлыг харуулах</option>
+            <option value="applied">Хүсэлт илгээсэн ажил</option>
+            <option value="not_applied">Хүсэлт илгээгээгүй ажил</option>
+          </select>
         </div>
       </div>
 
@@ -269,7 +280,6 @@ export default function StaffJobsPage() {
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {/* ХАМГИЙН ЗҮҮН ТАЛД УЛААН СТАТУС */}
                       {isJobApplied ? (
                         <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
                           ✓ Хүсэлт илгээсэн
@@ -278,13 +288,15 @@ export default function StaffJobsPage() {
                       
                       <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
                       <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                        {job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type === "parttime" ? "Хагас цаг" : "Remote"}
+                        {getJobTypeText(job.job_type)}
                       </span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">{job.title}</h3>
                     <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
                       <span>📍 {job.location || "Улаанбаатар"}</span>
-                      <span className="text-emerald-600 font-semibold">💰 {job.salary || "Тохиролцоно"}</span>
+                      <span className="text-emerald-600 font-semibold">
+                        💰 {getSalaryTypeText(job.salary_type)}: {job.salary || "Тохиролцоно"}
+                      </span>
                       <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
                     </div>
                     <p className="mt-4 text-sm text-gray-600 line-clamp-2">{job.description}</p>
@@ -360,17 +372,20 @@ export default function StaffJobsPage() {
               <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start">
                 <div>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {/* МОДАЛЫН ДЭЭД СТАТУС */}
                     {isModalJobApplied && (
                       <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
                     )}
                     <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg uppercase">{selectedJob.category}</span>
-                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">{selectedJob.job_type}</span>
+                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
+                      {getJobTypeText(selectedJob.job_type)}
+                    </span>
                   </div>
                   <h2 className="text-xl font-black text-gray-800">{selectedJob.title}</h2>
                   <div className="flex gap-4 text-xs text-gray-400 mt-1">
                     <span>📍 {selectedJob.location}</span>
-                    <span className="text-emerald-600 font-bold">💵 {selectedJob.salary}</span>
+                    <span className="text-emerald-600 font-bold">
+                      💵 {getSalaryTypeText(selectedJob.salary_type)}: {selectedJob.salary}
+                    </span>
                   </div>
                 </div>
                 <button onClick={() => setSelectedJob(null)} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-700 transition">✕</button>

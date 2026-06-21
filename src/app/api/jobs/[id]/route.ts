@@ -26,7 +26,7 @@ export async function GET(
     // mt_openjob хүснэгтээс тухайн ID болон хэрэглэгчийн өөрийнх нь ажлыг шүүж татах
     const { data: job, error } = await supabase
       .from("mt_openjob")
-      .select("*")
+      .select("*") // Энд * байгаа тул шинээр нэмсэн salary_type автоматаар ирнэ
       .eq("id", id)
       .eq("user_id", userId) // Өөр компанийн зар харах эрсдэлээс сэргийлнэ
       .single() // Ганцхан дата ирэх ёстойг заана
@@ -44,6 +44,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: job }, { status: 200 })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Ажлын мэдээлэл татахад алдаа гарлаа:", error)
     return NextResponse.json(
@@ -75,12 +76,13 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { title, category, salary, status, jobType, location, description, requirements } = body
+    // Формоос salary_type болон salaryType-ийн аль алинаар ирж болохыг тооцов
+    const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements } = body
 
     // Баталгаажуулалт
-    if (!title || !category) {
+    if (!title || !category || !salary) {
       return NextResponse.json(
-        { error: "Заавал бөглөх талбаруудыг (Гарчиг, Категори) бөглөнө үү." },
+        { error: "Заавал бөглөх талбаруудыг (Гарчиг, Категори, Цалин) бөглөнө үү." },
         { status: 400 }
       )
     }
@@ -91,9 +93,10 @@ export async function PUT(
     .update({
         title,
         category,
-        job_type: jobType, // Supabase баазын баганын нэр зөрж байвал jobType болгоорой
+        job_type: jobType,
         location,
         salary,
+        salary_type: salary_type || salaryType || "monthly", // Сонгосон цалингийн төрлийг хадгалах
         description,
         requirements,
         status,
@@ -111,6 +114,7 @@ export async function PUT(
       { status: 200 }
     )
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Жоб шинэчлэхэд алдаа гарлаа:", error)
     return NextResponse.json(

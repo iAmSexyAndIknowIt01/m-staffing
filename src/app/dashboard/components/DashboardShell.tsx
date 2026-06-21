@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
+import Link from "next/navigation"
 import { usePathname } from "next/navigation"
+import LinkNext from "next/link" // Next.js-ийн үндсэн Link-ийг импортлов
 
 interface DashboardShellProps {
   userId: string
@@ -60,14 +61,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           {/* Цэсний линкүүд */}
           <nav className="space-y-3 flex flex-col">
             
-            {/* 1. Dashboard Хянах самбар (Бусадтай адилхан emoji айконтой болгов) */}
+            {/* 1. Dashboard Хянах самбар */}
             {(() => {
               const { linkClass, iconClass } = getLinkStyles("/dashboard")
               return (
-                <Link href="/dashboard" className={linkClass}>
+                <LinkNext href="/dashboard" className={linkClass}>
                   <span className={iconClass}>📊</span>
                   {!isCollapsed && <span className="text-sm truncate">Хянах самбар</span>}
-                </Link>
+                </LinkNext>
               )
             })()}
 
@@ -78,10 +79,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/jobs")
                   return (
-                    <Link href="/dashboard/staff/jobs" className={linkClass}>
+                    <LinkNext href="/dashboard/staff/jobs" className={linkClass}>
                       <span className={iconClass}>💼</span>
                       {!isCollapsed && <span className="text-sm truncate">Ажлын байрууд</span>}
-                    </Link>
+                    </LinkNext>
                   )
                 })()}
 
@@ -89,10 +90,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
                   return (
-                    <Link href="/dashboard/staff/profile" className={linkClass}>
+                    <LinkNext href="/dashboard/staff/profile" className={linkClass}>
                       <span className={iconClass}>📄</span>
                       {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
-                    </Link>
+                    </LinkNext>
                   )
                 })()}
               </>
@@ -102,10 +103,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/company/post-job")
                   return (
-                    <Link href="/dashboard/company/post-job" className={linkClass}>
+                    <LinkNext href="/dashboard/company/post-job" className={linkClass}>
                       <span className={iconClass}>➕</span>
                       {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
-                    </Link>
+                    </LinkNext>
                   )
                 })()}
 
@@ -113,10 +114,21 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/company/applicants")
                   return (
-                    <Link href="/dashboard/company/applicants" className={linkClass}>
+                    <LinkNext href="/dashboard/company/applicants" className={linkClass}>
                       <span className={iconClass}>👥</span>
                       {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
-                    </Link>
+                    </LinkNext>
+                  )
+                })()}
+
+                {/* ТАНЫ ХҮССЭНЭЭР: Компани профайл удирдах цэс */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/profile")
+                  return (
+                    <LinkNext href="/dashboard/company/profile" className={linkClass}>
+                      <span className={iconClass}>🏢</span>
+                      {!isCollapsed && <span className="text-sm truncate">Компани профайл</span>}
+                    </LinkNext>
                   )
                 })()}
               </>
@@ -173,49 +185,58 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           
           <nav className="p-4 space-y-3">
 
-            <Link
+            <LinkNext
               href="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
               className="block p-3 rounded-xl hover:bg-gray-50"
             >
               📊 Хянах самбар
-            </Link>
+            </LinkNext>
 
             {userRole === "staff" ? (
               <>
-                <Link
+                <LinkNext
                   href="/dashboard/staff/jobs"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   💼 Ажлын байрууд
-                </Link>
+                </LinkNext>
 
-                <Link
+                <LinkNext
                   href="/dashboard/staff/profile"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   📄 Миний CV
-                </Link>
+                </LinkNext>
               </>
             ) : (
               <>
-                <Link
+                <LinkNext
                   href="/dashboard/company/post-job"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   ➕ Зар нэмэх
-                </Link>
+                </LinkNext>
 
-                <Link
+                <LinkNext
                   href="/dashboard/company/applicants"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   👥 Анкетууд
-                </Link>
+                </LinkNext>
+
+                {/* ТАНЫ ХҮССЭНЭЭР: Мобайл цэсэнд нэмэгдсэн хэсэг */}
+                <LinkNext
+                  href="/dashboard/company/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  🏢 Компани профайл
+                </LinkNext>
               </>
             )}
 
@@ -231,9 +252,5 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       )}
 
     </div>
-
-    
-
-    
   )
 }
