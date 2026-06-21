@@ -2,7 +2,6 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import ApplicantsList from "./ApplicantsList"
 
-// Next.js дээр кэш хийхгүй, үргэлж шинэ дата авах тохиргоо
 export const dynamic = "force-dynamic"
 
 export default async function ApplicantsPage() {
@@ -18,11 +17,9 @@ export default async function ApplicantsPage() {
   let errorMsg = ""
 
   try {
-    // Сервер талын fetch хийх (Баазтайгаа шууд холбож эсвэл абсолют URL ашиглана)
-    // Энд Node.js орчны дагуу API дуудаж байна:
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
     const response = await fetch(`${baseUrl}/api/company/jobrequest`, {
-      headers: { Cookie: `user_id=${userId}; user_role=${userRole}` }, // Хэрэгтэй бол күүки дамжуулна
+      headers: { Cookie: `user_id=${userId}; user_role=${userRole}` },
       next: { revalidate: 0 }
     })
     
@@ -37,10 +34,11 @@ export default async function ApplicantsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-gray-900">Ирсэн анкетууд 👥</h1>
-        <p className="text-gray-500 mt-2">
+    // ЗАСВАР: px-4 нэмж утасны дэлгэцийн ирмэгээс наалдахаас сэргийлэв
+    <div className="max-w-6xl mx-auto animate-fade-in px-4 sm:px-0 pb-6">
+      <div className="mb-6 md:mb-8 pt-2">
+        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ирсэн анкетууд 👥</h1>
+        <p className="text-gray-500 mt-1 text-xs md:text-sm">
           Танай зарласан ажлын байруудад ирүүлсэн ажил хайгчдын мэдээлэл.
         </p>
       </div>

@@ -155,3 +155,15 @@ transparent 40%
 white;
 
 }
+
+
+@media (max-width: 768px) {
+  /* Dashboard-ийн үндсэн агуулга явдаг хэсгийг утас дээр скроллтой болгох */
+  main, 
+  .dashboard-content,
+  #dashboard-main-container {
+    overflow-y: auto !important;
+    padding-bottom: 7rem !important; /* ~112px утасны цэснээс холдуулах зай */
+    -webkit-overflow-scrolling: touch; /* iOS (iPhone) дээр скроллыг зөөлөн болгоно */
+  }
+}
