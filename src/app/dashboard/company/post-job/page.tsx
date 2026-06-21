@@ -10,6 +10,7 @@ interface JobItem {
   salary: string
   status: string
   created_at: string
+  applicants_count: number // <-- Ирсэн анкетын тоо
 }
 
 export default function PostJobPage() {
@@ -21,6 +22,7 @@ export default function PostJobPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all") // all, active, draft, closed
   const [salaryFilter, setSalaryFilter] = useState("all") // all, specified, negotiate
+  const [applicantFilter, setApplicantFilter] = useState("all") // <-- ШИНЭЭР НЭМЭВ: all, has_applicants
   const [dateSort, setDateSort] = useState("newest") // newest, oldest
   
   // ХУУДАСЛАЛТЫН ДИНАМИК STATE-ҮҮД
@@ -55,6 +57,7 @@ export default function PostJobPage() {
     setSearchQuery("")
     setStatusFilter("all")
     setSalaryFilter("all")
+    setApplicantFilter("all") // <-- ШИНЭЭР НЭМЭВ
     setDateSort("newest")
     setCurrentPage(1)
   }
@@ -76,7 +79,12 @@ export default function PostJobPage() {
         matchesSalary = !job.salary || job.salary.toLowerCase().includes("тохиролц")
       }
 
-      return matchesText && matchesStatus && matchesSalary
+      // <-- ШИНЭЭР НЭМЭВ: Анкет ирсэн эсэхийг шүүх нөхцөл
+      const matchesApplicants =
+        applicantFilter === "all" ||
+        (applicantFilter === "has_applicants" && job.applicants_count > 0)
+
+      return matchesText && matchesStatus && matchesSalary && matchesApplicants
     })
     .sort((a, b) => {
       const dateA = new Date(a.created_at).getTime()
@@ -84,7 +92,13 @@ export default function PostJobPage() {
       return dateSort === "newest" ? dateB - dateA : dateA - dateB
     })
 
-  const isFilterActive = searchQuery !== "" || statusFilter !== "all" || salaryFilter !== "all" || dateSort !== "newest"
+  // Шүүлтүүрүүд идэвхтэй байгаа эсэх
+  const isFilterActive =
+    searchQuery !== "" ||
+    statusFilter !== "all" ||
+    salaryFilter !== "all" ||
+    applicantFilter !== "all" || // <-- ШИНЭЭР НЭМЭВ
+    dateSort !== "newest"
 
   // ХУУДАСЛАЛТ: Динамик хуудасны өгөгдлийг салгах
   const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage)
@@ -146,7 +160,8 @@ export default function PostJobPage() {
       {/* ОЛОН НӨХЦӨЛТ ШҮҮЛТҮҮРИЙН ПАНЕЛЬ */}
       {!loading && jobs.length > 0 && (
         <div className="bg-white border border-gray-100 p-5 rounded-4xl shadow-sm space-y-4 animate-fade-in">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* md:grid-cols-4 байсныг md:grid-cols-5 болгож 5 баганатай болгов */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             
             {/* Текстэн хайлт */}
             <div className="relative md:col-span-1">
@@ -184,6 +199,18 @@ export default function PostJobPage() {
                 <option value="all">Бүх цалингийн төрөл</option>
                 <option value="specified">Цалин заасан зарууд</option>
                 <option value="negotiate">Тохиролцох зарууд</option>
+              </select>
+            </div>
+
+            {/* ШИНЭЭР НЭМЭВ: Анкет ирсэн эсэхээр шүүх */}
+            <div>
+              <select
+                value={applicantFilter}
+                onChange={(e) => { setApplicantFilter(e.target.value); setCurrentPage(1); }}
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+              >
+                <option value="all">Бүх зар (Анкет хамаарахгүй)</option>
+                <option value="has_applicants">📥 Зөвхөн анкет ирсэн</option>
               </select>
             </div>
 
@@ -281,39 +308,43 @@ export default function PostJobPage() {
                   <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-50">
                     <div className="text-left md:text-right min-w-20">
                       <p className="text-xs text-gray-400 font-medium">Ирсэн анкет</p>
-                      <p className="text-xl font-black text-gray-800 mt-0.5">0</p>
+                      <p className="text-xl font-black text-gray-800 mt-0.5">
+                        {job.applicants_count}
+                      </p>
                     </div>
                     
                     <div className="flex gap-2">
+                      {/* ӨӨРЧЛӨЛТ: Зөвхөн анкет ирсэн үед л харуулна */}
+                      {job.applicants_count > 0 && (
+                        <Link
+                          href={`/dashboard/company/jobs/${job.id}/applicants`}
+                          className="px-4 py-2.5 text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100/80 rounded-xl transition"
+                        >
+                          Анкет үзэх
+                        </Link>
+                      )}
                       <Link
                         href={`/dashboard/company/post-job/edit/${job.id}`}
                         className="px-4 py-2.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition"
                       >
                         Засах ✏️
                       </Link>
-                      <Link
-                        href={`/dashboard/company/jobs/${job.id}/applicants`}
-                        className="px-4 py-2.5 text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100/80 rounded-xl transition"
-                      >
-                        Анкет үзэх →
-                      </Link>
+                      
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* ХУУДАСЛАЛТЫН ХЭСЭГ (ДИНАМИК СҮҮДЭРЛЭЛТ БОЛОН СОНГОЛТТОЙ) */}
+            {/* ХУУДАСЛАЛТЫН ХЭСЭГ */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 animate-fade-in">
-              
-              {/* Хуудасны тоог сонгох хэсэг (10, 20, 50) */}
               <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
                 <span>Харуулах хэмжээ:</span>
                 <select
                   value={itemsPerPage}
                   onChange={(e) => {
                     setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1); // Хуудасны хэмжээ өөрчлөгдвөл 1-р хуудас руу шилжинэ
+                    setCurrentPage(1);
                   }}
                   className="px-3 py-1.5 bg-white border border-gray-100 rounded-xl font-bold text-gray-700 shadow-sm outline-none focus:border-indigo-400"
                 >
@@ -323,7 +354,6 @@ export default function PostJobPage() {
                 </select>
               </div>
 
-              {/* Хуудасны дугаарууд */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 select-none">
                   <button

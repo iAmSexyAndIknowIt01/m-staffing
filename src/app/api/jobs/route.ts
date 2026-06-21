@@ -74,6 +74,7 @@ export async function POST(request: Request) {
 
 
 // Дээрх таны POST кодтой цуг нэг файл дотор байрлана
+// Дээрх таны POST кодтой цуг нэг файл дотор байрлана
 export async function GET() {
   try {
     const cookieStore = await cookies()
@@ -88,16 +89,25 @@ export async function GET() {
       )
     }
 
-    // mt_openjob хүснэгтээс датагаа татах
+    // mt_openjob хүснэгтээс датагаа татах + tr_job_request-ийн count-ийг хамт авах
     const { data: jobs, error } = await supabase
       .from("mt_openjob")
-      .select("*")
+      .select(`
+        *,
+        tr_job_request(count)
+      `)
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, data: jobs }, { status: 200 })
+    // Ирсэн датаг форматлах (tr_job_request: [{ count: 0 }] хэлбэртэй ирдэг тул цэгцлэх)
+    const formattedJobs = jobs?.map((job: any) => ({
+      ...job,
+      applicants_count: job.tr_job_request?.[0]?.count || 0
+    }))
+
+    return NextResponse.json({ success: true, data: formattedJobs }, { status: 200 })
 
   } catch (error: any) {
     console.error("Жагсаалт татахад алдаа гарлаа:", error)
