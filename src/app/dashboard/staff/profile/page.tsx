@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import { supabase } from "@/lib/supabase" // Supabase импорт нэмэв
 import BioModal from "@/components/profile/modals/BioModal"
 import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
@@ -22,7 +23,6 @@ type Education = {
   isCurrent?: boolean 
 }
 
-// Анхны fallback болон default утгуудыг тогтмол болгож зарлав
 const initialAvailability = {
   monday: { enabled: false, from: "", to: "" },
   tuesday: { enabled: false, from: "", to: "" },
@@ -34,8 +34,10 @@ const initialAvailability = {
 }
 
 export default function StaffProfilePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null) // Зураг сонгох ref
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false) // Зураг хуулж буй төлөв
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -49,6 +51,7 @@ export default function StaffProfilePage() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [bio, setBio] = useState("")
+  const [avatarUrl, setAvatarUrl] = useState("") // Зургийн URL state
 
   const [skills, setSkills] = useState<{
     technical: string[]
@@ -78,11 +81,11 @@ export default function StaffProfilePage() {
         setEmail(result.profile.email || "")
         setPhone(result.profile.phone || "")
         setBio(result.profile.bio || "")
+        setAvatarUrl(result.profile.avatar_url || "") // Зургийн URL оноох
         setSkills(result.profile.skills || { technical: [], languages: [] })
         setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
         setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
         
-        // Засагдсан: Баазаас ирсэн дата хоосон объект {} байсан ч default утгуудыг найдвартай уусгаж авна
         setAvailability({
           ...initialAvailability,
           ...(result.profile.availability || {})
@@ -92,6 +95,41 @@ export default function StaffProfilePage() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ========================================
+  // AVATAR UPLOAD HANDLER
+  // ========================================
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+    
+    const file = e.target.files[0]
+    setUploadingAvatar(true)
+    setError(null)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      // Supabase storage руу зураг хуулах (Bucket нэр: "avatars")
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath)
+
+      setAvatarUrl(publicUrl) // Шинэ зургийн URL-ийг state-д хадгалах
+      setMessage("Зураг түр ачаалагдлаа. 'Профайл хадгалах' товчийг дарж баталгаажуулна уу.")
+    } catch (err: any) {
+      setError(err.message || "Зураг хуулахад алдаа гарлаа.")
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -114,7 +152,6 @@ export default function StaffProfilePage() {
     }
     if (education.length === 0) errors.education = "Боловсролын мэдээллээ оруулна уу"
 
-    // Засагдсан: Найдвартай байх үүднээс fallback объект оноож өгөв
     const currentAvailability = availability || initialAvailability
     const enabledDays = Object.values(currentAvailability).filter((day) => day?.enabled)
     
@@ -161,6 +198,7 @@ export default function StaffProfilePage() {
           email,
           phone,
           bio,
+          avatarUrl, // Бааз руу шинэ зургийн URL хамт илгээнэ
           skills,
           experience,
           education, 
@@ -173,9 +211,11 @@ export default function StaffProfilePage() {
       await fetchProfile()
       setIsEditMode(false)
       setMessage("Профайл амжилттай хадгалагдлаа 🎉")
+      window.scrollTo({ top: 0, behavior: "smooth" })
       setTimeout(() => setMessage(null), 4000)
     } catch (err: any) {
       setError(err.message)
+      window.scrollTo({ top: 0, behavior: "smooth" })
     } finally {
       setSaving(false)
     }
@@ -218,15 +258,43 @@ export default function StaffProfilePage() {
       {message && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">{message}</div>}
       {error && <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">⚠️ {error}</div>}
 
+      {/* Далд байрлах File Input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleAvatarUpload} 
+        accept="image/*" 
+        className="hidden" 
+      />
+
       {/* FORM */}
       <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* LEFT */}
         <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+          
+          {/* PROFILE AVATAR UPLOAD SECTION */}
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
-            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl font-black mb-3">
-              {fullName ? fullName.charAt(0) : "👤"}
+            {/* Хэмжээг w-24 h-24 -> w-32 h-32 болгож томруулав */}
+            <div 
+              onClick={() => isEditMode && !uploadingAvatar && fileInputRef.current?.click()}
+              className={`w-45 h-45 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group border border-gray-100 ${isEditMode ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
+              ) : (
+                /* Текст иконы хэмжээг мөн text-3xl -> text-4xl болгож томруулав */
+                <span className="text-4xl font-black text-indigo-600">
+                  {fullName ? fullName.charAt(0) : "👤"}
+                </span>
+              )}
+              
+              {isEditMode && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200 text-[10px] text-white font-bold backdrop-blur-xs px-2">
+                  {uploadingAvatar ? "Уншиж байна..." : "Зураг солих 📸"}
+                </div>
+              )}
             </div>
-            <h3 className="font-bold text-gray-800 text-lg">{fullName || "Таны нэр"}</h3>
+            <h3 className="font-bold text-gray-800 text-lg mt-3">{fullName || "Таны нэр"}</h3>
             <p className="text-xs text-gray-400">Ажил хайгч ажилтан</p>
           </div>
 
@@ -428,7 +496,6 @@ export default function StaffProfilePage() {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-                // Засагдсан: Хувьсагч undefined байж болзошгүй тул default объект уруу зааж safe-read хийнэ
                 const currentAvailability = availability || initialAvailability
                 const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
                 
@@ -501,7 +568,7 @@ export default function StaffProfilePage() {
           {/* SAVE BUTTON */}
           {isEditMode && (
             <div className="flex justify-end pt-4 border-t border-gray-100">
-              <button type="submit" disabled={saving} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl text-sm font-bold transition">
+              <button type="submit" disabled={saving || uploadingAvatar} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl text-sm font-bold transition">
                 {saving ? "Хадгалж байна..." : "Профайл хадгалах ✨"}
               </button>
             </div>

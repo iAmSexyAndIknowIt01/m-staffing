@@ -30,7 +30,7 @@ export async function GET() {
       throw staffError
     }
 
-    // 2. PROFILE DATA
+    // 2. PROFILE DATA (photo_url баганыг нэмж уншив)
     const { data: profileData, error: profileError } = await supabase
       .from("mt_profile")
       .select(`
@@ -39,7 +39,8 @@ export async function GET() {
         phone,
         bio,
         skills,
-        availability
+        availability,
+        photo_url
       `)
       .eq("user_id", userId)
       .maybeSingle()
@@ -93,7 +94,7 @@ export async function GET() {
       description: exp.description || "",
     })) || []
 
-    // 5. EDUCATION DATA FROM TR_STAFF_EDUCATION (Шинээр нэмэгдсэн хэсэг)
+    // 5. EDUCATION DATA FROM TR_STAFF_EDUCATION
     const { data: eduData, error: eduError } = await supabase
       .from("tr_staff_education")
       .select("school, degree, field, graduation_year, is_current")
@@ -112,18 +113,19 @@ export async function GET() {
       isCurrent: edu.is_current,
     })) || []
 
-    // MERGE DATA
+    // MERGE DATA (avatar_url талбарт photo_url утгыг оноов)
     const profile = {
       full_name: `${staffData?.last_name || ""} ${staffData?.first_name || ""}`.trim(),
       email: profileData?.email || "",
       phone: profileData?.phone || "",
       bio: profileData?.bio || "",
+      avatar_url: profileData?.photo_url || "", // Фронтендэд аватар нэрээр буцна
       skills: {
         technical: technicalSkills,
         languages: languageSkills,
       },
       experience: formattedExperience,
-      education: formattedEducation, // Жагсаалт массив буцна
+      education: formattedEducation,
       availability: profileData?.availability || {},
     }
 
@@ -162,9 +164,10 @@ export async function POST(request: Request) {
       email,
       phone,
       bio,
+      avatarUrl, // Фронтендээс ирэх зургийн URL-ийг хүлээн авна
       skills,
       experience,
-      education, // Массив объект ирнэ
+      education,
       availability,
     } = body
 
@@ -200,7 +203,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ажлын туршлагаа оруулна уу." }, { status: 400 })
     }
 
-    // EDUCATION VALIDATION (Текстээс Массив формат руу засав)
+    // EDUCATION VALIDATION
     if (!Array.isArray(education) || education.length === 0) {
       return NextResponse.json({ error: "Боловсролын мэдээллээ оруулна уу." }, { status: 400 })
     }
@@ -215,13 +218,13 @@ export async function POST(request: Request) {
     for (const [dayName, day] of enabledDays as any[]) {
       if (!day.from || !day.to) {
         return NextResponse.json(
-          { error: `${dayName} гарагийн ажиллах цаг дутуу байна.` },
+          { error: `${dayName} garaгийн ажиллах цаг дутуу байна.` },
           { status: 400 }
         )
       }
       if (day.from >= day.to) {
         return NextResponse.json(
-          { error: `${dayName} гарагийн эхлэх цаг дуусах цагаас бага байх ёстой.` },
+          { error: `${dayName} garaгийн эхлэх цаг дуусах цагаас бага байх ёстой.` },
           { status: 400 }
         )
       }
@@ -244,7 +247,7 @@ export async function POST(request: Request) {
       throw staffUpdateError
     }
 
-    // UPDATE PROFILE DATA (Хуучин education талбарыг эндээс хасав)
+    // UPDATE PROFILE DATA (photo_url баганыг нэмж хадгалав)
     const { data, error } = await supabase
       .from("mt_profile")
       .update({
@@ -253,6 +256,7 @@ export async function POST(request: Request) {
         bio,
         skills,
         availability,
+        photo_url: avatarUrl ? avatarUrl.trim() : null, // photo_url-ийг бааз руу шинэчлэх хэсэг
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
@@ -330,7 +334,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // UPDATE EDUCATION (DELETE & INSERT) - ШИНЭЭР НЭМЭГДСЭН ХЭСЭГ
+    // UPDATE EDUCATION (DELETE & INSERT)
     const { error: deleteEduError } = await supabase
       .from("tr_staff_education")
       .delete()
