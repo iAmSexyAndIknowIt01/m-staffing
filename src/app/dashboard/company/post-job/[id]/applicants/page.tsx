@@ -12,10 +12,10 @@ interface PageProps {
 export default async function JobApplicantsPage({ params }: PageProps) {
   const { id: jobId } = await params
   const cookieStore = await cookies()
-  const userId = cookieStore.get("user_id")?.value
+  const companyId = cookieStore.get("user_id")?.value
   const userRole = cookieStore.get("user_role")?.value
 
-  if (!userId || userRole !== "company") {
+  if (!companyId || userRole !== "company") {
     redirect("/dashboard")
   }
 
@@ -24,26 +24,22 @@ export default async function JobApplicantsPage({ params }: PageProps) {
   let errorMsg = ""
 
   try {
+    // Дамжуулсан күүки толгойг (headers) ашиглан API Route-оо дуудна
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    
-    // ЗАСВАР: API-ийн [id] dynamic route руу jobId-г шууд замаар нь дамжуулна
     const response = await fetch(`${baseUrl}/api/company/jobrequest/${jobId}`, {
-      headers: { Cookie: `user_id=${userId}; user_role=${userRole}` },
+      headers: { Cookie: `user_id=${companyId}; user_role=${userRole}` },
       next: { revalidate: 0 }
     })
     
     if (response.ok) {
       const result = await response.json()
       applicants = result.data || []
-      
-      // Хэрэв дата байгаа бол хамгийн эхний анкетнаас ажлын байрны нэрийг авна
-      if (applicants.length > 0) {
-        jobTitle = applicants[0].job_title
-      }
+      jobTitle = result.jobTitle || "Ажлын байр"
     } else {
       errorMsg = "Анкетын мэдээллийг ачааллахад алдаа гарлаа."
     }
   } catch (err) {
+    console.error("Fetch API error:", err)
     errorMsg = "Сервертэй холбогдож чадсангүй."
   }
 

@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server"
 import { cookies } from "next/headers"
-import { supabase } from "@/lib/supabase" // Supabase client импортлох
+import { supabase } from "@/lib/supabase"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -8,7 +8,6 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    // URL-аас ирж буй dynamic id-г (job_id) авах
     const { id: jobId } = await params
 
     if (!jobId) {
@@ -23,7 +22,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 401 })
     }
 
-    // Нэмэлтээр .eq("job_id", jobId) шүүлтүүрийг оруулж өгөв
+    // 1. Анкет ирээгүй байсан ч ажлын нэрийг харуулахын тулд зарын мэдээллийг авах
+    let jobTitle = "Ажлын байр"
+    const { data: jobData } = await supabase
+      .from("mt_openjob")
+      .select("title")
+      .eq("id", jobId)
+      .eq("user_id", companyId)
+      .single()
+
+    if (jobData) {
+      jobTitle = jobData.title
+    }
+
+    // 2. Ирсэн хүсэлтүүдийг татах
     const { data: requests, error } = await supabase
       .from("tr_job_request")
       .select(`
@@ -39,28 +51,32 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           user_id
         )
       `)
-      .eq("job_id", jobId)                 // ТАНЫ ХҮССЭНЭЭР: URL-аар ирсэн job_id-аар шүүнэ
-      .eq("mt_openjob.user_id", companyId) // Зөвхөн тухайн компанийн зарласан ажлын байрнууд
+      .eq("job_id", jobId)
+      .eq("mt_openjob.user_id", companyId)
       .order("created_at", { ascending: false })
 
     if (error) {
       throw new Error(error.message)
     }
 
-    // Ирсэн датаг ЖоbApplicantsList компонентын хүлээж авах хэлбэрт хөрвүүлэх (Map)
     const formattedData = requests?.map((req: any) => ({
       id: req.id,
       user_name: req.applicant_name || "Нэргүй ажил горилогч",
-      job_title: req.mt_openjob?.title || "Тодорхойгүй ажлын байр",
+      job_title: req.mt_openjob?.title || jobTitle,
       email: req.applicant_email || "Хоосон",
       phone: req.applicant_phone || "Хоосон",
       created_at: req.created_at,
       status: req.status || "new",
     })) || []
 
-    return NextResponse.json({ data: formattedData })
+    // Хэрэгцээт бүх датаг нэгтгэн буцаана
+    return NextResponse.json({ 
+      data: formattedData,
+      jobTitle: jobTitle 
+    })
+
   } catch (error: any) {
-    console.error("Get Applicants By Job ID Error:", error)
+    console.error("Get Applicants Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }
 }
