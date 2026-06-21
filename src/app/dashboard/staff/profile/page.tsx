@@ -14,13 +14,23 @@ type Experience = {
   description: string
 }
 
-// 1. Боловсролын төрлийг тодорхойлно (isCurrent талбарыг багтаасан)
 type Education = {
   school: string
   degree: string
   field: string
   graduationYear: string
   isCurrent?: boolean 
+}
+
+// Анхны fallback болон default утгуудыг тогтмол болгож зарлав
+const initialAvailability = {
+  monday: { enabled: false, from: "", to: "" },
+  tuesday: { enabled: false, from: "", to: "" },
+  wednesday: { enabled: false, from: "", to: "" },
+  thursday: { enabled: false, from: "", to: "" },
+  friday: { enabled: false, from: "", to: "" },
+  saturday: { enabled: false, from: "", to: "" },
+  sunday: { enabled: false, from: "", to: "" },
 }
 
 export default function StaffProfilePage() {
@@ -50,17 +60,7 @@ export default function StaffProfilePage() {
 
   const [experience, setExperience] = useState<Experience[]>([])
   const [education, setEducation] = useState<Education[]>([])
-  
-  // Өдрүүдийн түлхүүр (key) нэрс бүгд жижиг үсгээр байх ёстой
-  const [availability, setAvailability] = useState({
-    monday: { enabled: false, from: "", to: "" },
-    tuesday: { enabled: false, from: "", to: "" },
-    wednesday: { enabled: false, from: "", to: "" },
-    thursday: { enabled: false, from: "", to: "" },
-    friday: { enabled: false, from: "", to: "" },
-    saturday: { enabled: false, from: "", to: "" },
-    sunday: { enabled: false, from: "", to: "" },
-  })
+  const [availability, setAvailability] = useState(initialAvailability)
 
   // ========================================
   // FETCH PROFILE
@@ -82,14 +82,10 @@ export default function StaffProfilePage() {
         setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
         setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
         
-        setAvailability(result.profile.availability || {
-          monday: { enabled: false, from: "", to: "" },
-          tuesday: { enabled: false, from: "", to: "" },
-          wednesday: { enabled: false, from: "", to: "" },
-          thursday: { enabled: false, from: "", to: "" },
-          friday: { enabled: false, from: "", to: "" },
-          saturday: { enabled: false, from: "", to: "" },
-          sunday: { enabled: false, from: "", to: "" },
+        // Засагдсан: Баазаас ирсэн дата хоосон объект {} байсан ч default утгуудыг найдвартай уусгаж авна
+        setAvailability({
+          ...initialAvailability,
+          ...(result.profile.availability || {})
         })
       }
     } catch (err: any) {
@@ -118,7 +114,10 @@ export default function StaffProfilePage() {
     }
     if (education.length === 0) errors.education = "Боловсролын мэдээллээ оруулна уу"
 
-    const enabledDays = Object.values(availability).filter((day) => day.enabled)
+    // Засагдсан: Найдвартай байх үүднээс fallback объект оноож өгөв
+    const currentAvailability = availability || initialAvailability
+    const enabledDays = Object.values(currentAvailability).filter((day) => day?.enabled)
+    
     if (enabledDays.length === 0) errors.availability = "Дор хаяж нэг ажиллах өдөр сонгоно уу"
 
     enabledDays.forEach((day) => {
@@ -395,7 +394,6 @@ export default function StaffProfilePage() {
                           {item.degree} {item.field ? `— ${item.field}` : ""}
                         </p>
                       </div>
-                      {/* Одоо суралцаж буй эсэх статус баж */}
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 bg-gray-100'}`}>
                         {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                       </span>
@@ -411,7 +409,7 @@ export default function StaffProfilePage() {
             {validationErrors.education && <p className="text-red-500 text-xs mt-1">{validationErrors.education}</p>}
           </div>
 
-          {/* AVAILABILITY (Засагдсан: Түлхүүр үгнүүд бүгд жижиг үсгээр болсон) */}
+          {/* AVAILABILITY */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -430,7 +428,10 @@ export default function StaffProfilePage() {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-                const day = availability[key as keyof typeof availability]
+                // Засагдсан: Хувьсагч undefined байж болзошгүй тул default объект уруу зааж safe-read хийнэ
+                const currentAvailability = availability || initialAvailability
+                const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
+                
                 return (
                   <div key={key} className={`border rounded-2xl p-4 transition ${day.enabled ? "border-indigo-200 bg-indigo-50/50" : "border-gray-100 bg-gray-50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -444,6 +445,7 @@ export default function StaffProfilePage() {
                             checked={day.enabled}
                             onChange={(e) => {
                               setAvailability({
+                                ...initialAvailability,
                                 ...availability,
                                 [key]: { ...day, enabled: e.target.checked },
                               })
@@ -462,6 +464,7 @@ export default function StaffProfilePage() {
                             value={day.from}
                             onChange={(e) => {
                               setAvailability({
+                                ...initialAvailability,
                                 ...availability,
                                 [key]: { ...day, from: e.target.value },
                               })
@@ -476,6 +479,7 @@ export default function StaffProfilePage() {
                             value={day.to}
                             onChange={(e) =>
                               setAvailability({
+                                ...initialAvailability,
                                 ...availability,
                                 [key]: { ...day, to: e.target.value },
                               })
