@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react"
 
-// ЗАСВАР: Компанийн интерфэйсийг нэмэв
 interface Company {
   name: string
   logo_url: string | null
@@ -20,7 +19,7 @@ interface Job {
   requirements: string
   created_at: string
   is_applied: boolean
-  mt_company?: Company // ЗАСВАР: Компанийн мэдээллийг нэмэв
+  mt_company?: Company
 }
 
 export default function StaffJobsPage() {
@@ -39,17 +38,24 @@ export default function StaffJobsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null)
+
+  // --- SLIDE TO CONFIRM STATES & REFS ---
+  const [sliderX, setSliderX] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const handleRef = useRef<HTMLDivElement>(null)
+  const startXRef = useRef(0)
 
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
-  // ЗАСВАР: Supabase Storage-оос логоны Public URL-ийг үүсгэх функц
   const getCompanyLogoUrl = (logoUrl: string | null | undefined) => {
     if (!logoUrl) return null
-    // Хэрэв бүтэн URL байвал шууд буцаана
     if (logoUrl.startsWith("http")) return logoUrl
     
-    // Өөрийн supabase project-ийн URL-аар солиорой (Жишээ нь: https://xyz.supabase.co)
     const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project-id.supabase.co" 
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
   }
@@ -70,11 +76,16 @@ export default function StaffJobsPage() {
     fetchJobs()
   }, [])
 
-  const handleApplyJob = async (jobId: string) => {
+  const handleApplyJob = async () => {
+    if (!pendingJobId) return
+    
     setSubmitting(true)
+    setShowConfirmModal(false)
+    setSliderX(0) // Слайдерыг буцааж тэглэх
+    
     try {
       const applicationData = {
-        job_id: jobId,
+        job_id: pendingJobId,
         resume_url: ""
       }
 
@@ -92,14 +103,87 @@ export default function StaffJobsPage() {
         throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
       }
 
-      setAppliedJobIds((prev) => [...prev, jobId])
+      setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
     } catch (err: any) {
       alert(err.message)
     } finally {
       setSubmitting(false)
+      setPendingJobId(null)
     }
+  }
+
+  // --- SLIDER EVENT HANDLERS ---
+  const handleDragStart = (clientX: number) => {
+    if (submitting) return
+    setIsDragging(true)
+    startXRef.current = clientX - sliderX
+  }
+
+  const handleDragMove = (clientX: number) => {
+    if (!isDragging || !trackRef.current || !handleRef.current) return
+
+    const trackWidth = trackRef.current.clientWidth
+    const handleWidth = handleRef.current.clientWidth
+    const maxSlide = trackWidth - handleWidth - 8 // 8px нь padding-ийг тооцсон зай
+
+    let currentX = clientX - startXRef.current
+    if (currentX < 0) currentX = 0
+    if (currentX > maxSlide) currentX = maxSlide
+
+    setSliderX(currentX)
+
+    // Хэрэв төгсгөлд нь тултал чирвэл шууд илгээнэ
+    if (currentX >= maxSlide - 2) {
+      setIsDragging(false)
+      handleApplyJob()
+    }
+  }
+
+  const handleDragEnd = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    
+    if (trackRef.current && handleRef.current) {
+      const trackWidth = trackRef.current.clientWidth
+      const handleWidth = handleRef.current.clientWidth
+      const maxSlide = trackWidth - handleWidth - 8
+      
+      // Хэрэв дундаас буцаад тавьчихвал эхлэл рүү нь буцаана
+      if (sliderX < maxSlide - 2) {
+        setSliderX(0)
+      }
+    }
+  }
+
+  // Хулгана болон хуруугаа модалаас гаргаж тавьсан ч идэвхтэй хэвээр байлгах хяналт
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) handleDragMove(e.touches[0].clientX)
+    }
+    const handleEnd = () => handleDragEnd()
+
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove)
+      window.addEventListener("mouseup", handleEnd)
+      window.addEventListener("touchmove", handleTouchMove, { passive: false })
+      window.addEventListener("touchend", handleEnd)
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+      window.removeEventListener("mouseup", handleEnd)
+      window.removeEventListener("touchmove", handleTouchMove)
+      window.removeEventListener("touchend", handleEnd)
+    }
+  }, [isDragging, sliderX])
+
+  const triggerApplyConfirmation = (jobId: string) => {
+    setPendingJobId(jobId)
+    setSliderX(0) // Нээгдэх болгонд слайдерыг эхний байрлалд оруулна
+    setShowConfirmModal(true)
   }
 
   const categories = useMemo(() => {
@@ -135,7 +219,7 @@ export default function StaffJobsPage() {
       const matchesSearch =
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (job.mt_company?.name && job.mt_company.name.toLowerCase().includes(searchQuery.toLowerCase())) || // Компаниар хайх
+        (job.mt_company?.name && job.mt_company.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesCategory =
@@ -291,8 +375,6 @@ export default function StaffJobsPage() {
                 }`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-                  
-                  {/* ЗАСВАР: Зүүн талд Компанийн лого болон текстийг Layout-д оруулав */}
                   <div className="flex items-start gap-4 flex-1">
                     <div className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                       {logoFullUrl ? (
@@ -301,7 +383,6 @@ export default function StaffJobsPage() {
                           alt={job.mt_company?.name || "Company logo"} 
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            // Зураг ачаалахад алдаа гарвал fallback аватар харуулна
                             (e.target as HTMLElement).style.display = 'none';
                           }}
                         />
@@ -315,7 +396,7 @@ export default function StaffJobsPage() {
                     <div className="flex-1">
                       <div className="flex flex-wrap gap-2 mb-2">
                         {isJobApplied && (
-                          <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1">
+                          <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
                             ✓ Хүсэлт илгээсэн
                           </span>
                         )}
@@ -326,8 +407,6 @@ export default function StaffJobsPage() {
                       </div>
                       
                       <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
-                      
-                      {/* ЗАСВАР: Компанийн нэрийг энд харуулав */}
                       <p className="text-sm font-medium text-gray-500 mt-0.5">{job.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
 
                       <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
@@ -406,10 +485,10 @@ export default function StaffJobsPage() {
         const modalLogoUrl = getCompanyLogoUrl(selectedJob.mt_company?.logo_url);
         
         return (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-50 flex flex-col justify-between">
               
-              {/* Модал Header - ЗАСВАР: Логотой дизайн оруулсан */}
+              {/* Модал Header */}
               <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start gap-4">
                 <div className="flex items-start gap-4">
                   <div className="w-25 h-25 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
@@ -473,11 +552,11 @@ export default function StaffJobsPage() {
                     </button>
                   ) : (
                     <button 
-                      onClick={() => handleApplyJob(selectedJob.id)}
+                      onClick={() => triggerApplyConfirmation(selectedJob.id)}
                       disabled={submitting}
                       className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50"
                     >
-                      {submitting ? "Илгээж байна..." : "Анкет илгээх 🚀"}
+                      Анкет илгээх 🚀
                     </button>
                   )}
                 </div>
@@ -487,9 +566,67 @@ export default function StaffJobsPage() {
         )
       })()}
 
+      {/* --- БАТАЛГААЖУУЛАХ МОДАЛ ЦОНХ (APPLE SLIDER СҮҮЛТҮҮРТЭЙ) --- */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-70 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
+            <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner">
+              ❓
+            </div>
+            <h3 className="text-lg md:text-xl font-black text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Анкет илгээх үйлдлийг баталгаажуулахын тулд баруун тийш чирнэ үү. Илгээсэн анкетыг цуцлах боломжгүй.
+            </p>
+
+            {/* APPLE-LIKE SLIDER COMPONENT */}
+            <div className="w-full mt-6 space-y-4">
+              <div 
+                ref={trackRef}
+                className="relative w-full h-14 bg-gray-100 rounded-2xl p-1 flex items-center select-none overflow-hidden border border-gray-200/60"
+              >
+                {/* Арын хөтөч текст */}
+                <div 
+                  className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400 transition-opacity"
+                  style={{ opacity: Math.max(1 - sliderX / 100, 0) }}
+                >
+                  Баруун тийш чирж илгээх ➔
+                </div>
+
+                {/* Чирдэг бөөрөнхий товчлуур */}
+                <div
+                  ref={handleRef}
+                  onMouseDown={(e) => handleDragStart(e.clientX)}
+                  onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+                  className={`absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg transition-transform`}
+                  style={{
+                    transform: `translateX(${sliderX}px)`,
+                    transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
+                  }}
+                >
+                  {submitting ? (
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    "🚀"
+                  )}
+                </div>
+              </div>
+
+              {/* ҮГҮЙ, БУЦАХ ТОВЧЛУУР */}
+              <button
+                onClick={() => { setShowConfirmModal(false); setPendingJobId(null); setSliderX(0); }}
+                className="w-full py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200/80 text-gray-500 text-xs md:text-sm font-bold rounded-2xl transition"
+              >
+                Үгүй, буцах
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* --- АМЖИЛТТАЙ ИЛГЭЭГДСЭН ҮЕИЙН МОДАЛ ЦОНХ --- */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-70 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center transform scale-100 transition-all">
             <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce">
               🚀
