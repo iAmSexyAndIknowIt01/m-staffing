@@ -2,6 +2,12 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react"
 
+// ЗАСВАР: Компанийн интерфэйсийг нэмэв
+interface Company {
+  name: string
+  logo_url: string | null
+}
+
 interface Job {
   id: string
   title: string
@@ -14,6 +20,7 @@ interface Job {
   requirements: string
   created_at: string
   is_applied: boolean
+  mt_company?: Company // ЗАСВАР: Компанийн мэдээллийг нэмэв
 }
 
 export default function StaffJobsPage() {
@@ -21,23 +28,31 @@ export default function StaffJobsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Хайлт болон шүүлтүүрийн state-үүд
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedJobType, setSelectedJobType] = useState("")
-  const [filterApplied, setFilterApplied] = useState("all") // "all" | "applied" | "not_applied"
+  const [filterApplied, setFilterApplied] = useState("all")
   
-  // Модалд сонгогдсон ажлын байр
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Анкет илгээх үед ашиглах state-үүд
   const [submitting, setSubmitting] = useState(false)
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
+
+  // ЗАСВАР: Supabase Storage-оос логоны Public URL-ийг үүсгэх функц
+  const getCompanyLogoUrl = (logoUrl: string | null | undefined) => {
+    if (!logoUrl) return null
+    // Хэрэв бүтэн URL байвал шууд буцаана
+    if (logoUrl.startsWith("http")) return logoUrl
+    
+    // Өөрийн supabase project-ийн URL-аар солиорой (Жишээ нь: https://xyz.supabase.co)
+    const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project-id.supabase.co" 
+    return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
+  }
 
   useEffect(() => {
     async function fetchJobs() {
@@ -110,19 +125,17 @@ export default function StaffJobsPage() {
     }
   }
 
-  // Хайлт болон шүүлтүүр хийх логик
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       const isJobApplied = job.is_applied || appliedJobIds.includes(job.id)
 
-      // Хүсэлт илгээсэн эсэхээр шүүх нөхцөл
       if (filterApplied === "applied" && !isJobApplied) return false
       if (filterApplied === "not_applied" && isJobApplied) return false
 
-      // Хайлт (Гарчиг, Тайлбар, болон БАЙРШИЛ-аар хайх логик оруулсан)
       const matchesSearch =
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (job.mt_company?.name && job.mt_company.name.toLowerCase().includes(searchQuery.toLowerCase())) || // Компаниар хайх
         (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesCategory =
@@ -135,7 +148,6 @@ export default function StaffJobsPage() {
     })
   }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
 
-  // Шүүлтүүр өөрчлөгдөх бүрт хуудаслалтыг 1 болгоно
   useEffect(() => {    
     setCurrentPage(1)
   }, [searchQuery, selectedCategory, selectedJobType, filterApplied])
@@ -200,7 +212,7 @@ export default function StaffJobsPage() {
             <span className="absolute left-4 text-gray-400">🔍</span>
             <input
               type="text"
-              placeholder="Ажил, тайлбар, байршлаар..."
+              placeholder="Ажил, компани, байршлаар..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition"
@@ -268,7 +280,8 @@ export default function StaffJobsPage() {
         <div className="space-y-4">
           {paginatedJobs.map((job) => {
             const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
-            
+            const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url);
+
             return (
               <div
                 key={job.id}
@@ -277,33 +290,59 @@ export default function StaffJobsPage() {
                   isJobApplied ? "border-l-4 border-l-red-500 border-gray-100" : "border-gray-100"
                 }`}
               >
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {isJobApplied ? (
-                        <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
-                          ✓ Хүсэлт илгээсэн
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                  
+                  {/* ЗАСВАР: Зүүн талд Компанийн лого болон текстийг Layout-д оруулав */}
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                      {logoFullUrl ? (
+                        <img 
+                          src={logoFullUrl} 
+                          alt={job.mt_company?.name || "Company logo"} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Зураг ачаалахад алдаа гарвал fallback аватар харуулна
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-lg font-black text-indigo-500 uppercase">
+                          {job.mt_company?.name?.substring(0, 2) || "CO"}
                         </span>
-                      ) : null}
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {isJobApplied && (
+                          <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1">
+                            ✓ Хүсэлт илгээсэн
+                          </span>
+                        )}
+                        <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
+                        <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
+                          {getJobTypeText(job.job_type)}
+                        </span>
+                      </div>
                       
-                      <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
-                      <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                        {getJobTypeText(job.job_type)}
-                      </span>
+                      <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
+                      
+                      {/* ЗАСВАР: Компанийн нэрийг энд харуулав */}
+                      <p className="text-sm font-medium text-gray-500 mt-0.5">{job.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
+
+                      <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
+                        <span>📍 {job.location || "Улаанбаатар"}</span>
+                        <span className="text-emerald-600 font-semibold">
+                          💰 {getSalaryTypeText(job.salary_type)}: {job.salary || "Тохиролцоно"}
+                        </span>
+                        <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">{job.title}</h3>
-                    <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-                      <span>📍 {job.location || "Улаанбаатар"}</span>
-                      <span className="text-emerald-600 font-semibold">
-                        💰 {getSalaryTypeText(job.salary_type)}: {job.salary || "Тохиролцоно"}
-                      </span>
-                      <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
-                    </div>
-                    <p className="mt-4 text-sm text-gray-600 line-clamp-2">{job.description}</p>
                   </div>
-                  <div className="flex flex-col items-end justify-between min-w-45">
-                    <div className="text-xs text-gray-400">Нээлттэй ажлын байр</div>
-                    <button className="mt-4 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold">
+
+                  <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
+                    <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
+                    <button className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
                       Дэлгэрэнгүй →
                     </button>
                   </div>
@@ -364,28 +403,42 @@ export default function StaffJobsPage() {
       {/* --- ДЭЛГЭРЭНГҮЙ ХАРАХ МОДАЛ ЦОНХ --- */}
       {selectedJob && (() => {
         const isModalJobApplied = selectedJob.is_applied || appliedJobIds.includes(selectedJob.id);
+        const modalLogoUrl = getCompanyLogoUrl(selectedJob.mt_company?.logo_url);
         
         return (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-50 flex flex-col justify-between">
-              {/* Модал Header */}
-              <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start">
-                <div>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {isModalJobApplied && (
-                      <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
+              
+              {/* Модал Header - ЗАСВАР: Логотой дизайн оруулсан */}
+              <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-25 h-25 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                    {modalLogoUrl ? (
+                      <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-indigo-500 uppercase">
+                        {selectedJob.mt_company?.name?.substring(0, 2) || "CO"}
+                      </span>
                     )}
-                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg uppercase">{selectedJob.category}</span>
-                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
-                      {getJobTypeText(selectedJob.job_type)}
-                    </span>
                   </div>
-                  <h2 className="text-xl font-black text-gray-800">{selectedJob.title}</h2>
-                  <div className="flex gap-4 text-xs text-gray-400 mt-1">
-                    <span>📍 {selectedJob.location}</span>
-                    <span className="text-emerald-600 font-bold">
-                      💵 {getSalaryTypeText(selectedJob.salary_type)}: {selectedJob.salary}
-                    </span>
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-1">
+                      {isModalJobApplied && (
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
+                      )}
+                      <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg uppercase">{selectedJob.category}</span>
+                      <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
+                        {getJobTypeText(selectedJob.job_type)}
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-black text-gray-800">{selectedJob.title}</h2>
+                    <p className="text-sm text-gray-500 font-medium">{selectedJob.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
+                    <div className="flex gap-4 text-xs text-gray-400 mt-2">
+                      <span>📍 {selectedJob.location}</span>
+                      <span className="text-emerald-600 font-bold">
+                        💵 {getSalaryTypeText(selectedJob.salary_type)}: {selectedJob.salary}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <button onClick={() => setSelectedJob(null)} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-700 transition">✕</button>
