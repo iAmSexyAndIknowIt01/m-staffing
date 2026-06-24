@@ -20,7 +20,7 @@ export default function RegisterPage() {
   const [verificationCode, setVerificationCode] = useState("")
   const [verifying, setVerifying] = useState(false)
 
-  // 🔥 Мэдэгдлийн Модалд зориулсан шинэ State-үүд
+  // Мэдэгдлийн Модалд зориулсан шинэ State-үүд
   const [alertModal, setAlertModal] = useState<{
     show: boolean;
     title: string;
@@ -77,11 +77,10 @@ export default function RegisterPage() {
         return
       }
 
-      // Имэйл амжилттай илгээгдвэл 6 оронтой код оруулах Modal-ийг нээнэ
       setShowModal(true)
     } catch {
       showAlert("Системийн алдаа", "Системийн алдаа гарлаа. Дараа дахин оролдоно уу.", "error")
-    } {
+    } finally {
       setLoading(false)
     }
   }
@@ -107,6 +106,7 @@ export default function RegisterPage() {
 
       if (!verifyRes.ok) {
         showAlert("Баталгаажуулалт амжилтгүй", verifyData.message || "Баталгаажуулах код буруу байна", "error")
+        setVerifying(false) // 🔥 ФУНКЦЭЭС ГАРАХААС ӨМНӨ LOADING-ИЙГ УНТРААХ
         return
       }
 
@@ -128,12 +128,12 @@ export default function RegisterPage() {
 
       if (!registerRes.ok) {
         showAlert("Бүртгэл амжилтгүй", registerData.message || "Бүртгэл амжилтгүй боллоо", "error")
+        setVerifying(false) // 🔥 ФУНКЦЭЭС ГАРАХААС ӨМНӨ LOADING-ИЙГ УНТРААХ
         return
       }
 
       setShowModal(false)
       
-      // Амжилттай болсны дараа ОК дарахад логин руу шилжинэ
       showAlert(
         "Амжилттай!", 
         "Бүртгэл амжилттай үүслээ. Та нэвтрэн орно уу.", 
@@ -143,7 +143,8 @@ export default function RegisterPage() {
 
     } catch {
       showAlert("Алдаа", "Баталгаажуулах явцад алдаа гарлаа", "error")
-    } {
+    } finally {
+      // 🔥 ЗӨВ БИЧИГДЭЛ: finally түлхүүр үгийг нэмэв
       setVerifying(false)
     }
   }
@@ -282,7 +283,7 @@ export default function RegisterPage() {
       {/* 6 ОРОНТОЙ КОД БАТАЛГААЖУУЛАХ MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl border border-orange-50 text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl border border-orange-50 text-center animate-in fade-in zoom-in-95 duration-200">
             
             <div className="mx-auto w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 animate-pulse">
@@ -299,14 +300,13 @@ export default function RegisterPage() {
                 Бид таны <span className="font-bold text-orange-600 break-all">{email}</span> хаяг руу 6 оронтой баталгаажуулах код илгээлээ.
               </p>
               
-              {/* Код оруулах талбар */}
               <div className="mt-4">
                 <input
                   type="text"
                   maxLength={6}
                   placeholder="000000"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ''))} // Зөвхөн тоо авах тохиргоог зассан
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full tracking-[12px] text-center text-2xl font-bold rounded-2xl border-2 border-orange-200 focus:border-orange-500 outline-none px-5 py-4 bg-orange-50/30"
                 />
               </div>
@@ -335,12 +335,11 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* 🔥 ШИНЭ: СИСТЕМД АШИГЛАГДАХ МЭДЭГДЛИЙН АНХААРУУЛГА МОДАЛ (ALERT MODAL-ИЙГ ОРЛОНО) */}
+      {/* МЭДЭГДЛИЙН АНХААРУУЛГА МОДАЛ */}
       {alertModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="bg-white rounded-[28px] p-7 max-w-sm w-full shadow-xl border text-center animate-in fade-in zoom-in-95 duration-150">
             
-            {/* Төрлөөс хамаарсан Icon-ууд */}
             <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
               {alertModal.type === "success" && (
                 <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center text-green-500">
