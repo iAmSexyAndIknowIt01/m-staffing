@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Улбар шар арын дэвсгэр (Orange-500 өнгө) -->
+  <rect width="32" height="32" rx="8" fill="#F97316"/>
+  
+  <!-- Яг голд нь байрлуулсан, зузаан бөгөөд цэвэрхэн "M" үсэг -->
+  <path d="M9 22V10L16 16.5L23 10V22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
