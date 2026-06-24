@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 interface Company {
   id?: string
-  company_id?: string // НАЙДВАРТАЙ БОЛГОХҮҮДНЭЭС: Энэ талбар ирж магадгүй тул нэмэв
+  company_id?: string 
   name: string
   logo_url: string | null
 }
@@ -40,6 +40,7 @@ export default function StaffJobsPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const [submitting, setSubmitting] = useState(false)
+  const [checkingProfile, setCheckingProfile] = useState(false) // ШИНЭЭР НЭМЭВ: Уншиж байх үеийн төлөв
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   
@@ -71,14 +72,11 @@ export default function StaffJobsPage() {
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
   }
 
-  // ЗАССАН: Компанийн ID аль нь ч байсан (id эсвэл company_id) олж унших уян хатан функц
   const handleCompanyClick = (e: React.MouseEvent, company: Company | undefined) => {
     e.preventDefault()
-    e.stopPropagation() // Картны onClick модал нээхийг бүрэн зогсооно
+    e.stopPropagation() 
     
     if (!company) return
-
-    // Дата баазаас id эсвэл company_id гэж ирж байгааг давхар шалгана
     const actualCompanyId = company.id || company.company_id
 
     if (actualCompanyId) {
@@ -205,10 +203,30 @@ export default function StaffJobsPage() {
     }
   }, [isDragging, sliderX])
 
-  const triggerApplyConfirmation = (jobId: string) => {
-    setPendingJobId(jobId)
-    setSliderX(0)
-    setShowConfirmModal(true)
+  // ШИНЭЧИЛСЭН: Анкет илгээхээс өмнө профайл бөглөлтийг шалгах логик
+  const triggerApplyConfirmation = async (jobId: string) => {
+    if (checkingProfile) return
+    setCheckingProfile(true)
+
+    try {
+      const response = await fetch("/api/staff/jobs/profileCheck")
+      const result = await response.json()
+
+      if (!response.ok || result.isComplete === false) {
+        // Хэрэв профайл дутуу бол alert харуулна (Модал нээгдэхгүй)
+        alert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
+        return
+      }
+
+      // Профайл бүрэн бол баталгаажуулах слайдер модалыг нээнэ
+      setPendingJobId(jobId)
+      setSliderX(0)
+      setShowConfirmModal(true)
+    } catch (err: any) {
+      alert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.")
+    } finally {
+      setCheckingProfile(false)
+    }
   }
 
   const categories = useMemo(() => {
@@ -402,7 +420,6 @@ export default function StaffJobsPage() {
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
                     <div className="flex items-start gap-4 flex-1">
                       
-                      {/* ШИНЭЧИЛСЭН: handleCompanyClick функц рүү бүхэл бүтэн mt_company обьектыг дамжуулав */}
                       <div 
                         onClick={(e) => handleCompanyClick(e, job.mt_company)}
                         className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs hover:scale-105 transition cursor-pointer"
@@ -438,7 +455,6 @@ export default function StaffJobsPage() {
                         
                         <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
                         
-                        {/* ШИНЭЧИЛСЭН: Компанийн нэр дээр дарж шилжих хэсэг */}
                         <p className="text-sm font-semibold mt-0.5">
                           {job.mt_company ? (
                             <span 
@@ -551,7 +567,6 @@ export default function StaffJobsPage() {
               {/* Модал Header */}
               <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start gap-4">
                 <div className="flex items-start gap-4">
-                  {/* ШИНЭЧИЛСЭН: Модал доторх лого */}
                   <div 
                     onClick={(e) => handleCompanyClick(e, selectedJob.mt_company)}
                     className="w-25 h-25 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 hover:scale-105 transition cursor-pointer"
@@ -576,7 +591,6 @@ export default function StaffJobsPage() {
                     </div>
                     <h2 className="text-xl font-black text-gray-800">{selectedJob.title}</h2>
                     
-                    {/* ШИНЭЧИЛСЭН: Модал доторх компанийн нэр */}
                     <p className="text-sm font-semibold mt-0.5">
                       {selectedJob.mt_company ? (
                         <span 
@@ -631,10 +645,10 @@ export default function StaffJobsPage() {
                   ) : (
                     <button 
                       onClick={() => triggerApplyConfirmation(selectedJob.id)}
-                      disabled={submitting}
+                      disabled={submitting || checkingProfile} // ШИНЭЧИЛСЭН: Профайл шалгаж байх үед товчийг идэвхгүй болгоно
                       className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50"
                     >
-                      Анкет илгээх 🚀
+                      {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх 🚀"}
                     </button>
                   )}
                 </div>
