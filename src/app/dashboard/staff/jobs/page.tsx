@@ -40,12 +40,19 @@ export default function StaffJobsPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const [submitting, setSubmitting] = useState(false)
-  const [checkingProfile, setCheckingProfile] = useState(false) // ШИНЭЭР НЭМЭВ: Уншиж байх үеийн төлөв
+  const [checkingProfile, setCheckingProfile] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
+
+  // --- ШИНЭ: Сэрэмжлүүлэг/Алдааны модал төлөв ---
+  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
+    show: false,
+    message: "",
+    title: "Мэдэгдэл"
+  })
 
   // --- SLIDE TO CONFIRM STATES & REFS ---
   const [sliderX, setSliderX] = useState(0)
@@ -56,6 +63,11 @@ export default function StaffJobsPage() {
 
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
+
+  // Алдартай alert-ийг орлох функц
+  const showAlert = (message: string, title: string = "Анхааруулга") => {
+    setAlertModal({ show: true, message, title })
+  }
 
   const formatSalary = (salaryStr: string | null | undefined) => {
     if (!salaryStr) return "Тохиролцоно"
@@ -133,7 +145,7 @@ export default function StaffJobsPage() {
       setSelectedJob(null)
       setShowSuccessModal(true)
     } catch (err: any) {
-      alert(err.message)
+      showAlert(err.message, "Алдаа гарлаа")
     } finally {
       setSubmitting(false)
       setPendingJobId(null)
@@ -203,7 +215,6 @@ export default function StaffJobsPage() {
     }
   }, [isDragging, sliderX])
 
-  // ШИНЭЧИЛСЭН: Анкет илгээхээс өмнө профайл бөглөлтийг шалгах логик
   const triggerApplyConfirmation = async (jobId: string) => {
     if (checkingProfile) return
     setCheckingProfile(true)
@@ -213,17 +224,15 @@ export default function StaffJobsPage() {
       const result = await response.json()
 
       if (!response.ok || result.isComplete === false) {
-        // Хэрэв профайл дутуу бол alert харуулна (Модал нээгдэхгүй)
-        alert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
+        showAlert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.", "Профайл дутуу")
         return
       }
 
-      // Профайл бүрэн бол баталгаажуулах слайдер модалыг нээнэ
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
     } catch (err: any) {
-      alert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
     }
@@ -492,7 +501,7 @@ export default function StaffJobsPage() {
                   <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
-                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох боломж</span>
+                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох бомыйж</span>
                         <h3 className="text-lg font-bold mt-2">✨ CV-гээ үнэгүй зөвлүүлэх үйлчилгээ</h3>
                         <p className="text-xs text-white/80 mt-1">Мэргэжлийн рекрутерүүд таны анкетыг засаж, зөвлөгөө өгөх болно.</p>
                       </div>
@@ -645,7 +654,7 @@ export default function StaffJobsPage() {
                   ) : (
                     <button 
                       onClick={() => triggerApplyConfirmation(selectedJob.id)}
-                      disabled={submitting || checkingProfile} // ШИНЭЧИЛСЭН: Профайл шалгаж байх үед товчийг идэвхгүй болгоно
+                      disabled={submitting || checkingProfile} 
                       className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50"
                     >
                       {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх 🚀"}
@@ -729,6 +738,27 @@ export default function StaffJobsPage() {
               className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-600/20 transition"
             >
               Ойлголоо 👍
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- ШИНЭ: МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
+      {alertModal.show && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
+            <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-black text-gray-900">{alertModal.title}</h3>
+            <p className="text-sm text-gray-500 mt-2 leading-relaxed whitespace-pre-line">
+              {alertModal.message}
+            </p>
+            <button
+              onClick={() => setAlertModal(prev => ({ ...prev, show: false }))}
+              className="mt-6 w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl text-sm font-bold transition shadow-md"
+            >
+              Хаах
             </button>
           </div>
         </div>
