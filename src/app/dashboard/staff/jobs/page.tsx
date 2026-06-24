@@ -52,6 +52,13 @@ export default function StaffJobsPage() {
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
+  const formatSalary = (salaryStr: string | null | undefined) => {
+    if (!salaryStr) return "Тохиролцоно"
+    const numericSalary = parseInt(salaryStr.replace(/\D/g, ""), 10)
+    if (isNaN(numericSalary)) return salaryStr
+    return `${numericSalary.toLocaleString()} ₮`
+  }
+
   const getCompanyLogoUrl = (logoUrl: string | null | undefined) => {
     if (!logoUrl) return null
     if (logoUrl.startsWith("http")) return logoUrl
@@ -81,7 +88,7 @@ export default function StaffJobsPage() {
     
     setSubmitting(true)
     setShowConfirmModal(false)
-    setSliderX(0) // Слайдерыг буцааж тэглэх
+    setSliderX(0)
     
     try {
       const applicationData = {
@@ -126,7 +133,7 @@ export default function StaffJobsPage() {
 
     const trackWidth = trackRef.current.clientWidth
     const handleWidth = handleRef.current.clientWidth
-    const maxSlide = trackWidth - handleWidth - 8 // 8px нь padding-ийг тооцсон зай
+    const maxSlide = trackWidth - handleWidth - 8
 
     let currentX = clientX - startXRef.current
     if (currentX < 0) currentX = 0
@@ -134,7 +141,6 @@ export default function StaffJobsPage() {
 
     setSliderX(currentX)
 
-    // Хэрэв төгсгөлд нь тултал чирвэл шууд илгээнэ
     if (currentX >= maxSlide - 2) {
       setIsDragging(false)
       handleApplyJob()
@@ -150,14 +156,12 @@ export default function StaffJobsPage() {
       const handleWidth = handleRef.current.clientWidth
       const maxSlide = trackWidth - handleWidth - 8
       
-      // Хэрэв дундаас буцаад тавьчихвал эхлэл рүү нь буцаана
       if (sliderX < maxSlide - 2) {
         setSliderX(0)
       }
     }
   }
 
-  // Хулгана болон хуруугаа модалаас гаргаж тавьсан ч идэвхтэй хэвээр байлгах хяналт
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
     const handleTouchMove = (e: TouchEvent) => {
@@ -182,7 +186,7 @@ export default function StaffJobsPage() {
 
   const triggerApplyConfirmation = (jobId: string) => {
     setPendingJobId(jobId)
-    setSliderX(0) // Нээгдэх болгонд слайдерыг эхний байрлалд оруулна
+    setSliderX(0)
     setShowConfirmModal(true)
   }
 
@@ -362,71 +366,88 @@ export default function StaffJobsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {paginatedJobs.map((job) => {
+          {paginatedJobs.map((job, index) => {
             const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
             const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url);
 
             return (
-              <div
-                key={job.id}
-                onClick={() => setSelectedJob(job)}
-                className={`relative overflow-hidden bg-white border rounded-3xl p-6 hover:border-indigo-200 hover:shadow-lg transition cursor-pointer ${
-                  isJobApplied ? "border-l-4 border-l-red-500 border-gray-100" : "border-gray-100"
-                }`}
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
-                      {logoFullUrl ? (
-                        <img 
-                          src={logoFullUrl} 
-                          alt={job.mt_company?.name || "Company logo"} 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <span className="text-lg font-black text-indigo-500 uppercase">
-                          {job.mt_company?.name?.substring(0, 2) || "CO"}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {isJobApplied && (
-                          <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
-                            ✓ Хүсэлт илгээсэн
+              <React.Fragment key={job.id}>
+                <div
+                  onClick={() => setSelectedJob(job)}
+                  className={`relative overflow-hidden bg-white border rounded-3xl p-6 hover:border-indigo-200 hover:shadow-lg transition cursor-pointer ${
+                    isJobApplied ? "border-l-4 border-l-red-500 border-gray-100" : "border-gray-100"
+                  }`}
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                        {logoFullUrl ? (
+                          <img 
+                            src={logoFullUrl} 
+                            alt={job.mt_company?.name || "Company logo"} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-lg font-black text-indigo-500 uppercase">
+                            {job.mt_company?.name?.substring(0, 2) || "CO"}
                           </span>
                         )}
-                        <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
-                        <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                          {getJobTypeText(job.job_type)}
-                        </span>
                       </div>
-                      
-                      <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
-                      <p className="text-sm font-medium text-gray-500 mt-0.5">{job.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
 
-                      <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
-                        <span>📍 {job.location || "Улаанбаатар"}</span>
-                        <span className="text-emerald-600 font-semibold">
-                          💰 {getSalaryTypeText(job.salary_type)}: {job.salary || "Тохиролцоно"}
-                        </span>
-                        <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {isJobApplied && (
+                            <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
+                              ✓ Хүсэлт илгээсэн
+                            </span>
+                          )}
+                          <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
+                          <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
+                            {getJobTypeText(job.job_type)}
+                          </span>
+                        </div>
+                        
+                        <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
+                        <p className="text-sm font-medium text-gray-500 mt-0.5">{job.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
+
+                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
+                          <span>📍 {job.location || "Улаанбаатар"}</span>
+                          <span className="text-emerald-600 font-semibold">
+                            💰 {getSalaryTypeText(job.salary_type)}: {formatSalary(job.salary)}
+                          </span>
+                          <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
-                    <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
-                    <button className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
-                      Дэлгэрэнгүй →
-                    </button>
+                    <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
+                      <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
+                      <button className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
+                        Дэлгэрэнгүй →
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+
+                {/* ШИНЭЧИЛСЭН: 5 ажил тутамд дундуур нь тусгай карт (Banner/Card) харуулна */}
+                {(index + 1) % 5 === 0 && (
+                  <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох боломж</span>
+                        <h3 className="text-lg font-bold mt-2">✨ CV-гээ үнэгүй зөвлүүлэх үйлчилгээ</h3>
+                        <p className="text-xs text-white/80 mt-1">Мэргэжлийн рекрутерүүд таны анкетыг засаж, зөвлөгөө өгөх болно.</p>
+                      </div>
+                      <button className="px-5 py-2.5 bg-white text-indigo-600 rounded-xl text-sm font-bold shadow-xs shrink-0 self-end sm:self-center">
+                        Анкет засуулах
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
             )
           })}
         </div>
@@ -515,7 +536,7 @@ export default function StaffJobsPage() {
                     <div className="flex gap-4 text-xs text-gray-400 mt-2">
                       <span>📍 {selectedJob.location}</span>
                       <span className="text-emerald-600 font-bold">
-                        💵 {getSalaryTypeText(selectedJob.salary_type)}: {selectedJob.salary}
+                        💵 {getSalaryTypeText(selectedJob.salary_type)}: {formatSalary(selectedJob.salary)}
                       </span>
                     </div>
                   </div>
@@ -566,7 +587,7 @@ export default function StaffJobsPage() {
         )
       })()}
 
-      {/* --- БАТАЛГААЖУУЛАХ МОДАЛ ЦОНХ (APPLE SLIDER СҮҮЛТҮҮРТЭЙ) --- */}
+      {/* --- БАТАЛГААЖУУЛАХ МОДАЛ ЦОНХ --- */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-70 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
@@ -584,7 +605,6 @@ export default function StaffJobsPage() {
                 ref={trackRef}
                 className="relative w-full h-14 bg-gray-100 rounded-2xl p-1 flex items-center select-none overflow-hidden border border-gray-200/60"
               >
-                {/* Арын хөтөч текст */}
                 <div 
                   className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400 transition-opacity"
                   style={{ opacity: Math.max(1 - sliderX / 100, 0) }}
@@ -592,7 +612,6 @@ export default function StaffJobsPage() {
                   Баруун тийш чирж илгээх ➔
                 </div>
 
-                {/* Чирдэг бөөрөнхий товчлуур */}
                 <div
                   ref={handleRef}
                   onMouseDown={(e) => handleDragStart(e.clientX)}
@@ -611,7 +630,6 @@ export default function StaffJobsPage() {
                 </div>
               </div>
 
-              {/* ҮГҮЙ, БУЦАХ ТОВЧЛУУР */}
               <button
                 onClick={() => { setShowConfirmModal(false); setPendingJobId(null); setSliderX(0); }}
                 className="w-full py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200/80 text-gray-500 text-xs md:text-sm font-bold rounded-2xl transition"
