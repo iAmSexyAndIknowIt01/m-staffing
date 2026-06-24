@@ -14,7 +14,7 @@ export async function GET() {
       )
     }
 
-    // 1. Эхлээд зөвхөн ажлын байрууд болон хүсэлтүүдийг татна (Алдаа гаргадаг холбоосыг хассан)
+    // 1. Эхлээд зөвхөн ажлын байрууд болон хүсэлтүүдийг татна
     const { data: jobsData, error: jobsError } = await supabase
       .from("mt_openjob")
       .select(`
@@ -32,7 +32,8 @@ export async function GET() {
     // 2. Олдсон ажлын байруудаас компаниудын ID-г (user_id) ялгаж авна
     const companyIds = Array.from(new Set(rawJobs.map((j: any) => j.user_id).filter(Boolean)))
 
-    let companiesMap: Record<string, { name: string; logo_url: string | null }> = {}
+    // ТҮЛХҮҮР ӨӨРЧЛӨЛТ: Record-ийн тип дээр 'id: string' нэмж өгөв
+    let companiesMap: Record<string, { id: string; name: string; logo_url: string | null }> = {}
 
     // 3. Хэрэв ажлын байрууд олдсон бол харгалзах компаниудын мэдээллийг тусад нь нэг хүсэлтээр татна
     if (companyIds.length > 0) {
@@ -43,10 +44,14 @@ export async function GET() {
 
       if (companiesError) throw companiesError
 
-      // Компаниудыг ID-аар нь хурдан хайхын тулд Map (Object) болгоно
+      // ЗАССАН: Компаниудыг ID-аар нь Map болгохдоо 'id'-г нь хамт хадгална
       if (companiesData) {
         companiesMap = companiesData.reduce((acc: any, company: any) => {
-          acc[company.id] = { name: company.company_name, logo_url: company.logo_url }
+          acc[company.id] = { 
+            id: company.id, // <-- Фронт руу дамжуулах ID
+            name: company.company_name, 
+            logo_url: company.logo_url 
+          }
           return acc
         }, {})
       }
@@ -57,13 +62,17 @@ export async function GET() {
       const isApplied = job.tr_job_request && job.tr_job_request.length > 0
       const { tr_job_request, ...cleanedJob } = job
 
-      // Харгалзах компанийн мэдээллийг Map-аас авна
-      const companyInfo = companiesMap[job.user_id] || { company_name: ["Байгууллагын нэр нууцалсан"], logo_url: null }
+      // ЗАССАН: Хэрэв компани олдохгүй бол id: null байхаар fallback утгыг засав
+      const companyInfo = companiesMap[job.user_id] || { 
+        id: null, 
+        name: "Байгууллагын нэр нууцалсан", 
+        logo_url: null 
+      }
 
       return {
         ...cleanedJob,
         is_applied: isApplied,
-        mt_company: companyInfo // Фронт талын кодонд яг ижил бүтэцтэй очно
+        mt_company: companyInfo // Одоо энд id, name, logo_url бүрэн очиж байгаа
       }
     })
 

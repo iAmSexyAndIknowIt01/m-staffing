@@ -1,8 +1,11 @@
 "use client"
 
 import React, { useEffect, useState, useMemo, useRef } from "react"
+import { useRouter } from "next/navigation"
 
 interface Company {
+  id?: string
+  company_id?: string // НАЙДВАРТАЙ БОЛГОХҮҮДНЭЭС: Энэ талбар ирж магадгүй тул нэмэв
   name: string
   logo_url: string | null
 }
@@ -23,6 +26,7 @@ interface Job {
 }
 
 export default function StaffJobsPage() {
+  const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -65,6 +69,23 @@ export default function StaffJobsPage() {
     
     const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project-id.supabase.co" 
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
+  }
+
+  // ЗАССАН: Компанийн ID аль нь ч байсан (id эсвэл company_id) олж унших уян хатан функц
+  const handleCompanyClick = (e: React.MouseEvent, company: Company | undefined) => {
+    e.preventDefault()
+    e.stopPropagation() // Картны onClick модал нээхийг бүрэн зогсооно
+    
+    if (!company) return
+
+    // Дата баазаас id эсвэл company_id гэж ирж байгааг давхар шалгана
+    const actualCompanyId = company.id || company.company_id
+
+    if (actualCompanyId) {
+      router.push(`/dashboard/company/profile/${actualCompanyId}`)
+    } else {
+      console.warn("Компанийн ID олдсонгүй:", company)
+    }
   }
 
   useEffect(() => {
@@ -380,7 +401,12 @@ export default function StaffJobsPage() {
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                      
+                      {/* ШИНЭЧИЛСЭН: handleCompanyClick функц рүү бүхэл бүтэн mt_company обьектыг дамжуулав */}
+                      <div 
+                        onClick={(e) => handleCompanyClick(e, job.mt_company)}
+                        className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs hover:scale-105 transition cursor-pointer"
+                      >
                         {logoFullUrl ? (
                           <img 
                             src={logoFullUrl} 
@@ -411,7 +437,20 @@ export default function StaffJobsPage() {
                         </div>
                         
                         <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
-                        <p className="text-sm font-medium text-gray-500 mt-0.5">{job.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
+                        
+                        {/* ШИНЭЧИЛСЭН: Компанийн нэр дээр дарж шилжих хэсэг */}
+                        <p className="text-sm font-semibold mt-0.5">
+                          {job.mt_company ? (
+                            <span 
+                              onClick={(e) => handleCompanyClick(e, job.mt_company)}
+                              className="text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1 transition cursor-pointer"
+                            >
+                              {job.mt_company.name} 🏢
+                            </span>
+                          ) : (
+                            <span className="text-gray-500 font-medium">Байгууллагын нэр нууцалсан</span>
+                          )}
+                        </p>
 
                         <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
                           <span>📍 {job.location || "Улаанбаатар"}</span>
@@ -432,7 +471,7 @@ export default function StaffJobsPage() {
                   </div>
                 </div>
 
-                {/* ШИНЭЧИЛСЭН: 5 ажил тутамд дундуур нь тусгай карт (Banner/Card) харуулна */}
+                {/* 5 ажил тутамд дундуур нь тусгай карт */}
                 {(index + 1) % 5 === 0 && (
                   <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -512,7 +551,11 @@ export default function StaffJobsPage() {
               {/* Модал Header */}
               <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-25 h-25 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                  {/* ШИНЭЧИЛСЭН: Модал доторх лого */}
+                  <div 
+                    onClick={(e) => handleCompanyClick(e, selectedJob.mt_company)}
+                    className="w-25 h-25 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 hover:scale-105 transition cursor-pointer"
+                  >
                     {modalLogoUrl ? (
                       <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
@@ -532,7 +575,21 @@ export default function StaffJobsPage() {
                       </span>
                     </div>
                     <h2 className="text-xl font-black text-gray-800">{selectedJob.title}</h2>
-                    <p className="text-sm text-gray-500 font-medium">{selectedJob.mt_company?.name || "Байгууллагын нэр нууцалсан"}</p>
+                    
+                    {/* ШИНЭЧИЛСЭН: Модал доторх компанийн нэр */}
+                    <p className="text-sm font-semibold mt-0.5">
+                      {selectedJob.mt_company ? (
+                        <span 
+                          onClick={(e) => handleCompanyClick(e, selectedJob.mt_company)}
+                          className="text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1 transition cursor-pointer"
+                        >
+                          {selectedJob.mt_company.name} 🏢
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 font-medium">Байгууллагын нэр нууцалсан</span>
+                      )}
+                    </p>
+
                     <div className="flex gap-4 text-xs text-gray-400 mt-2">
                       <span>📍 {selectedJob.location}</span>
                       <span className="text-emerald-600 font-bold">
