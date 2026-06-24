@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     // 2. URL-ААС JOB APPLICATION ID-Г АВАХ
     const { searchParams } = new URL(request.url)
-    const jobID = searchParams.get("id") // Энэ нь Job Application ID байна
+    const jobID = searchParams.get("id")
 
     if (!jobID) {
       return NextResponse.json(
@@ -27,11 +27,10 @@ export async function GET(request: Request) {
       )
     }
 
-    // 3. АНКЕТЫН ID-ААР СУУРЬ АЖИЛТНЫ STAFF_ID-Г ОЛОХ 🚀
-    // (Жич: Хэрэв танай анкетын хүснэгтийн нэр эсвэл талбарын нэр өөр бол солиорой)
+    // 3. АНКЕТЫН ID-ААР СУУРЬ АЖИЛТНЫ STAFF_ID-Г ОЛОХ
     const { data: applicationData, error: appError } = await supabase
-      .from("tr_job_request") // Анкет хадгалдаг хүснэгтийн нэр
-      .select("applicant_id, job_id ")     // Ажилтны ID хадгалдаг талбар
+      .from("tr_job_request")
+      .select("applicant_id, job_id")
       .eq("id", jobID)
       .maybeSingle()
 
@@ -46,9 +45,9 @@ export async function GET(request: Request) {
       )
     }
 
-    const realStaffId = applicationData.applicant_id // Жинхэнэ ажилтны ID-г оллоо!
+    const realStaffId = applicationData.applicant_id
 
-    // 4. STAFF NAME (Мастер хүснэгтээс жинхэнэ staff_id-аар нь хайх)
+    // 4. STAFF NAME
     const { data: staffData, error: staffError } = await supabase
       .from("mt_staff")
       .select("first_name, last_name")
@@ -59,7 +58,7 @@ export async function GET(request: Request) {
       throw staffError
     }
 
-    // 5. PROFILE DATA
+    // 5. PROFILE DATA (photo_url-ийг унших)
     const { data: profileData, error: profileError } = await supabase
       .from("mt_profile")
       .select(`
@@ -68,7 +67,8 @@ export async function GET(request: Request) {
         phone,
         bio,
         skills,
-        availability
+        availability,
+        photo_url
       `)
       .eq("user_id", realStaffId)
       .maybeSingle()
@@ -141,7 +141,7 @@ export async function GET(request: Request) {
       isCurrent: edu.is_current,
     })) || []
 
-    // МЭДЭЭЛЛҮҮДИЙГ НЭГТГЭХ
+    // ТАНЫ АЖИЛТНЫ API-ТАЙ ЯГ ИЖИЛХЭН БҮТЭЦТЭЙ БОЛГОЖ НЭГТГЭХ (avatar_url болгов)
     const profile = {
       full_name: staffData 
         ? `${staffData.last_name || ""} ${staffData.first_name || ""}`.trim()
@@ -149,6 +149,7 @@ export async function GET(request: Request) {
       email: profileData?.email || "",
       phone: profileData?.phone || "",
       bio: profileData?.bio || "",
+      avatar_url: profileData?.photo_url || "", // Баазад байгаа бүтэн URL-ийг шууд онооно
       skills: {
         technical: technicalSkills,
         languages: languageSkills,

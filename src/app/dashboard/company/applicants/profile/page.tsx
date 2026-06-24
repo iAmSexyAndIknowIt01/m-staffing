@@ -55,6 +55,7 @@ function ApplicantProfileContent() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [bio, setBio] = useState("")
+  const [avatarUrl, setAvatarUrl] = useState("") // Зургийн URL state
   const [skills, setSkills] = useState<{ technical: string[]; languages: string[] }>({
     technical: [],
     languages: [],
@@ -86,11 +87,14 @@ function ApplicantProfileContent() {
           setEmail(result.profile.email || "")
           setPhone(result.profile.phone || "")
           setBio(result.profile.bio || "")
+          
+          // ЗАСВАР: Компанийн API-аас ирж буй avatar_url-ийг уншина 🚀
+          setAvatarUrl(result.profile.avatar_url || "") 
+          
           setSkills(result.profile.skills || { technical: [], languages: [] })
           setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
           setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
           
-          // Дата дутуу ирэхээс сэргийлж нэгтгэх (Deep Merge fallback)
           setAvailability({
             ...initialAvailability,
             ...(result.profile.availability || {})
@@ -134,11 +138,24 @@ function ApplicantProfileContent() {
         {/* LEFT PANEL - ХУВИЙН МЭДЭЭЛЭЛ */}
         <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6 self-start">
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
-            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl font-black mb-3">
-              {fullName ? fullName.charAt(0) : "👤"}
+            
+            {/* АВАТАР ХАРАГДАХ СЕКЦ */}
+            <div className="w-32 h-32 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden border border-gray-100 shadow-inner">
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover rounded-2xl" 
+                />
+              ) : (
+                <span className="text-4xl font-black text-indigo-600">
+                  {fullName ? fullName.charAt(0) : "👤"}
+                </span>
+              )}
             </div>
-            <h3 className="font-bold text-gray-800 text-lg">{fullName || "Нэргүй"}</h3>
-            <p className="text-xs text-gray-400">Ажил хайгч</p>
+
+            <h3 className="font-bold text-gray-800 text-lg mt-3">{fullName || "Нэргүй"}</h3>
+            <p className="text-xs text-gray-400">Ажил хайгч ажилтан</p>
           </div>
 
           <div>
@@ -259,7 +276,7 @@ function ApplicantProfileContent() {
             )}
           </div>
 
-          {/* AVAILABILITY (ЗАСВАР ОРСОН ХЭСЭГ) */}
+          {/* AVAILABILITY */}
           <div>
             <label className="text-sm font-bold block mb-1">🕒 Ажиллах боломжтой цаг</label>
             <div className="space-y-2.5 mt-2">
@@ -272,7 +289,6 @@ function ApplicantProfileContent() {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-                // optional chaining (?.) болон fallback хоосон объект ашиглан undefined болохоос сэргийлэв
                 const currentAvailability = availability || initialAvailability
                 const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
                 
