@@ -108,7 +108,7 @@ export default function LoginPage() {
 
       <div
         className="
-          max-w-[1200px]
+          max-w-300
 
           w-full
 
@@ -132,7 +132,7 @@ export default function LoginPage() {
 
             rounded-[44px]
 
-            min-h-[720px]
+            min-h-180
 
             flex
             items-center
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
               bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)]
 
-              bg-[size:70px_70px]
+              bg-size-[70px_70px]
             "
           />
 
@@ -166,8 +166,8 @@ export default function LoginPage() {
               top-[10%]
               left-[5%]
 
-              w-[520px]
-              h-[520px]
+              w-130
+              h-130
 
               rounded-full
 
@@ -183,11 +183,11 @@ export default function LoginPage() {
             className="
               absolute
 
-              bottom-[-150px]
-              right-[-100px]
+              -bottom-37.5
+              -right-25
 
-              w-[500px]
-              h-[500px]
+              w-125
+              h-125
 
               rounded-full
 
