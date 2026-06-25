@@ -4,48 +4,57 @@ interface StaffViewProps {
   userId: string
 }
 
-export default function StaffView({ userId }: StaffViewProps) {
-  // Жишээ болгон санал болгож буй ажлуудыг дата хэлбэрт оруулав (Шаардлагатай бол API-аас авна)
-  const recommendedJobs = [
-    {
-      id: "1",
-      title: "Senior Frontend Developer",
-      company: "Голомт Банк",
-      type: "Бүтэн цаг",
-      location: "Улаанбаатар",
-      salary: "4.5м - 6.0м ₮",
-      category: "IT / Инженер"
-    },
-    {
-      id: "2",
-      title: "UI/UX Designer",
-      company: "Мобиком Корпораци",
-      type: "Бүтэн цаг",
-      location: "Зайнаас (Remote)",
-      salary: "3.0м - 4.5м ₮",
-      category: "Дизайн"
-    }
-  ]
+interface Job {
+  id: string
+  title: string
+  company: string
+  type: string
+  location: string
+  salary: string
+  category: string
+}
 
-  // Сүүлийн үеийн хүсэлтүүдийн төлөв (Шинээр нэмэгдсэн)
-  const recentApplications = [
-    {
-      id: "app-1",
-      title: "Node.js Developer",
-      company: "Инвескор ББСБ",
-      date: "2 өдрийн өмнө",
-      status: "Хянагдаж буй",
-      statusColor: "bg-amber-50 text-amber-600 border-amber-100"
-    },
-    {
-      id: "app-2",
-      title: "Product Manager",
-      company: "Юнител Групп",
-      date: "1 долоо хоногийн өмнө",
-      status: "Ярилцлага",
-      statusColor: "bg-emerald-50 text-emerald-600 border-emerald-100"
-    }
-  ]
+interface Application {
+  id: string
+  title: string
+  company: string
+  date: string
+  status: string
+  statusColor: string
+}
+
+interface DashboardData {
+  stats: {
+    appliedCount: number
+    appliedThisWeek: string
+    viewedCompaniesCount: number
+    cvViewRate: string
+  }
+  profileProgress: number
+  recommendedJobs: Job[]
+  recentApplications: Application[]
+}
+
+async function getDashboardData(userId: string): Promise<DashboardData> {
+  const baseUrl = process.env.NODE_ENV === "production" 
+    ? "https://m-staffing.mn" 
+    : "http://localhost:3000"
+
+  // Таны үндсэн API зам руу хүсэлт илгээнэ
+  const res = await fetch(`${baseUrl}/api/staff/dashboard?userId=${userId}`, {
+    cache: "no-store", 
+  })
+
+  if (!res.ok) {
+    throw new Error("Dashboard-ын өгөгдлийг татаж чадсангүй.")
+  }
+
+  return res.json()
+}
+
+export default async function StaffView({ userId }: StaffViewProps) {
+  const data = await getDashboardData(userId)
+  const { stats, profileProgress, recommendedJobs, recentApplications } = data
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -68,23 +77,23 @@ export default function StaffView({ userId }: StaffViewProps) {
 
       {/* СТАТИСТИК КАРТУУД */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Хүсэлт */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Илгээсэн хүсэлт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">12</h3>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">+2 энэ долоо хоногт</span>
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.appliedCount}</h3>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
+              {stats.appliedThisWeek}
+            </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">
             ✉️
           </div>
         </div>
 
-        {/* Үзсэн компаниуд */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">45</h3>
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
             <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">Идэвхтэй хандалт</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
@@ -92,11 +101,10 @@ export default function StaffView({ userId }: StaffViewProps) {
           </div>
         </div>
 
-        {/* CV Хандалт */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">CV хандалт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">89%</h3>
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.cvViewRate}</h3>
             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Маш сайн 🚀</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
@@ -108,7 +116,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       {/* ГОЛ КОНТЕНТ СЕКЦ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
-        {/* ЗҮҮН ТАЛ: АЖЛЫН БАЙР БОЛОН ХҮСЭЛТИЙН ТӨЛӨВ */}
+        {/* ЗҮҮН ТАЛ */}
         <div className="lg:col-span-2 space-y-8">
           
           {/* САНАЛ БОЛГОХ АЖЛУУД */}
@@ -116,12 +124,13 @@ export default function StaffView({ userId }: StaffViewProps) {
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Санал болгож буй ажлын байрууд</h2>
               <Link href="/dashboard/staff/jobs" className="text-xs font-bold text-indigo-600 hover:underline">
-                Бүгдийг үзэх →
+                Бүгдийг үзэх ({recommendedJobs.length}) →
               </Link>
             </div>
 
             <div className="space-y-3">
-              {recommendedJobs.map((job) => (
+              {/* ⚠️ .slice(0, 2) ашиглаж зөвхөн эхний 2 ажлыг дэлгэц дээр харуулна */}
+              {recommendedJobs.slice(0, 2).map((job) => (
                 <Link
                   key={job.id}
                   href={`/staff/jobs?id=${job.id}`}
@@ -137,19 +146,15 @@ export default function StaffView({ userId }: StaffViewProps) {
                           {job.type}
                         </span>
                       </div>
-                      
                       <h4 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">
                         {job.title}
                       </h4>
-                      
                       <p className="text-sm font-semibold text-gray-500">{job.company}</p>
-                      
                       <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
                         <span className="flex items-center gap-1">📍 {job.location}</span>
                         <span className="flex items-center gap-1 text-emerald-600 font-bold">💰 {job.salary}</span>
                       </div>
                     </div>
-                    
                     <div className="flex justify-end sm:block">
                       <span className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-sm font-bold transition-all shadow-sm">
                         →
@@ -158,20 +163,24 @@ export default function StaffView({ userId }: StaffViewProps) {
                   </div>
                 </Link>
               ))}
+              {recommendedJobs.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">Одоогоор санал болгох ажил алга.</p>
+              )}
             </div>
           </div>
 
-          {/* МИНИЙ ХҮСЭЛТҮҮДИЙН ТӨЛӨВ (Шинээр нэмэгдсэн блок) */}
+          {/* МИНИЙ ХҮСЭЛТҮҮДИЙН ТӨЛӨВ */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Илгээсэн анкетын төлөв</h2>
               <Link href="/dashboard/staff/applications" className="text-xs font-bold text-indigo-600 hover:underline">
-                Түүх үзэх →
+                Түүх үзэх ({recentApplications.length}) →
               </Link>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentApplications.map((app) => (
+              {/* ⚠️ .slice(0, 2) ашиглаж зөвхөн сүүлийн 2 анкетыг дэлгэц дээр харуулна */}
+              {recentApplications.slice(0, 2).map((app) => (
                 <div 
                   key={app.id}
                   className="bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-gray-200 transition-all"
@@ -189,33 +198,35 @@ export default function StaffView({ userId }: StaffViewProps) {
                   </div>
                 </div>
               ))}
+              {recentApplications.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4 col-span-full">Та хараахан анкет илгээгээгүй байна.</p>
+              )}
             </div>
           </div>
 
         </div>
 
-        {/* БАРУУН ТАЛ: ПРОФАЙЛ СЕКЦ БОЛОН КАРЬЕР ЗӨВЛӨГӨӨ */}
+        {/* БАРУУН ТАЛ */}
         <div className="space-y-6">
-          
-          {/* ПРОФАЙЛ КАРТ */}
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-6">
             <div>
               <h3 className="font-black text-lg text-gray-900">Миний Профайл</h3>
               <p className="text-xs text-gray-400 mt-1">Таны систем дэх бүртгэл баталгаажсан байна.</p>
             </div>
 
-            {/* Профайлын бөглөлтийн явц */}
             <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-gray-500">Профайл бөглөлт</span>
-                <span className="text-indigo-600">90%</span>
+                <span className="text-indigo-600">{profileProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: "90%" }} />
+                <div 
+                  className="bg-indigo-600 h-full rounded-full transition-all duration-500" 
+                  style={{ width: `${profileProgress}%` }} 
+                />
               </div>
             </div>
 
-            {/* Хурдан хийх үйлдлүүд */}
             <div className="flex flex-col gap-2">
               <Link 
                 href="/staff/profile" 
@@ -232,7 +243,6 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
           </div>
 
-          {/* КАРЬЕРЫН ЗӨВЛӨГӨӨ БЛОК (Шинээр нэмэгдсэн блок) */}
           <div className="bg-linear-to-br from-orange-50 via-amber-50/40 to-white border border-orange-100/70 p-6 rounded-4xl shadow-sm space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">💡</span>
@@ -253,7 +263,6 @@ export default function StaffView({ userId }: StaffViewProps) {
               Үргэлжлүүлж унших →
             </Link>
           </div>
-
         </div>
 
       </div>
