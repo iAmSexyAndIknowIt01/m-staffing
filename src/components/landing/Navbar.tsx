@@ -14,9 +14,8 @@ export default function Navbar() {
 
       <div
         className="
-          max-w-[1440px]
+          max-w-360
           mx-auto
-
           px-6
           pt-5
         "
@@ -25,22 +24,15 @@ export default function Navbar() {
         <div
           className="
             glass
-
-            h-[64px]
-
+            h-16
             rounded-full
-
             px-6
-
             flex
             items-center
             justify-between
-
             border
             border-white/20
-
             backdrop-blur-xl
-
             shadow-[0_20px_60px_rgba(255,120,0,.08)]
           "
         >
@@ -60,17 +52,13 @@ export default function Navbar() {
               className="
                 w-10
                 h-10
-
                 rounded-xl
-
-                bg-gradient-to-br
+                bg-linear-to-br
                 from-orange-500
                 to-orange-300
-
                 flex
                 items-center
                 justify-center
-
                 text-white
                 font-black
               "
@@ -87,9 +75,9 @@ export default function Navbar() {
                   leading-none
                 "
               >
-                <span className="orange-text">
-                  MStaffing
-                </span>
+                {/* 🛠️ M үсгийг хар өнгөтэй, Staffing-ийг orange өнгөтэй болгов */}
+                <span className="text-orange-500">M</span>
+                <span className="text-orange-500">Staffing</span>
               </h1>
 
               <p
@@ -111,9 +99,7 @@ export default function Navbar() {
             className="
               hidden
               lg:flex
-
               items-center
-
               gap-8
             "
           >
@@ -123,12 +109,10 @@ export default function Navbar() {
                 label: "Ажил Хайх",
                 href: "/dashboard/staff/jobs",
               },
-
               {
                 label: "Staff Хайх",
                 href: "/dashboard/company/applicants",
               },
-
               {
                 label: "Яагаад MStaffing",
                 href: "#features",
@@ -141,27 +125,17 @@ export default function Navbar() {
                 scroll={true}
                 className="
                   relative
-
                   text-[15px]
-
                   text-gray-700
-
                   hover:text-orange-500
-
                   transition
-
                   after:absolute
                   after:left-0
                   after:-bottom-1
-
-                  after:h-[2px]
-
+                  after:h-0.5
                   after:w-0
-
                   after:bg-orange-500
-
                   hover:after:w-full
-
                   after:transition-all
                 "
               >
@@ -183,28 +157,21 @@ export default function Navbar() {
           >
 
             <Link href="/login">
-
               <button
                 className="
                   orange-btn
-
-                  h-[44px]
+                  h-11
                   px-7
-
                   text-sm
-
                   flex
                   items-center
                   justify-center
-
                   hover:scale-[1.03]
-
                   transition
                 "
               >
                 Нэвтрэх
               </button>
-
             </Link>
 
           </div>

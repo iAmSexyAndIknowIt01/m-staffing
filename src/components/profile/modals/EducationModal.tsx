@@ -7,7 +7,7 @@ export type Education = {
   degree: string
   field: string
   graduationYear: string
-  isCurrent?: boolean // 1. Одоо суралцаж буй эсэхийг хадгалах шинэ талбар
+  isCurrent?: boolean
 }
 
 type Props = {
@@ -42,13 +42,11 @@ export default function EducationModal({ open, value, onSave, onClose }: Props) 
 
   const handleAddOrUpdate = () => {
     if (!form.school.trim()) return alert("Сургуулийн нэрийг оруулна уу")
-    // Хэрэв одоо суралцаж буй бол төгссөн оныг хоосон болгох эсвэл шалгахгүй байх
     if (!form.isCurrent && !form.graduationYear.trim()) {
       return alert("Төгссөн оноо оруулна уу эсвэл 'Одоо суралцаж буй' сонголтыг сонгоно уу")
     }
 
     let updated: Education[]
-    // Хадгалахдаа хэрэв одоо суралцаж буй бол graduationYear-ийг цэвэрлэнэ
     const finalForm = {
       ...form,
       graduationYear: form.isCurrent ? "" : form.graduationYear
@@ -108,7 +106,6 @@ export default function EducationModal({ open, value, onSave, onClose }: Props) 
                       <h4 className="font-bold text-sm text-gray-800">{item.school}</h4>
                       <p className="text-xs text-gray-500">
                         {item.degree} {item.field && `— ${item.field}`} 
-                        {/* 2. Жагсаалт дээр статус харуулах логик */}
                         <span className="ml-1.5 font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[10px]">
                           {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                         </span>
@@ -164,7 +161,6 @@ export default function EducationModal({ open, value, onSave, onClose }: Props) 
               </div>
             </div>
 
-            {/* 3. CHECKBOX БОЛОН ТӨГССӨН ОНЫ ТАЛБАР */}
             <div className="space-y-3 pt-1">
               <label className="relative inline-flex items-center cursor-pointer gap-2 select-none">
                 <input
@@ -206,7 +202,8 @@ export default function EducationModal({ open, value, onSave, onClose }: Props) 
           <button
             type="button"
             onClick={handleFinalSave}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm"
+            disabled={list.length === 0} // 👈 Хэрэв жагсаалт хоосон бол идэвхгүй болгоно
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
             Батлах & Хадгалах ✨
           </button>
