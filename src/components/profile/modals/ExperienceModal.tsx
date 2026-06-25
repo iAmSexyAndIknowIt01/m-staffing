@@ -12,8 +12,8 @@ type Experience = {
 
 type Props = {
   open: boolean
-  value: Experience[] // Нийт туршлагын массив ирнэ
-  onSave: (data: Experience[]) => void // Шинэчлэгдсэн массивыг буцаана
+  value: Experience[]
+  onSave: (data: Experience[]) => void
   onClose: () => void
 }
 
@@ -26,17 +26,10 @@ const initialForm: Experience = {
 }
 
 export default function ExperienceModal({ open, value, onSave, onClose }: Props) {
-  // Модал дотор удирдах туршлагуудын жагсаалт
   const [list, setList] = useState<Experience[]>([])
-  
-  // Шинээр нэмж байгаа эсвэл засаж байгаа формын дата
   const [form, setForm] = useState<Experience>(initialForm)
   const [isCurrentJob, setIsCurrentJob] = useState(false)
-  
-  // null бол "Шинээр нэмэх" горим, тоо байвал "Засах" горим (индекс)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  
-  // Форм нээлттэй байгаа эсэх (Жагсаалт дундаас "Нэмэх" эсвэл "Засах" дарахад нээгдэнэ)
   const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
@@ -55,7 +48,6 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
     setShowForm(false)
   }
 
-  // Форм доторх өөрчлөлтийг жагсаалтад оруулах (Түр хадгалах)
   const handleAddOrUpdateToList = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -65,26 +57,22 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
     }
 
     if (editingIndex !== null) {
-      // Засаж байгаа бол
       const updated = [...list]
       updated[editingIndex] = itemData
       setList(updated)
     } else {
-      // Шинээр нэмж байгаа бол
       setList([...list, itemData])
     }
     
     resetForm()
   }
 
-  // Жагсаалтаас устгах
   const handleDeleteItem = (index: number) => {
     if (confirm("Энэ ажлын туршлагыг устгахдаа итгэлтэй байна уу?")) {
       setList(list.filter((_, idx) => idx !== index))
     }
   }
 
-  // Жагсаалтаас засахаар сонгох
   const handleEditItem = (index: number) => {
     const item = list[index]
     setForm(item)
@@ -93,7 +81,6 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
     setShowForm(true)
   }
 
-  // Эцсийн байдлаар үндсэн хуудас руу хадгалах
   const handleFinalSave = () => {
     onSave(list)
   }
@@ -120,7 +107,6 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
         {/* БӨДӨН */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
-          {/* ХЭРЭВ ФОРМ ХААЛТТАЙ БОЛ ЖАГСААЛТ БОЛОН "НЭМЭХ" ТОВЧ ХАРАГДАНА */}
           {!showForm ? (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -173,7 +159,6 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
               )}
             </div>
           ) : (
-            /* ХЭРЭВ ФОРМ НЭЭЛТТЭЙ БОЛ ОРУУЛАХ ХЭСЭГ ХАРАГДАНА */
             <form onSubmit={handleAddOrUpdateToList} className="space-y-4 border border-indigo-100 bg-indigo-50/30 p-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
               <h3 className="text-sm font-bold text-indigo-900">
                 {editingIndex !== null ? "Туршлага засах" : "Шинэ туршлага оруулах"}
@@ -280,7 +265,8 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
             <button
               type="button"
               onClick={handleFinalSave}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm"
+              disabled={list.length === 0} // 👈 Туршлагын жагсаалт хоосон үед идэвхгүй болгоно
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-sm transition-all"
             >
               Өөрчлөлтийг баталгаажуулж хадгалах
             </button>
