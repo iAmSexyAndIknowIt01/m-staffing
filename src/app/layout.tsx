@@ -24,8 +24,14 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Продакшн болон хөгжүүлэлтийн орчны URL-ийг тодорхойлох
+const baseUrl = process.env.NODE_ENV === "production" 
+  ? "https://m-staffing.mn" 
+  : "http://localhost:3000";
+
 // 2. SEO болон OpenGraph (Сошиал хуваалцалт) тохиргоо
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl), // 👈 1. Метадата зургийн алдааг зассан хэсэг
   title: {
     default: "M-Staffing | Ажлын байрны нэгдсэн систем",
     template: "%s | M-Staffing",
@@ -63,6 +69,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
+      data-scroll-behavior="smooth" // 👈 2. Хөтчийн scroll-behavior сануулгыг зассан хэсэг
       className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       style={{ scrollBehavior: "smooth" }}
     >
