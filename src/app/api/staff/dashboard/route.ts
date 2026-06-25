@@ -10,59 +10,53 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Хэрэглэгчийн ID шаардлагатай" }, { status: 400 });
     }
 
-    // Хурд болон гүйцэтгэлийг бодож query-үүдийг параллель ажиллуулна
+    // 1. Хүснэгтүүдийг хооронд нь холбохгүйгээр тус тусад нь датаг параллель татна
     const [
       jobRequestsCountResponse, 
       profileResponse,
       openJobsResponse,
-      recentApplicationsResponse
+      recentApplicationsResponse,
+      companyViewsCountResponse,
+      cvViewsCountResponse,
+      companiesResponse
     ] = await Promise.all([
-      // 1. Илгээсэн хүсэлтийн нийт тоог тоолох
-      supabase
-        .from("tr_job_request")
-        .select("*", { count: "exact", head: true })
-        .eq("applicant_id", userId),
-
-      // 2. Профайлын мэдээлэл татах
-      supabase
-        .from("mt_profile")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle(),
-
-      // 3. mt_openjob-оос хамгийн шинэ 100 ажлын байр татах
-      supabase
-        .from("mt_openjob")
-        .select("id, title, category, job_type, location, salary")
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(100),
-
-      // 4. Хэрэглэгчийн илгээсэн бүх анкетын төлөвийг татах
-      supabase
-        .from("tr_job_request")
-        .select(`
-          id,
-          status,
-          created_at,
-          mt_openjob (
-            title
-          )
-        `)
-        .eq("applicant_id", userId)
-        .order("created_at", { ascending: false })
+      supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId),
+      supabase.from("mt_profile").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("mt_openjob").select("id, title, category, job_type, location, salary, user_id").eq("status", "active").order("created_at", { ascending: false }).limit(100),
+      // ⚠️ Хэрэв бааз дээр чинь 'job_id' биш бол доорх нэрийг солиорой (жишээ нь: openjob_id)
+      supabase.from("tr_job_request").select("id, status, created_at, job_id").eq("applicant_id", userId).order("created_at", { ascending: false }),
+      supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId),
+      supabase.from("tr_cv_views").select("*", { count: "exact", head: true }).eq("staff_id", userId),
+      supabase.from("mt_company").select("id, company_name")
     ]);
 
-    // Профайл бөглөлтийн хувь тооцоолох
+    // Анкет илгээсэн ажлын байрнуудын мэдээллийг цуглуулж авах
+    // ⚠️ Баазын талбарын нэр чинь 'job_id' биш бол 'r.job_id'-ийг бас солино
+    const requestedJobIds = (recentApplicationsResponse.data || []).map((r: any) => r.job_id).filter(Boolean);
+    let relatedJobs: any[] = [];
+    if (requestedJobIds.length > 0) {
+      const { data } = await supabase.from("mt_openjob").select("id, title, user_id").in("id", requestedJobIds);
+      relatedJobs = data || [];
+    }
+
+    // Компаниудыг ID-аар нь хурдан хайх Map үүсгэнэ
+    // Энд String болон UUID-ийн төрлийн зөрүүг арилгахын тулд `.toString()` ашиглав
+    const companyMap = (companiesResponse.data || []).reduce((acc: any, curr: any) => {
+      if (curr.id) acc[curr.id.toString()] = curr.company_name;
+      return acc;
+    }, {});
+
+    // Ажлын байруудыг ID-аар нь хурдан хайх Map үүсгэнэ
+    const jobMap = relatedJobs.reduce((acc: any, curr: any) => {
+      if (curr.id) acc[curr.id.toString()] = curr;
+      return acc;
+    }, {});
+
+    // Профайл хувь бодох логик
     const profile = profileResponse.data;
     let profileProgress = 0;
-    
     if (profile) {
-      const targetFields = [
-        "email", "phone", "bio", "skills", 
-        "experience", "education", "availability", "photo_url"
-      ];
-      
+      const targetFields = ["email", "phone", "bio", "skills", "experience", "education", "availability", "photo_url"];
       let filledFieldsCount = 0;
       targetFields.forEach(field => {
         const val = profile[field];
@@ -70,66 +64,56 @@ export async function GET(request: Request) {
           filledFieldsCount++;
         }
       });
-
       profileProgress = Math.round((filledFieldsCount / targetFields.length) * 100);
     }
-
-    // Төлөвт тохируулан UI-ийн өнгө оноох функц
-    const getStatusStyle = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case "approved":
-        case "ярилцлага":
-          return "bg-emerald-50 text-emerald-600 border-emerald-100";
-        case "rejected":
-        case "татгалзсан":
-          return "bg-rose-50 text-rose-600 border-rose-100";
-        case "pending":
-        case "хянагдаж буй":
-        default:
-          return "bg-amber-50 text-amber-600 border-amber-100";
-      }
-    };
-
-    const getStatusText = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case "approved": return "Ярилцлага";
-        case "rejected": return "Татгалзсан";
-        case "pending": return "Хянагдаж буй";
-        default: return status || "Хянагдаж буй";
-      }
-    };
 
     const formatDate = (dateString: string) => {
       if (!dateString) return "";
       return new Date(dateString).toLocaleDateString("mn-MN"); 
     };
 
-    // Бэлэн болсон дата бүтэц
+    // Фронтод очих эцсийн дата
     const finalData = {
       stats: {
         appliedCount: jobRequestsCountResponse.count || 0,
         appliedThisWeek: "+0 энэ долоо хоногт", 
-        viewedCompaniesCount: 0,
-        cvViewRate: "100%",
+        viewedCompaniesCount: companyViewsCountResponse.count || 0,
+        cvViewRate: cvViewsCountResponse.count ? `${cvViewsCountResponse.count} удаа` : "0 удаа",
       },
       profileProgress: profileProgress,
-      recommendedJobs: (openJobsResponse.data || []).map((job: any) => ({
-        id: job.id,
-        title: job.title,
-        company: "Ажил олгогч", 
-        type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
-        location: job.location || "Улаанбаатар",
-        salary: job.salary ? `${job.salary} ₮` : "Тохиролцоно",
-        category: job.category
-      })),
-      recentApplications: (recentApplicationsResponse.data || []).map((app: any) => ({
-        id: app.id,
-        title: app.mt_openjob?.title || "Устгагдсан ажлын байр",
-        company: "Ажил олгогч",
-        date: formatDate(app.created_at),
-        status: getStatusText(app.status),
-        statusColor: getStatusStyle(app.status)
-      }))
+      
+      // 1. Санал болгож буй ажлууд дээр компанийн нэрийг тааруулж зооно
+      recommendedJobs: (openJobsResponse.data || []).map((job: any) => {
+        const companyIdStr = job.user_id ? job.user_id.toString() : "";
+        return {
+          id: job.id,
+          title: job.title,
+          company: companyMap[companyIdStr] || "Ажил олгогч", 
+          type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
+          location: job.location || "Улаанбаатар",
+          salary: job.salary ? `${job.salary} ₮` : "Тохиролцоно",
+          category: job.category
+        };
+      }),
+
+      // 2. Илгээсэн анкет дээр ажлын нэр болон компанийн нэрийг тааруулж зооно
+      recentApplications: (recentApplicationsResponse.data || []).map((app: any) => {
+        // ⚠️ Хэрэв талбарын нэр чинь 'job_id' биш бол 'app.job_id'-ийг солиорой
+        const jobIdStr = app.job_id ? app.job_id.toString() : "";
+        const correspondingJob = jobMap[jobIdStr];
+        
+        const companyIdStr = correspondingJob?.user_id ? correspondingJob.user_id.toString() : "";
+        const compName = companyMap[companyIdStr];
+
+        return {
+          id: app.id,
+          title: correspondingJob?.title || "Устгагдсан ажлын байр",
+          company: compName || "Ажил олгогч",
+          date: formatDate(app.created_at),
+          status: app.status || "pending",
+          statusColor: "bg-amber-50 text-amber-600 border-amber-100"
+        };
+      })
     };
 
     return NextResponse.json(finalData);
