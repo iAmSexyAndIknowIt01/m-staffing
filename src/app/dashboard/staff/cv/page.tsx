@@ -93,9 +93,31 @@ export default function StaffCVPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mb-4"></div>
-        <p className="text-sm font-bold text-gray-500">Миний CV хуудсыг бэлдэж байна...</p>
+      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          
+          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+          
+          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          
+          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          
+          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
+          </div>
+          
+        </div>
+        
+        {/* Доор уншиж буйг илтгэх жижиг текст */}
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
       </div>
     )
   }
