@@ -324,7 +324,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Санал болгож буй ажлын байрууд</h2>
-              <Link href="/dashboard/staff/jobs" className="text-xs font-bold text-indigo-600 hover:underline">
+              <Link href={`/dashboard/staff/jobs/recommendedJobs?userId=${userId}`} className="text-xs font-bold text-indigo-600 hover:underline">
                 Бүгдийг үзэх ({recommendedJobs.length}) →
               </Link>
             </div>
@@ -378,7 +378,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Илгээсэн анкетын төлөв</h2>
-              <Link href="/dashboard/staff/applications" className="text-xs font-bold text-indigo-600 hover:underline">
+              <Link href={`/dashboard/staff/applications?userId=${userId}`} className="text-xs font-bold text-indigo-600 hover:underline">
                 Түүх үзэх ({recentApplications.length}) →
               </Link>
             </div>
