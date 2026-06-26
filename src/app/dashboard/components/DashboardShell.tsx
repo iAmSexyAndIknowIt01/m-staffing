@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/navigation"
 import { usePathname } from "next/navigation"
-import LinkNext from "next/link" // Next.js-ийн үндсэн Link-ийг импортлов
+import LinkNext from "next/link"
 
 interface DashboardShellProps {
   userId: string
@@ -45,9 +44,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           {/* Дээд хэсэг */}
           <div className="flex items-center justify-between px-2 py-2">
             {!isCollapsed && (
-              <span className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in">
+              /* 🌟 ЗАСАРСАН: Sidemenu-ийн логог /dashboard руу холбов */
+              <LinkNext href="/dashboard" className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in hover:opacity-80 transition">
                 MSTAFFING
-              </span>
+              </LinkNext>
             )}
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -86,11 +86,22 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   )
                 })()}
 
-                {/* Миний CV */}
+                {/* Миний Профайл */}
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
                   return (
                     <LinkNext href="/dashboard/staff/profile" className={linkClass}>
+                      <span className={iconClass}>👤</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний Профайл</span>}
+                    </LinkNext>
+                  )
+                })()}
+
+                {/* Миний CV */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/cv")
+                  return (
+                    <LinkNext href="/dashboard/staff/cv" className={linkClass}>
                       <span className={iconClass}>📄</span>
                       {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
                     </LinkNext>
@@ -121,7 +132,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   )
                 })()}
 
-                {/* ТАНЫ ХҮССЭНЭЭР: Компани профайл удирдах цэс */}
+                {/* Компани профайл удирдах цэс */}
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/company/profile")
                   return (
@@ -168,9 +179,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
       {/* MOBILE NAVBAR */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 z-50 flex items-center justify-between px-4">
-        <div className="font-black text-orange-500">
+        {/* 🌟 ЗАСАРСАН: Мобайл хувилбарын логог /dashboard руу холбож, дарахад мобайл цэсийг хаана */}
+        <LinkNext 
+          href="/dashboard" 
+          onClick={() => setMobileMenuOpen(false)}
+          className="font-black text-orange-500 hover:opacity-80 transition"
+        >
           MSTAFFING
-        </div>
+        </LinkNext>
 
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -208,6 +224,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   onClick={() => setMobileMenuOpen(false)}
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
+                  👤 Миний Профайл
+                </LinkNext>
+                
+                <LinkNext
+                  href="/dashboard/staff/cv"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
                   📄 Миний CV
                 </LinkNext>
               </>
@@ -229,7 +253,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   👥 Анкетууд
                 </LinkNext>
 
-                {/* ТАНЫ ХҮССЭНЭЭР: Мобайл цэсэнд нэмэгдсэн хэсэг */}
                 <LinkNext
                   href="/dashboard/company/profile"
                   onClick={() => setMobileMenuOpen(false)}
