@@ -257,7 +257,7 @@ if (loading) {
       {/* HEADER */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Миний CV / Профайл</h1>
+          <h1 className="text-3xl font-black text-gray-900">Миний профайл</h1>
           <p className="text-sm text-gray-400 mt-1">Ажил олгогчдод харагдах таны мэдээлэл</p>
         </div>
         <button

@@ -207,7 +207,7 @@ export default function StaffCVPage() {
             <div style={{ backgroundColor: "#f8fafc", padding: "35px 35px 35px 50px", borderRight: "1px solid #e2e8f0" }}>
               {profile.skills.technical && profile.skills.technical.length > 0 && (
                 <div style={{ marginBottom: "28px" }}>
-                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Ур чадварууд</h3>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Ур чадварууд</h3>
                   <div style={{ fontSize: "12px", color: "#334155", lineHeight: "1.8", fontWeight: "500" }}>
                     {profile.skills.technical.join(", ")}
                   </div>
@@ -216,7 +216,7 @@ export default function StaffCVPage() {
 
               {profile.skills.languages && profile.skills.languages.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Гадаад хэл</h3>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Гадаад хэл</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {profile.skills.languages.map((lang, index) => (
                       <div key={index} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: "600", color: "#475569" }}>
@@ -232,7 +232,7 @@ export default function StaffCVPage() {
             <div style={{ padding: "35px 50px 35px 35px" }}>
               {profile.experience && profile.experience.length > 0 && (
                 <div style={{ marginBottom: "28px" }}>
-                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Ажлын туршлага</h3>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Ажлын туршлага</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                     {profile.experience.map((exp, index) => (
                       <div key={index}>
@@ -256,7 +256,7 @@ export default function StaffCVPage() {
 
               {profile.education && profile.education.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Боловсрол</h3>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Боловсрол</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                     {profile.education.map((edu, index) => (
                       <div key={index}>
@@ -282,7 +282,7 @@ export default function StaffCVPage() {
         {/* ХҮҮДЭСНИЙ ДООД ХЭСЭГ */}
         <div style={{ borderTop: "1px solid #e2e8f0", padding: "16px 50px 24px 50px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "10px", color: "#94a3b8", fontWeight: "500", backgroundColor: "#ffffff" }}>
           <span></span>
-          <span style={{ fontWeight: "800", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c" }}>mstaffing</span>
+          <span style={{ fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.05em", color: "#ea580c" }}>mstaffing</span>
         </div>
       </div>
 
