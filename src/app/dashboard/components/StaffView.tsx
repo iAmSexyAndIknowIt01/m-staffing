@@ -470,12 +470,13 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
             <div className="flex flex-col gap-2">
               <Link href="/dashboard/staff/profile" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-indigo-600/10">Профайл засах ✏️</Link>
-              <Link 
-                href="/dashboard/staff/cv" 
-                className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block"
+              <button 
+                disabled={isDownloading}
+                onClick={handleDownloadCV}
+                className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Миний CV татах 📄
-              </Link>
+                {isDownloading ? "Татаж байна... ⏳" : "Миний CV татах 📄"}
+              </button>
             </div>
           </div>
 
@@ -635,7 +636,10 @@ export default function StaffView({ userId }: StaffViewProps) {
               Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно. Тасралтгүй урагшилсаар байгаарай!
             </p>
             <button
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => {
+                setShowSuccessModal(false)
+                window.location.reload() // Илгээсний дараа page-ийг reload хийнэ
+              }}
               className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-600/20 transition"
             >
               Ойлголоо 👍
