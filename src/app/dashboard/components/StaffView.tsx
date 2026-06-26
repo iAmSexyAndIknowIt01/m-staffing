@@ -71,6 +71,16 @@ export default function StaffView({ userId }: StaffViewProps) {
   const handleRef = useRef<HTMLDivElement>(null)
   const startXRef = useRef(0)
 
+  // ЦАЛИНГ ТАСЛАЛТАЙ БОЛГОХ ТУСЛАХ ФУНКЦ
+  const formatSalary = (salaryStr: string) => {
+    if (!salaryStr) return ""
+    // Зөвхөн тоонуудыг ялгаж авах (хэрэв ₮ эсвэл бусад тэмдэгт байвал цэвэрлэнэ)
+    const numericValue = salaryStr.replace(/[^0-9]/g, "")
+    if (!numericValue) return salaryStr // Хэрэв тоо биш (жишээ нь "Тохиролцоно") байвал хэвээр үлдээнэ
+    
+    return Number(numericValue).toLocaleString() + " ₮"
+  }
+
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
   }
@@ -388,7 +398,8 @@ export default function StaffView({ userId }: StaffViewProps) {
 
                         <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
                           <span>📍 {job.location}</span>
-                          <span className="text-emerald-600 font-bold">💰 {job.salary}</span>
+                          {/* Таслалтай форматлагдсан цалин */}
+                          <span className="text-emerald-600 font-bold">💰 {formatSalary(job.salary)}</span>
                         </div>
                       </div>
                       <div className="flex justify-end sm:block">
@@ -459,9 +470,6 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
             <div className="flex flex-col gap-2">
               <Link href="/dashboard/staff/profile" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-indigo-600/10">Профайл засах ✏️</Link>
-              
-              {/* handleDownloadCV функцтэй холбогдсон товчлуур */}
-{/* Өмнөх кодын баруун талын товчлуурыг ингэж өөрчилнө */}
               <Link 
                 href="/dashboard/staff/cv" 
                 className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block"
@@ -511,7 +519,8 @@ export default function StaffView({ userId }: StaffViewProps) {
               <hr className="border-gray-100" />
               <div className="space-y-3 text-sm text-gray-600 font-medium">
                 <p>📍 <b>Байршил:</b> {selectedJob.location}</p>
-                <p className="text-emerald-600">💰 <b>Цалин:</b> {selectedJob.salary}</p>
+                {/* Модал доторх таслалтай форматлагдсан цалин */}
+                <p className="text-emerald-600">💰 <b>Цалин:</b> {formatSalary(selectedJob.salary)}</p>
                 <div className="bg-gray-50 p-4 rounded-2xl mt-2 text-xs text-gray-600 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line">
                   <b className="text-gray-900 block mb-1">Ажлын тайлбар:</b> 
                   {selectedJob.description || "Ажлын тайлбар байхгүй байна."}

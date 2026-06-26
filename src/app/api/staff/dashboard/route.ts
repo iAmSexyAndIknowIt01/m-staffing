@@ -107,7 +107,7 @@ export async function GET(request: Request) {
           company: companyMap[companyIdStr] || "Ажил олгогч", 
           type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
           location: job.location || "Улаанбаатар",
-          salary: job.salary ? `${job.salary} ₮` : "Тохиролцоно",
+          salary: job.salary ? `${job.salary}` : "Тохиролцоно",
           category: job.category,
           description: job.description || "Ажлын тайлбар байхгүй байна."
         };
