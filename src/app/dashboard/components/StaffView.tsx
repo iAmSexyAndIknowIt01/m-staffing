@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface StaffViewProps {
   userId: string
@@ -9,6 +10,7 @@ interface StaffViewProps {
 
 interface Job {
   id: string
+  company_id?: string
   title: string
   company: string
   type: string
@@ -20,6 +22,7 @@ interface Job {
 
 interface Application {
   id: string
+  company_id?: string
   title: string
   company: string
   date: string
@@ -41,18 +44,17 @@ interface DashboardData {
 }
 
 export default function StaffView({ userId }: StaffViewProps) {
+  const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Урсгалын үндсэн төлөвүүд
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [selectedApp, setSelectedApp] = useState<Application | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false)
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
 
-  // Модалууд
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
@@ -62,14 +64,12 @@ export default function StaffView({ userId }: StaffViewProps) {
     title: "Мэдэгдэл"
   })
 
-  // --- SLIDE TO CONFIRM STATES & REFS ---
   const [sliderX, setSliderX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
   const startXRef = useRef(0)
 
-  // Алдартай alert-ийг орлох функц
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
   }
@@ -91,9 +91,29 @@ export default function StaffView({ userId }: StaffViewProps) {
       }
     }
     fetchData()
-  }   , [userId])
+  }, [userId])
 
-  // Ажил харах модал дотроос "Анкет илгээх" товч дарах үед профайл шалгах
+  // --- ЗАСАРСАН: ЗӨВХӨН COMPANY_ID ХҮЛЭЭЖ АВДАГ БОЛГОСОН ---
+  const handleCompanyClick = (e: React.MouseEvent, companyId: string | undefined) => {
+    e.preventDefault()
+    e.stopPropagation() 
+    
+    if (!companyId || typeof companyId !== "string") {
+      console.warn("Компанийн ID олдсонгүй эсвэл буруу байна:", companyId)
+      return
+    }
+
+    // Background-аар үзэлт логдох API руу хүсэлт шиднэ
+    fetch("/api/staff/companyView", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ company_id: companyId })
+    }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
+
+    // Шууд профайл руу нь үсэргэнэ
+    router.push(`/dashboard/company/profile/${companyId}`)
+  }
+
   const triggerApplyConfirmation = async (jobId: string) => {
     if (checkingProfile) return
     setCheckingProfile(true)
@@ -117,7 +137,6 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
-  // Слайдер амжилттай чирэгдэж дууссаны дараа анкет илгээх үндсэн функц
   const handleApplyJob = async () => {
     if (!pendingJobId) return
     
@@ -156,7 +175,6 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
-  // --- SLIDER EVENT HANDLERS ---
   const handleDragStart = (clientX: number) => {
     if (isSubmitting) return
     setIsDragging(true)
@@ -219,32 +237,19 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }, [isDragging, sliderX])
 
-  // ЭНД ХҮССЭН LOADER-ОО ОРУУЛАВ
-// ЭНД ХҮССЭН LOADER-ОО ОРУУЛАВ
-if (loading) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          
-          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
           <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          
-          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
           <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          
-          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
           <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          
-          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
             <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
-          
         </div>
-        
-        {/* Доор уншиж буйг илтгэх жижиг текст */}
         <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
@@ -328,10 +333,10 @@ if (loading) {
               {recommendedJobs.slice(0, 2).map((job) => {
                 const isJobApplied = appliedJobIds.includes(job.id);
                 return (
-                  <button
+                  <div
                     key={job.id}
                     onClick={() => setSelectedJob(job)}
-                    className="w-full text-left block bg-white border border-gray-100 hover:border-indigo-100 p-6 rounded-4xl shadow-sm hover:shadow-md transition-all group"
+                    className="w-full text-left block bg-white border border-gray-100 hover:border-indigo-100 p-6 rounded-4xl shadow-sm hover:shadow-md transition-all group cursor-pointer"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-2 flex-1">
@@ -343,7 +348,17 @@ if (loading) {
                           <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
                         </div>
                         <h4 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">{job.title}</h4>
-                        <p className="text-sm font-semibold text-gray-500">{job.company}</p>
+                        
+                        {/* ЗАСАРСАН: job.company_id-г дамжуулдаг болгов */}
+                        <div>
+                          <span 
+                            onClick={(e) => handleCompanyClick(e, job.company_id)}
+                            className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                          >
+                            🏢 {job.company}
+                          </span>
+                        </div>
+
                         <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
                           <span>📍 {job.location}</span>
                           <span className="text-emerald-600 font-bold">💰 {job.salary}</span>
@@ -353,7 +368,7 @@ if (loading) {
                         <span className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-sm font-bold transition-all shadow-sm">→</span>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -370,21 +385,31 @@ if (loading) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {recentApplications.slice(0, 2).map((app) => (
-                <button 
+                <div 
                   key={app.id}
                   onClick={() => setSelectedApp(app)}
-                  className="w-full text-left bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-indigo-100 hover:shadow-md transition-all group"
+                  className="w-full text-left bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer"
                 >
                   <div className="space-y-1">
                     <h4 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-indigo-600 transition-colors">{app.title}</h4>
-                    <p className="text-sm text-gray-500 font-medium">{app.company}</p>
+                    
+                    {/* ЗАСАРСАН: app.company_id-г дамжуулдаг болгов */}
+                    <div>
+                      <span 
+                        onClick={(e) => handleCompanyClick(e, app.company_id)}
+                        className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                      >
+                        🏢 {app.company}
+                      </span>
+                    </div>
+
                     <p className="text-[11px] text-gray-400 font-medium pt-0.5">📅 {app.date}</p>
                   </div>
                   <div className="flex items-center justify-between border-t border-gray-50 pt-3 w-full">
                     <span className="text-xs text-gray-400">Статус:</span>
                     <span className={`px-3 py-1 text-xs font-bold rounded-xl border ${app.statusColor}`}>{app.status}</span>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -395,7 +420,7 @@ if (loading) {
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-6">
             <div>
               <h3 className="font-black text-lg text-gray-900">Миний Профайл</h3>
-              <p className="text-xs text-gray-400 mt-1">Таны систем дэх бүртгэл баталгаажсан байна.</p>
+              <p className="text-xs text-gray-400 mt-1">Таны sistem дэх бүртгэл баталгаажсан байна.</p>
             </div>
             <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
               <div className="flex justify-between text-xs font-bold">
@@ -439,7 +464,16 @@ if (loading) {
                   <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
                 </div>
                 <h3 className="text-xl font-black text-gray-900">{selectedJob.title}</h3>
-                <p className="text-base font-bold text-indigo-600">{selectedJob.company}</p>
+                
+                {/* ЗАСАРСАН: selectedJob.company_id-г дамжуулдаг болгов */}
+                <div>
+                  <span 
+                    onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
+                    className="text-base font-black text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                  >
+                    🏢 {selectedJob.company}
+                  </span>
+                </div>
               </div>
               <hr className="border-gray-100" />
               <div className="space-y-3 text-sm text-gray-600 font-medium">
@@ -478,7 +512,17 @@ if (loading) {
             <button onClick={() => setSelectedApp(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">✕</button>
             <div className="space-y-1">
               <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
-              <p className="text-sm font-semibold text-gray-500">{selectedApp.company}</p>
+              
+              {/* ЗАСАРСАН: selectedApp.company_id-г дамжуулдаг болгов */}
+              <div>
+                <span 
+                  onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
+                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                >
+                  🏢 {selectedApp.company}
+                </span>
+              </div>
+
               <p className="text-xs text-gray-400 font-medium">📅 Илгээсэн огноо: {selectedApp.date}</p>
             </div>
             <hr className="border-gray-100" />
@@ -559,7 +603,7 @@ if (loading) {
         </div>
       )}
 
-      {/* --- ШИНЭ: МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
+      {/* --- МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
       {alertModal.show && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4">
