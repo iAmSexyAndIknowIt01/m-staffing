@@ -66,7 +66,7 @@ export default function SkillsModal({
       }
 
       const response = await fetch(
-        `/api/skills?q=${langInput}&type=language`
+        `/api/skills?q=${langInput}&type=languages`
       )
       const data = await response.json()
 
