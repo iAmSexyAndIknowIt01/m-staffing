@@ -67,7 +67,7 @@ export default function StaffCVPage() {
       const html2pdf = (await import("html2pdf.js")).default
       
       const opt = {
-        margin: 0, // Хоосон хуудас үүсэхээс сэргийлж 0 болгов
+        margin: 0,
         filename: `CV_${profile.full_name.replace(/\s+/g, "_")}.pdf`,
         image: { type: "jpeg" as const, quality: 0.98 },
         html2canvas: { 
@@ -78,8 +78,8 @@ export default function StaffCVPage() {
           scrollY: 0,
           scrollX: 0
         },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const }, // Хэмжээг A4 болгож засав
-        pagebreak: { mode: ["avoid-all", "css"] }
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
+        pagebreak: { mode: ["avoid-all"] }
       }
 
       await html2pdf().set(opt).from(cvTemplateRef.current).save()
@@ -94,7 +94,7 @@ export default function StaffCVPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full mb-4"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mb-4"></div>
         <p className="text-sm font-bold text-gray-500">Миний CV хуудсыг бэлдэж байна...</p>
       </div>
     )
@@ -106,7 +106,7 @@ export default function StaffCVPage() {
         <p className="text-red-500 font-bold mb-4">{error}</p>
         <button 
           onClick={() => router.back()} 
-          className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold"
+          className="px-5 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold"
         >
           ← Буцах
         </button>
@@ -117,24 +117,24 @@ export default function StaffCVPage() {
   if (!profile) return null
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 flex flex-col items-center">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 flex flex-col items-center">
       
       {/* УДИРДЛАГЫН ЦЭС */}
-      <div className="w-[210mm] flex items-center justify-between mb-6 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+      <div className="w-[210mm] flex items-center justify-between mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
         <button 
           onClick={() => router.back()} 
-          className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition border border-gray-200 flex items-center gap-1"
+          className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 rounded-lg transition border border-gray-200 flex items-center gap-1"
         >
           ← Буцах
         </button>
-        <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">CV Урьдчилан харах хэлбэр</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Premium CV хэлбэр</h2>
         <button
           onClick={handleDownloadPDF}
           disabled={isExporting}
-          className="px-5 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-2"
-          style={{ backgroundColor: "#4f46e5" }}
+          className="px-5 py-2.5 text-white font-bold text-xs rounded-lg transition flex items-center gap-2"
+          style={{ backgroundColor: "#ea580c" }} // Улбар шар товчлуур
         >
-          {isExporting ? "Бэлдэж байна..." : "PDF болгож татах 📥"}
+          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах 📥"}
         </button>
       </div>
 
@@ -144,27 +144,28 @@ export default function StaffCVPage() {
         style={{ 
           boxSizing: "border-box", 
           width: "210mm",
+          height: "297mm",
           minHeight: "297mm",
-          padding: "40px 50px 40px 50px", // Цэвэрхэн харагдуулах захын зай
+          overflow: "hidden",
           backgroundColor: "#ffffff", 
-          color: "#1f2937",
-          fontFamily: "Arial, sans-serif",
+          color: "#334155",
+          fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between"
         }}
       >
-        <div style={{ flexGrow: 1 }}>
+        <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
           
-          {/* ТОЛГОЙ ХЭСЭГ */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #1e1b4b", paddingBottom: "24px", marginBottom: "32px" }}>
-            <div style={{ width: "70%" }}>
-              <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#111827", margin: "0 0 12px 0", letterSpacing: "-0.05em" }}>{profile.full_name}</h1>
-              <p style={{ fontSize: "12px", color: "#4b5563", lineHeight: "1.6", margin: "0 0 16px 0", whiteSpace: "pre-line" }}>{profile.bio}</p>
+          {/* ТОЛГОЙ ХЭСЭГ (МЭДЭЭЛЭЛ + ЗУРАГ) - Улбар шар өнгөтэй болгов */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#ea580c", color: "#ffffff", padding: "40px 50px" }}>
+            <div style={{ width: "75%" }}>
+              <h1 style={{ fontSize: "32px", fontWeight: "800", margin: "0 0 8px 0", letterSpacing: "-0.03em" }}>{profile.full_name}</h1>
+              <p style={{ fontSize: "12px", color: "#ffedd5", lineHeight: "1.6", margin: "0 0 16px 0", whiteSpace: "pre-line", maxWidth: "90%" }}>{profile.bio}</p>
               
-              <div style={{ display: "flex", gap: "24px", fontSize: "12px", color: "#6b7280", fontWeight: "600" }}>
-                <div>✉️ {profile.email}</div>
-                <div>📞 {profile.phone}</div>
+              <div style={{ display: "flex", gap: "24px", fontSize: "12px", color: "#fff7ed" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📧 {profile.email}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📞 {profile.phone}</div>
               </div>
             </div>
             
@@ -172,63 +173,56 @@ export default function StaffCVPage() {
               <img 
                 src={profile.avatar_url} 
                 alt={profile.full_name} 
-                style={{ width: "112px", height: "128px", objectFit: "cover", borderRadius: "12px", border: "1px solid #e5e7eb", backgroundColor: "#f9fafb" }}
+                style={{ width: "100px", height: "120px", objectFit: "cover", borderRadius: "8px", border: "2px solid #ffedd5" }}
               />
             )}
           </div>
 
           {/* КОНТЕНТЫН ҮНДЭСЭН ХЭСЭГ */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "32px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", flexGrow: 1 }}>
             
-            {/* ЗҮҮН БАГАНА: УР ЧАДВАРУУД */}
-            <div style={{ borderRight: "1px solid #f3f4f6", paddingRight: "16px" }}>
+            {/* ЗҮҮН БАГАНА: УР ЧАДВАР + ХЭЛ */}
+            <div style={{ backgroundColor: "#f8fafc", padding: "35px 35px 35px 50px", borderRight: "1px solid #e2e8f0" }}>
               {profile.skills.technical && profile.skills.technical.length > 0 && (
-                <div style={{ marginBottom: "24px" }}>
-                  <h3 style={{ fontSize: "11px", fontWeight: "900", textTransform: "uppercase", tracking: "0.1em", color: "#1e1b4b", borderBottom: "1px solid #e0e7ff", paddingBottom: "4px", margin: "0 0 12px 0" }}>Мэргэжлийн чадвар</h3>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                    {profile.skills.technical.map((skill, index) => (
-                      <span 
-                        key={index} 
-                        style={{ padding: "4px 8px", fontSize: "10px", fontWeight: "700", borderRadius: "6px", backgroundColor: "#f9fafb", color: "#374151", border: "1px solid #f3f4f6" }}
-                      >
-                        {skill}
-                      </span>
-                    ))}
+                <div style={{ marginBottom: "28px" }}>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Ур чадварууд</h3>
+                  <div style={{ fontSize: "12px", color: "#334155", lineHeight: "1.8", fontWeight: "500" }}>
+                    {profile.skills.technical.join(", ")}
                   </div>
                 </div>
               )}
 
               {profile.skills.languages && profile.skills.languages.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: "11px", fontWeight: "900", textTransform: "uppercase", tracking: "0.1em", color: "#1e1b4b", borderBottom: "1px solid #e0e7ff", paddingBottom: "4px", margin: "0 0 12px 0" }}>Гадаад хэл</h3>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#c2410c", borderLeft: "3px solid #ea580c", paddingLeft: "8px", margin: "0 0 14px 0" }}>Гадаад хэл</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {profile.skills.languages.map((lang, index) => (
-                      <li key={index} style={{ fontSize: "12px", fontWeight: "700", color: "#4b5563", marginBottom: "4px" }}>
-                        ▪️ {lang}
-                      </li>
+                      <div key={index} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: "600", color: "#475569" }}>
+                        <span style={{ color: "#ea580c" }}>✓</span> {lang}
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* БАРУУН БАГАНА: ТУРШЛАГА БА БОЛОВСРОЛ */}
-            <div>
+            <div style={{ padding: "35px 50px 35px 35px" }}>
               {profile.experience && profile.experience.length > 0 && (
-                <div style={{ marginBottom: "32px" }}>
-                  <h3 style={{ fontSize: "11px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "0.1em", color: "#1e1b4b", borderBottom: "1px solid #e0e7ff", paddingBottom: "4px", margin: "0 0 16px 0" }}>Ажлын туршлага</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div style={{ marginBottom: "28px" }}>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Ажлын туршлага</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                     {profile.experience.map((exp, index) => (
-                      <div key={index} style={{ pageBreakInside: "avoid", breakInside: "avoid" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: "900", color: "#111827", margin: 0, width: "65%" }}>{exp.position}</h4>
-                          <span style={{ fontSize: "10px", fontWeight: "700", padding: "2px 8px", borderRadius: "4px", color: "#4f46e5", backgroundColor: "#e0e7ff", whiteSpace: "nowrap" }}>
-                            {exp.startDate} - {exp.endDate || "Одоог хүртэл"}
+                      <div key={index}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "3px" }}>
+                          <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>{exp.position}</h4>
+                          <span style={{ fontSize: "10px", fontWeight: "600", color: "#ea580c", whiteSpace: "nowrap" }}>
+                            {exp.startDate} — {exp.endDate || "Одоо"}
                           </span>
                         </div>
-                        <p style={{ fontSize: "12px", fontWeight: "700", color: "#6b7280", margin: "0 0 6px 0" }}>🏢 {exp.company}</p>
+                        <p style={{ fontSize: "11px", fontWeight: "600", color: "#ea580c", margin: "0 0 6px 0" }}>{exp.company}</p>
                         {exp.description && (
-                          <p style={{ fontSize: "12px", color: "#4b5563", lineHeight: "1.5", margin: 0, whiteSpace: "pre-line" }}>
+                          <p style={{ fontSize: "11px", color: "#475569", lineHeight: "1.5", margin: 0, whiteSpace: "pre-line" }}>
                             {exp.description}
                           </p>
                         )}
@@ -240,17 +234,17 @@ export default function StaffCVPage() {
 
               {profile.education && profile.education.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: "11px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "0.1em", color: "#1e1b4b", borderBottom: "1px solid #e0e7ff", paddingBottom: "4px", margin: "0 0 16px 0" }}>Боловсрол</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <h3 style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px", margin: "0 0 16px 0" }}>Боловсрол</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                     {profile.education.map((edu, index) => (
-                      <div key={index} style={{ pageBreakInside: "avoid", breakInside: "avoid" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2px" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: "900", color: "#111827", margin: 0 }}>{edu.school}</h4>
-                          <span style={{ fontSize: "10px", fontWeight: "700", color: "#9ca3af", whiteSpace: "nowrap" }}>
+                      <div key={index}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "3px" }}>
+                          <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>{edu.school}</h4>
+                          <span style={{ fontSize: "10px", fontWeight: "600", color: "#64748b", whiteSpace: "nowrap" }}>
                             {edu.isCurrent ? "Суралцаж буй" : `${edu.graduationYear} он`}
                           </span>
                         </div>
-                        <p style={{ fontSize: "12px", fontWeight: "700", color: "#4f46e5", margin: 0 }}>
+                        <p style={{ fontSize: "11px", fontWeight: "600", color: "#475569", margin: 0 }}>
                           {edu.degree} {edu.field && `• ${edu.field}`}
                         </p>
                       </div>
@@ -263,10 +257,10 @@ export default function StaffCVPage() {
           </div>
         </div>
 
-        {/* ХҮҮДЭСНИЙ ДООД ХЭСЭГ (Layout-д эвдрэл үүсгэхгүй кирил фонтоор хэвлэгдэнэ) */}
-        <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "16px", marginTop: "40px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "10px", color: "#9ca3af", fontWeight: "500", pageBreakInside: "avoid", breakInside: "avoid" }}>
-          <span>Мэдээллийн үнэн зөв байдлыг системээр баталгаажуулсан болно.</span>
-          <span style={{ fontWeight: "900", textTransform: "uppercase", tracking: "0.1em", color: "#1e1b4b" }}>mstaffing</span>
+        {/* ХҮҮДЭСНИЙ ДООД ХЭСЭГ */}
+        <div style={{ borderTop: "1px solid #e2e8f0", padding: "16px 50px 24px 50px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "10px", color: "#94a3b8", fontWeight: "500", backgroundColor: "#ffffff" }}>
+          <span></span>
+          <span style={{ fontWeight: "800", textTransform: "uppercase", tracking: "0.05em", color: "#ea580c" }}>mstaffing</span>
         </div>
       </div>
 
