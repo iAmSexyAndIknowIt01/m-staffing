@@ -53,7 +53,7 @@ export default function StaffView({ userId }: StaffViewProps) {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false) // CV татаж буй төлөв
+  const [isDownloading, setIsDownloading] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -74,11 +74,17 @@ export default function StaffView({ userId }: StaffViewProps) {
   // ЦАЛИНГ ТАСЛАЛТАЙ БОЛГОХ ТУСЛАХ ФУНКЦ
   const formatSalary = (salaryStr: string) => {
     if (!salaryStr) return ""
-    // Зөвхөн тоонуудыг ялгаж авах (хэрэв ₮ эсвэл бусад тэмдэгт байвал цэвэрлэнэ)
     const numericValue = salaryStr.replace(/[^0-9]/g, "")
-    if (!numericValue) return salaryStr // Хэрэв тоо биш (жишээ нь "Тохиролцоно") байвал хэвээр үлдээнэ
+    if (!numericValue) return salaryStr 
     
     return Number(numericValue).toLocaleString() + " ₮"
+  }
+
+  // 🌟 ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
+  const getCompanyViewStatus = (count: number) => {
+    if (count === 0) return "Хандалт хийгээгүй(7 хоногт)"
+    if (count <= 3) return "Идэвхтэй хандаж байна(7 хоногт)"
+    return "Маш идэвхтэй хандалт(7 хоногт) 🚀"
   }
 
   const showAlert = (message: string, title: string = "Анхааруулга") => {
@@ -117,12 +123,11 @@ export default function StaffView({ userId }: StaffViewProps) {
         throw new Error("CV файлыг татахад алдаа гарлаа.")
       }
 
-      // Файлыг Blob хэлбэрээр авч хэрэглэгчийн хөтөч дээр татуулах
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `CV_${userId}.pdf` // Татагдах файлын нэр
+      a.download = `CV_${userId}.pdf` 
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -333,11 +338,20 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">✉️</div>
         </div>
 
+        {/* 🌟 ҮЗСЭН КОМПАНИУД (ДИНАМИК СТАТУСТАЙ БОЛСОН ХЭСЭГ) */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
-            <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">Идэвхтэй хандалт</span>
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-lg ${
+              stats.viewedCompaniesCount === 0 
+                ? "text-gray-500 bg-gray-50" 
+                : stats.viewedCompaniesCount <= 3 
+                ? "text-indigo-600 bg-indigo-50" 
+                : "text-amber-600 bg-amber-50"
+            }`}>
+              {getCompanyViewStatus(stats.viewedCompaniesCount)}
+            </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">🏢</div>
         </div>
@@ -398,7 +412,6 @@ export default function StaffView({ userId }: StaffViewProps) {
 
                         <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
                           <span>📍 {job.location}</span>
-                          {/* Таслалтай форматлагдсан цалин */}
                           <span className="text-emerald-600 font-bold">💰 {formatSalary(job.salary)}</span>
                         </div>
                       </div>
@@ -520,7 +533,6 @@ export default function StaffView({ userId }: StaffViewProps) {
               <hr className="border-gray-100" />
               <div className="space-y-3 text-sm text-gray-600 font-medium">
                 <p>📍 <b>Байршил:</b> {selectedJob.location}</p>
-                {/* Модал доторх таслалтай форматлагдсан цалин */}
                 <p className="text-emerald-600">💰 <b>Цалин:</b> {formatSalary(selectedJob.salary)}</p>
                 <div className="bg-gray-50 p-4 rounded-2xl mt-2 text-xs text-gray-600 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line">
                   <b className="text-gray-900 block mb-1">Ажлын тайлбар:</b> 
@@ -638,7 +650,7 @@ export default function StaffView({ userId }: StaffViewProps) {
             <button
               onClick={() => {
                 setShowSuccessModal(false)
-                window.location.reload() // Илгээсний дараа page-ийг reload хийнэ
+                window.location.reload() 
               }}
               className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-600/20 transition"
             >

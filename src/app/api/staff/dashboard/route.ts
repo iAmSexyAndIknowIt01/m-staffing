@@ -12,19 +12,32 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Хэрэглэгчийн ID шаардлагатай" }, { status: 400 });
     }
 
+    // 🌟 Долоо хоногийн эхлэлийг (Даваа гараг 00:00:00) тооцоолох
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Хэрэв Ням гараг бол -6, бусад үед Даваа гараг руу шилжүүлнэ
+    const startOfWeek = new Date(now.setDate(diff));
+    startOfWeek.setHours(0, 0, 0, 0); // Цагийг 00:00:00 болгоно
+    const startOfWeekISO = startOfWeek.toISOString();
+
     // 1. Хүснэгтүүдийг хооронд нь холбохгүйгээр эхний ээлжинд хэрэгцээт датаг параллель татна
     const [
       jobRequestsCountResponse, 
+      jobRequestsThisWeekResponse, 
       profileResponse,
       recentApplicationsResponse,
-      companyViewsCountResponse,
+      companyViewsCountResponse, // 🌟 ЭНД СҮҮЛИЙН ДОЛОО ХОНОГООР ШҮҮЛТ ОРНО
       cvViewsCountResponse,
       companiesResponse
     ] = await Promise.all([
       supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId),
+      supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId).gte("created_at", startOfWeekISO),
       supabase.from("mt_profile").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("tr_job_request").select("id, status, created_at, job_id").eq("applicant_id", userId).order("created_at", { ascending: false }),
-      supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId),
+      
+      // 🌟 ЗАСАРСАН: Компани үзсэн тоог зөвхөн энэ долоо хоногийн хугацаагаар шүүнэ (.gte)
+      supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId).gte("created_at", startOfWeekISO),
+      
       supabase.from("tr_cv_views").select("*", { count: "exact", head: true }).eq("staff_id", userId),
       supabase.from("mt_company").select("id, company_name")
     ]);
@@ -88,10 +101,13 @@ export async function GET(request: Request) {
     };
 
     // Фронтод очих эцсийн дата
+    const thisWeekCount = jobRequestsThisWeekResponse.count || 0;
+
     const finalData = {
       stats: {
         appliedCount: jobRequestsCountResponse.count || 0,
-        appliedThisWeek: "+0 энэ долоо хоногт", 
+        appliedThisWeek: `+${thisWeekCount} энэ долоо хоногт`, 
+        // 🌟 Энд одоо зөвхөн энэ долоо хоногийн үзэлтийн тоо очих болно
         viewedCompaniesCount: companyViewsCountResponse.count || 0,
         cvViewRate: cvViewsCountResponse.count ? `${cvViewsCountResponse.count} удаа` : "0 удаа",
       },
@@ -102,7 +118,7 @@ export async function GET(request: Request) {
         const companyIdStr = job.user_id ? job.user_id.toString() : "";
         return {
           id: job.id,
-          company_id: companyIdStr, // 🌟 ЗАСАРСАН: Фронтод зориулж 'company_id' нэрээр дамжуулав
+          company_id: companyIdStr, 
           title: job.title,
           company: companyMap[companyIdStr] || "Ажил олгогч", 
           type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
@@ -123,7 +139,7 @@ export async function GET(request: Request) {
 
         return {
           id: app.id,
-          company_id: companyIdStr || null, // 🌟 ЗАСАРСАН: Уг ажлын байрыг үүсгэсэн компанийн ID-г фронтод өгөв
+          company_id: companyIdStr || null, 
           title: correspondingJob?.title || "Устгагдсан ажлын байр",
           company: compName || "Ажил олгогч",
           date: formatDate(app.created_at),
