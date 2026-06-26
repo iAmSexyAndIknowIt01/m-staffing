@@ -53,6 +53,7 @@ export default function StaffView({ userId }: StaffViewProps) {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false) // CV татаж буй төлөв
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -93,7 +94,36 @@ export default function StaffView({ userId }: StaffViewProps) {
     fetchData()
   }, [userId])
 
-  // --- ЗАСАРСАН: ЗӨВХӨН COMPANY_ID ХҮЛЭЭЖ АВДАГ БОЛГОСОН ---
+  // CV Татах функц
+  const handleDownloadCV = async () => {
+    if (isDownloading) return
+    setIsDownloading(true)
+    try {
+      const response = await fetch(`/api/staff/cv/download?userId=${userId}`, {
+        method: "GET",
+      })
+
+      if (!response.ok) {
+        throw new Error("CV файлыг татахад алдаа гарлаа.")
+      }
+
+      // Файлыг Blob хэлбэрээр авч хэрэглэгчийн хөтөч дээр татуулах
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `CV_${userId}.pdf` // Татагдах файлын нэр
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err: any) {
+      showAlert(err.message || "CV татахад алдаа гарлаа. Та дараа дахин оролдоно уу.", "Алдаа")
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   const handleCompanyClick = (e: React.MouseEvent, companyId: string | undefined) => {
     e.preventDefault()
     e.stopPropagation() 
@@ -103,14 +133,12 @@ export default function StaffView({ userId }: StaffViewProps) {
       return
     }
 
-    // Background-аар үзэлт логдох API руу хүсэлт шиднэ
     fetch("/api/staff/companyView", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ company_id: companyId })
     }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
 
-    // Шууд профайл руу нь үсэргэнэ
     router.push(`/dashboard/company/profile/${companyId}`)
   }
 
@@ -278,7 +306,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           href="/dashboard/staff/jobs" 
           className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-2xl border border-white/10 backdrop-blur-sm transition-all"
         >
-          Ажил хайх 🔍
+          Aжил хайх 🔍
         </Link>
       </div>
 
@@ -349,7 +377,6 @@ export default function StaffView({ userId }: StaffViewProps) {
                         </div>
                         <h4 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">{job.title}</h4>
                         
-                        {/* ЗАСАРСАН: job.company_id-г дамжуулдаг болгов */}
                         <div>
                           <span 
                             onClick={(e) => handleCompanyClick(e, job.company_id)}
@@ -393,7 +420,6 @@ export default function StaffView({ userId }: StaffViewProps) {
                   <div className="space-y-1">
                     <h4 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-indigo-600 transition-colors">{app.title}</h4>
                     
-                    {/* ЗАСАРСАН: app.company_id-г дамжуулдаг болгов */}
                     <div>
                       <span 
                         onClick={(e) => handleCompanyClick(e, app.company_id)}
@@ -420,7 +446,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-6">
             <div>
               <h3 className="font-black text-lg text-gray-900">Миний Профайл</h3>
-              <p className="text-xs text-gray-400 mt-1">Таны sistem дэх бүртгэл баталгаажсан байна.</p>
+              <p className="text-xs text-gray-400 mt-1">Таны систем дэх бүртгэл баталгаажсан байна.</p>
             </div>
             <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
               <div className="flex justify-between text-xs font-bold">
@@ -433,7 +459,15 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
             <div className="flex flex-col gap-2">
               <Link href="/dashboard/staff/profile" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-indigo-600/10">Профайл засах ✏️</Link>
-              <Link href="/dashboard/staff/cv" className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100">Миний CV татах 📄</Link>
+              
+              {/* handleDownloadCV функцтэй холбогдсон товчлуур */}
+{/* Өмнөх кодын баруун талын товчлуурыг ингэж өөрчилнө */}
+              <Link 
+                href="/dashboard/staff/cv" 
+                className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block"
+              >
+                Миний CV татах 📄
+              </Link>
             </div>
           </div>
 
@@ -465,7 +499,6 @@ export default function StaffView({ userId }: StaffViewProps) {
                 </div>
                 <h3 className="text-xl font-black text-gray-900">{selectedJob.title}</h3>
                 
-                {/* ЗАСАРСАН: selectedJob.company_id-г дамжуулдаг болгов */}
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
@@ -513,7 +546,6 @@ export default function StaffView({ userId }: StaffViewProps) {
             <div className="space-y-1">
               <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
               
-              {/* ЗАСАРСАН: selectedApp.company_id-г дамжуулдаг болгов */}
               <div>
                 <span 
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
