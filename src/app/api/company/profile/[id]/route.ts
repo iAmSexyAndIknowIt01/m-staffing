@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .from("mt_company")
       .select("id, company_name, email, phone, website, tagline, description, industry, company_size, facebook_url, linkedin_url, logo_url")
       .eq("id", id)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error("Supabase Error:", error.message)
