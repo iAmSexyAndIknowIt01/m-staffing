@@ -29,6 +29,7 @@ export default function StaffJobsPage() {
   const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const [isFiltering, setIsFiltering] = useState(false) 
   const [error, setError] = useState<string | null>(null)
   
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,7 +48,6 @@ export default function StaffJobsPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
 
-  // --- ШИНЭ: Сэрэмжлүүлэг/Алдааны модал төлөв ---
   const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
     show: false,
     message: "",
@@ -64,7 +64,6 @@ export default function StaffJobsPage() {
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
-  // Алдартай alert-ийг орлох функц
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
   }
@@ -84,6 +83,7 @@ export default function StaffJobsPage() {
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
   }
 
+  // ШИНЭЧЛЭГДСЭН: Үзэлт бүртгэх API дуудаж, хуудас шилжүүлэх функц
   const handleCompanyClick = (e: React.MouseEvent, company: Company | undefined) => {
     e.preventDefault()
     e.stopPropagation() 
@@ -92,6 +92,14 @@ export default function StaffJobsPage() {
     const actualCompanyId = company.id || company.company_id
 
     if (actualCompanyId) {
+      // Background-аар үзэлт логдох API руу хүсэлт шиднэ
+      fetch("/api/staff/companyView", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_id: actualCompanyId })
+      }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
+
+      // Хэрэглэгчийг хүлээлгэлгүй шууд профайл руу нь үсэргэнэ
       router.push(`/dashboard/company/profile/${actualCompanyId}`)
     } else {
       console.warn("Компанийн ID олдсонгүй:", company)
@@ -285,14 +293,21 @@ export default function StaffJobsPage() {
   }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
 
   useEffect(() => {    
+    setIsFiltering(true)
+    const timer = setTimeout(() => setIsFiltering(false), 350) 
     setCurrentPage(1)
+    return () => clearTimeout(timer)
   }, [searchQuery, selectedCategory, selectedJobType, filterApplied])
 
   useEffect(() => {
+    setIsFiltering(true)
+    const timer = setTimeout(() => setIsFiltering(false), 300)
+    
     jobsTopRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     })
+    return () => clearTimeout(timer)
   }, [currentPage])
 
   const totalPages = useMemo(
@@ -318,30 +333,19 @@ export default function StaffJobsPage() {
     [filteredJobs, currentPage]
   )
 
-if (loading) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          
-          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
           <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          
-          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
           <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          
-          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
           <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          
-          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
             <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
-          
         </div>
-        
-        {/* Доор уншиж буйг илтгэх жижиг текст */}
         <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
@@ -352,7 +356,12 @@ if (loading) {
   return (
     <div ref={jobsTopRef} className="space-y-8 min-h-screen pb-12">
       
-      {/* ТӨРӨЛ, ГАРЧИГ */}
+      {checkingProfile && (
+        <div className="fixed top-0 left-0 right-0 h-1.5 bg-indigo-100 z-100 overflow-hidden">
+          <div className="h-full bg-indigo-600 rounded-full w-1/2 animate-[bounce_1.5s_infinite] origin-left" style={{ animationDuration: '1s' }} />
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
@@ -364,7 +373,6 @@ if (loading) {
         </div>
       </div>
 
-      {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН СЕКЦ */}
       <div className="space-y-4">
         <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="relative flex items-center col-span-1 md:col-span-1">
@@ -428,8 +436,23 @@ if (loading) {
         </div>
       </div>
 
-      {/* АЖЛЫН БАЙРНЫ ЖАГСААЛТ */}
-      {filteredJobs.length === 0 ? (
+      {isFiltering ? (
+        <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
+          <div className="relative flex items-center justify-center h-20 w-20">
+            <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-lg animate-pulse" />
+            <div className="absolute inset-0 border border-dashed border-indigo-200 rounded-full animate-[spin_6s_linear_infinite]" />
+            <div className="absolute inset-1.5 border-t border-b border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+              <span className="text-[9px] font-black tracking-wider text-indigo-950 uppercase animate-pulse">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mt-4 animate-pulse">
+            Жагсаалтыг шинэчилж байна...
+          </p>
+        </div>
+      ) : filteredJobs.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center text-gray-400 shadow-sm flex flex-col items-center">
           <span className="text-5xl mb-3">🔍</span>
           <p className="font-semibold text-gray-600">Илэрц олдсонгүй</p>
@@ -519,12 +542,11 @@ if (loading) {
                   </div>
                 </div>
 
-                {/* 5 ажил тутамд дундуур нь тусгай карт */}
                 {(index + 1) % 5 === 0 && (
                   <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
-                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох бомыйж</span>
+                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох боломж</span>
                         <h3 className="text-lg font-bold mt-2">✨ CV-гээ үнэгүй зөвлүүлэх үйлчилгээ</h3>
                         <p className="text-xs text-white/80 mt-1">Мэргэжлийн рекрутерүүд таны анкетыг засаж, зөвлөгөө өгөх болно.</p>
                       </div>
@@ -541,7 +563,7 @@ if (loading) {
       )}
 
       {/* PAGINATION */}
-      {filteredJobs.length > 0 && totalPages > 1 && (
+      {filteredJobs.length > 0 && totalPages > 1 && !isFiltering && (
         <div className="flex flex-wrap justify-center items-center gap-2 mt-8">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -596,7 +618,6 @@ if (loading) {
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-50 flex flex-col justify-between">
               
-              {/* Модал Header */}
               <div className="p-6 border-b border-gray-100 sticky top-0 bg-white z-10 flex justify-between items-start gap-4">
                 <div className="flex items-start gap-4">
                   <div 
@@ -647,7 +668,6 @@ if (loading) {
                 <button onClick={() => setSelectedJob(null)} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-700 transition">✕</button>
               </div>
 
-              {/* Модал Body */}
               <div className="p-6 space-y-6 overflow-y-auto">
                 <div className="space-y-2">
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">📋 Ажлын үүрэг, тодорхойлолт</h4>
@@ -659,7 +679,6 @@ if (loading) {
                 </div>
               </div>
 
-              {/* Модал Footer */}
               <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex items-center justify-between">
                 <span className="text-xs text-gray-400">Нийтлэгдсэн: {new Date(selectedJob.created_at).toLocaleDateString("mn-MN")}</span>
                 <div className="flex gap-3">
@@ -678,9 +697,16 @@ if (loading) {
                     <button 
                       onClick={() => triggerApplyConfirmation(selectedJob.id)}
                       disabled={submitting || checkingProfile} 
-                      className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50"
+                      className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50 min-w-35 flex items-center justify-center gap-2"
                     >
-                      {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх 🚀"}
+                      {checkingProfile ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Шалгаж байна...</span>
+                        </>
+                      ) : (
+                        "Анкет илгээх 🚀"
+                      )}
                     </button>
                   )}
                 </div>
@@ -702,7 +728,6 @@ if (loading) {
               Анкет илгээх үйлдлийг баталгаажуулахын тулд баруун тийш чирнэ үү. Илгээсэн анкетыг цуцлах боломжгүй.
             </p>
 
-            {/* APPLE-LIKE SLIDER COMPONENT */}
             <div className="w-full mt-6 space-y-4">
               <div 
                 ref={trackRef}
@@ -719,7 +744,7 @@ if (loading) {
                   ref={handleRef}
                   onMouseDown={(e) => handleDragStart(e.clientX)}
                   onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-                  className={`absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg transition-transform`}
+                  className="absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg transition-transform"
                   style={{
                     transform: `translateX(${sliderX}px)`,
                     transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
@@ -745,16 +770,14 @@ if (loading) {
         </div>
       )}
 
-      {/* --- АМЖИЛТТАЙ ИЛГЭЭГДСЭН ҮЕИЙН МОДАЛ ЦОНХ --- */}
+      {/* --- АМЖИЛТТАЙ ИЛГЭЭГДСЭН ҮЕИЙН МОДАЛ --- */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-70 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center transform scale-100 transition-all">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce">
-              🚀
-            </div>
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce">🚀</div>
             <h3 className="text-xl font-black text-gray-900">Амжилттай илгээгдлээ!</h3>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-              Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно. Тасралтгүй урагшилсаар байгаарай!
+              Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно.
             </p>
             <button
               onClick={() => setShowSuccessModal(false)}
@@ -766,20 +789,15 @@ if (loading) {
         </div>
       )}
 
-      {/* --- ШИНЭ: МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
+      {/* --- МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
       {alertModal.show && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
-            <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner">
-              ⚠️
-            </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-70 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4">
             <h3 className="text-lg font-black text-gray-900">{alertModal.title}</h3>
-            <p className="text-sm text-gray-500 mt-2 leading-relaxed whitespace-pre-line">
-              {alertModal.message}
-            </p>
+            <p className="text-sm text-gray-500 leading-relaxed">{alertModal.message}</p>
             <button
-              onClick={() => setAlertModal(prev => ({ ...prev, show: false }))}
-              className="mt-6 w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl text-sm font-bold transition shadow-md"
+              onClick={() => setAlertModal((prev) => ({ ...prev, show: false }))}
+              className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition text-center"
             >
               Хаах
             </button>
