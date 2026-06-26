@@ -44,9 +44,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           {/* Дээд хэсэг */}
           <div className="flex items-center justify-between px-2 py-2">
             {!isCollapsed && (
-              <span className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in">
+              /* 🌟 ЗАСАРСАН: Sidemenu-ийн логог /dashboard руу холбов */
+              <LinkNext href="/dashboard" className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in hover:opacity-80 transition">
                 MSTAFFING
-              </span>
+              </LinkNext>
             )}
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -85,7 +86,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   )
                 })()}
 
-                {/* Миний Профайл - ИКОН ӨӨРЧЛӨГДСӨН (👤) */}
+                {/* Миний Профайл */}
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
                   return (
@@ -178,9 +179,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
       {/* MOBILE NAVBAR */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 z-50 flex items-center justify-between px-4">
-        <div className="font-black text-orange-500">
+        {/* 🌟 ЗАСАРСАН: Мобайл хувилбарын логог /dashboard руу холбож, дарахад мобайл цэсийг хаана */}
+        <LinkNext 
+          href="/dashboard" 
+          onClick={() => setMobileMenuOpen(false)}
+          className="font-black text-orange-500 hover:opacity-80 transition"
+        >
           MSTAFFING
-        </div>
+        </LinkNext>
 
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -213,7 +219,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   💼 Ажлын байрууд
                 </LinkNext>
 
-                {/* Мобайл Миний Профайл - ИКОН ӨӨРЧЛӨГДСӨН (👤) */}
                 <LinkNext
                   href="/dashboard/staff/profile"
                   onClick={() => setMobileMenuOpen(false)}
