@@ -80,6 +80,9 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
   const { stats, activeJobs, recentApplicants } = data
 
+  // Зөвхөн эхний 2 ажлын байрыг шүүж авна
+  const displayedJobs = activeJobs.slice(0, 2)
+
   return (
     <div className="animate-fade-in space-y-8">
       
@@ -92,14 +95,14 @@ export default function CompanyView({ userId }: CompanyViewProps) {
           </p>
         </div>
         <Link
-          href="/dashboard/company/post-job" // Таны өмнөх Shell-ийн замд тааруулав
+          href="/dashboard/company/post-job"
           className="px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-orange-500/25 flex items-center gap-2"
         >
           <span>+</span> Ажлын байр нэмэх
         </Link>
       </div>
 
-      {/* СТАТИСТИК КАРТУУД (Бодит өгөгдөлтэй холбогдсон) */}
+      {/* СТАТИСТИК КАРТУУД */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Нээлттэй ажлын байр */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
@@ -146,15 +149,26 @@ export default function CompanyView({ userId }: CompanyViewProps) {
           
           {/* ИДЭВХТЭЙ ЗАРЛАСАН АЖЛУУД */}
           <div className="space-y-4">
-            <h2 className="text-xl font-black text-gray-900 px-1">Танай идэвхтэй зарласан ажлууд</h2>
+            <div className="flex justify-between items-center px-1">
+              <h2 className="text-xl font-black text-gray-900">Танай идэвхтэй зарласан ажлууд</h2>
+              {/* Хэрэв нийт ажлын тоо 2-оос их бол "Бүгдийг харах" линк харагдана */}
+              {activeJobs.length > 2 && (
+                <Link 
+                  href="/dashboard/company/post-job" 
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition underline underline-offset-4"
+                >
+                  Бүгдийг харах ({activeJobs.length}) →
+                </Link>
+              )}
+            </div>
             
             <div className="space-y-3">
-              {activeJobs.length === 0 ? (
+              {displayedJobs.length === 0 ? (
                 <div className="text-center p-8 bg-white border border-gray-100 text-gray-400 font-medium rounded-4xl">
                   Одоогоор идэвхтэй ажлын байр байхгүй байна.
                 </div>
               ) : (
-                activeJobs.map((job) => (
+                displayedJobs.map((job) => (
                   <div 
                     key={job.id}
                     className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-all"
