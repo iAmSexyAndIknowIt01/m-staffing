@@ -58,8 +58,8 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
       <div className="border-b border-gray-100 pb-6">
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны зар засах ✏️</h1>
         <p className="text-gray-500 mt-2 text-sm md:text-base leading-relaxed">
-          Та өөрийн зарласан ажлын байрны мэдээллийг шинэчлэн үнэн зөв бөглөнө үү. 
-          Таны оруулсан өөрчлөлт шууд <span className="text-orange-500 font-semibold">mt_openjob</span> баазад шинэчлэгдэн хадгалагдах болно.
+          Та өөрийн зарласан ажлын байрны мэдээллийг шинэчлэн үнэн зөв бөглөнө үү.<br /> 
+          Таны оруулсан өөрчлөлт шууд баазад шинэчлэгдэн хадгалагдах болно.
         </p>
       </div>
 

@@ -19,8 +19,6 @@ interface CompanyProfileData {
 
 export default function CompanyProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  // 🔥 ШИНЭЧЛЭЛТ: Давхардаж дуудахаас сэргийлэх flag
   const isFetched = useRef(false)
 
   const [isEditMode, setIsEditMode] = useState(false)
@@ -46,7 +44,6 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     async function fetchProfile() {
-      // Хэрэв өмнө нь дуудагдсан бол дахиж ажиллахгүй
       if (isFetched.current) return
       isFetched.current = true
 
@@ -74,7 +71,6 @@ export default function CompanyProfilePage() {
         }
       } catch (err: any) {
         setMessage({ type: "error", text: err.message })
-        // Алдаа гарвал дараагийн удаа дахин дуудах боломж олгоно
         isFetched.current = false
       } finally {
         setPageLoading(false)
@@ -148,21 +144,41 @@ export default function CompanyProfilePage() {
     setMessage(null)
   }
 
-  if (pageLoading) {
-    return (
-      <div className="max-w-4xl mx-auto p-12 text-center text-gray-400 font-medium">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-100 rounded-3xl w-full"></div>
-          <div className="h-8 bg-gray-100 rounded-xl w-1/3"></div>
-          <div className="h-48 bg-gray-100 rounded-3xl w-full"></div>
-        </div>
-      </div>
-    )
-  }
+  // 🔄 Ямар нэгэн loading идэвхтэй байгаа эсэхийг шалгах
+  const showLoader = pageLoading || actionLoading || uploadingLogo;
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in px-4 sm:px-0 pb-16">
+    <div className="max-w-4xl mx-auto animate-fade-in px-4 sm:px-0 pb-16 relative">
       
+      {/* 🔄 БРЭНДИНГ LOADER ДЭЛГЭЦ */}
+      {showLoader && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
+          <div className="relative flex items-center justify-center h-32 w-32">
+            {/* 1. Ард талын зөөлөн гэрэлтэлт */}
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            
+            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            
+            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            
+            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          
+          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+            {pageLoading && "Профайл мэдээллийг ачаалж байна..."}
+            {uploadingLogo && "Лого зургийг шинэчилж байна..."}
+            {actionLoading && "Өөрчлөлтийг хадгалж байна..."}
+          </p>
+        </div>
+      )}
+
       {/* 1. БРЭНДИНГ ХЭСЭГ (COVER & LOGO) */}
       <div className="relative mb-24">
         <div className="h-40 md:h-48 bg-linear-to-r from-indigo-500 to-purple-600 rounded-3xl relative overflow-hidden shadow-sm">
@@ -185,7 +201,7 @@ export default function CompanyProfilePage() {
         {/* Лого */}
         <div className="absolute -bottom-16 left-6 md:left-10 p-1 bg-[#f8faff] rounded-3xl">
           <div 
-            onClick={() => isEditMode && !uploadingLogo && fileInputRef.current?.click()}
+            onClick={() => isEditMode && !showLoader && fileInputRef.current?.click()}
             className={`w-28 h-28 md:w-32 md:h-32 bg-white border-4 border-white rounded-3xl shadow-md flex flex-col items-center justify-center relative group overflow-hidden ${isEditMode ? 'cursor-pointer' : 'cursor-default'}`}
           >
             {formData.logo_url ? (
@@ -196,7 +212,7 @@ export default function CompanyProfilePage() {
             
             {isEditMode && (
               <div className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-bold">
-                {uploadingLogo ? "Уншиж байна..." : "Лого засах"}
+                Лого засах
               </div>
             )}
           </div>
@@ -215,8 +231,9 @@ export default function CompanyProfilePage() {
           {!isEditMode ? (
             <button
               type="button"
+              disabled={showLoader}
               onClick={() => setIsEditMode(true)}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition shadow-sm flex items-center gap-2"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition shadow-sm flex items-center gap-2 disabled:opacity-50"
             >
               <span>✏️</span> Мэдээлэл засах
             </button>
@@ -224,8 +241,9 @@ export default function CompanyProfilePage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                disabled={showLoader}
                 onClick={handleCancel}
-                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition"
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition disabled:opacity-50"
               >
                 Цуцлах
               </button>
@@ -252,14 +270,12 @@ export default function CompanyProfilePage() {
           </h3>
           
           {isEditMode ? (
-            // EDIT MODE
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Компанийн нэр *</label>
                   <input
                     type="text" required value={formData.company_name}
-                    // 💡 ТӨЛӨВ ЗАСАЛТ: prev ашиглаж найдвартай шинэчилдэг болгов
                     onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
@@ -314,7 +330,6 @@ export default function CompanyProfilePage() {
               </div>
             </div>
           ) : (
-            // VIEW MODE
             <div className="space-y-5">
               <div className="flex flex-wrap gap-2">
                 <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full">{formData.industry}</span>
@@ -337,7 +352,6 @@ export default function CompanyProfilePage() {
           </h3>
 
           {isEditMode ? (
-            // EDIT MODE
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -382,7 +396,6 @@ export default function CompanyProfilePage() {
               </div>
             </div>
           ) : (
-            // VIEW MODE
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div>
@@ -418,15 +431,15 @@ export default function CompanyProfilePage() {
           )}
         </div>
 
-        {/* ХАДГАЛАХ ТОВЧ (ЗӨВХӨН EDIT MODE ҮЕД ХАРАГДАНА) */}
+        {/* ХАДГАЛАХ ТОВЧ */}
         {isEditMode && (
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              disabled={actionLoading || uploadingLogo}
+              disabled={showLoader}
               className="w-full sm:w-auto px-8 py-3.5 bg-gray-950 hover:bg-gray-900 text-white font-bold text-sm rounded-2xl transition shadow-md disabled:opacity-50 active:scale-[0.98]"
             >
-              {actionLoading ? "Түр хүлээнэ үү..." : "Өөрчлөлтийг хадгалах 💾"}
+              Өөрчлөлтийг хадгалах 💾
             </button>
           </div>
         )}

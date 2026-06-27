@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 
 interface Applicant {
   id: string
@@ -23,6 +23,16 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedJobFilter, setSelectedJobFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  
+  // 🔄 Анхны дата уншиж байх үеийн төлөв
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
+
+  // Хуудас анх ачаалагдаж дуусахад loader-ийг хаана
+  useEffect(() => {
+    if (initialApplicants) {
+      setIsInitialLoading(false)
+    }
+  }, [initialApplicants])
 
   const uniqueJobs = useMemo(() => {
     const jobs = applicants.map((app) => app.job_title)
@@ -77,10 +87,40 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
     }
   }
 
+  // Сонгогдсон аль нэг loading идэвхтэй үед харуулна
+  const showLoader = isInitialLoading || updatingId !== null;
+
   return (
     <div className="space-y-6">
       
-      {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН ХЭСЭГ (Mobile friendly) */}
+      {/* 🔄 LOADER ДЭЛГЭЦ (Анх уншиж байх үед болон API хүсэлт дээр хоёуланд нь ажиллана) */}
+      {showLoader && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
+          <div className="relative flex items-center justify-center h-32 w-32">
+            {/* 1. Ард талын зөөлөн гэрэлтэлт */}
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            
+            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            
+            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            
+            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          
+          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+            {isInitialLoading ? "Анкетуудыг ачаалж байна..." : "Төлөв шинэчилж байна..."}
+          </p>
+        </div>
+      )}
+      
+      {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gray-50/50 p-3 md:p-4 border border-gray-100 rounded-2xl md:rounded-3xl">
         <div className="relative flex-1 w-full">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm md:text-base">🔍</span>
@@ -107,7 +147,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
         </div>
       </div>
 
-      {/* ТАБ ШҮҮЛТҮҮР (Mobile friendly - Скроллтой эсвэл уян хатан) */}
+      {/* ТАБ ШҮҮЛТҮҮР */}
       <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 bg-gray-100/80 w-full md:w-fit rounded-xl md:rounded-2xl overflow-x-auto no-scrollbar">
         {[
           { id: "all", label: `Бүгд (${applicants.length})` },
@@ -147,7 +187,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
                     <th className="px-8 py-5">Ажил хайгч & Илгээсэн ажлын байр</th>
-                    <th className="px-6 py-5">Холбоо барих</th>
+                    <th className="px-6 py-5">Ххолбоо барих</th>
                     <th className="px-6 py-5">Ирүүлсэн огноо</th>
                     <th className="px-6 py-5">Төлөв</th>
                     <th className="px-8 py-5 text-right">Үйлдэл</th>
@@ -160,7 +200,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                       <tr key={app.id} className="hover:bg-gray-50/50 transition">
                         <td className="px-8 py-5 max-w-xs">
                           <div className="font-bold text-gray-900 text-base mb-1.5">{app.user_name}</div>
-                          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50等">
+                          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
                             <span className="text-sm">💼</span> {app.job_title}
                           </div>
                         </td>
@@ -182,8 +222,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           </Link>
                           {["new", "pending", ""].includes(currentStatus) && (
                             <>
-                              <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "interview")} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl transition disabled:opacity-50">Урих</button>
-                              <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2 rounded-xl transition disabled:opacity-50">Татгалзах</button>
+                              <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl transition disabled:opacity-50">Урих</button>
+                              <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2 rounded-xl transition disabled:opacity-50">Татгалзах</button>
                             </>
                           )}
                         </td>
@@ -195,13 +235,12 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
             </div>
           </div>
 
-          {/* 📱 УТАСНЫ ДЭЛГЭЦЭНД ЗОРИУЛСАН КАРТЫН ЖАГСААЛТ (Mobile Layout) */}
+          {/* 📱 УТАСНЫ ДЭЛГЭЦЭНД ЗОРИУЛСАН КАРТЫН ЖАГСААЛТ */}
           <div className="block md:hidden space-y-3">
             {filteredApplicants.map((app) => {
               const currentStatus = app.status ? app.status.toLowerCase() : "";
               return (
                 <div key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-4">
-                  {/* Дээд хэсэг: Нэр болон Төлөв */}
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <div className="font-bold text-gray-900 text-base">{app.user_name}</div>
@@ -216,20 +255,17 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                     </div>
                   </div>
 
-                  {/* Дунд хэсэг: Ажлын байр */}
                   <div className="bg-slate-50 border border-gray-100 p-2.5 rounded-xl">
                     <div className="text-xs font-semibold text-gray-500 flex items-center gap-1.5">
                       <span>💼</span> {app.job_title}
                     </div>
                   </div>
 
-                  {/* Холбоо барих мэдээлэл */}
                   <div className="text-xs space-y-1 text-gray-600 font-medium pt-1 border-t border-gray-50">
                     <div>📞 {app.phone}</div>
                     <div className="text-gray-400 break-all">✉️ {app.email}</div>
                   </div>
 
-                  {/* Үйлдэл хийх товчнууд (Том утас дээр ч дарахад амархан) */}
                   <div className="flex gap-2 pt-2 border-t border-gray-50">
                     <Link 
                       href={`/dashboard/company/applicants/profile?id=${app.id}`} 
@@ -241,14 +277,14 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                     {["new", "pending", ""].includes(currentStatus) && (
                       <>
                         <button 
-                          disabled={updatingId === app.id} 
+                          disabled={showLoader} 
                           onClick={() => handleStatusChange(app.id, "interview")} 
                           className="flex-1 text-xs font-bold bg-emerald-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
                         >
                           Урих
                         </button>
                         <button 
-                          disabled={updatingId === app.id} 
+                          disabled={showLoader} 
                           onClick={() => handleStatusChange(app.id, "rejected")} 
                           className="px-3 text-xs font-bold bg-rose-50 text-rose-600 py-2.5 rounded-xl transition disabled:opacity-50"
                         >

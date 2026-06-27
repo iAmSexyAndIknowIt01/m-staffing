@@ -43,12 +43,15 @@ export default function PostJobPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
-  // API-аас дата татах хэсэг
+  // API-аас дата татах хэсэг (StrictMode-д зориулж зассан)
   useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
+
     async function fetchJobs() {
       try {
         setLoading(true)
-        const response = await fetch("/api/jobs")
+        const response = await fetch("/api/jobs", { signal })
         const result = await response.json()
 
         if (!response.ok) {
@@ -57,21 +60,32 @@ export default function PostJobPage() {
 
         setJobs(result.data || [])
       } catch (err: any) {
-        setError(err.message)
+        // StrictMode-оос болж цуцлагдсан хүсэлтийн алдааг state-д авахгүй алгасна
+        if (err.name !== "AbortError") {
+          setError(err.message)
+        }
       } finally {
-        setLoading(false)
+        // Зөвхөн хүсэлт цуцлагдаагүй (хамгийн сүүлийн) үед loading-ийг хаана
+        if (!signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchJobs()
+
+    // Cleanup: Дараагийн удаа ажиллах эсвэл component устхад өмнөх fetch-ийг цуцална
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   const handleResetFilters = () => {
-    setSearchQuery("")
-    setStatusFilter("all")
-    setSalaryFilter("all")
-    setApplicantFilter("all")
-    setDateSort("newest")
+    searchQuery !== "" && setSearchQuery("")
+    statusFilter !== "all" && setStatusFilter("all")
+    salaryFilter !== "all" && setSalaryFilter("all")
+    applicantFilter !== "all" && setApplicantFilter("all")
+    dateSort !== "newest" && setDateSort("newest")
     setCurrentPage(1)
   }
 
@@ -156,6 +170,25 @@ export default function PostJobPage() {
   return (
     <div className="max-w-5xl mx-auto animate-fade-in space-y-6 md:space-y-8 px-4 sm:px-0 pb-6">
       
+      {/* CUSTOM MSTAFFING LOADER */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+          <div className="relative flex items-center justify-center h-32 w-32">
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+            Түр хүлээнэ үү...
+          </p>
+        </div>
+      )}
+
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
@@ -251,33 +284,25 @@ export default function PostJobPage() {
 
       {/* АЖЛЫН БАЙРНЫ ЛИСТ БОЛОН ХУУДАСЛАЛТ */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center px-1">
-          <h2 className="text-base md:text-lg font-bold text-gray-800">
-            {isFilterActive ? "Шүүгдсэн үр дүн" : "Нийт зарласан ажлууд"} ({loading ? "..." : filteredAndSortedJobs.length})
-          </h2>
-          {isFilterActive && (
-            <span className="text-[10px] md:text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">
-              Шүүлтүүр идэвхтэй
-            </span>
-          )}
-        </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border border-gray-100 p-6 rounded-2xl animate-pulse flex flex-col md:flex-row justify-between gap-4">
-                <div className="h-16 bg-gray-100 rounded-2xl w-full md:w-2/3"></div>
-                <div className="h-10 bg-gray-100 rounded-xl w-full md:w-1/4 md:self-center"></div>
-              </div>
-            ))}
+        {!loading && (
+          <div className="flex justify-between items-center px-1">
+            <h2 className="text-base md:text-lg font-bold text-gray-800">
+              {isFilterActive ? "Шүүгдсэн үр дүн" : "Нийт зарласан ажлууд"} ({filteredAndSortedJobs.length})
+            </h2>
+            {isFilterActive && (
+              <span className="text-[10px] md:text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">
+                Шүүлтүүр идэвхтэй
+              </span>
+            )}
           </div>
-        ) : error ? (
+        )}
+
+        {error ? (
           <div className="text-center p-8 bg-red-50 text-red-600 rounded-2xl font-semibold text-sm">
             ❌ Алдаа гарлаа: {error}
           </div>
         ) : filteredAndSortedJobs.length > 0 ? (
           <>
-            {/* КАРТУУДЫН ЖАГСААЛТ */}
             <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] shadow-sm overflow-hidden divide-y divide-gray-50">
               {currentJobs.map((job) => (
                 <div 
@@ -287,8 +312,6 @@ export default function PostJobPage() {
                   <div className="space-y-2 w-full md:w-auto">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base md:text-lg font-bold text-gray-950 wrap-break-word">{job.title}</h3>
-                      
-                      {/* Ажлын төрлийг badge болгож харуулах (ШИНЭ) */}
                       <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">
                         {getJobTypeLabel(job.job_type)}
                       </span>
@@ -304,12 +327,9 @@ export default function PostJobPage() {
 
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] md:text-xs text-gray-400 font-medium">
                       <span>🏢 {job.category || "Ерөнхий"}</span>
-                      
-                      {/* Цалингийн төрлийг нэгжтэй хамт харуулах (ШИНЭЧЛЭГДСЭН) */}
                       <span className="text-slate-800 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">
                         💰 {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
                       </span>
-                      
                       <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
                     </div>
                   </div>
@@ -406,38 +426,38 @@ export default function PostJobPage() {
             </div>
           </>
         ) : (
-          /* ХООСОН ҮЕИЙН ТӨЛӨВ */
-          <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
-            <div className="text-3xl md:text-4xl">📭</div>
-            <div className="max-w-sm mx-auto space-y-1">
-              <h3 className="font-bold text-gray-800 text-base md:text-lg">
-                {isFilterActive ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
-              </h3>
-              <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
-                {isFilterActive 
-                  ? "Та хайлтын нөхцөлөө өөрчлөөд дахин оролдоно уу."
-                  : "Та баруун дээд булан дахь товчийг ашиглан анхны ажлын байрны зараа үүсгээрэй."}
-              </p>
+          !loading && (
+            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
+              <div className="text-3xl md:text-4xl">📭</div>
+              <div className="max-w-sm mx-auto space-y-1">
+                <h3 className="font-bold text-gray-800 text-base md:text-lg">
+                  {isFilterActive ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
+                </h3>
+                <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
+                  {isFilterActive 
+                    ? "Та хайлтын нөхцөлөө өөрчлөөд дахин оролдоно уу."
+                    : "Та баруун дээд булан дахь товчийг ашиглан анхны ажлын байрны зараа үүсгээрэй."}
+                </p>
+              </div>
+              {isFilterActive ? (
+                <button
+                  onClick={handleResetFilters}
+                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+                >
+                  Бүх зарыг буцааж харах 🔄
+                </button>
+              ) : (
+                <Link
+                  href="/dashboard/company/post-job/add"
+                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+                >
+                  Анхны зараа оруулах 🚀
+                </Link>
+              )}
             </div>
-            {isFilterActive ? (
-              <button
-                onClick={handleResetFilters}
-                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
-              >
-                Бүх зарыг buцааж харах 🔄
-              </button>
-            ) : (
-              <Link
-                href="/dashboard/company/post-job/add"
-                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
-              >
-                Анхны зараа оруулах 🚀
-              </Link>
-            )}
-          </div>
+          )
         )}
       </div>
-
     </div>
   )
 }
