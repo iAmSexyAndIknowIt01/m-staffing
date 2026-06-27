@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import Image from "next/image" // Зураг уншихад ашиглавал илүү оновчтой
+import Image from "next/image"
 
 interface CompanyViewProps {
   userId: string
@@ -28,7 +28,7 @@ interface DashboardData {
     role: string
     experience: string
     time: string
-    avatar: string | null // Бодит URL эсвэл null ирэх тул string | null болгов
+    avatar: string | null
   }>
 }
 
@@ -37,9 +37,17 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 🔥 ШИНЭЧЛЭЛТ: Давхардаж дуудахаас сэргийлэх flag
+  const isFetched = useRef(false)
+
   useEffect(() => {
     async function fetchDashboardData() {
+      // Хэрэв өмнө нь дуудагдсан бол дахиж ажиллахгүй
+      if (isFetched.current) return
+      isFetched.current = true
+
       try {
+        setLoading(true)
         const res = await fetch("/api/company/dashboard")
         if (!res.ok) throw new Error("Удирдлагын мэдээллийг татаж чадсангүй.")
         const result = await res.json()
@@ -51,45 +59,44 @@ export default function CompanyView({ userId }: CompanyViewProps) {
         }
       } catch (err: any) {
         setError(err.message)
+        // Алдаа гарвал дараагийн удаа дахин дуудах боломж олгоно
+        isFetched.current = false 
       } finally {
         setLoading(false)
       }
     }
 
     fetchDashboardData()
-  } // eslint-disable-next-line react-hooks/exhaustive-deps
-  , [])
+  }, []) // Энд хоосон массив үлдээсэн нь зөв
 
   if (loading) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-          <div className="relative flex items-center justify-center h-32 w-32">
-            
-            {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            
-            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            
-            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-            
-            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
-            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-                mstaffing
-              </span>
-            </div>
-            
-          </div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
           
-          {/* Доор уншиж буйг илтгэх жижиг текст */}
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            Түр хүлээнэ үү...
-          </p>
+          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          
+          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          
+          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
+          </div>
         </div>
-      )
-    }
+        
+        {/* Доор уншиж буйг илтгэх жижиг текст */}
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
+      </div>
+    )
+  }
 
   if (error) {
     return (
@@ -230,7 +237,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                 recentApplicants.map((applicant) => (
                   <div key={applicant.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-all">
                     <div className="flex items-center gap-4">
-                      {/* Аватар зургийг харуулах зассан хэсэг */}
                       <div className="w-11 h-11 rounded-2xl bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center text-xl shadow-inner relative">
                         {applicant.avatar ? (
                           <img 
@@ -238,14 +244,13 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                             alt={applicant.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              // Хэрэв зураг ачаалахад алдаа гарвал эможи харуулна
                               e.currentTarget.style.display = 'none';
                               const parent = e.currentTarget.parentElement;
                               if (parent) parent.innerHTML = '🧑‍💻';
                             }}
                           />
                         ) : (
-                          "🧑‍💻" // Хэрэв photo_url байхгүй бол default эможи
+                          "🧑‍💻"
                         )}
                       </div>
                       <div>

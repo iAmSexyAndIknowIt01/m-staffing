@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 
 type Experience = {
@@ -19,6 +19,34 @@ type Education = {
   isCurrent?: boolean 
 }
 
+type AvailabilityDay = {
+  enabled: boolean
+  from: string
+  to: string
+}
+
+type Availability = {
+  monday: AvailabilityDay
+  tuesday: AvailabilityDay
+  wednesday: AvailabilityDay
+  thursday: AvailabilityDay
+  friday: AvailabilityDay
+  saturday: AvailabilityDay
+  sunday: AvailabilityDay
+}
+
+type ProfileDataType = {
+  fullName: string
+  email: string
+  phone: string
+  bio: string
+  avatarUrl: string
+  skills: { technical: string[]; languages: string[] }
+  experience: Experience[]
+  education: Education[]
+  availability: Availability
+}
+
 const initialAvailability = {
   monday: { enabled: false, from: "", to: "" },
   tuesday: { enabled: false, from: "", to: "" },
@@ -27,6 +55,18 @@ const initialAvailability = {
   friday: { enabled: false, from: "", to: "" },
   saturday: { enabled: false, from: "", to: "" },
   sunday: { enabled: false, from: "", to: "" },
+}
+
+const initialProfileState: ProfileDataType = {
+  fullName: "",
+  email: "",
+  phone: "",
+  bio: "",
+  avatarUrl: "",
+  skills: { technical: [], languages: [] },
+  experience: [],
+  education: [],
+  availability: initialAvailability
 }
 
 export default function ApplicantProfilePage() {
@@ -45,27 +85,17 @@ function ApplicantProfileContent() {
   const searchParams = useSearchParams()
   const applicantId = searchParams.get("id")
 
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ========================================
-  // DATA STATE
-  // ========================================
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [bio, setBio] = useState("")
-  const [avatarUrl, setAvatarUrl] = useState("") // Зургийн URL state
-  const [skills, setSkills] = useState<{ technical: string[]; languages: string[] }>({
-    technical: [],
-    languages: [],
-  })
-  const [experience, setExperience] = useState<Experience[]>([])
-  const [education, setEducation] = useState<Education[]>([])
-  const [availability, setAvailability] = useState(initialAvailability)
+  // 💡 ШИНЭЧЛЭЛТ: Олон жижиг state-үүдийг нэг объект болгов
+  const [profile, setProfile] = useState<ProfileDataType>(initialProfileState)
+
+  const viewRecorded = useRef(false)
 
   // ========================================
-  // FETCH APPLICANT PROFILE
+  // FETCH APPLICANT PROFILE & RECORD VIEW
   // ========================================
   useEffect(() => {
     async function fetchProfile() {
@@ -83,22 +113,32 @@ function ApplicantProfileContent() {
         if (!response.ok) throw new Error(result.error || "Датаг уншиж чадсангүй")
 
         if (result.profile) {
-          setFullName(result.profile.full_name || "")
-          setEmail(result.profile.email || "")
-          setPhone(result.profile.phone || "")
-          setBio(result.profile.bio || "")
-          
-          // ЗАСВАР: Компанийн API-аас ирж буй avatar_url-ийг уншина 🚀
-          setAvatarUrl(result.profile.avatar_url || "") 
-          
-          setSkills(result.profile.skills || { technical: [], languages: [] })
-          setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
-          setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
-          
-          setAvailability({
-            ...initialAvailability,
-            ...(result.profile.availability || {})
+          // 💡 ШИНЭЧЛЭЛТ: Бүх датаг ганцхан удаа set хийснээр re-render маш багасна
+          setProfile({
+            fullName: result.profile.full_name || "",
+            email: result.profile.email || "",
+            phone: result.profile.phone || "",
+            bio: result.profile.bio || "",
+            avatarUrl: result.profile.avatar_url || "",
+            skills: result.profile.skills || { technical: [], languages: [] },
+            experience: Array.isArray(result.profile.experience) ? result.profile.experience : [],
+            education: Array.isArray(result.profile.education) ? result.profile.education : [],
+            availability: {
+              ...initialAvailability,
+              ...(result.profile.availability || {})
+            }
           })
+
+          // Үзэлтийг бүртгэх
+          if (!viewRecorded.current) {
+            viewRecorded.current = true
+            
+            await fetch("/api/company/cvView", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ staffId: applicantId }),
+            })
+          }
         }
       } catch (err: any) {
         setError(err.message)
@@ -110,30 +150,19 @@ function ApplicantProfileContent() {
     fetchProfile()
   }, [applicantId])
 
-if (loading) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          
-          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
           <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          
-          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
           <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          
-          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
           <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          
-          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
             <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
-          
         </div>
-        
-        {/* Доор уншиж буйг илтгэх жижиг текст */}
         <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
@@ -151,77 +180,67 @@ if (loading) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-black text-gray-900">Ажил горилогчийн профайл</h1>
         <p className="text-sm text-gray-400 mt-1">Ирүүлсэн анкетын дэлгэрэнгүй мэдээлэл</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT PANEL - ХУВИЙН МЭДЭЭЛЭЛ */}
+        {/* LEFT PANEL */}
         <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6 self-start">
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
-            
-            {/* АВАТАР ХАРАГДАХ СЕКЦ */}
             <div className="w-32 h-32 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden border border-gray-100 shadow-inner">
-              {avatarUrl ? (
-                <img 
-                  src={avatarUrl} 
-                  alt="Avatar" 
-                  className="w-full h-full object-cover rounded-2xl" 
-                />
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
                 <span className="text-4xl font-black text-indigo-600">
-                  {fullName ? fullName.charAt(0) : "👤"}
+                  {profile.fullName ? profile.fullName.charAt(0) : "👤"}
                 </span>
               )}
             </div>
-
-            <h3 className="font-bold text-gray-800 text-lg mt-3">{fullName || "Нэргүй"}</h3>
+            <h3 className="font-bold text-gray-800 text-lg mt-3">{profile.fullName || "Нэргүй"}</h3>
             <p className="text-xs text-gray-400">Ажил хайгч ажилтан</p>
           </div>
 
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Бүтэн нэр</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-800 font-medium">
-              {fullName || "-"}
+              {profile.fullName || "-"}
             </div>
           </div>
 
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Утас</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-800 font-medium">
-              {phone || "-"}
+              {profile.phone || "-"}
             </div>
           </div>
 
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-800 font-medium">
-              {email || "-"}
+              {profile.email || "-"}
             </div>
           </div>
         </div>
 
-        {/* RIGHT PANEL - CV МЭДЭЭЛЛҮҮД */}
+        {/* RIGHT PANEL */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-          {/* BIO */}
           <div>
             <label className="text-sm font-bold block mb-2">🚀 Товч танилцуулга (Bio)</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-700 min-h-20 whitespace-pre-wrap">
-              {bio || "Танилцуулга бичээгүй байна."}
+              {profile.bio || "Танилцуулга бичээгүй байна."}
             </div>
           </div>
 
-          {/* SKILLS */}
           <div>
             <label className="text-sm font-bold block mb-2">🛠️ Ур чадвар</label>
             <div className="border border-gray-100 rounded-2xl p-5 bg-gray-50/50">
               <div className="mb-5">
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Техникийн ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.technical && skills.technical.length > 0 ? (
-                    skills.technical.map((skill) => (
+                  {profile.skills.technical && profile.skills.technical.length > 0 ? (
+                    profile.skills.technical.map((skill) => (
                       <span key={skill} className="px-3 py-1.5 border border-gray-200 rounded-xl text-xs bg-white font-semibold text-gray-700">{skill}</span>
                     ))
                   ) : <span className="text-xs text-gray-400">Байхгүй</span>}
@@ -230,8 +249,8 @@ if (loading) {
               <div>
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Хэлний мэдлэг</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.languages && skills.languages.length > 0 ? (
-                    skills.languages.map((skill) => (
+                  {profile.skills.languages && profile.skills.languages.length > 0 ? (
+                    profile.skills.languages.map((skill) => (
                       <span key={skill} className="px-3 py-1.5 border border-gray-200 rounded-xl text-xs bg-white font-semibold text-gray-700">{skill}</span>
                     ))
                   ) : <span className="text-xs text-gray-400">Байхгүй</span>}
@@ -240,12 +259,11 @@ if (loading) {
             </div>
           </div>
 
-          {/* EXPERIENCE */}
           <div>
             <label className="text-sm font-bold block mb-2">💼 Ажлын туршлага</label>
-            {experience.length > 0 ? (
+            {profile.experience.length > 0 ? (
               <div className="space-y-3">
-                {experience.map((item, idx) => (
+                {profile.experience.map((item, idx) => (
                   <div key={idx} className="border rounded-2xl p-5 bg-gray-50/30 border-gray-100">
                     <div className="flex justify-between items-start gap-4">
                       <div>
@@ -271,12 +289,11 @@ if (loading) {
             )}
           </div>
 
-          {/* EDUCATION */}
           <div>
             <label className="text-sm font-bold block mb-2">🎓 Боловсрол</label>
-            {education.length > 0 ? (
+            {profile.education.length > 0 ? (
               <div className="space-y-3">
-                {education.map((item, idx) => (
+                {profile.education.map((item, idx) => (
                   <div key={idx} className="border rounded-2xl p-5 bg-gray-50/30 border-gray-100">
                     <div className="flex justify-between items-start gap-4">
                       <div>
@@ -299,7 +316,6 @@ if (loading) {
             )}
           </div>
 
-          {/* AVAILABILITY */}
           <div>
             <label className="text-sm font-bold block mb-1">🕒 Ажиллах боломжтой цаг</label>
             <div className="space-y-2.5 mt-2">
@@ -312,7 +328,7 @@ if (loading) {
                 ["saturday", "Бямба"],
                 ["sunday", "Ням"],
               ].map(([key, label]) => {
-                const currentAvailability = availability || initialAvailability
+                const currentAvailability = profile.availability || initialAvailability
                 const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
                 
                 return (

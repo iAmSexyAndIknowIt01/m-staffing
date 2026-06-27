@@ -19,7 +19,11 @@ interface CompanyProfileData {
 
 export default function CompanyProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isEditMode, setIsEditMode] = useState(false) // View/Edit төлөв
+  
+  // 🔥 ШИНЭЧЛЭЛТ: Давхардаж дуудахаас сэргийлэх flag
+  const isFetched = useRef(false)
+
+  const [isEditMode, setIsEditMode] = useState(false)
   const [formData, setFormData] = useState<CompanyProfileData>({
     company_name: "",
     email: "",
@@ -34,7 +38,6 @@ export default function CompanyProfilePage() {
     logo_url: "",
   })
   
-  // Засаж байгаад цуцлах үед хуучин датаг буцааж сэргээхэд зориулсан кэш state
   const [initialData, setInitialData] = useState<CompanyProfileData | null>(null)
   const [pageLoading, setPageLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -43,6 +46,10 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     async function fetchProfile() {
+      // Хэрэв өмнө нь дуудагдсан бол дахиж ажиллахгүй
+      if (isFetched.current) return
+      isFetched.current = true
+
       try {
         const response = await fetch("/api/company/profile")
         if (!response.ok) throw new Error("Профайл мэдээллийг авч чадсангүй.")
@@ -67,6 +74,8 @@ export default function CompanyProfilePage() {
         }
       } catch (err: any) {
         setMessage({ type: "error", text: err.message })
+        // Алдаа гарвал дараагийн удаа дахин дуудах боломж олгоно
+        isFetched.current = false
       } finally {
         setPageLoading(false)
       }
@@ -120,16 +129,13 @@ export default function CompanyProfilePage() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Шинэчлэхэд алдаа гарлаа.")
 
-      setInitialData(formData) // Кэш датаг шинэчилнэ
-      setIsEditMode(false) // Амжилттай болбол үзэх горим руу шилжинэ
+      setInitialData(formData)
+      setIsEditMode(false)
       setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ! 🎉" })
       
-      // Дэлгэцийн орой руу зөөлөн шилжүүлэх (Мэдэгдлийг харуулахын тулд)
       window.scrollTo({ top: 0, behavior: "smooth" })
     } catch (err: any) {
       setMessage({ type: "error", text: err.message })
-      
-      // Алдаа гарсан үед ч сонордуулгыг харуулахын тулд дээшээ гүйлгэнэ
       window.scrollTo({ top: 0, behavior: "smooth" })
     } finally {
       setActionLoading(false)
@@ -137,7 +143,7 @@ export default function CompanyProfilePage() {
   }
 
   const handleCancel = () => {
-    if (initialData) setFormData(initialData) // Өөрчлөлтийг цуцалж хуучин датаг сэргээнэ
+    if (initialData) setFormData(initialData)
     setIsEditMode(false)
     setMessage(null)
   }
@@ -253,7 +259,8 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Компанийн нэр *</label>
                   <input
                     type="text" required value={formData.company_name}
-                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                    // 💡 ТӨЛӨВ ЗАСАЛТ: prev ашиглаж найдвартай шинэчилдэг болгов
+                    onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
@@ -261,7 +268,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Товч уриа (Tagline)</label>
                   <input
                     type="text" value={formData.tagline}
-                    onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
@@ -271,7 +278,7 @@ export default function CompanyProfilePage() {
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Компанийн тухай</label>
                 <textarea
                   rows={4} value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition resize-none"
                 />
               </div>
@@ -281,7 +288,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Үйл ажиллагааны чиглэл</label>
                   <select
                     value={formData.industry}
-                    onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 bg-white transition"
                   >
                     <option>Технологи, Мэдээллийн технологи</option>
@@ -295,7 +302,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Ажилтны тоо</label>
                   <select
                     value={formData.company_size}
-                    onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, company_size: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 bg-white transition"
                   >
                     <option>1-10 ажилтан</option>
@@ -337,7 +344,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Утасны дугаар</label>
                   <input
                     type="text" value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
@@ -345,7 +352,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Вэбсайт линк</label>
                   <input
                     type="url" value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
@@ -356,7 +363,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Facebook хуудас</label>
                   <input
                     type="url" value={formData.facebook_url}
-                    onChange={(e) => setFormData({ ...formData, facebook_url: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, facebook_url: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
@@ -364,7 +371,7 @@ export default function CompanyProfilePage() {
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">LinkedIn хуудас</label>
                   <input
                     type="url" value={formData.linkedin_url}
-                    onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, linkedin_url: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
                   />
                 </div>
