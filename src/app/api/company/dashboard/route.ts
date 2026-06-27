@@ -20,7 +20,6 @@ export async function GET() {
     if (openJobsError) throw openJobsError
 
     // --- 2. Ирсэн нийт анкетын тоо ---
-    // mt_openjob-оор дамжуулж user_id-аар шүүнэ
     const { count: totalApplicantsCount, error: applicantsError } = await supabase
       .from("tr_job_request")
       .select("*, mt_openjob!inner(user_id)", { count: "exact", head: true })
@@ -37,7 +36,7 @@ export async function GET() {
 
     if (interviewError) throw interviewError
 
-    // --- 4. Танай идэвхтэй зарласан ажлуудын жагсаалт (+ анкетын тоо хамт) ---
+    // --- 4. Танай идэвхтэй зарласан ажлуудын жагсаалт ---
     const { data: jobsData, error: jobsError } = await supabase
       .from("mt_openjob")
       .select(`
@@ -50,41 +49,84 @@ export async function GET() {
 
     if (jobsError) throw jobsError
 
-    // Ирсэн өгөгдлийг фронтэндэд тохирох хэлбэрт хөрвүүлнэ
     const activeJobs = (jobsData || []).map((job: any) => ({
       id: job.id,
       title: job.title,
       totalApplicants: job.tr_job_request ? job.tr_job_request.length : 0,
-      newApplicants: 0, // Шаардлагатай бол status-аар нь шүүж тоолж болно
+      newApplicants: 0,
       status: "Идэвхтэй",
       views: job.views || 0
     }))
 
-    // --- 5. Сүүлд ирсэн 3 анкетын мэдээлэл (Нэмэлт UX) ---
-    const { data: recentData, error: recentError } = await supabase
+    // --- 5. Сүүлд ирсэн 3 анкетын мэдээлэл ---
+    const { data: recentRequests, error: recentError } = await supabase
       .from("tr_job_request")
       .select(`
         id,
         created_at,
+        applicant_id,
         mt_openjob!inner(title, user_id)
       `)
       .eq("mt_openjob.user_id", userId)
       .order("created_at", { ascending: false })
       .limit(3)
 
-    // Сүүлд ирсэн анкетуудын жишээ бүтэц (Хэрэв хэрэглэгчийн нэр өөр table-д байгаа бол mock дата хэрэглэж болно)
-    const recentApplicants = (recentData || []).map((app: any, idx: number) => {
-      const mockNames = ["Б. Төгөлдөр", "А. Анужин", "Т. Тэмүүлэн"]
-      const mockAvatars = ["🧑‍💻", "👩‍💻", "👨‍💻"]
-      return {
-        id: app.id,
-        name: mockNames[idx] || "Ажил горилогч",
-        role: app.mt_openjob?.title || "Ажилтан",
-        experience: "Харах",
-        time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
-        avatar: mockAvatars[idx] || "🧑‍💻"
-      }
-    })
+    if (recentError) throw recentError
+
+    let recentApplicants: {
+      id: any 
+      name: string 
+      role: any 
+      time: string 
+      avatar: string | null 
+    }[] = [] // ЗАСВАР: Типээс experience-г хассан
+
+    if (recentRequests && recentRequests.length > 0) {
+      const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
+
+      // mt_staff хүснэгтээс 'id'-аар, mt_profile хүснэгтээс 'user_id'-аар шүүж авна
+      const [staffResult, profileResult] = await Promise.all([
+        supabase.from("mt_staff").select("id, last_name, first_name").in("id", applicantIds),
+        supabase.from("mt_profile").select("user_id, photo_url").in("user_id", applicantIds)
+      ])
+
+      if (staffResult.error) throw staffResult.error
+      if (profileResult.error) throw profileResult.error
+
+      const staffData = staffResult.data || []
+      const profileData = profileResult.data || []
+
+      recentApplicants = recentRequests.map((app: any) => {
+        const staff = staffData.find((s: any) => s.id === app.applicant_id)
+        const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
+
+        // Овог нэрийг залгах логик
+        const lastName = staff?.last_name ? `${staff.last_name} ` : ""
+        const firstName = staff?.first_name || ""
+        const fullName = `${lastName}${firstName}`.trim()
+
+        // Storage avatars bucket-аас нийтийн URL үүсгэх логик
+        let finalAvatarUrl = null
+        if (profile?.photo_url) {
+          if (profile.photo_url.startsWith("http")) {
+            finalAvatarUrl = profile.photo_url
+          } else {
+            const { data } = supabase.storage
+              .from("avatars")
+              .getPublicUrl(profile.photo_url)
+            finalAvatarUrl = data.publicUrl
+          }
+        }
+
+        return {
+          id: app.id, 
+          name: fullName || "Ажил горилогч", 
+          role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
+          time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
+          avatar: finalAvatarUrl
+        } // ЗАСВАР: Буцаах дата хэсгээс experience-г хассан
+      })
+    }
 
     return NextResponse.json({
       success: true,

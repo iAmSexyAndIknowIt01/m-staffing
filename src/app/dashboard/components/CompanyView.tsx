@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 interface CompanyViewProps {
   userId: string
@@ -27,7 +28,7 @@ interface DashboardData {
     role: string
     experience: string
     time: string
-    avatar: string
+    avatar: string | null
   }>
 }
 
@@ -36,9 +37,17 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // 🔥 ШИНЭЧЛЭЛТ: Давхардаж дуудахаас сэргийлэх flag
+  const isFetched = useRef(false)
+
   useEffect(() => {
     async function fetchDashboardData() {
+      // Хэрэв өмнө нь дуудагдсан бол дахиж ажиллахгүй
+      if (isFetched.current) return
+      isFetched.current = true
+
       try {
+        setLoading(true)
         const res = await fetch("/api/company/dashboard")
         if (!res.ok) throw new Error("Удирдлагын мэдээллийг татаж чадсангүй.")
         const result = await res.json()
@@ -50,20 +59,41 @@ export default function CompanyView({ userId }: CompanyViewProps) {
         }
       } catch (err: any) {
         setError(err.message)
+        // Алдаа гарвал дараагийн удаа дахин дуудах боломж олгоно
+        isFetched.current = false 
       } finally {
         setLoading(false)
       }
     }
 
     fetchDashboardData()
-  } // eslint-disable-next-line react-hooks/exhaustive-deps
-  , [])
+  }, []) // Энд хоосон массив үлдээсэн нь зөв
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-75 w-full">
-        <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-bold text-gray-400 mt-4 tracking-widest uppercase animate-pulse">Уншиж байна...</p>
+      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+          
+          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          
+          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          
+          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
+          </div>
+        </div>
+        
+        {/* Доор уншиж буйг илтгэх жижиг текст */}
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
       </div>
     )
   }
@@ -79,8 +109,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   if (!data) return null
 
   const { stats, activeJobs, recentApplicants } = data
-
-  // Зөвхөн эхний 2 ажлын байрыг шүүж авна
   const displayedJobs = activeJobs.slice(0, 2)
 
   return (
@@ -104,54 +132,42 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
       {/* СТАТИСТИК КАРТУУД */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Нээлттэй ажлын байр */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Нээлттэй ажлын байр</p>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.openJobsCount}</h3>
             <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg">Зарлагдсан</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl font-bold">
-            💼
-          </div>
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl font-bold">💼</div>
         </div>
 
-        {/* Ирсэн нийт анкет */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-emerald-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ирсэн нийт анкет</p>
             <h3 className="text-3xl font-black text-emerald-600 tracking-tight">{stats.totalApplicantsCount}</h3>
             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Идэвхтэй</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-            📥
-          </div>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">📥</div>
         </div>
 
-        {/* Ярилцлагад урьсан */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-blue-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ярилцлагад урьсан</p>
             <h3 className="text-3xl font-black text-blue-600 tracking-tight">{stats.interviewCount}</h3>
             <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">Шүүгдсэн</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-            🗓️
-          </div>
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">🗓️</div>
         </div>
       </div>
 
       {/* ГОЛ КОНТЕНТ СЕКЦ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        
-        {/* ЗҮҮН ТАЛ: ИДЭВХТЭЙ ЗАРУУД БОЛОН ШИНЭ АНКЕТУУД */}
         <div className="lg:col-span-2 space-y-8">
           
           {/* ИДЭВХТЭЙ ЗАРЛАСАН АЖЛУУД */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Танай идэвхтэй зарласан ажлууд</h2>
-              {/* Хэрэв нийт ажлын тоо 2-оос их бол "Бүгдийг харах" линк харагдана */}
               {activeJobs.length > 2 && (
                 <Link 
                   href="/dashboard/company/post-job" 
@@ -205,7 +221,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             </div>
           </div>
 
-          {/* ШИНЭЭР ИРСЭН АНКЕТУУД */}
+          {/* СҮҮЛД ИРСЭН АНКЕТУУД */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Сүүлд ирсэн анкетууд</h2>
@@ -221,23 +237,36 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                 recentApplicants.map((applicant) => (
                   <div key={applicant.id} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-all">
                     <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-2xl bg-gray-100 flex items-center justify-center text-xl shadow-inner">
-                        {applicant.avatar}
+                      <div className="w-11 h-11 rounded-2xl bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center text-xl shadow-inner relative">
+                        {applicant.avatar ? (
+                          <img 
+                            src={applicant.avatar} 
+                            alt={applicant.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) parent.innerHTML = '🧑‍💻';
+                            }}
+                          />
+                        ) : (
+                          "🧑‍💻"
+                        )}
                       </div>
                       <div>
                         <h5 className="font-bold text-gray-900 text-sm sm:text-base">{applicant.name}</h5>
                         <p className="text-xs text-gray-400 font-medium mt-0.5">
-                          {applicant.role} • <span className="text-indigo-600 font-semibold">{applicant.experience}</span>
+                          <span className="text-indigo-600 font-semibold">{applicant.role}</span>
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-[11px] text-gray-400 font-medium mb-1">{applicant.time}</p>
                       <Link 
-                        href={`/dashboard/company/applicants/${applicant.id}`}
+                        href={`/dashboard/company/applicants/profile/?id=${applicant.id}`}
                         className="text-xs font-bold text-gray-700 border border-gray-200 hover:bg-white hover:border-gray-300 px-3 py-1.5 rounded-xl transition inline-block bg-gray-50 shadow-sm"
                       >
-                        Шүүх 🔍
+                        Дэлгэрэнгүй 🔍
                       </Link>
                     </div>
                   </div>
@@ -248,7 +277,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
         </div>
 
-        {/* БАРУУН ТАЛ: ТӨЛӨВ БОЛОН ТАРИФ ХЯЗГААР */}
+        {/* БАРУУН ТАЛ: ТӨЛӨВ */}
         <div className="space-y-6">
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-5">
             <div>
@@ -291,7 +320,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
           <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-4xl shadow-sm space-y-3">
             <h4 className="font-black text-sm text-gray-900">Асуух зүйл байна уу? 🙋‍♂️</h4>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Зар тавихад алдаа гарах, эсвэл тохирох ажилтан олдохгүй бол манай тусламжийн менежертэй шууд холбогдоорой.
+              Зар тавихад алдаа гарах, эсвэл тохирох ажилтан олдохгүй бол манай тусламжийн менежертэй шудут холбогдоорой.
             </p>
             <Link href="/support" className="inline-block text-xs font-bold text-indigo-600 hover:underline pt-1">
               Чатлах →
