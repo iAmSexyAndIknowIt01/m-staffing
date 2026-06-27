@@ -11,7 +11,23 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    // --- 1. Нээлттэй ажлын байрны тоо ---
+    // 🔥 1. Компанийн багцын мэдээллийг авах (Байхгүй бол үнэгүй багцаар default үүсгэж эсвэл харуулж болно)
+    let { data: subData, error: subError } = await supabase
+      .from("mt_company_subscriptions")
+      .select("plan_type, status, job_limit, expires_at")
+      .eq("user_id", userId)
+      .single()
+
+    // Хэрэв өгөгдлийн санд subscription бүртгэл байхгүй бол default Free багц буцаана
+    if (subError && subError.code === "PGRST116") {
+      subData = { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
+    } else if (subError) {
+      throw subError
+    }
+
+    const subscriptionData = subData ?? { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
+
+    // --- 2. Нээлттэй ажлын байрны тоо ---
     const { count: openJobsCount, error: openJobsError } = await supabase
       .from("mt_openjob")
       .select("*", { count: "exact", head: true })
@@ -19,7 +35,7 @@ export async function GET() {
 
     if (openJobsError) throw openJobsError
 
-    // --- 2. Ирсэн нийт анкетын тоо ---
+    // --- 3. Ирсэн нийт анкетын тоо ---
     const { count: totalApplicantsCount, error: applicantsError } = await supabase
       .from("tr_job_request")
       .select("*, mt_openjob!inner(user_id)", { count: "exact", head: true })
@@ -27,7 +43,7 @@ export async function GET() {
 
     if (applicantsError) throw applicantsError
 
-    // --- 3. Ярилцлагад урьсан анкетын тоо ---
+    // --- 4. Ярилцлагад урьсан анкетын тоо ---
     const { count: interviewCount, error: interviewError } = await supabase
       .from("tr_job_request")
       .select("*, mt_openjob!inner(user_id)", { count: "exact", head: true })
@@ -36,20 +52,16 @@ export async function GET() {
 
     if (interviewError) throw interviewError
 
-    // --- 4. Танай идэвхтэй зарласан ажлуудын жагсаалт ---
+    // --- 5. Танай идэвхтэй зарласан ажлуудын жагсаалт ---
     const { data: jobsData, error: jobsError } = await supabase
       .from("mt_openjob")
-      .select(`
-        id,
-        title,
-        tr_job_request (id)
-      `)
+      .select(`id, title, tr_job_request (id)`)
       .eq("user_id", userId)
       .order("id", { ascending: false })
 
     if (jobsError) throw jobsError
 
-    const activeJobs = (jobsData || []).map((job: any) => ({
+    let activeJobs = (jobsData || []).map((job: any) => ({
       id: job.id,
       title: job.title,
       totalApplicants: job.tr_job_request ? job.tr_job_request.length : 0,
@@ -58,40 +70,32 @@ export async function GET() {
       views: job.views || 0
     }))
 
-    // --- 5. Сүүлд ирсэн 3 анкетын мэдээлэл ---
+    // Ирсэн анкеттай ажлуудыг түрүүнд харуулах эрэмбэлэлт
+    activeJobs.sort((a, b) => {
+      if (a.totalApplicants > 0 && b.totalApplicants === 0) return -1
+      if (a.totalApplicants === 0 && b.totalApplicants > 0) return 1
+      return 0
+    })
+
+    // --- 6. Сүүлд ирсэн 3 анкетын мэдээлэл ---
     const { data: recentRequests, error: recentError } = await supabase
       .from("tr_job_request")
-      .select(`
-        id,
-        created_at,
-        applicant_id,
-        mt_openjob!inner(title, user_id)
-      `)
+      .select(`id, created_at, applicant_id, mt_openjob!inner(title, user_id)`)
       .eq("mt_openjob.user_id", userId)
       .order("created_at", { ascending: false })
       .limit(3)
 
     if (recentError) throw recentError
 
-    let recentApplicants: {
-      id: any 
-      name: string 
-      role: any 
-      time: string 
-      avatar: string | null 
-    }[] = [] // ЗАСВАР: Типээс experience-г хассан
+    let recentApplicants: any[] = []
 
     if (recentRequests && recentRequests.length > 0) {
       const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
 
-      // mt_staff хүснэгтээс 'id'-аар, mt_profile хүснэгтээс 'user_id'-аар шүүж авна
       const [staffResult, profileResult] = await Promise.all([
         supabase.from("mt_staff").select("id, last_name, first_name").in("id", applicantIds),
         supabase.from("mt_profile").select("user_id, photo_url").in("user_id", applicantIds)
       ])
-
-      if (staffResult.error) throw staffResult.error
-      if (profileResult.error) throw profileResult.error
 
       const staffData = staffResult.data || []
       const profileData = profileResult.data || []
@@ -100,23 +104,12 @@ export async function GET() {
         const staff = staffData.find((s: any) => s.id === app.applicant_id)
         const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
 
-        // Овог нэрийг залгах логик
-        const lastName = staff?.last_name ? `${staff.last_name} ` : ""
-        const firstName = staff?.first_name || ""
-        const fullName = `${lastName}${firstName}`.trim()
-
-        // Storage avatars bucket-аас нийтийн URL үүсгэх логик
-        let finalAvatarUrl = null
-        if (profile?.photo_url) {
-          if (profile.photo_url.startsWith("http")) {
-            finalAvatarUrl = profile.photo_url
-          } else {
-            const { data } = supabase.storage
-              .from("avatars")
-              .getPublicUrl(profile.photo_url)
-            finalAvatarUrl = data.publicUrl
-          }
-        }
+        const fullName = `${staff?.last_name ? staff.last_name + " " : ""}${staff?.first_name || ""}`.trim()
+        let finalAvatarUrl = profile?.photo_url?.startsWith("http") 
+          ? profile.photo_url 
+          : profile?.photo_url 
+            ? supabase.storage.from("avatars").getPublicUrl(profile.photo_url).data.publicUrl 
+            : null
 
         return {
           id: app.id, 
@@ -124,8 +117,15 @@ export async function GET() {
           role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
           time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
           avatar: finalAvatarUrl
-        } // ЗАСВАР: Буцаах дата хэсгээс experience-г хассан
+        }
       })
+    }
+
+    // Багцын нэрийг Монголоор хөрвүүлэх логик
+    const planNames: Record<string, string> = {
+      free: "Үнэгүй багц",
+      standard: "Standard Plan",
+      premium: "Premium Plan"
     }
 
     return NextResponse.json({
@@ -134,6 +134,13 @@ export async function GET() {
         openJobsCount: openJobsCount || 0,
         totalApplicantsCount: totalApplicantsCount || 0,
         interviewCount: interviewCount || 0
+      },
+      // 🔥 ШИНЭЧЛЭЛТ: Багцын мэдээллийг UI-д зориулж бэлдэх
+      subscription: {
+        planName: planNames[subscriptionData.plan_type] || "Тодорхойгүй багц",
+        status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
+        jobLimit: subscriptionData.job_limit,
+        expiresAt: subscriptionData.expires_at ? new Date(subscriptionData.expires_at).toLocaleDateString("mn-MN") : "Хугацаагүй"
       },
       activeJobs,
       recentApplicants
