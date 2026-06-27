@@ -251,17 +251,17 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                       <div>
                         <h5 className="font-bold text-gray-900 text-sm sm:text-base">{applicant.name}</h5>
                         <p className="text-xs text-gray-400 font-medium mt-0.5">
-                          {applicant.role} • <span className="text-indigo-600 font-semibold">{applicant.experience}</span>
+                          <span className="text-indigo-600 font-semibold">{applicant.role}</span>
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-[11px] text-gray-400 font-medium mb-1">{applicant.time}</p>
                       <Link 
-                        href={`/dashboard/company/applicants/${applicant.id}`}
+                        href={`/dashboard/company/applicants/profile/?id=${applicant.id}`}
                         className="text-xs font-bold text-gray-700 border border-gray-200 hover:bg-white hover:border-gray-300 px-3 py-1.5 rounded-xl transition inline-block bg-gray-50 shadow-sm"
                       >
-                        Шүүх 🔍
+                        Дэлгэрэнгүй 🔍
                       </Link>
                     </div>
                   </div>

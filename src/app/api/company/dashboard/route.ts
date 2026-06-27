@@ -77,8 +77,9 @@ export async function GET() {
       id: any 
       name: string 
       role: any 
-      experience: string; time: string; avatar: string | null 
-    }[] = []
+      time: string 
+      avatar: string | null 
+    }[] = [] // ЗАСВАР: Типээс experience-г хассан
 
     if (recentRequests && recentRequests.length > 0) {
       const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
@@ -96,7 +97,6 @@ export async function GET() {
       const profileData = profileResult.data || []
 
       recentApplicants = recentRequests.map((app: any) => {
-        // s.id баганыг app.applicant_id-тай тулгаж олно
         const staff = staffData.find((s: any) => s.id === app.applicant_id)
         const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
 
@@ -122,10 +122,9 @@ export async function GET() {
           id: app.id, 
           name: fullName || "Ажил горилогч", 
           role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
-          experience: "Харах",
           time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
           avatar: finalAvatarUrl
-        }
+        } // ЗАСВАР: Буцаах дата хэсгээс experience-г хассан
       })
     }
 
