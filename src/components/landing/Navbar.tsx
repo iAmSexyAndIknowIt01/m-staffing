@@ -9,49 +9,55 @@ export default function Navbar() {
         left-0
         w-full
         z-50
+        transform-gpu
       "
     >
-
       <div
         className="
-          max-w-360
+          max-w-350
           mx-auto
-          px-6
-          pt-5
+          px-4
+          md:px-6
+          pt-4
+          md:pt-5
         "
       >
-
         <div
           className="
-            glass
             h-16
             rounded-full
-            px-6
+            px-5
+            md:px-6
             flex
             items-center
             justify-between
             border
-            border-white/20
-            backdrop-blur-xl
-            shadow-[0_20px_60px_rgba(255,120,0,.08)]
+            border-gray-100
+            md:border-white/20
+            bg-white/95
+            md:bg-white/65
+            md:backdrop-blur-xl
+            shadow-sm
+            md:shadow-[0_20px_60px_rgba(255,120,0,.08)]
+            will-change-transform
           "
         >
-
           {/* LEFT */}
-
           <Link
             href="/"
             className="
               flex
               items-center
-              gap-3
+              gap-2
+              md:gap-3
             "
           >
-
             <div
               className="
-                w-10
-                h-10
+                w-9
+                h-9
+                md:w-10
+                md:h-10
                 rounded-xl
                 bg-linear-to-br
                 from-orange-500
@@ -61,40 +67,39 @@ export default function Navbar() {
                 justify-center
                 text-white
                 font-black
+                text-sm
+                md:text-xl
               "
             >
               M
             </div>
 
             <div>
-
               <h1
                 className="
-                  text-xl
+                  text-lg
+                  md:text-xl
                   font-black
                   leading-none
                 "
               >
-                {/* 🛠️ M үсгийг хар өнгөтэй, Staffing-ийг orange өнгөтэй болгов */}
                 <span className="text-orange-500">M</span>
                 <span className="text-orange-500">Staffing</span>
               </h1>
-
               <p
                 className="
-                  text-[11px]
+                  text-[10px]
+                  md:text-[11px]
                   text-gray-400
+                  mt-0.5
                 "
               >
                 Future of Work
               </p>
-
             </div>
-
           </Link>
 
-          {/* CENTER */}
-
+          {/* CENTER - Компьютер дээр харагдана */}
           <nav
             className="
               hidden
@@ -103,7 +108,6 @@ export default function Navbar() {
               gap-8
             "
           >
-
             {[
               {
                 label: "Ажил Хайх",
@@ -118,7 +122,6 @@ export default function Navbar() {
                 href: "#features",
               },
             ].map((item) => (
-
               <Link
                 key={item.label}
                 href={item.href}
@@ -141,13 +144,10 @@ export default function Navbar() {
               >
                 {item.label}
               </Link>
-
             ))}
-
           </nav>
 
           {/* RIGHT */}
-
           <div
             className="
               flex
@@ -155,31 +155,30 @@ export default function Navbar() {
               gap-3
             "
           >
-
             <Link href="/login">
               <button
                 className="
                   orange-btn
-                  h-11
-                  px-7
-                  text-sm
+                  h-10
+                  md:h-11
+                  px-5
+                  md:px-7
+                  text-xs
+                  md:text-sm
                   flex
                   items-center
                   justify-center
-                  hover:scale-[1.03]
+                  active:scale-100
+                  md:hover:scale-[1.03]
                   transition
                 "
               >
                 Нэвтрэх
               </button>
             </Link>
-
           </div>
-
         </div>
-
       </div>
-
     </header>
   )
 }

@@ -8,82 +8,81 @@ export default function Hero() {
         relative
         min-h-screen
         overflow-hidden
-        pt-[160px]
+        pt-30
+        md:pt-40
       "
     >
-
       {/* BG */}
+      <div className="absolute inset-0 transform-gpu">
+        <Image
+          src="/hero-ub.png"
+          alt="Ulaanbaatar"
+          fill
+          priority
+          className="
+            object-cover
+            scale-[1.02]
+            md:blur-[10px]
+          "
+        />
+      </div>
 
-      <Image
-        src="/hero-ub.png"
-        alt="Ulaanbaatar"
-        fill
-        priority
-        className="
-          object-cover
-          scale-[1.03]
-          blur-[10px]
-        "
-      />
-
-      {/* Overlay */}
-
+      {/* Overlay - Утсан дээр илүү сайн уншигдах үүднээс арай харанхуй болгов */}
       <div
         className="
           absolute
           inset-0
-          bg-black/35
+          bg-black/55
+          md:bg-black/35
         "
       />
 
-      {/* Orange Glow */}
-
+      {/* Orange Glow - Зөвхөн компьютер дээр ажиллана */}
       <div
         className="
+          hidden
+          md:block
           absolute
           top-[15%]
           left-1/2
           -translate-x-1/2
-
-          w-[500px]
-          h-[500px]
-
+          w-125
+          h-125
           bg-orange-500/10
           blur-[120px]
         "
       />
 
       {/* CONTENT */}
-
       <div
         className="
           relative
           z-10
-
-          min-h-[calc(100vh-160px)]
-
+          min-h-[calc(100vh-120px)]
+          md:min-h-[calc(100vh-160px)]
           flex
           items-center
           justify-center
-
-          px-6
+          px-4
+          md:px-6
+          transform-gpu
         "
       >
-
         <div
           className="
-            max-w-[900px]
+            max-w-225
             mx-auto
             text-center
           "
         >
-
           <p
             className="
-              orange-text
-              tracking-[8px]
+              text-orange-400
+              tracking-[4px]
+              md:tracking-[8px]
               font-bold
-              text-sm
+              text-xs
+              md:text-sm
             "
           >
             MONGOLIA • FUTURE OF WORK
@@ -91,129 +90,102 @@ export default function Hero() {
 
           <h1
             className="
-              mt-8
+              mt-6
+              md:mt-8
               text-4xl
               md:text-6xl
               font-black
-              leading-[1.05]
+              leading-tight
+              md:leading-[1.05]
               text-white
             "
           >
             Хүссэн үедээ
-
+            <br className="hidden md:block" /> ажилла.
             <br />
-
-            ажилла.
-
-            <br />
-
-            <span className="text-orange-400">
-              Хэдхэн минутанд.
-            </span>
-
+            <span className="text-orange-400">Хэдхэн минутанд.</span>
           </h1>
 
           <p
             className="
-              mt-8
-              text-lg
+              mt-6
+              md:mt-8
+              text-base
               md:text-xl
-              leading-8
-
+              leading-7
+              md:leading-8
               text-white/90
-
-              max-w-[700px]
+              max-w-175
               mx-auto
             "
           >
-            Монголын ажил хайгч болон
-            ажил олгогчийг нэг платформ дээр
-            хурдан бөгөөд найдвартай холбоно.
+            Монголын ажил хайгч болон ажил олгогчийг нэг платформ дээр хурдан
+            бөгөөд найдвартай холбоно.
           </p>
 
           {/* BUTTONS */}
-
           <div
             className="
-              mt-12
+              mt-10
+              md:mt-12
               flex
               justify-center
-              gap-5
+              gap-4
               flex-wrap
             "
           >
-
-            <Link href="/dashboard/staff/jobs">
-
+            <Link href="/dashboard/staff/jobs" className="w-full sm:w-auto">
               <button
                 className="
                   orange-btn
-
-                  w-[220px]
-                  h-[60px]
-
+                  w-full
+                  sm:w-55
+                  h-13.5
+                  md:h-15
                   flex
                   items-center
                   justify-center
+                  text-sm
+                  md:text-base
                 "
               >
                 Ажил Хайх
               </button>
-
             </Link>
 
-            <Link href="/dashboard/company/applicants">
-
+            <Link href="/dashboard/company/applicants" className="w-full sm:w-auto">
               <button
                 className="
-                  glass
-
-                  w-[220px]
-                  h-[60px]
-
+                  w-full
+                  sm:w-55
+                  h-13.5
+                  md:h-15
                   rounded-2xl
-
                   text-white
-
+                  bg-white/10
+                  border
+                  border-white/20
                   flex
                   items-center
                   justify-center
-
-                  hover:bg-white/10
-                  hover:-translate-y-1
-
+                  text-sm
+                  md:text-base
+                  active:translate-y-0
+                  md:hover:bg-white/20
+                  md:hover:-translate-y-1
                   transition
                   duration-300
                 "
               >
                 Staff Хайх
               </button>
-
             </Link>
-
           </div>
 
           {/* STATS */}
-
-          <div
-            className="
-              mt-16
-
-              flex
-              justify-center
-
-              gap-5
-
-              flex-wrap
-            "
-          >
-
-          </div>
-
+          <div className="mt-16 flex justify-center gap-5 flex-wrap"></div>
         </div>
-
       </div>
-
     </section>
   )
 }
