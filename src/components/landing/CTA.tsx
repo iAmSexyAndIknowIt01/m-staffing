@@ -29,93 +29,86 @@ export default function CTA() {
       className="
         relative
         overflow-hidden
-        py-[140px]
+        py-16
+        md:py-35
       "
     >
-
       {/* BG */}
-
       <div
         className="
           absolute
           inset-0
-
-          bg-gradient-to-b
+          bg-linear-to-b
           from-white
           via-[#fffaf6]
           to-white
         "
       />
 
+      {/* GLOW - Зөвхөн компьютер дээр уншина */}
       <div
         className="
+          hidden
+          md:block
           absolute
           top-[10%]
           left-[10%]
-
-          w-[600px]
-          h-[600px]
-
+          w-150
+          h-150
           rounded-full
           bg-orange-300/10
-
           blur-[150px]
         "
       />
 
+      {/* GRID */}
       <div
         className="
           absolute
           inset-0
-
-          opacity-[0.09]
-
+          opacity-[0.05]
+          md:opacity-[0.09]
           bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]
-
-          bg-[size:70px_70px]
+          bg-size-[50px_50px]
+          md:bg-size-[70px_70px]
         "
       />
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6">
-
+      <div className="relative z-10 max-w-350 mx-auto px-4 md:px-6">
         <div
           className="
-            rounded-[44px]
-
-            bg-white/65
-            backdrop-blur-xl
-
+            rounded-4xl
+            md:rounded-[44px]
+            bg-white
+            md:bg-white/65
+            md:backdrop-blur-xl
             border
-            border-white
-
-            px-8
-            py-20
-
+            border-gray-100
+            md:border-white
+            px-6
+            py-12
             md:px-14
-
-            shadow-[0_40px_120px_rgba(0,0,0,.06)]
+            md:py-20
+            shadow-[0_20px_50px_rgba(0,0,0,.04)]
+            md:shadow-[0_40px_120px_rgba(0,0,0,.06)]
           "
         >
-
           {/* HEADER */}
-
           <div className="text-center">
-
             <div
               className="
                 inline-flex
-
                 rounded-full
-
-                bg-white
-
+                bg-gray-50
+                md:bg-white
                 px-5
                 py-2
-
-                text-sm
+                text-xs
+                md:text-sm
                 font-semibold
-
-                shadow
+                shadow-xs
+                border
+                border-gray-100
               "
             >
               HOW MSTAFFING WORKS
@@ -124,120 +117,94 @@ export default function CTA() {
             <h2
               className="
                 mt-5
-
-                text-4xl
+                text-3xl
                 md:text-6xl
-
                 font-black
-
                 leading-tight
               "
             >
               Хэдхэн алхмаар
-
               <span className="orange-text">
                 {" "}ажил эхэлнэ
               </span>
-
             </h2>
 
             <p
               className="
-                mt-5
-
-                text-lg
-
+                mt-4
+                text-sm
+                md:text-lg
                 text-gray-500
-
-                max-w-[700px]
-
+                max-w-175
                 mx-auto
+                leading-6
+                md:leading-7
               "
             >
-              Бүртгэлээс эхлээд ажил эхлэх хүртэл —
-              бүх процесс хэдхэн минут.
+              Бүртгэлээс эхлээд ажил эхлэх хүртэл — бүх процесс хэдхэн минут.
             </p>
-
           </div>
 
           {/* ROADMAP */}
-
           <div
             className="
-              mt-14
-
+              mt-12
+              md:mt-14
               grid
-
+              grid-cols-1
               md:grid-cols-4
-
-              gap-5
+              gap-8
+              md:gap-5
             "
           >
-
             {steps.map((step, index) => (
-
               <div
                 key={step.title}
                 className="
                   relative
-
                   text-center
-
                   px-4
                 "
               >
-
-                {/* LINE */}
-
+                {/* LINE - Зөвхөн компьютер дээр харагдана */}
                 {index !== 3 && (
-
                   <div
                     className="
                       hidden
                       md:block
-
                       absolute
-
-                      top-[34px]
+                      top-8.5
                       left-[60%]
-
                       w-full
-                      h-[1px]
-
-                      bg-gradient-to-r
+                      h-px
+                      bg-linear-to-r
                       from-orange-300
                       to-transparent
                     "
                   />
-
                 )}
 
                 {/* STEP */}
-
                 <div
                   className="
                     relative
-
-                    w-[68px]
-                    h-[68px]
-
+                    w-15
+                    h-15
+                    md:w-17
+                    md:h-17
                     mx-auto
-
                     rounded-full
-
                     bg-white
-
                     border
-
-                    shadow-lg
-
+                    border-gray-100
+                    shadow-md
                     flex
                     items-center
                     justify-center
-
                     text-orange-500
-
                     font-black
+                    text-sm
+                    md:text-base
                   "
                 >
                   {step.no}
@@ -245,10 +212,10 @@ export default function CTA() {
 
                 <h3
                   className="
-                    mt-5
-
-                    text-xl
-
+                    mt-4
+                    md:mt-5
+                    text-lg
+                    md:text-xl
                     font-black
                   "
                 >
@@ -257,89 +224,74 @@ export default function CTA() {
 
                 <p
                   className="
-                    mt-3
-
+                    mt-2
                     text-gray-500
-
-                    leading-7
-
-                    text-sm
+                    leading-6
+                    md:leading-7
+                    text-xs
+                    md:text-sm
                   "
                 >
                   {step.desc}
                 </p>
-
               </div>
-
             ))}
-
           </div>
 
           {/* BUTTONS */}
-
           <div
             className="
-              mt-14
-
+              mt-10
+              md:mt-14
               flex
               justify-center
-
-              gap-4
-
+              gap-3
+              md:gap-4
               flex-wrap
             "
           >
-
-            <Link href="/jobs">
-
+            <Link href="/jobs" className="w-full sm:w-auto">
               <button
                 className="
-                  w-[220px]
-                  h-[56px]
-
+                  w-full
+                  sm:w-55
+                  h-13
+                  md:h-14
                   orange-btn
-
                   flex
                   items-center
                   justify-center
+                  text-sm
                 "
               >
                 Ажил Хайх
               </button>
-
             </Link>
 
-            <Link href="/staff">
-
+            <Link href="/staff" className="w-full sm:w-auto">
               <button
                 className="
-                  w-[220px]
-                  h-[56px]
-
+                  w-full
+                  sm:w-55
+                  h-13
+                  md:h-14
                   rounded-2xl
-
                   bg-white
-
                   border
-
+                  border-gray-200
                   font-semibold
-
-                  hover:-translate-y-1
-
+                  text-sm
+                  active:translate-y-0
+                  md:hover:-translate-y-1
                   transition
                 "
               >
                 Staff Хайх
               </button>
-
             </Link>
-
           </div>
-
         </div>
-
       </div>
-
     </section>
   )
 }
