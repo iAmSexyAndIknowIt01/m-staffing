@@ -29,7 +29,6 @@ export async function POST(req: Request) {
           last_name: lastName,
           company_name: companyName,
         },
-        // Хэрэглэгч имэйл дээрээ дараад буцаж ирэх линк (Өөрийнхөөрөө солиорой)
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback`,
       },
     })
@@ -43,8 +42,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Хэрэглэгч үүссэнгүй" }, { status: 500 })
     }
 
-    // 2. Хэрэв имэйл баталгаажуулалт идэвхтэй бөгөөд identities хоосон байвал (Имэйл баталгаажихыг хүлээж буй төлөв)
-    // Энэ үед шууд insert хийвэл Foreign Key алдаа зааж магадгүй тул шалгана.
+    // 2. Хэрэв имэйл баталгаажуулалт идэвхтэй бөгөөд identities хоосон байвал
     if (data.session === null) {
       return NextResponse.json({
         success: true,
@@ -53,12 +51,34 @@ export async function POST(req: Request) {
       })
     }
 
-    // 3. Хэрэв танай Supabase дээр Email Verification унтраалтай байвал хуучин логикоор шууд insert хийнэ
+    // 3. Хэрэв Supabase дээр Email Verification унтраалтай байвал шууд insert хийнэ
     if (role === "staff") {
       await supabase.from("mt_staff").insert({ id: user.id, first_name: firstName, last_name: lastName, email })
       await supabase.from("mt_profile").insert({ user_id: user.id, email, phone: "", bio: "", skills: "", experience: "", education: "" })
     } else if (role === "company") {
-      await supabase.from("mt_company").insert({ id: user.id, company_name: companyName, email })
+      // А) Компанийн үндсэн мэдээллийг оруулна
+      const { error: companyError } = await supabase
+        .from("mt_company")
+        .insert({ id: user.id, company_name: companyName, email })
+
+      if (companyError) throw companyError
+
+      // Б) 🔥 ШИНЭЧЛЭЛТ: Тухайн компанид зориулж default (Free) багцыг үүсгэнэ
+      const { error: subError } = await supabase
+        .from("mt_company_subscriptions")
+        .insert({
+          user_id: user.id,
+          plan_type: "free",    // Үнэгүй багц
+          status: "active",     // Төлөв: Идэвхтэй
+          job_limit: 3,         // Зарлах ажлын байрны лимит
+          expires_at: null      // Хугацаагүй (Үнэгүй багц тул)
+        })
+
+      if (subError) {
+        console.error("Subscription үүсгэхэд алдаа гарлаа:", subError)
+        // Тэмдэглэл: Компани амжилттай үүссэн ч багц дээр алдаа гарвал 
+        // dashboard API өөрөө default датаг буцаадаг хамгаалалттай байгаа.
+      }
     }
 
     return NextResponse.json({

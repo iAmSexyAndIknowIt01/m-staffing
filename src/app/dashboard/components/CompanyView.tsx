@@ -14,6 +14,13 @@ interface DashboardData {
     totalApplicantsCount: number
     interviewCount: number
   }
+  // 🔥 ШИНЭЧЛЭГДСЭН: Багцын мэдээллийн бүтэц
+  subscription: {
+    planName: string
+    status: string
+    jobLimit: number
+    expiresAt: string
+  }
   activeJobs: Array<{
     id: string
     title: string
@@ -37,12 +44,10 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 🔥 ШИНЭЧЛЭЛТ: Давхардаж дуудахаас сэргийлэх flag
   const isFetched = useRef(false)
 
   useEffect(() => {
     async function fetchDashboardData() {
-      // Хэрэв өмнө нь дуудагдсан бол дахиж ажиллахгүй
       if (isFetched.current) return
       isFetched.current = true
 
@@ -59,7 +64,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
         }
       } catch (err: any) {
         setError(err.message)
-        // Алдаа гарвал дараагийн удаа дахин дуудах боломж олгоно
         isFetched.current = false 
       } finally {
         setLoading(false)
@@ -67,30 +71,21 @@ export default function CompanyView({ userId }: CompanyViewProps) {
     }
 
     fetchDashboardData()
-  }, []) // Энд хоосон массив үлдээсэн нь зөв
+  }, [])
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
           <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          
-          {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
           <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          
-          {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
           <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          
-          {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
             <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        
-        {/* Доор уншиж буйг илтгэх жижиг текст */}
         <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
@@ -108,8 +103,11 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
   if (!data) return null
 
-  const { stats, activeJobs, recentApplicants } = data
+  const { stats, activeJobs, recentApplicants, subscription } = data
   const displayedJobs = activeJobs.slice(0, 2)
+
+  // Ажлын байрны лимит дүүрсэн эсэхийг шалгах
+  const isLimitReached = stats.openJobsCount >= subscription.jobLimit
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -122,12 +120,22 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             Шинэ шилдэг боловсон хүчнүүдийг эндээс хялбархан удирдаарай.
           </p>
         </div>
-        <Link
-          href="/dashboard/company/post-job"
-          className="px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-orange-500/25 flex items-center gap-2"
-        >
-          <span>+</span> Ажлын байр нэмэх
-        </Link>
+        {/* 🔥 ШИНЭЧЛЭЛТ: Лимит хэтэрсэн үед хамгаалалттай товч харуулах */}
+        {isLimitReached ? (
+          <button
+            onClick={() => alert(`Таны ажлын байрны лимит (${subscription.jobLimit}) дүүрсэн байна. Шинэ зар оруулахын тулд багцаа ахиулна уу.`)}
+            className="px-6 py-3.5 bg-gray-600 text-gray-300 font-bold text-sm rounded-2xl cursor-not-allowed shadow-lg flex items-center gap-2"
+          >
+            <span>🔒</span> Лимит дүүрсэн
+          </button>
+        ) : (
+          <Link
+            href="/dashboard/company/post-job"
+            className="px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-orange-500/25 flex items-center gap-2"
+          >
+            <span>+</span> Ажлын байр нэмэх
+          </Link>
+        )}
       </div>
 
       {/* СТАТИСТИК КАРТУУД */}
@@ -278,7 +286,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
         </div>
 
-        {/* БАРУУН ТАЛ: ТӨЛӨВ */}
+        {/* 🔥 БАРУУН ТАЛ: ДИНАМИК КОМПАНИЙН ТӨЛӨВ ХЭСЭГ */}
         <div className="space-y-6">
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-5">
             <div>
@@ -289,23 +297,32 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100/50">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-400">Хандалт систем:</span>
-                <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">Идэвхтэй</span>
+                <span className={`font-bold px-2 py-0.5 rounded-md ${subscription.status === "Идэвхтэй" ? "text-emerald-600 bg-emerald-50" : "text-red-600 bg-red-50"}`}>
+                  {subscription.status}
+                </span>
               </div>
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-400">Одоогийн Багц:</span>
-                <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">Premium Plan</span>
+                <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                  {subscription.planName}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs font-medium">
+                <span className="text-gray-400">Дуусах огноо:</span>
+                <span className="font-bold text-gray-600">{subscription.expiresAt}</span>
               </div>
             </div>
 
+            {/* Прогресс бар: Зарласан ажлын байр / Нийт лимит */}
             <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-gray-500">Ажлын байрны лимит</span>
-                <span className="text-slate-700">{stats.openJobsCount} / 10 зар</span>
+                <span className="text-slate-700">{stats.openJobsCount} / {subscription.jobLimit} зар</span>
               </div>
               <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                 <div 
-                  className="bg-slate-800 h-full rounded-full transition-all duration-500" 
-                  style={{ width: `${(stats.openJobsCount / 10) * 100}%` }} 
+                  className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? 'bg-red-500' : 'bg-slate-800'}`} 
+                  style={{ width: `${Math.min((stats.openJobsCount / subscription.jobLimit) * 100, 100)}%` }} 
                 />
               </div>
             </div>
