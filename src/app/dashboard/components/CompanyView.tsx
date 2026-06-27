@@ -208,8 +208,9 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                           🔥 {job.newApplicants} шинэ
                         </span>
                       )}
+                      {/* 🔄 ШИНЭЧЛЭГДСЭН ХЭСЭГ: Динамик ID дамжуулах зам */}
                       <Link 
-                        href={`/dashboard/company/applicants?job_id=${job.id}`}
+                        href={`/dashboard/company/post-job/${job.id}/applicants`}
                         className="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/70 px-4 py-2.5 rounded-xl transition"
                       >
                         Анкетуудыг үзэх →

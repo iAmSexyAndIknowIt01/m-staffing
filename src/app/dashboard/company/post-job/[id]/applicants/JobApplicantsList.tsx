@@ -130,7 +130,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
               <thead>
                 <tr className="border-b border-gray-50 bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
                   <th className="px-6 py-4">Нэр</th>
-                  <th className="px-6 py-4">Ххолбоо барих</th>
+                  <th className="px-6 py-4">Холбоо барих</th>
                   <th className="px-6 py-4">Огноо</th>
                   <th className="px-6 py-4">Төлөв</th>
                   <th className="px-6 py-4 text-right">Үйлдэл</th>
