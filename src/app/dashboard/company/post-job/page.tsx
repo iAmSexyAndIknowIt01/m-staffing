@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface JobItem {
   id: string
@@ -28,6 +29,7 @@ const getJobTypeLabel = (type?: string) => {
 }
 
 export default function PostJobPage() {
+  const router = useRouter()
   const [jobs, setJobs] = useState<JobItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -60,12 +62,10 @@ export default function PostJobPage() {
 
         setJobs(result.data || [])
       } catch (err: any) {
-        // StrictMode-оос болж цуцлагдсан хүсэлтийн алдааг state-д авахгүй алгасна
         if (err.name !== "AbortError") {
           setError(err.message)
         }
       } finally {
-        // Зөвхөн хүсэлт цуцлагдаагүй (хамгийн сүүлийн) үед loading-ийг хаана
         if (!signal.aborted) {
           setLoading(false)
         }
@@ -74,7 +74,6 @@ export default function PostJobPage() {
 
     fetchJobs()
 
-    // Cleanup: Дараагийн удаа ажиллах эсвэл component устхад өмнөх fetch-ийг цуцална
     return () => {
       controller.abort()
     }
@@ -87,6 +86,12 @@ export default function PostJobPage() {
     applicantFilter !== "all" && setApplicantFilter("all")
     dateSort !== "newest" && setDateSort("newest")
     setCurrentPage(1)
+  }
+
+  // 🔄 Анкет үзэх холбоос руу шилжихээс өмнө Loader асаах функц
+  const handleViewApplicants = (jobId: string) => {
+    setLoading(true)
+    router.push(`/dashboard/company/post-job/${jobId}/applicants`)
   }
 
   // ШҮҮЛТҮҮР БОЛОН ЭРЭМБЭЛЭЛТ
@@ -161,7 +166,6 @@ export default function PostJobPage() {
     return range
   }
 
-  // Тоог мөнгөн дүнгийн форматад оруулах (Жишээ нь: 2500000 -> 2,500,000)
   const formatSalary = (amount: string) => {
     if (!amount || isNaN(Number(amount))) return amount;
     return Number(amount).toLocaleString("mn-MN");
@@ -172,7 +176,7 @@ export default function PostJobPage() {
       
       {/* CUSTOM MSTAFFING LOADER */}
       {loading && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
             <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
             <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
@@ -342,12 +346,12 @@ export default function PostJobPage() {
                     
                     <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                       {job.applicants_count > 0 && (
-                        <Link
-                          href={`/dashboard/company/post-job/${job.id}/applicants`}
-                          className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100/80 rounded-xl transition text-center whitespace-nowrap"
+                        <button
+                          onClick={() => handleViewApplicants(job.id)}
+                          className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100/80 rounded-xl transition text-center whitespace-nowrap cursor-pointer"
                         >
                           Анкет үзэх
-                        </Link>
+                        </button>
                       )}
                       <Link
                         href={`/dashboard/company/post-job/edit/${job.id}`}

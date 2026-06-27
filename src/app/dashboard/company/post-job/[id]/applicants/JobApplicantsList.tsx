@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 
 interface Applicant {
   id: string
@@ -21,6 +21,16 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  
+  // 🔄 Анхны дата уншиж байх үеийн төлөв
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
+
+  // Хуудас анх ачаалагдаж, initialApplicants ирэхэд loader-ийг хаана
+  useEffect(() => {
+    if (initialApplicants) {
+      setIsInitialLoading(false)
+    }
+  }, [initialApplicants])
 
   // Статусаар шүүх логик
   const filteredApplicants = useMemo(() => {
@@ -54,8 +64,39 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
     }
   }
 
+  // Аль нэг ачаалж буй төлөв идэвхтэй үед Loader-ийг харуулна
+  const showLoader = isInitialLoading || updatingId !== null
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      
+      {/* 🔄 БРЭНДИНГ LOADER ДЭЛГЭЦ */}
+      {showLoader && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
+          <div className="relative flex items-center justify-center h-32 w-32">
+            {/* 1. Ард талын зөөлөн гэрэлтэлт */}
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            
+            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
+            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            
+            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
+            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            
+            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
+            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          
+          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+            {isInitialLoading ? "Анкетуудыг ачаалж байна..." : "Төлөв шинэчилж байна..."}
+          </p>
+        </div>
+      )}
+
       {/* СТАТУС ТАБ ЦЭС */}
       <div className="flex gap-1.5 p-1.5 bg-gray-100/80 w-full md:w-fit rounded-xl overflow-x-auto">
         {[
@@ -89,7 +130,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
               <thead>
                 <tr className="border-b border-gray-50 bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
                   <th className="px-6 py-4">Нэр</th>
-                  <th className="px-6 py-4">Холбоо барих</th>
+                  <th className="px-6 py-4">Ххолбоо барих</th>
                   <th className="px-6 py-4">Огноо</th>
                   <th className="px-6 py-4">Төлөв</th>
                   <th className="px-6 py-4 text-right">Үйлдэл</th>
@@ -114,13 +155,13 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                         {currentStatus === "rejected" && <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <Link href={`/dashboard/company/applicants/profile?id=${app.id}`} className="text-xs font-bold bg-gray-900 text-white px-3 py-2 rounded-lg transition inline-block">
+                        <Link href={`/dashboard/company/applicants/profile?id=${app.id}`} className="text-xs font-bold bg-gray-990 text-white px-3 py-2 rounded-lg transition inline-block">
                           Дэлгэрэнгүй
                         </Link>
                         {["new", "pending", ""].includes(currentStatus) && (
                           <>
-                            <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "interview")} className="text-xs font-bold bg-emerald-500 text-white px-3 py-2 rounded-lg transition disabled:opacity-50">Урих</button>
-                            <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 text-rose-600 px-3 py-2 rounded-lg transition disabled:opacity-50">Татгалзах</button>
+                            <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="text-xs font-bold bg-emerald-500 text-white px-3 py-2 rounded-lg transition disabled:opacity-50">Урих</button>
+                            <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 text-rose-600 px-3 py-2 rounded-lg transition disabled:opacity-50">Татгалзах</button>
                           </>
                         )}
                       </td>
@@ -160,8 +201,8 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                     </Link>
                     {["new", "pending", ""].includes(currentStatus) && (
                       <>
-                        <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "interview")} className="flex-1 text-center text-xs font-bold bg-emerald-500 text-white py-2 rounded-lg disabled:opacity-50">Урих</button>
-                        <button disabled={updatingId === app.id} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50">❌</button>
+                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="flex-1 text-center text-xs font-bold bg-emerald-500 text-white py-2 rounded-lg disabled:opacity-50">Урих</button>
+                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50">❌</button>
                       </>
                     )}
                   </div>
