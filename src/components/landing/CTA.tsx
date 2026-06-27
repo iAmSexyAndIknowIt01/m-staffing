@@ -238,52 +238,66 @@ export default function CTA() {
             ))}
           </div>
 
-          {/* BUTTONS */}
+          {/* BUTTONS - HERO СЕКШНТЭЙ ИЖИЛХЭН БОЛГОСОН */}
           <div
             className="
               mt-10
               md:mt-14
               flex
               justify-center
-              gap-3
-              md:gap-4
+              gap-4
               flex-wrap
             "
           >
-            <Link href="/jobs" className="w-full sm:w-auto">
+            <Link href="/dashboard/staff/jobs" className="w-full sm:w-auto">
               <button
                 className="
+                  orange-btn
                   w-full
                   sm:w-55
-                  h-13
-                  md:h-14
-                  orange-btn
+                  h-13.5
+                  md:h-15
                   flex
                   items-center
                   justify-center
                   text-sm
+                  md:text-base
                 "
               >
                 Ажил Хайх
               </button>
             </Link>
 
-            <Link href="/staff" className="w-full sm:w-auto">
+            <Link href="/dashboard/company/applicants" className="w-full sm:w-auto">
               <button
                 className="
                   w-full
                   sm:w-55
-                  h-13
-                  md:h-14
+                  h-13.5
+                  md:h-15
                   rounded-2xl
-                  bg-white
+                  text-gray-800
+                  bg-gray-50
                   border
                   border-gray-200
-                  font-semibold
+                  flex
+                  items-center
+                  justify-center
                   text-sm
+                  md:text-base
+                  font-semibold
+                  backdrop-blur-none
                   active:translate-y-0
-                  md:hover:-translate-y-1
-                  transition
+                  
+                  /* Hero шиг Bright Glow эффект */
+                  hover:bg-white
+                  hover:text-gray-900
+                  hover:border-orange-400/50
+                  hover:-translate-y-0.5
+                  hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]
+                  
+                  transition-all
+                  duration-300
                 "
               >
                 Staff Хайх
