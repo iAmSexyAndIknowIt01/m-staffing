@@ -49,7 +49,8 @@ export async function GET() {
 
     if (jobsError) throw jobsError
 
-    const activeJobs = (jobsData || []).map((job: any) => ({
+    // Датаг map хийж бэлдэнэ
+    let activeJobs = (jobsData || []).map((job: any) => ({
       id: job.id,
       title: job.title,
       totalApplicants: job.tr_job_request ? job.tr_job_request.length : 0,
@@ -57,6 +58,16 @@ export async function GET() {
       status: "Идэвхтэй",
       views: job.views || 0
     }))
+
+    // 🔄 ЗАСВАР: Анкеттай (totalApplicants > 0) ажлуудыг түрүүнд нь харуулах эрэмбэлэлт
+    activeJobs.sort((a, b) => {
+      // Хэрэв `a` анкеттай, `b` анкетгүй бол `a`-г урагшлуулна
+      if (a.totalApplicants > 0 && b.totalApplicants === 0) return -1
+      // Хэрэв `b` анкеттай, `a` анкетгүй бол `b`-г урагшлуулна
+      if (a.totalApplicants === 0 && b.totalApplicants > 0) return 1
+      // Бусад тохиолдолд (хоёулаа анкеттай эсвэл хоёулаа анкетгүй) анхны order-оо хадгална
+      return 0
+    })
 
     // --- 5. Сүүлд ирсэн 3 анкетын мэдээлэл ---
     const { data: recentRequests, error: recentError } = await supabase
@@ -79,12 +90,11 @@ export async function GET() {
       role: any 
       time: string 
       avatar: string | null 
-    }[] = [] // ЗАСВАР: Типээс experience-г хассан
+    }[] = []
 
     if (recentRequests && recentRequests.length > 0) {
       const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
 
-      // mt_staff хүснэгтээс 'id'-аар, mt_profile хүснэгтээс 'user_id'-аар шүүж авна
       const [staffResult, profileResult] = await Promise.all([
         supabase.from("mt_staff").select("id, last_name, first_name").in("id", applicantIds),
         supabase.from("mt_profile").select("user_id, photo_url").in("user_id", applicantIds)
@@ -100,12 +110,10 @@ export async function GET() {
         const staff = staffData.find((s: any) => s.id === app.applicant_id)
         const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
 
-        // Овог нэрийг залгах логик
         const lastName = staff?.last_name ? `${staff.last_name} ` : ""
         const firstName = staff?.first_name || ""
         const fullName = `${lastName}${firstName}`.trim()
 
-        // Storage avatars bucket-аас нийтийн URL үүсгэх логик
         let finalAvatarUrl = null
         if (profile?.photo_url) {
           if (profile.photo_url.startsWith("http")) {
@@ -124,7 +132,7 @@ export async function GET() {
           role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
           time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
           avatar: finalAvatarUrl
-        } // ЗАСВАР: Буцаах дата хэсгээс experience-г хассан
+        }
       })
     }
 
