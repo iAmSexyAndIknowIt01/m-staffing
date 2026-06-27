@@ -70,7 +70,7 @@ export async function POST(req: Request) {
           user_id: user.id,
           plan_type: "free",    // Үнэгүй багц
           status: "active",     // Төлөв: Идэвхтэй
-          job_limit: 3,         // Зарлах ажлын байрны лимит
+          job_limit: 10,         // Зарлах ажлын байрны лимит
           expires_at: null      // Хугацаагүй (Үнэгүй багц тул)
         })
 
