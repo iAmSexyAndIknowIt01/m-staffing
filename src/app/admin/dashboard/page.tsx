@@ -37,27 +37,22 @@ export default function AdminDashboard() {
     fetchAdminData()
   }, [])
 
-  // 🔥 НЭГДСЭН ФУНКЦ: Төлөвийг "paid" эсвэл "decline" болгож өөрчлөх
-  const handleUpdateStatus = async (invoiceId: string, targetStatus: "paid" | "decline") => {
-    const confirmMsg = targetStatus === "paid" 
-      ? "Энэхүү төлбөрийг баталгаажуулж, компанийн багцыг ахиулахдаа итгэлтэй байна уу?"
-      : "Энэ нэхэмжлэхийг цуцлахдаа итгэлтэй байна уу?";
-
-    if (!confirm(confirmMsg)) return
+  // Төлбөрийг зөвхөн "paid" болгож баталгаажуулах функц
+  const handleApproveStatus = async (invoiceId: string) => {
+    if (!confirm("Энэхүү төлбөрийг баталгаажуулж, компанийн багцыг ахиулахдаа итгэлтэй байна уу?")) return
     setActionLoading(invoiceId)
 
     try {
       const res = await fetch("/api/admin/invoices", {
-        method: "PUT", // Одоо устгах биш үргэлж PUT ашиглана
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoice_id: invoiceId, status: targetStatus })
+        body: JSON.stringify({ invoice_id: invoiceId, status: "paid" })
       })
       const result = await res.json()
       
       if (result.success) {
-        alert(targetStatus === "paid" ? "Төлбөр амжилттай баталгаажлаа!" : "Нэхэмжлэх цуцлагдлаа.")
-        // Жагсаалт дахь төлөвийг устгахгүйгээр шууд шинэчлэх
-        setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, status: targetStatus } : inv))
+        alert("Төлбөр амжилттай баталгаажлаа!")
+        setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, status: "paid" } : inv))
       } else {
         alert(result.error || "Алдаа гарлаа.")
       }
@@ -135,30 +130,20 @@ export default function AdminDashboard() {
                     <td className="p-4 font-black text-gray-900">{inv.amount.toLocaleString()} ₮</td>
                     <td className="p-4 text-center">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        inv.status === "paid" ? "bg-emerald-50 text-emerald-600" :
-                        inv.status === "decline" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600 animate-pulse"
+                        inv.status === "paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600 animate-pulse"
                       }`}>
-                        {inv.status === "paid" ? "Төлөгдсөн" : inv.status === "decline" ? "Цуцлагдсан" : "Хүлээгдэж буй"}
+                        {inv.status === "paid" ? "Төлөгдсөн" : "Хүлээгдэж буй"}
                       </span>
                     </td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-right">
                       {inv.status === "pending" ? (
-                        <>
-                          <button
-                            onClick={() => handleUpdateStatus(inv.id, "paid")}
-                            disabled={actionLoading !== null}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl transition shadow-xs text-[11px]"
-                          >
-                            {actionLoading === inv.id ? "⏳" : "Баталгаажуулах ✓"}
-                          </button>
-                          <button
-                            onClick={() => handleUpdateStatus(inv.id, "decline")}
-                            disabled={actionLoading !== null}
-                            className="bg-red-50 text-red-600 hover:bg-red-200/60 font-bold px-3 py-1.5 rounded-xl transition text-[11px]"
-                          >
-                            Цуцлах
-                          </button>
-                        </>
+                        <button
+                          onClick={() => handleApproveStatus(inv.id)}
+                          disabled={actionLoading !== null}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl transition shadow-xs text-[11px]"
+                        >
+                          {actionLoading === inv.id ? "⏳" : "Баталгаажуулах ✓"}
+                        </button>
                       ) : (
                         <span className="text-gray-300 text-[11px] font-bold pr-2">Шийдвэрлэсэн</span>
                       )}
