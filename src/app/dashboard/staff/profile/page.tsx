@@ -387,8 +387,14 @@ export default function StaffProfilePage() {
             </select>
           </div>
 
-          {/* === АЖИЛ ОЛГОГЧИД ХАРАГДУУЛАХ ЗӨВШӨӨРӨЛ (ШИНЭ) === */}
-          <div className={`p-4 rounded-2xl border transition ${agreement ? "border-indigo-100 bg-indigo-50/30" : "border-gray-100 bg-gray-50/50"}`}>
+          {/* === АЖИЛ ОЛГОГЧИД ХАРАГДУУЛАХ ЗӨВШӨӨРӨЛ === */}
+          <div 
+            className={`p-4 rounded-2xl border transition ${
+              isEditMode 
+                ? agreement ? "border-indigo-200 bg-indigo-50/50" : "border-gray-200 bg-gray-50/50"
+                : agreement ? "border-pink-200 bg-pink-50/50" : "border-gray-200 bg-gray-50/50"
+            }`}
+          >
             <div className="flex items-start gap-3">
               <input
                 id="profile-agreement"
@@ -396,10 +402,21 @@ export default function StaffProfilePage() {
                 checked={agreement}
                 disabled={!isEditMode}
                 onChange={(e) => setAgreement(e.target.checked)}
-                className="w-4 h-4 mt-1 text-indigo-600 border-gray-300 rounded-sm focus:ring-indigo-500 accent-indigo-600 disabled:opacity-50"
+                className={`w-5 h-5 mt-0.5 rounded-md border-gray-400 focus:ring-2 cursor-pointer transition-all ${
+                  isEditMode 
+                    ? "accent-indigo-600 text-indigo-600 focus:ring-indigo-500 bg-white checked:bg-indigo-600" 
+                    : agreement 
+                      ? "accent-pink-600 text-pink-600 focus:ring-pink-500 bg-pink-100 checked:bg-pink-600 opacity-100" 
+                      : "accent-gray-400 text-gray-400 bg-gray-100 opacity-70"
+                }`}
               />
-              <label htmlFor="profile-agreement" className="text-xs font-medium text-gray-600 cursor-pointer select-none leading-relaxed">
-                Цагийн ажилтан хайж байгаа ажил олгогчдод миний Профайлыг ил тод харуулахыг зөвшөөрч байна.
+              <label 
+                htmlFor="profile-agreement" 
+                className={`text-xs font-bold cursor-pointer select-none leading-relaxed ${
+                  !isEditMode && agreement ? "text-pink-700" : "text-gray-700"
+                }`}
+              >
+                Цагийн ажилтан хайж байгаа ажил олгогчдод миний Профайлыг ил тод харуулахыг зөвшөрч байна.
               </label>
             </div>
           </div>
