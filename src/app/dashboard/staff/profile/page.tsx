@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { supabase } from "@/lib/supabase" // Supabase импорт нэмэв
+import { supabase } from "@/lib/supabase"
 import BioModal from "@/components/profile/modals/BioModal"
 import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
@@ -34,10 +34,11 @@ const initialAvailability = {
 }
 
 export default function StaffProfilePage() {
-  const fileInputRef = useRef<HTMLInputElement>(null) // Зураг сонгох ref
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const bioRef = useRef<HTMLTextAreaElement>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false) // Зураг хуулж буй төлөв
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -51,7 +52,10 @@ export default function StaffProfilePage() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [bio, setBio] = useState("")
-  const [avatarUrl, setAvatarUrl] = useState("") // Зургийн URL state
+  const [avatarUrl, setAvatarUrl] = useState("")
+  const [gender, setGender] = useState("") 
+  const [agreement, setAgreement] = useState(false) 
+  
 
   const [skills, setSkills] = useState<{
     technical: string[]
@@ -64,6 +68,16 @@ export default function StaffProfilePage() {
   const [experience, setExperience] = useState<Experience[]>([])
   const [education, setEducation] = useState<Education[]>([])
   const [availability, setAvailability] = useState(initialAvailability)
+
+  // ========================================
+  // AUTO RESIZE BIO TEXTAREA
+  // ========================================
+  useEffect(() => {
+    if (bioRef.current) {
+      bioRef.current.style.height = "auto"
+      bioRef.current.style.height = `${bioRef.current.scrollHeight}px`
+    }
+  }, [bio, loading])
 
   // ========================================
   // FETCH PROFILE
@@ -81,8 +95,15 @@ export default function StaffProfilePage() {
         setEmail(result.profile.email || "")
         setPhone(result.profile.phone || "")
         setBio(result.profile.bio || "")
-        setAvatarUrl(result.profile.avatar_url || "") // Зургийн URL оноох
-        setSkills(result.profile.skills || { technical: [], languages: [] })
+        setAvatarUrl(result.profile.avatar_url || "")
+        setGender(result.profile.gender || "") 
+        setAgreement(!!result.profile.agreement)
+        
+        setSkills({
+          technical: result.profile.skills?.technical || [],
+          languages: result.profile.skills?.languages || []
+        })
+        
         setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
         setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
         
@@ -113,7 +134,6 @@ export default function StaffProfilePage() {
       const fileName = `${Date.now()}.${fileExt}`
       const filePath = `avatars/${fileName}`
 
-      // Supabase storage руу зураг хуулах (Bucket нэр: "avatars")
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, { upsert: true })
@@ -124,7 +144,7 @@ export default function StaffProfilePage() {
         .from("avatars")
         .getPublicUrl(filePath)
 
-      setAvatarUrl(publicUrl) // Шинэ зургийн URL-ийг state-д хадгалах
+      setAvatarUrl(publicUrl)
       setMessage("Зураг түр ачаалагдлаа. 'Профайл хадгалах' товчийг дарж баталгаажуулна уу.")
     } catch (err: any) {
       setError(err.message || "Зураг хуулахад алдаа гарлаа.")
@@ -133,6 +153,9 @@ export default function StaffProfilePage() {
     }
   }
 
+  // ========================================
+  // VALIDATION FORM
+  // ========================================
   function validateForm() {
     const errors: Record<string, string> = {}
 
@@ -198,11 +221,13 @@ export default function StaffProfilePage() {
           email,
           phone,
           bio,
-          avatarUrl, // Бааз руу шинэ зургийн URL хамт илгээнэ
+          avatarUrl,
           skills,
           experience,
           education, 
           availability,
+          gender,
+          agreement,
         }),
       })
       const result = await response.json()
@@ -222,35 +247,24 @@ export default function StaffProfilePage() {
   }
 
   if (loading) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-          <div className="relative flex items-center justify-center h-32 w-32">
-            
-            {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            
-            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            
-            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-            
-            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
-            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-                mstaffing
-              </span>
-            </div>
-            
+    return (
+      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
           </div>
-          
-          {/* Доор уншиж буйг илтгэх жижиг текст */}
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            Түр хүлээнэ үү...
-          </p>
         </div>
-      )
-    }
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
@@ -281,7 +295,6 @@ export default function StaffProfilePage() {
       {message && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">{message}</div>}
       {error && <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">⚠️ {error}</div>}
 
-      {/* Далд байрлах File Input */}
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -290,14 +303,10 @@ export default function StaffProfilePage() {
         className="hidden" 
       />
 
-      {/* FORM */}
       <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT */}
+        {/* LEFT CARD */}
         <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-          
-          {/* PROFILE AVATAR UPLOAD SECTION */}
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
-            {/* Хэмжээг w-24 h-24 -> w-32 h-32 болгож томруулав */}
             <div 
               onClick={() => isEditMode && !uploadingAvatar && fileInputRef.current?.click()}
               className={`w-45 h-45 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group border border-gray-100 ${isEditMode ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
@@ -305,7 +314,6 @@ export default function StaffProfilePage() {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                /* Текст иконы хэмжээг мөн text-3xl -> text-4xl болгож томруулав */
                 <span className="text-4xl font-black text-indigo-600">
                   {fullName ? fullName.charAt(0) : "👤"}
                 </span>
@@ -365,9 +373,57 @@ export default function StaffProfilePage() {
             />
             {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
           </div>
-        </div>
+          <div>
+            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Хүйс</label>
+            <select
+              value={gender}
+              disabled={!isEditMode}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-200 outline-none disabled:opacity-75"
+            >
+              <option value="">Сонгох...</option>
+              <option value="male">Эрэгтэй</option>
+              <option value="female">Эмэгтэй</option>
+            </select>
+          </div>
 
-        {/* RIGHT */}
+          {/* === АЖИЛ ОЛГОГЧИД ХАРАГДУУЛАХ ЗӨВШӨӨРӨЛ === */}
+          <div 
+            className={`p-4 rounded-2xl border transition ${
+              isEditMode 
+                ? agreement ? "border-indigo-200 bg-indigo-50/50" : "border-gray-200 bg-gray-50/50"
+                : agreement ? "border-pink-200 bg-pink-50/50" : "border-gray-200 bg-gray-50/50"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <input
+                id="profile-agreement"
+                type="checkbox"
+                checked={agreement}
+                disabled={!isEditMode}
+                onChange={(e) => setAgreement(e.target.checked)}
+                className={`w-5 h-5 mt-0.5 rounded-md border-gray-400 focus:ring-2 cursor-pointer transition-all ${
+                  isEditMode 
+                    ? "accent-indigo-600 text-indigo-600 focus:ring-indigo-500 bg-white checked:bg-indigo-600" 
+                    : agreement 
+                      ? "accent-pink-600 text-pink-600 focus:ring-pink-500 bg-pink-100 checked:bg-pink-600 opacity-100" 
+                      : "accent-gray-400 text-gray-400 bg-gray-100 opacity-70"
+                }`}
+              />
+              <label 
+                htmlFor="profile-agreement" 
+                className={`text-xs font-bold cursor-pointer select-none leading-relaxed ${
+                  !isEditMode && agreement ? "text-pink-700" : "text-gray-700"
+                }`}
+              >
+                Цагийн ажилтан хайж байгаа ажил олгогчдод миний Профайлыг ил тод харуулахыг зөвшөрч байна.
+              </label>
+            </div>
+          </div>
+        </div>
+        
+
+        {/* RIGHT CARD */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           {/* BIO */}
           <div>
@@ -378,10 +434,10 @@ export default function StaffProfilePage() {
               )}
             </div>
             <textarea
-              rows={3}
+              ref={bioRef}
               value={bio}
               disabled
-              className={`mt-2 w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.bio ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
+              className={`mt-2 w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm resize-none overflow-hidden ${validationErrors.bio ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
             />
             {validationErrors.bio && <p className="text-red-500 text-xs mt-1">{validationErrors.bio}</p>}
           </div>
@@ -398,17 +454,25 @@ export default function StaffProfilePage() {
               <div className="mb-5">
                 <h4 className="font-semibold mb-3">Техникийн ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.technical.map((skill) => (
-                    <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">{skill}</span>
-                  ))}
+                  {skills.technical && skills.technical.length > 0 ? (
+                    skills.technical.map((skill) => (
+                      <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">{skill}</span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400">Оруулаагүй байна</span>
+                  )}
                 </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-3">Хэлний мэдлэг</h4>
                 <div className="flex flex-wrap gap-2">
-                  {skills.languages.map((skill) => (
-                    <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50">{skill}</span>
-                  ))}
+                  {skills.languages && skills.languages.length > 0 ? (
+                    skills.languages.map((skill) => (
+                      <span key={skill} className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-800 font-medium">{skill}</span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400">Оруулаагүй байна</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -420,20 +484,14 @@ export default function StaffProfilePage() {
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold">💼 Ажлын туршлага</label>
               {isEditMode && (
-                <button 
-                  type="button" 
-                  onClick={() => setActiveModal("experience")} 
-                  className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"
-                >
-                  ✏️
-                </button>
+                <button type="button" onClick={() => setActiveModal("experience")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
               )}
             </div>
 
             {experience.length > 0 ? (
               <div className="space-y-3 mt-2">
                 {experience.map((item, idx) => (
-                  <div key={idx} className={`border rounded-2xl p-5 bg-gray-50/50 relative border-gray-200`}>
+                  <div key={idx} className="border rounded-2xl p-5 bg-gray-50/50 relative border-gray-200">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="text-base font-bold text-gray-900">{item.position}</h4>
@@ -464,13 +522,7 @@ export default function StaffProfilePage() {
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold">🎓 Боловсрол</label>
               {isEditMode && (
-                <button 
-                  type="button" 
-                  onClick={() => setActiveModal("education")} 
-                  className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"
-                >
-                  ✏️
-                </button>
+                <button type="button" onClick={() => setActiveModal("education")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
               )}
             </div>
 
@@ -567,13 +619,14 @@ export default function StaffProfilePage() {
                             type="time"
                             disabled={!isEditMode}
                             value={day.to}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setAvailability({
                                 ...initialAvailability,
                                 ...availability,
                                 [key]: { ...day, to: e.target.value },
                               })
-                            }
+                              setValidationErrors((prev) => ({ ...prev, availability: "" }))
+                            }}
                             className="px-4 py-2 bg-white border border-gray-200 rounded-xl"
                           />
                         </div>

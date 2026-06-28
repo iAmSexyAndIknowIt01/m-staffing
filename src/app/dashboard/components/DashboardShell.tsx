@@ -51,10 +51,29 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
             )}
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition mx-auto"
-              title={isCollapsed ? "Дэлгэх" : "Хумих"}
+              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition mx-auto group border border-gray-200/50"
+              title={isCollapsed ? "Меню нээх" : "Меню хаах"}
             >
-              {isCollapsed ? "👉" : "👈"}
+              {isCollapsed ? (
+                /* Цэс хаалттай үед: Orange дугуй дотор цагаан M үсэг */
+                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
+                  <span className="text-white text-sm font-black tracking-tighter leading-none select-none">
+                    M
+                  </span>
+                </div>
+              ) : (
+                /* Цэс нээлттэй үед: Гоёмсог, нарийн зураастай Orange < SVG суман икон */
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  strokeWidth="2.5" 
+                  stroke="currentColor" 
+                  className="w-5 h-5 text-orange-500 group-hover:-translate-x-0.5 transition-transform duration-200"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              )}
             </button>
           </div>
 

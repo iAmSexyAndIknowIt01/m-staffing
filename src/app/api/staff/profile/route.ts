@@ -30,7 +30,7 @@ export async function GET() {
       throw staffError
     }
 
-    // 2. PROFILE DATA (photo_url баганыг нэмж уншив)
+    // 2. PROFILE DATA (gender болон agreement талбаруудыг нэмэв)
     const { data: profileData, error: profileError } = await supabase
       .from("mt_profile")
       .select(`
@@ -40,7 +40,9 @@ export async function GET() {
         bio,
         skills,
         availability,
-        photo_url
+        photo_url,
+        gender,
+        agreement
       `)
       .eq("user_id", userId)
       .maybeSingle()
@@ -72,7 +74,7 @@ export async function GET() {
 
     const languageSkills =
       skillData
-        ?.filter((row: any) => row.mt_skill?.skill_type === "language")
+        ?.filter((row: any) => row.mt_skill?.skill_type === "languages")
         .map((row: any) => row.mt_skill.skill_name) || []
 
     // 4. EXPERIENCE DATA
@@ -94,7 +96,7 @@ export async function GET() {
       description: exp.description || "",
     })) || []
 
-    // 5. EDUCATION DATA FROM TR_STAFF_EDUCATION
+    // 5. EDUCATION DATA
     const { data: eduData, error: eduError } = await supabase
       .from("tr_staff_education")
       .select("school, degree, field, graduation_year, is_current")
@@ -113,13 +115,15 @@ export async function GET() {
       isCurrent: edu.is_current,
     })) || []
 
-    // MERGE DATA (avatar_url талбарт photo_url утгыг оноов)
+    // MERGE DATA (gender болон agreement-ийг буцаах объект руу нэмэв)
     const profile = {
       full_name: `${staffData?.last_name || ""} ${staffData?.first_name || ""}`.trim(),
       email: profileData?.email || "",
       phone: profileData?.phone || "",
       bio: profileData?.bio || "",
-      avatar_url: profileData?.photo_url || "", // Фронтендэд аватар нэрээр буцна
+      avatar_url: profileData?.photo_url || "",
+      gender: profileData?.gender || "",
+      agreement: profileData?.agreement || false,
       skills: {
         technical: technicalSkills,
         languages: languageSkills,
@@ -164,7 +168,9 @@ export async function POST(request: Request) {
       email,
       phone,
       bio,
-      avatarUrl, // Фронтендээс ирэх зургийн URL-ийг хүлээн авна
+      avatarUrl,
+      gender,
+      agreement,
       skills,
       experience,
       education,
@@ -194,7 +200,7 @@ export async function POST(request: Request) {
     if (bio.length > 1000) {
       return NextResponse.json({ error: "Bio хамгийн ихдээ 1000 тэмдэгт байна." }, { status: 400 })
     }
-    if (!skills || (skills.technical?.length === 0 && skills.languages?.length === 0)) {
+    if (!skills || ((skills.technical?.length || 0) === 0 && (skills.languages?.length || 0) === 0)) {
       return NextResponse.json({ error: "Ур чадвараа оруулна уу." }, { status: 400 })
     }
     
@@ -210,21 +216,21 @@ export async function POST(request: Request) {
 
     // AVAILABILITY VALIDATION
     const enabledDays = Object.entries(availability || {}).filter(
-      ([, value]: any) => value.enabled
+      ([, value]: any) => value?.enabled
     )
     if (enabledDays.length === 0) {
       return NextResponse.json({ error: "Дор хаяж нэг ажиллах өдөр сонгоно уу." }, { status: 400 })
     }
     for (const [dayName, day] of enabledDays as any[]) {
-      if (!day.from || !day.to) {
+      if (!day?.from || !day?.to) {
         return NextResponse.json(
-          { error: `${dayName} garaгийн ажиллах цаг дутуу байна.` },
+          { error: `${dayName} гарагийн ажиллах цаг дутуу байна.` },
           { status: 400 }
         )
       }
       if (day.from >= day.to) {
         return NextResponse.json(
-          { error: `${dayName} garaгийн эхлэх цаг дуусах цагаас бага байх ёстой.` },
+          { error: `${dayName} гарагийн эхлэх цаг дуусах цагаас бага байх ёстой.` },
           { status: 400 }
         )
       }
@@ -247,7 +253,7 @@ export async function POST(request: Request) {
       throw staffUpdateError
     }
 
-    // UPDATE PROFILE DATA (photo_url баганыг нэмж хадгалав)
+    // UPDATE PROFILE DATA (gender болон agreement-ийг жагсаалтад нэмж шинэчлэв)
     const { data, error } = await supabase
       .from("mt_profile")
       .update({
@@ -256,7 +262,9 @@ export async function POST(request: Request) {
         bio,
         skills,
         availability,
-        photo_url: avatarUrl ? avatarUrl.trim() : null, // photo_url-ийг бааз руу шинэчлэх хэсэг
+        gender,
+        agreement: agreement || false,
+        photo_url: avatarUrl ? avatarUrl.trim() : null,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
@@ -350,7 +358,7 @@ export async function POST(request: Request) {
         school: edu.school,
         degree: edu.degree,
         field: edu.field || "",
-        graduation_year: edu.graduationYear || null,
+        graduation_year: edu.graduationYear ? parseInt(edu.graduationYear) : null,
         is_current: edu.isCurrent || false,
       }))
 

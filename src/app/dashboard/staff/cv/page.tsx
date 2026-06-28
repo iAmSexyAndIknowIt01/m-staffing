@@ -9,6 +9,7 @@ interface ProfileData {
   phone: string
   bio: string
   avatar_url: string
+  gender: string // <-- ШИНЭЭР НЭМЭВ
   skills: {
     technical: string[]
     languages: string[]
@@ -58,6 +59,16 @@ export default function StaffCVPage() {
     }
     fetchProfileData()
   }, [])
+
+  // Хүйс хөрвүүлэх функц
+  const getGenderText = (gender: string) => {
+    switch (gender) {
+      case "male": return "Хүйс: Эрэгтэй"
+      case "female": return "Хүйс: Эмэгтэй"
+      case "other": return "Хүйс: Бусад"
+      default: return gender ? `Хүйс: ${gender}` : ""
+    }
+  }
 
   const handleDownloadPDF = async () => {
     if (!profile || isExporting || !cvTemplateRef.current) return
@@ -119,7 +130,7 @@ export default function StaffCVPage() {
           onClick={() => router.back()} 
           className="px-5 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold"
         >
-          ← Буцах
+          &larr; Буцах
         </button>
       </div>
     )
@@ -130,13 +141,13 @@ export default function StaffCVPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4 flex flex-col items-center w-full overflow-x-hidden">
       
-      {/* УДИРДЛАГЫН ЦЭС - ЗАСАРСАН: Гар утасны өргөнд тааруулав */}
+      {/* УДИРДЛАГЫН ЦЭС */}
       <div className="w-full max-w-[210mm] flex flex-col sm:flex-row gap-3 sm:gap-0 items-center justify-between mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
         <button 
           onClick={() => router.back()} 
           className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 rounded-lg transition border border-gray-200 flex items-center justify-center gap-1"
         >
-          ← Буцах
+          &larr; Буцах
         </button>
         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Premium CV хэлбэр</h2>
         <button
@@ -149,14 +160,14 @@ export default function StaffCVPage() {
         </button>
       </div>
 
-      {/* А4 ХЭМЖЭЭТЭЙ CV ХЭВЛЭХ ХЭСЭГ - ЗАСАРСАН: Гар утас дээр хальж гарахгүй байх скролл нэмэв */}
+      {/* А4 ХЭМЖЭЭТЭЙ CV ХЭВЛЭХ ХЭСЭГ */}
       <div className="w-full max-w-[210mm] overflow-x-auto bg-white rounded-xl shadow-md border border-gray-100 p-1 sm:p-0">
         <div 
           ref={cvTemplateRef} 
           style={{ 
             boxSizing: "border-box", 
             width: "210mm",
-            minWidth: "210mm", // PDF экспорт эвдрэхээс хамгаална
+            minWidth: "210mm", 
             height: "297mm",
             minHeight: "297mm",
             overflow: "hidden",
@@ -179,6 +190,10 @@ export default function StaffCVPage() {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "16px 24px", fontSize: "12px", color: "#fff7ed" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📧 {profile.email}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📞 {profile.phone}</div>
+                  {/* ХҮЙСНИЙ МЭДЭЭЛЭЛ */}
+                  {profile.gender && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>👤 {getGenderText(profile.gender)}</div>
+                  )}
                 </div>
               </div>
               

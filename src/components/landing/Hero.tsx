@@ -9,7 +9,6 @@ export default function Hero() {
         min-h-screen
         overflow-hidden
         pt-30
-        md:pt-40
       "
     >
       {/* BG */}
@@ -22,34 +21,16 @@ export default function Hero() {
           className="
             object-cover
             scale-[1.02]
-            md:blur-[10px]
           "
         />
       </div>
 
-      {/* Overlay - Утсан дээр илүү сайн уншигдах үүднээс арай харанхуй болгов */}
+      {/* Overlay */}
       <div
         className="
           absolute
           inset-0
           bg-black/55
-          md:bg-black/35
-        "
-      />
-
-      {/* Orange Glow - Зөвхөн компьютер дээр ажиллана */}
-      <div
-        className="
-          hidden
-          md:block
-          absolute
-          top-[15%]
-          left-1/2
-          -translate-x-1/2
-          w-125
-          h-125
-          bg-orange-500/10
-          blur-[120px]
         "
       />
 
@@ -59,12 +40,10 @@ export default function Hero() {
           relative
           z-10
           min-h-[calc(100vh-120px)]
-          md:min-h-[calc(100vh-160px)]
           flex
           items-center
           justify-center
           px-4
-          md:px-6
           transform-gpu
         "
       >
@@ -79,10 +58,8 @@ export default function Hero() {
             className="
               text-orange-400
               tracking-[4px]
-              md:tracking-[8px]
               font-bold
               text-xs
-              md:text-sm
             "
           >
             MONGOLIA • FUTURE OF WORK
@@ -91,17 +68,15 @@ export default function Hero() {
           <h1
             className="
               mt-6
-              md:mt-8
               text-4xl
               md:text-6xl
               font-black
               leading-tight
-              md:leading-[1.05]
               text-white
             "
           >
             Хүссэн үедээ
-            <br className="hidden md:block" /> ажилла.
+            <br /> ажилла.
             <br />
             <span className="text-orange-400">Хэдхэн минутанд.</span>
           </h1>
@@ -109,7 +84,6 @@ export default function Hero() {
           <p
             className="
               mt-6
-              md:mt-8
               text-base
               md:text-xl
               leading-7
@@ -127,7 +101,6 @@ export default function Hero() {
           <div
             className="
               mt-10
-              md:mt-12
               flex
               justify-center
               gap-4
@@ -141,7 +114,6 @@ export default function Hero() {
                   w-full
                   sm:w-55
                   h-13.5
-                  md:h-15
                   flex
                   items-center
                   justify-center
@@ -159,10 +131,9 @@ export default function Hero() {
                   w-full
                   sm:w-55
                   h-13.5
-                  md:h-15
                   rounded-2xl
                   text-white
-                  bg-white/10
+                  bg-white/30 
                   border
                   border-white/20
                   flex
@@ -170,10 +141,17 @@ export default function Hero() {
                   justify-center
                   text-sm
                   md:text-base
+                  backdrop-blur-none
                   active:translate-y-0
-                  md:hover:bg-white/20
-                  md:hover:-translate-y-1
-                  transition
+                  
+                  /* Bright Glow Эффект */
+                  hover:bg-white/95
+                  hover:text-gray-900
+                  hover:border-white
+                  hover:-translate-y-0.5
+                  hover:shadow-[0_0_35px_rgba(255,255,255,0.65)]
+                  
+                  transition-all
                   duration-300
                 "
               >
