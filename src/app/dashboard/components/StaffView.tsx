@@ -82,9 +82,9 @@ export default function StaffView({ userId }: StaffViewProps) {
 
   // 🌟 ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
   const getCompanyViewStatus = (count: number) => {
-    if (count === 0) return "Хандалт хийгээгүй(7 хоногт)"
-    if (count <= 3) return "Идэвхтэй хандаж байна(7 хоногт)"
-    return "Маш идэвхтэй хандалт(7 хоногт) 🚀"
+    if (count === 0) return "Хандалт хийгээгүй (7 хоногт)"
+    if (count <= 3) return "Идэвхтэй хандаж байна (7 хоногт)"
+    return "Маш идэвхтэй хандалт (7 хоногт) 🚀"
   }
 
   const showAlert = (message: string, title: string = "Анхааруулга") => {
