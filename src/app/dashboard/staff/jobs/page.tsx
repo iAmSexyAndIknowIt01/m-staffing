@@ -535,10 +535,13 @@ export default function StaffJobsPage() {
 
                     <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
                       <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
-                      <button className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
+
+                      {/* ЭНЭ ТОВЧ: жижиг дэлгэц дээр нуухын тулд "hidden lg:inline-flex" нэмэв */}
+                      <button className="hidden lg:inline-flex px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
                         Дэлгэрэнгүй →
                       </button>
                     </div>
+
                   </div>
                 </div>
 
