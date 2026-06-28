@@ -15,6 +15,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
+  // Овог, нэр дээр улаан анхааруулга харуулах state-үүд
+  const [lastNameError, setLastNameError] = useState(false)
+  const [firstNameError, setFirstNameError] = useState(false)
+
   // Баталгаажуулалтын Modal болон Кодны state-үүд
   const [showModal, setShowModal] = useState(false)
   const [verificationCode, setVerificationCode] = useState("")
@@ -44,6 +48,32 @@ export default function RegisterPage() {
     setAlertModal({ show: true, title, message, type, onConfirm })
   }
 
+  // Монгол кирил үсэг шалгах туслах функц (Зөвхөн үсэг, хасах зураас, сул зай зөвшөөрнө)
+  const validateMongolianName = (name: string) => {
+    const mongolianRegex = /^[А-ЯӨҮа-яөүЁё\- ]+$/
+    return mongolianRegex.test(name)
+  }
+
+  // Овог шивэх үед шалгах функц
+  const handleLastNameChange = (val: string) => {
+    setLastName(val)
+    if (val && !validateMongolianName(val)) {
+      setLastNameError(true)
+    } else {
+      setLastNameError(false)
+    }
+  }
+
+  // Нэр шивэх үед шалгах функц
+  const handleFirstNameChange = (val: string) => {
+    setFirstName(val)
+    if (val && !validateMongolianName(val)) {
+      setFirstNameError(true)
+    } else {
+      setFirstNameError(false)
+    }
+  }
+
   // Алхам 1: "Бүртгүүлэх" дарахад код үүсгэж имэйл рүү илгээнэ
   async function handleSendAuthMail() {
     if (!email || !password) {
@@ -51,9 +81,17 @@ export default function RegisterPage() {
       return
     }
 
-    if (role === "staff" && (!firstName || !lastName)) {
-      showAlert("Анхааруулга", "Овог нэрээ оруулна уу", "warning")
-      return
+    if (role === "staff") {
+      if (!firstName || !lastName) {
+        showAlert("Анхааруулга", "Овог нэрээ оруулна уу", "warning")
+        return
+      }
+
+      // Овог нэр кирил үсэг эсэхийг баталгаажуулах
+      if (!validateMongolianName(lastName) || !validateMongolianName(firstName)) {
+        showAlert("Анхааруулга", "Овог нэрээ зөвхөн Монгол кирил үсгээр оруулна уу.", "warning")
+        return
+      }
     }
 
     if (role === "company" && !companyName) {
@@ -106,7 +144,7 @@ export default function RegisterPage() {
 
       if (!verifyRes.ok) {
         showAlert("Баталгаажуулалт амжилтгүй", verifyData.message || "Баталгаажуулах код буруу байна", "error")
-        setVerifying(false) // 🔥 ФУНКЦЭЭС ГАРАХААС ӨМНӨ LOADING-ИЙГ УНТРААХ
+        setVerifying(false) 
         return
       }
 
@@ -128,7 +166,7 @@ export default function RegisterPage() {
 
       if (!registerRes.ok) {
         showAlert("Бүртгэл амжилтгүй", registerData.message || "Бүртгэл амжилтгүй боллоо", "error")
-        setVerifying(false) // 🔥 ФУНКЦЭЭС ГАРАХААС ӨМНӨ LOADING-ИЙГ УНТРААХ
+        setVerifying(false) 
         return
       }
 
@@ -144,7 +182,6 @@ export default function RegisterPage() {
     } catch {
       showAlert("Алдаа", "Баталгаажуулах явцад алдаа гарлаа", "error")
     } finally {
-      // 🔥 ЗӨВ БИЧИГДЭЛ: finally түлхүүр үгийг нэмэв
       setVerifying(false)
     }
   }
@@ -214,22 +251,44 @@ export default function RegisterPage() {
 
           {role === "staff" ? (
             <div className="mt-8 grid grid-cols-2 gap-4">
+              {/* ОВОГ INPUT */}
               <div>
-                <label>Овог</label>
+                <label className={`transition-colors ${lastNameError ? "text-red-500 font-medium" : ""}`}>Овог</label>
                 <input
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+                  onChange={(e) => handleLastNameChange(e.target.value)}
+                  placeholder="Овог"
+                  className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
+                    lastNameError 
+                      ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
+                      : "border-orange-100 focus:border-orange-500"
+                  }`}
                 />
+                {lastNameError && (
+                  <p className="mt-1.5 text-xs text-red-500 font-medium animate-in fade-in duration-200">
+                    Зөвхөн Монгол кирил үсгээр оруулна уу
+                  </p>
+                )}
               </div>
 
+              {/* НЭР INPUT */}
               <div>
-                <label>Нэр</label>
+                <label className={`transition-colors ${firstNameError ? "text-red-500 font-medium" : ""}`}>Нэр</label>
                 <input
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+                  onChange={(e) => handleFirstNameChange(e.target.value)}
+                  placeholder="Нэр"
+                  className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
+                    firstNameError 
+                      ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
+                      : "border-orange-100 focus:border-orange-500"
+                  }`}
                 />
+                {firstNameError && (
+                  <p className="mt-1.5 text-xs text-red-500 font-medium animate-in fade-in duration-200">
+                    Зөвхөн Монгол кирил үсгээр оруулна уу
+                  </p>
+                )}
               </div>
             </div>
           ) : (
