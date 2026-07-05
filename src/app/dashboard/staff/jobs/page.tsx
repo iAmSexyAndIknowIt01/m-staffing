@@ -2,16 +2,16 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import JobDetailModal from "@/components/JobDetailModal"
-import AlertModal from "@/components/AlertModal"
-import SuccessModal from "@/components/SuccessModal"
-import ConfirmModal from "@/components/ConfirmModal"
-import Pagination from "@/components/Pagination"
-import LoadingLayout from "@/components/LoadingLayout"
+import JobDetailModal from "@/components/staff/jobs/JobDetailModal"
+import AlertModal from "@/components/staff/jobs/AlertModal"
+import SuccessModal from "@/components/staff/jobs/SuccessModal"
+import ConfirmModal from "@/components/staff/jobs/ConfirmModal"
+import Pagination from "@/components/staff/jobs/Pagination"
+import LoadingLayout from "@/components/staff/jobs/LoadingLayout"
 
 // Таны шинээр үүсгэсэн компонентууд
-import JobFilterBar from "@/components/JobFilterBar"
-import JobCard from "@/components/JobCard"
+import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
+import JobCard from "@/components/staff/jobs/JobCard"
 
 interface Company {
   id?: string
