@@ -8,8 +8,6 @@ import SuccessModal from "@/components/staff/jobs/SuccessModal"
 import ConfirmModal from "@/components/staff/jobs/ConfirmModal"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/staff/jobs/LoadingLayout"
-
-// Таны шинээр үүсгэсэн компонентууд
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 
@@ -142,6 +140,7 @@ export default function StaffJobsPage() {
         resume_url: ""
       }
 
+      // 1. Үндсэн анкет хадгалах хүсэлт
       const response = await fetch("/api/jobRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,6 +149,14 @@ export default function StaffJobsPage() {
 
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
+
+      // 2. 🔥 МЭЙЛ ИЛГЕЭХ API-Г ДУУДАХ
+      // Энд зөвхөн job_id-г илгээнэ. Күүки автоматаар хамт явна.
+      fetch("/api/mail/job-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: pendingJobId }),
+      }).catch((err) => console.error("Мэйл илгээх API-д алдаа гарлаа:", err))
 
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
