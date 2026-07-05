@@ -365,6 +365,7 @@ export default function StaffProfilePage() {
               type="email"
               value={email}
               disabled={!isEditMode}
+              readOnly
               onChange={(e) => {
                 setEmail(e.target.value)
                 setValidationErrors((prev) => ({ ...prev, email: "" }))
