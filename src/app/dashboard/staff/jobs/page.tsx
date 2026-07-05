@@ -9,6 +9,10 @@ import ConfirmModal from "@/components/ConfirmModal"
 import Pagination from "@/components/Pagination"
 import LoadingLayout from "@/components/LoadingLayout"
 
+// Таны шинээр үүсгэсэн компонентууд
+import JobFilterBar from "@/components/JobFilterBar"
+import JobCard from "@/components/JobCard"
+
 interface Company {
   id?: string
   company_id?: string 
@@ -89,7 +93,6 @@ export default function StaffJobsPage() {
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
   }
 
-  // ШИНЭЧЛЭГДСЭН: Үзэлт бүртгэх API дуудаж, хуудас шилжүүлэх функц
   const handleCompanyClick = (e: React.MouseEvent, company: Company | undefined) => {
     e.preventDefault()
     e.stopPropagation() 
@@ -98,14 +101,12 @@ export default function StaffJobsPage() {
     const actualCompanyId = company.id || company.company_id
 
     if (actualCompanyId) {
-      // Background-аар үзэлт логдох API руу хүсэлт шиднэ
       fetch("/api/staff/companyView", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ company_id: actualCompanyId })
       }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
 
-      // Хэрэглэгчийг хүлээлгэлгүй шууд профайл руу нь үсэргэнэ
       router.push(`/dashboard/company/profile/${actualCompanyId}`)
     } else {
       console.warn("Компанийн ID олдсонгүй:", company)
@@ -143,17 +144,12 @@ export default function StaffJobsPage() {
 
       const response = await fetch("/api/jobRequest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(applicationData),
       })
 
       const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
-      }
+      if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
@@ -288,11 +284,8 @@ export default function StaffJobsPage() {
         (job.mt_company?.name && job.mt_company.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
-      const matchesCategory =
-        selectedCategory === "" || job.category === selectedCategory
-
-      const matchesType =
-        selectedJobType === "" || job.job_type === selectedJobType
+      const matchesCategory = selectedCategory === "" || job.category === selectedCategory
+      const matchesType = selectedJobType === "" || job.job_type === selectedJobType
 
       return matchesSearch && matchesCategory && matchesType
     })
@@ -352,6 +345,7 @@ export default function StaffJobsPage() {
         </div>
       )}
 
+      {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
@@ -363,52 +357,18 @@ export default function StaffJobsPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="relative flex items-center col-span-1 md:col-span-1">
-            <span className="absolute left-4 text-gray-400">🔍</span>
-            <input
-              type="text"
-              placeholder="Ажил, компани, байршлаар..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition"
-            />
-          </div>
-
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition text-gray-600 appearance-none cursor-pointer"
-          >
-            <option value="">Бүх чиглэл (Category)</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat.toUpperCase()}</option>
-            ))}
-          </select>
-
-          <select
-            value={selectedJobType}
-            onChange={(e) => setSelectedJobType(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition text-gray-600 appearance-none cursor-pointer"
-          >
-            <option value="">Ажлын цагийн төрөл</option>
-            <option value="fulltime">Бүтэн цаг</option>
-            <option value="parttime">Хагас цаг</option>
-            <option value="remote">Зайнаас (Remote)</option>
-          </select>
-
-          <select
-            value={filterApplied}
-            onChange={(e) => setFilterApplied(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-50/50 rounded-2xl text-sm border border-transparent focus:border-indigo-500 focus:bg-white outline-none transition text-gray-600 appearance-none cursor-pointer font-medium"
-          >
-            <option value="all">Бүх ажлыг харуулах</option>
-            <option value="applied">Хүсэлт илгээсэн ажил</option>
-            <option value="not_applied">Хүсэлт илгээгээгүй ажил</option>
-          </select>
-        </div>
-      </div>
+      {/* 1. ШҮҮЛТҮҮРИЙН КОМПОНЕНТ */}
+      <JobFilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedJobType={selectedJobType}
+        setSelectedJobType={setSelectedJobType}
+        filterApplied={filterApplied}
+        setFilterApplied={setFilterApplied}
+        categories={categories}
+      />
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
@@ -416,6 +376,7 @@ export default function StaffJobsPage() {
         </div>
       )}
 
+      {/* ЯПОН АЖЛЫН БАННЕР */}
       <div className="bg-linear-to-r from-orange-500 to-red-500 text-white rounded-3xl p-8 shadow-lg">
         <div className="flex items-center justify-between">
           <div>
@@ -426,6 +387,7 @@ export default function StaffJobsPage() {
         </div>
       </div>
 
+      {/* ЖАГСААЛТЫН ТӨЛӨВҮҮД */}
       {isFiltering ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
           <div className="relative flex items-center justify-center h-20 w-20">
@@ -452,89 +414,22 @@ export default function StaffJobsPage() {
         <div className="space-y-4">
           {paginatedJobs.map((job, index) => {
             const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
-            const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url);
 
             return (
               <React.Fragment key={job.id}>
-                <div
+                {/* 2. АЖЛЫН КАРТ КОМПОНЕНТ */}
+                <JobCard
+                  job={job}
+                  isJobApplied={isJobApplied}
                   onClick={() => setSelectedJob(job)}
-                  className={`relative overflow-hidden bg-white border rounded-3xl p-6 hover:border-indigo-200 hover:shadow-lg transition cursor-pointer ${
-                    isJobApplied ? "border-l-4 border-l-red-500 border-gray-100" : "border-gray-100"
-                  }`}
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-                    <div className="flex items-start gap-4 flex-1">
-                      
-                      <div 
-                        onClick={(e) => handleCompanyClick(e, job.mt_company)}
-                        className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs hover:scale-105 transition cursor-pointer"
-                      >
-                        {logoFullUrl ? (
-                          <img 
-                            src={logoFullUrl} 
-                            alt={job.mt_company?.name || "Company logo"} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <span className="text-lg font-black text-indigo-500 uppercase">
-                            {job.mt_company?.name?.substring(0, 2) || "CO"}
-                          </span>
-                        )}
-                      </div>
+                  onCompanyClick={handleCompanyClick}
+                  getCompanyLogoUrl={getCompanyLogoUrl}
+                  getJobTypeText={getJobTypeText}
+                  getSalaryTypeText={getSalaryTypeText}
+                  formatSalary={formatSalary}
+                />
 
-                      <div className="flex-1">
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {isJobApplied && (
-                            <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
-                              ✓ Хүсэлт илгээсэн
-                            </span>
-                          )}
-                          <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">{job.category}</span>
-                          <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                            {getJobTypeText(job.job_type)}
-                          </span>
-                        </div>
-                        
-                        <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">{job.title}</h3>
-                        
-                        <p className="text-sm font-semibold mt-0.5">
-                          {job.mt_company ? (
-                            <span 
-                              onClick={(e) => handleCompanyClick(e, job.mt_company)}
-                              className="text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1 transition cursor-pointer"
-                            >
-                              {job.mt_company.name} 🏢
-                            </span>
-                          ) : (
-                            <span className="text-gray-500 font-medium">Байгууллагын нэр нууцалсан</span>
-                          )}
-                        </p>
-
-                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
-                          <span>📍 {job.location || "Улаанбаатар"}</span>
-                          <span className="text-emerald-600 font-semibold">
-                            💰 {getSalaryTypeText(job.salary_type)}: {formatSalary(job.salary)}
-                          </span>
-                          <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
-                      <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
-
-                      {/* ЭНЭ ТОВЧ: жижиг дэлгэц дээр нуухын тулд "hidden lg:inline-flex" нэмэв */}
-                      <button className="hidden lg:inline-flex px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
-                        Дэлгэрэнгүй →
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-
+                {/* ОНЦЛОХ БОЛОМЖ БАННЕР (Хуудас бүрийн 5 дахь ажил тутамд) */}
                 {(index + 1) % 5 === 0 && (
                   <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -555,7 +450,7 @@ export default function StaffJobsPage() {
         </div>
       )}
 
-      {/* PAGINATION */}
+      {/* ХУУДАСЛАЛТ (PAGINATION) */}
       <Pagination
         filteredJobsCount={filteredJobs.length}
         totalPages={totalPages}
@@ -565,7 +460,7 @@ export default function StaffJobsPage() {
         setCurrentPage={setCurrentPage}
       />
 
-      {/* --- ДЭЛГЭРЭНГҮЙ ХАРАХ МОДАЛ ЦОНХ --- */}
+      {/* --- МОДАЛ ЦОНХНУУД --- */}
       <JobDetailModal
         selectedJob={selectedJob}
         onClose={() => setSelectedJob(null)}
@@ -595,13 +490,11 @@ export default function StaffJobsPage() {
         }}
       />
 
-      {/* --- АМЖИЛТТАЙ ИЛГЭЭГДСЭН ҮЕИЙН МОДАЛ --- */}
       <SuccessModal
           show={showSuccessModal}
           onClose={() => setShowSuccessModal(false)}
       />
 
-      {/* --- МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
       <AlertModal
         alertModal={alertModal}
         onClose={() => setAlertModal((prev) => ({ ...prev, show: false }))}
