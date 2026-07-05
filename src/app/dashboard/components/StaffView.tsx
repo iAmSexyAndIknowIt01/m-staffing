@@ -180,33 +180,33 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
+// --- ШИНЭЧЛЭГДСЭН handleApplyJob (Мэйл хүлээхгүй хувилбар) ---
   const handleApplyJob = async () => {
     if (!pendingJobId) return
-    
     setIsSubmitting(true)
     setShowConfirmModal(false)
     setSliderX(0)
-    
     try {
-      const applicationData = {
-        job_id: pendingJobId,
-        resume_url: ""
-      }
-
+      // 1. Үндсэн анкет хадгалах хүсэлт (Үүнийг заавал хүлээнэ)
       const response = await fetch("/api/jobRequest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(applicationData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: pendingJobId, resume_url: "" }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
+
+      // 2. 🚀 МЭЙЛ ИЛГЕЭХ API-Г ХҮЛЭЭХГҮЙГЭЭР АРД ТАЛД АЖИЛЛУУЛАХ (await хассан)
+      fetch("/api/mail/job-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: pendingJobId }),
+      }).catch((mailErr) => {
+        // Мэйл илгээлтэд алдаа гарвал console дээр харуулна, хэрэглэгчийн үйлдлийг гацаахгүй
+        console.error("Мэйл илгээхэд алдаа гарлаа (Background):", mailErr)
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
-      }
-
+      // 3. Төлөв шинэчлэх (Анкет амжилттай хадгалагдсан тул шууд модал харуулна)
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
