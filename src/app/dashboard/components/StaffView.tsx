@@ -180,33 +180,34 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
+// --- ШИНЭЧЛЭГДСЭН handleApplyJob ---
   const handleApplyJob = async () => {
     if (!pendingJobId) return
-    
     setIsSubmitting(true)
     setShowConfirmModal(false)
     setSliderX(0)
-    
     try {
-      const applicationData = {
-        job_id: pendingJobId,
-        resume_url: ""
-      }
-
+      // 1. Үндсэн анкет хадгалах хүсэлт
       const response = await fetch("/api/jobRequest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(applicationData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: pendingJobId, resume_url: "" }),
       })
-
       const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
-      if (!response.ok) {
-        throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
+      // 2. 🔥 МЭЙЛ ИЛГЕЭХ API-Г ХҮЛЭЭЖ ДУУДАХ (await)
+      const mailResponse = await fetch("/api/mail/job-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: pendingJobId }),
+      })
+      const mailResult = await mailResponse.json()
+      if (!mailResponse.ok) {
+        throw new Error(mailResult.error || "Анкет бүртгэгдсэн боловч мэйл илгээхэд алдаа гарлаа.")
       }
 
+      // 3. Төлөв шинэчлэх (Мэйл амжилттай илгээгдсэний дараа ажиллана)
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
