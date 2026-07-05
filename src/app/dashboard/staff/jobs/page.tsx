@@ -6,6 +6,7 @@ import JobDetailModal from "@/components/JobDetailModal"
 import AlertModal from "@/components/AlertModal"
 import SuccessModal from "@/components/SuccessModal"
 import ConfirmModal from "@/components/ConfirmModal"
+import Pagination from "@/components/Pagination"
 
 interface Company {
   id?: string
@@ -570,51 +571,14 @@ export default function StaffJobsPage() {
       )}
 
       {/* PAGINATION */}
-      {filteredJobs.length > 0 && totalPages > 1 && !isFiltering && (
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-8">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-xl border bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Өмнөх
-          </button>
-          
-          {visiblePages[0] > 1 && (
-            <>
-              <button onClick={() => setCurrentPage(1)} className="w-10 h-10 rounded-xl border bg-white">1</button>
-              {visiblePages[0] > 2 && <span className="px-2">...</span>}
-            </>
-          )}
-
-          {visiblePages.map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`w-10 h-10 rounded-xl text-sm font-bold transition ${
-                currentPage === page ? "bg-indigo-600 text-white" : "bg-white border border-gray-200 hover:border-indigo-300"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          {visiblePages[visiblePages.length - 1] < totalPages && (
-            <>
-              {visiblePages[visiblePages.length - 1] < totalPages - 1 && <span className="px-2">...</span>}
-              <button onClick={() => setCurrentPage(totalPages)} className="w-10 h-10 rounded-xl border bg-white">{totalPages}</button>
-            </>
-          )}
-
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-xl border bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Дараах →
-          </button>
-        </div>
-      )}
+      <Pagination
+        filteredJobsCount={filteredJobs.length}
+        totalPages={totalPages}
+        isFiltering={isFiltering}
+        currentPage={currentPage}
+        visiblePages={visiblePages}
+        setCurrentPage={setCurrentPage}
+      />
 
       {/* --- ДЭЛГЭРЭНГҮЙ ХАРАХ МОДАЛ ЦОНХ --- */}
       <JobDetailModal
