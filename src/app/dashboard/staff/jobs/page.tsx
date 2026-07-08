@@ -7,7 +7,7 @@ import AlertModal from "@/components/staff/jobs/AlertModal"
 import SuccessModal from "@/components/staff/jobs/SuccessModal"
 import ConfirmModal from "@/components/staff/jobs/ConfirmModal"
 import Pagination from "@/components/staff/jobs/Pagination"
-import LoadingLayout from "@/components/staff/jobs/LoadingLayout"
+import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 
