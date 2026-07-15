@@ -42,6 +42,13 @@ interface DashboardData {
   profileProgress: number
   recommendedJobs: Job[]
   recentApplications: Application[]
+  // 🌟 API-аас ирэх шинэ зөвлөгөөний өгөгдлийн бүтэц
+  tip?: {
+    title: string
+    icon: string
+    content: string
+    detail_url: string
+  }
 }
 
 export default function StaffView({ userId }: StaffViewProps) {
@@ -181,14 +188,12 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
-// --- ШИНЭЧЛЭГДСЭН handleApplyJob (Мэйл хүлээхгүй хувилбар) ---
   const handleApplyJob = async () => {
     if (!pendingJobId) return
     setIsSubmitting(true)
     setShowConfirmModal(false)
     setSliderX(0)
     try {
-      // 1. Үндсэн анкет хадгалах хүсэлт (Үүнийг заавал хүлээнэ)
       const response = await fetch("/api/jobRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -197,17 +202,14 @@ export default function StaffView({ userId }: StaffViewProps) {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
-      // 2. 🚀 МЭЙЛ ИЛГЕЭХ API-Г ХҮЛЭЭХГҮЙГЭЭР АРД ТАЛД АЖИЛЛУУЛАХ (await хассан)
       fetch("/api/mail/job-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_id: pendingJobId }),
       }).catch((mailErr) => {
-        // Мэйл илгээлтэд алдаа гарвал console дээр харуулна, хэрэглэгчийн үйлдлийг гацаахгүй
         console.error("Мэйл илгээхэд алдаа гарлаа (Background):", mailErr)
       })
 
-      // 3. Төлөв шинэчлэх (Анкет амжилттай хадгалагдсан тул шууд модал харуулна)
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
@@ -288,7 +290,7 @@ export default function StaffView({ userId }: StaffViewProps) {
   if (error) return <div className="text-center py-12 text-red-500 font-medium">{error}</div>
   if (!data) return null
 
-  const { stats, profileProgress, recommendedJobs, recentApplications } = data
+  const { stats, profileProgress, recommendedJobs, recentApplications, tip } = data
   const cleanCvViewRate = stats.cvViewRate.replace(/[^0-9]/g, "") || "0"
 
   return (
@@ -323,7 +325,6 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">✉️</div>
         </div>
 
-        {/* 🌟 ҮЗСЭН КОМПАНИУД (ДИНАМИК СТАТУСТАЙ БОЛСОН ХЭСЭГ) */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
@@ -477,16 +478,21 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
           </div>
 
-          <div className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💡</span>
-              <h4 className="font-black text-sm text-amber-900">Амжилтын зөвлөгөө</h4>
+          {/* 🌟 ШИНЭЧЛЭГДСЭН ДИНАМИК ЗӨВЛӨГӨӨНИЙ БЛОК */}
+          {tip && (
+            <div className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{tip.icon || "💡"}</span>
+                <h4 className="font-black text-sm text-amber-900">{tip.title}</h4>
+              </div>
+              <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                {tip.content}
+              </p>
+              <Link href={tip.detail_url || "/staff/blog/tips"} className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1">
+                Үргэлжлүүлж унших →
+              </Link>
             </div>
-            <p className="text-xs text-amber-800 leading-relaxed font-medium">
-              Технологийн компаниуд анкет шалгахдаа хамгийн түрүүнд хийсэн төслүүд болон ашигласан технологиудын жагсаалтыг хардаг. Түүнчлэн үр дүнгээ тоогоор илэрхийлэх нь давуу тал болно.
-            </p>
-            <Link href="/staff/blog/tips" className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1">Үргэлжлүүлж унших →</Link>
-          </div>
+          )}
         </div>
 
       </div>
