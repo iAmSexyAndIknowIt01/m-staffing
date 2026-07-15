@@ -42,13 +42,13 @@ interface DashboardData {
   profileProgress: number
   recommendedJobs: Job[]
   recentApplications: Application[]
-  // 🌟 API-аас ирэх шинэ зөвлөгөөний өгөгдлийн бүтэц
-  tip?: {
+  // 🌟 ШИНЭ: Ганц зөвлөгөө байсныг массив бүтэцтэй болгон өөрчлөв
+  tips?: {
     title: string
     icon: string
     content: string
     detail_url: string
-  }
+  }[]
 }
 
 export default function StaffView({ userId }: StaffViewProps) {
@@ -88,7 +88,7 @@ export default function StaffView({ userId }: StaffViewProps) {
     return Number(numericValue).toLocaleString() + " ₮"
   }
 
-  // 🌟 ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
+  // ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
   const getCompanyViewStatus = (count: number) => {
     if (count === 0) return "Хандалт хийгээгүй (7 хоногт)"
     if (count <= 3) return "Идэвхтэй хандаж байна (7 хоногт)"
@@ -290,7 +290,7 @@ export default function StaffView({ userId }: StaffViewProps) {
   if (error) return <div className="text-center py-12 text-red-500 font-medium">{error}</div>
   if (!data) return null
 
-  const { stats, profileProgress, recommendedJobs, recentApplications, tip } = data
+  const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
   const cleanCvViewRate = stats.cvViewRate.replace(/[^0-9]/g, "") || "0"
 
   return (
@@ -478,19 +478,29 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
           </div>
 
-          {/* 🌟 ШИНЭЧЛЭГДСЭН ДИНАМИК ЗӨВЛӨГӨӨНИЙ БЛОК */}
-          {tip && (
-            <div className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{tip.icon || "💡"}</span>
-                <h4 className="font-black text-sm text-amber-900">{tip.title}</h4>
-              </div>
-              <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                {tip.content}
-              </p>
-              <Link href={tip.detail_url || "/staff/blog/tips"} className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1">
-                Үргэлжлүүлж унших →
-              </Link>
+          {/* 🌟 ШИНЭЧЛЭГДСЭН ЗӨВЛӨГӨӨНИЙ МАССИВ ХАРАГДАХ СЕКЦ */}
+          {tips && tips.length > 0 && (
+            <div className="space-y-4">
+              {tips.map((tip, index) => (
+                <div 
+                  key={index} 
+                  className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{tip.icon || "💡"}</span>
+                    <h4 className="font-black text-sm text-amber-900">{tip.title}</h4>
+                  </div>
+                  <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                    {tip.content}
+                  </p>
+                  <Link 
+                    href={tip.detail_url.startsWith("/") ? tip.detail_url : `/${tip.detail_url}`} 
+                    className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1"
+                  >
+                    Үргэлжлүүлж унших →
+                  </Link>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -499,7 +509,7 @@ export default function StaffView({ userId }: StaffViewProps) {
 
       {/* 🏢 САНАЛ БОЛГОЖ БУЙ АЖЛЫН MODAL ЦОНХ */}
       {selectedJob && (() => {
-        const isModalJobApplied = appliedJobIds.includes(selectedJob.id);
+        const isJobApplied = appliedJobIds.includes(selectedJob.id);
         return (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white max-w-lg w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
@@ -530,7 +540,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                 </div>
               </div>
               <div className="pt-2 flex gap-3">
-                {isModalJobApplied ? (
+                {isJobApplied ? (
                   <button disabled className="flex-1 py-3 bg-red-100 text-red-700 font-bold text-sm text-center rounded-xl cursor-not-allowed shadow-inner">
                     Хүсэлт илгээгдсэн ✓
                   </button>
