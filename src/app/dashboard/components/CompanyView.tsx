@@ -372,13 +372,14 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                 <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
                   {currentTip.content}
                 </p>
-                
+
                 <div className="flex justify-between items-center pt-2 border-t border-indigo-100/50">
+                  {/* 🔥 ШИНЭЧЛЭГДВЭЛ: Хэрэглэгчийг шууд шинээр үүсгэсэн tips хуудас руу чиглүүлнэ */}
                   <Link 
-                    href={currentTip.detail_url || "/dashboard/company/tips"} 
+                    href="/dashboard/company/tips" 
                     className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
                   >
-                    Дэлгэрэнгүй унших →
+                    Илүүг унших →
                   </Link>
                   <Link href="/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
                     Тусламж авах 🙋‍♂️
