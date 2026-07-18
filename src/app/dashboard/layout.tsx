@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import DashboardShell from "./components/DashboardShell"
+import DashboardFooter from "./components/DashboardFooter" // Үүсгэсэн footer-ээ импортлох
 
 async function handleLogout() {
   "use server"
@@ -25,12 +26,23 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardShell
-      userId={userId}
-      userRole={userRole || "staff"}
-      onLogout={handleLogout}
-    >
-      {children}
-    </DashboardShell>
+    // 'flex flex-col min-h-screen' нь footer-ийг үргэлж дэлгэцийн хамгийн доор байлгана
+    <div className="flex flex-col min-h-screen">
+      
+      {/* Үндсэн shell болон хуудасны агуулга */}
+      <div className="flex-1">
+        <DashboardShell
+          userId={userId}
+          userRole={userRole || "staff"}
+          onLogout={handleLogout}
+        >
+          {children}
+        </DashboardShell>
+      </div>
+
+      {/* Зөвхөн dashboard дотор харагдах Footer */}
+      <DashboardFooter />
+      
+    </div>
   )
 }
