@@ -42,7 +42,6 @@ export default function SkillsModal({
       )
       const data = await response.json()
 
-      console.log("TECH API:", data)
 
       if (!Array.isArray(data)) {
         setTechSuggestions([])
@@ -70,7 +69,6 @@ export default function SkillsModal({
       )
       const data = await response.json()
 
-      console.log("LANG API:", data)
 
       if (!Array.isArray(data)) {
         setLangSuggestions([])

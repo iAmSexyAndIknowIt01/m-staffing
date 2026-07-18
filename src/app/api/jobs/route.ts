@@ -54,7 +54,6 @@ export async function POST(request: Request) {
       throw error
     }
     
-    console.log("Supabase баазад амжилттай хадгалагдлаа:", data)
 
     return NextResponse.json(
       { success: true, message: "Ажлын байр амжилттай зарлагдлаа.", data },
