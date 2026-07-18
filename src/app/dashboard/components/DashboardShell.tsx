@@ -16,7 +16,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Идэвхтэй болон идэвхгүй үеийн стилийг тодорхойлох туслах функц
   const getLinkStyles = (href: string) => {
     const isActive = pathname === href
     return {
@@ -32,173 +31,12 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
   }
 
   return (
-    <div className="min-h-screen bg-[#f8faff] flex">
+    // Үндсэн контейнерыг бүх дэлгэц дээр flex-col (дээрээс доошоо) болгов.
+    // Том дэлгэц дээр (lg:flex-row) болж хажуу тийшээ зэрэгцэнэ.
+    <div className="min-h-screen bg-[#f8faff] flex flex-col lg:flex-row w-full relative">
       
-      {/* СИДЕМЕНЮ (SIDEMENU) */}
-      <aside 
-          className={`hidden lg:flex bg-white border-r border-gray-100 flex-col justify-between sticky top-0 h-screen p-4 transition-all duration-300 z-50 ${
-            isCollapsed ? "w-22" : "w-64"
-          }`}
-      >
-        <div className="space-y-8">
-          {/* Дээд хэсэг */}
-          <div className="flex items-center justify-between px-2 py-2">
-            {!isCollapsed && (
-              /* 🌟 ЗАСАРСАН: Sidemenu-ийн логог /dashboard руу холбов */
-              <LinkNext href="/dashboard" className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in hover:opacity-80 transition">
-                MSTAFFING
-              </LinkNext>
-            )}
-            <button 
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition mx-auto group border border-gray-200/50"
-              title={isCollapsed ? "Меню нээх" : "Меню хаах"}
-            >
-              {isCollapsed ? (
-                /* Цэс хаалттай үед: Orange дугуй дотор цагаан M үсэг */
-                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
-                  <span className="text-white text-sm font-black tracking-tighter leading-none select-none">
-                    M
-                  </span>
-                </div>
-              ) : (
-                /* Цэс нээлттэй үед: Гоёмсог, нарийн зураастай Orange < SVG суман икон */
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  strokeWidth="2.5" 
-                  stroke="currentColor" 
-                  className="w-5 h-5 text-orange-500 group-hover:-translate-x-0.5 transition-transform duration-200"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-              )}
-            </button>
-          </div>
-
-          {/* Цэсний линкүүд */}
-          <nav className="space-y-3 flex flex-col">
-            
-            {/* 1. Dashboard Хянах самбар */}
-            {(() => {
-              const { linkClass, iconClass } = getLinkStyles("/dashboard")
-              return (
-                <LinkNext href="/dashboard" className={linkClass}>
-                  <span className={iconClass}>📊</span>
-                  {!isCollapsed && <span className="text-sm truncate">Хянах самбар</span>}
-                </LinkNext>
-              )
-            })()}
-
-            {/* Ролиос хамаарсан бусад линкүүд */}
-            {userRole === "staff" ? (
-              <>
-                {/* Ажлын байрууд */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/jobs")
-                  return (
-                    <LinkNext href="/dashboard/staff/jobs" className={linkClass}>
-                      <span className={iconClass}>💼</span>
-                      {!isCollapsed && <span className="text-sm truncate">Ажлын байрууд</span>}
-                    </LinkNext>
-                  )
-                })()}
-
-                {/* Миний Профайл */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
-                  return (
-                    <LinkNext href="/dashboard/staff/profile" className={linkClass}>
-                      <span className={iconClass}>👤</span>
-                      {!isCollapsed && <span className="text-sm truncate">Миний Профайл</span>}
-                    </LinkNext>
-                  )
-                })()}
-
-                {/* Миний CV */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/cv")
-                  return (
-                    <LinkNext href="/dashboard/staff/cv" className={linkClass}>
-                      <span className={iconClass}>📄</span>
-                      {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
-                    </LinkNext>
-                  )
-                })()}
-              </>
-            ) : (
-              <>
-                {/* Зар нэмэх */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/post-job")
-                  return (
-                    <LinkNext href="/dashboard/company/post-job" className={linkClass}>
-                      <span className={iconClass}>➕</span>
-                      {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
-                    </LinkNext>
-                  )
-                })()}
-
-                {/* Ирсэн Анкетууд */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/applicants")
-                  return (
-                    <LinkNext href="/dashboard/company/applicants" className={linkClass}>
-                      <span className={iconClass}>👥</span>
-                      {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
-                    </LinkNext>
-                  )
-                })()}
-
-                {/* Компани профайл удирдах цэс */}
-                {(() => {
-                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/profile")
-                  return (
-                    <LinkNext href="/dashboard/company/profile" className={linkClass}>
-                      <span className={iconClass}>🏢</span>
-                      {!isCollapsed && <span className="text-sm truncate">Компани профайл</span>}
-                    </LinkNext>
-                  )
-                })()}
-              </>
-            )}
-          </nav>
-        </div>
-
-        {/* Доод хэсэг: Хэрэглэгч болон Гарах товч */}
-        <div className="pt-4 border-t border-gray-100 space-y-4">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 min-w-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold">
-              {userRole === "staff" ? "👤" : "🏢"}
-            </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-gray-800 truncate">
-                  {userRole === "staff" ? "Ажил Хайгч" : "Ажил Олгогч"}
-                </p>
-                <p className="text-[10px] text-gray-400 font-mono truncate">ID: {userId.slice(0, 10)}</p>
-              </div>
-            )}
-          </div>
-          
-          <button 
-            onClick={() => onLogout()}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-red-500 bg-red-50/50 hover:bg-red-50 transition"
-          >
-            🚪 {!isCollapsed && <span className="truncate">Гарах</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* БАРУУН ТАЛЫН ҮНДСЭН КОНТЕНТ */}
-      <main className="flex-1 p-6 md:p-12 pt-24 lg:pt-12 overflow-y-auto">
-        {children}
-      </main>
-
-      {/* MOBILE NAVBAR */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 z-50 flex items-center justify-between px-4">
-        {/* 🌟 ЗАСАРСАН: Мобайл хувилбарын логог /dashboard руу холбож, дарахад мобайл цэсийг хаана */}
+      {/* 1. MOBILE NAVBAR (БҮТЦИЙН ХУВЬД ХАМГИЙН ДЭЭР НЬ ОРУУЛАВ) */}
+      <div className="lg:hidden w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">
         <LinkNext 
           href="/dashboard" 
           onClick={() => setMobileMenuOpen(false)}
@@ -209,17 +47,16 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="text-2xl"
+          className="text-2xl p-2 focus:outline-none text-gray-700"
         >
-          ☰
+          {mobileMenuOpen ? "✕" : "☰"}
         </button>
       </div>
 
+      {/* MOBILE MENU DROPDOWN */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed top-16 left-0 right-0 bg-white border-b border-gray-100 z-40 shadow-lg">
-          
+        <div className="lg:hidden w-full bg-white border-b border-gray-100 z-40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="p-4 space-y-3">
-
             <LinkNext
               href="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
@@ -237,7 +74,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   💼 Ажлын байрууд
                 </LinkNext>
-
                 <LinkNext
                   href="/dashboard/staff/profile"
                   onClick={() => setMobileMenuOpen(false)}
@@ -245,7 +81,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   👤 Миний Профайл
                 </LinkNext>
-                
                 <LinkNext
                   href="/dashboard/staff/cv"
                   onClick={() => setMobileMenuOpen(false)}
@@ -263,7 +98,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   ➕ Зар нэмэх
                 </LinkNext>
-
                 <LinkNext
                   href="/dashboard/company/applicants"
                   onClick={() => setMobileMenuOpen(false)}
@@ -271,7 +105,6 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   👥 Анкетууд
                 </LinkNext>
-
                 <LinkNext
                   href="/dashboard/company/profile"
                   onClick={() => setMobileMenuOpen(false)}
@@ -283,15 +116,162 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
             )}
 
             <button
-              onClick={() => onLogout()}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onLogout();
+              }}
               className="w-full text-left p-3 rounded-xl text-red-500 hover:bg-red-50"
             >
               🚪 Гарах
             </button>
-
           </nav>
         </div>
       )}
+
+      {/* 2. DESKTOP SIDEMENU */}
+      <aside 
+          className={`hidden lg:flex bg-white border-r border-gray-100 flex-col justify-between sticky top-0 h-screen p-4 transition-all duration-300 z-50 shrink-0 ${
+            isCollapsed ? "w-22" : "w-64"
+          }`}
+      >
+        <div className="space-y-8">
+          <div className="flex items-center justify-between px-2 py-2">
+            {!isCollapsed && (
+              <LinkNext href="/dashboard" className="text-md font-black tracking-[3px] text-orange-500 animate-fade-in hover:opacity-80 transition">
+                MSTAFFING
+              </LinkNext>
+            )}
+            <button 
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition mx-auto group border border-gray-200/50"
+              title={isCollapsed ? "Меню нээх" : "Меню хаах"}
+            >
+              {isCollapsed ? (
+                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
+                  <span className="text-white text-sm font-black tracking-tighter leading-none select-none">
+                    M
+                  </span>
+                </div>
+              ) : (
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  strokeWidth="2.5" 
+                  stroke="currentColor" 
+                  className="w-5 h-5 text-orange-500 group-hover:-translate-x-0.5 transition-transform duration-200"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          <nav className="space-y-3 flex flex-col">
+            {(() => {
+              const { linkClass, iconClass } = getLinkStyles("/dashboard")
+              return (
+                <LinkNext href="/dashboard" className={linkClass}>
+                  <span className={iconClass}>📊</span>
+                  {!isCollapsed && <span className="text-sm truncate">Хянах самбар</span>}
+                </LinkNext>
+              )
+            })()}
+
+            {userRole === "staff" ? (
+              <>
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/jobs")
+                  return (
+                    <LinkNext href="/dashboard/staff/jobs" className={linkClass}>
+                      <span className={iconClass}>💼</span>
+                      {!isCollapsed && <span className="text-sm truncate">Ажлын байрууд</span>}
+                    </LinkNext>
+                  )
+                })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/profile")
+                  return (
+                    <LinkNext href="/dashboard/staff/profile" className={linkClass}>
+                      <span className={iconClass}>👤</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний Профайл</span>}
+                    </LinkNext>
+                  )
+                })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/cv")
+                  return (
+                    <LinkNext href="/dashboard/staff/cv" className={linkClass}>
+                      <span className={iconClass}>📄</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний CV</span>}
+                    </LinkNext>
+                  )
+                })()}
+              </>
+            ) : (
+              <>
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/post-job")
+                  return (
+                    <LinkNext href="/dashboard/company/post-job" className={linkClass}>
+                      <span className={iconClass}>➕</span>
+                      {!isCollapsed && <span className="text-sm truncate">Зар нэмэх</span>}
+                    </LinkNext>
+                  )
+                })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/applicants")
+                  return (
+                    <LinkNext href="/dashboard/company/applicants" className={linkClass}>
+                      <span className={iconClass}>👥</span>
+                      {!isCollapsed && <span className="text-sm truncate">Анкетууд</span>}
+                    </LinkNext>
+                  )
+                })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/profile")
+                  return (
+                    <LinkNext href="/dashboard/company/profile" className={linkClass}>
+                      <span className={iconClass}>🏢</span>
+                      {!isCollapsed && <span className="text-sm truncate">Компани профайл</span>}
+                    </LinkNext>
+                  )
+                })()}
+              </>
+            )}
+          </nav>
+        </div>
+
+        <div className="pt-4 border-t border-gray-100 space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 min-w-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold">
+              {userRole === "staff" ? "👤" : "🏢"}
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-800 truncate">
+                  {userRole === "staff" ? "Ажил Хайгч" : "Ажил Олгогч"}
+                </p>
+                <p className="text-[10px] text-gray-400 font-mono truncate">ID: {userId.slice(0, 10)}</p>
+              </div>
+            )}
+          </div>
+          <button 
+            onClick={() => onLogout()}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-red-500 bg-red-50/50 hover:bg-red-50 transition"
+          >
+            🚪 {!isCollapsed && <span className="truncate">Гарах</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* 3. ҮНДСЭН КОНТЕНТ (ЗАСАРСАН ХЭСЭГ)
+          Мобайл үед fixed-оо больсон тул pt-24 гэх мэт хүчээр зай авах шаардлагагүй болсон.
+          Дээрх Mobile Navbar-ынхаа яг доороос (цагаан зай гаргахгүй, давхцахгүй) цэвэрхэн эхэлнэ.
+      */}
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto w-full flex flex-col">
+        {children}
+      </main>
 
     </div>
   )

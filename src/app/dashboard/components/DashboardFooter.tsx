@@ -2,8 +2,9 @@ import Link from "next/link"
 
 export default function DashboardFooter() {
   return (
-    // relative z-50 нэмснээр Next.js-ийн хөгжүүлэлтийн индикаторын дээр гарч, доорх хиймэл зайг арилгана
-    <footer className="w-full bg-slate-50/50 border-t border-slate-200/60 py-5 mt-auto relative z-50">
+    // mt-auto ажиллахын тулд гадна талын <main> таг flex flex-col классгүй бол өөрийгөө доош нь шахаж чаддаггүй.
+    // Энд bottom-0 болон w-full-ийг бататгаж, нэмэлт margin-оос сэргийлсэн стилийг орууллаа.
+    <footer className="w-full bg-slate-50/50 border-t border-slate-200/60 py-5 mt-auto relative bottom-0 left-0 right-0 z-40 shrink-0">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
         
         {/* Зүүн тал: Зохиогчийн эрх болон Хурдан холбоосууд */}
