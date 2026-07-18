@@ -2,10 +2,11 @@ import Link from "next/link"
 
 export default function DashboardFooter() {
   return (
-    <footer className="w-full bg-slate-50/50 border-t border-slate-200/60 py-5 mt-auto">
+    // relative z-50 нэмснээр Next.js-ийн хөгжүүлэлтийн индикаторын дээр гарч, доорх хиймэл зайг арилгана
+    <footer className="w-full bg-slate-50/50 border-t border-slate-200/60 py-5 mt-auto relative z-50">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
         
-        {/* Баруун тал: Зохиогчийн эрх болон Хурдан холбоосууд */}
+        {/* Зүүн тал: Зохиогчийн эрх болон Хурдан холбоосууд */}
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-left">
           <span className="text-xs font-semibold text-slate-500 tracking-wide">
             © {new Date().getFullYear()} M-Staffing.
@@ -36,7 +37,7 @@ export default function DashboardFooter() {
           </div>
         </div>
 
-        {/* Зүүн тал: Системийн хувилбарын мэдээлэл (Badge хэлбэрээр) */}
+        {/* Баруун тал: Системийн хувилбарын мэдээлэл (Badge хэлбэрээр) */}
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             Платформ төлөв

@@ -17,21 +17,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 1. Дэлгэцийн хэмжээ болон өнгөний суурь тохиргоо
 export const viewport: Viewport = {
-  themeColor: "#f97316", // Orange-500
+  themeColor: "#f97316",
   width: "device-width",
   initialScale: 1,
 };
 
-// Продакшн болон хөгжүүлэлтийн орчны URL-ийг тодорхойлох
 const baseUrl = process.env.NODE_ENV === "production" 
   ? "https://m-staffing.mn" 
   : "http://localhost:3000";
 
-// 2. SEO болон OpenGraph (Сошиал хуваалцалт) тохиргоо
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl), // 👈 1. Метадата зургийн алдааг зассан хэсэг
+  metadataBase: new URL(baseUrl),
   title: {
     default: "M-Staffing | Ажлын байрны нэгдсэн систем",
     template: "%s | M-Staffing",
@@ -69,14 +66,15 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      data-scroll-behavior="smooth" // 👈 2. Хөтчийн scroll-behavior сануулгыг зассан хэсэг
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       style={{ scrollBehavior: "smooth" }}
     >
-      <body className="min-h-full flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white">
+      {/* h-full нэмж, дэлгэцийг flex-col болгосноор доторх бүх зүйл бүтэн өндөр авна */}
+      <body className="h-full flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0">
         
-        {/* Үндсэн контент */}
-        <main className="flex-1 flex flex-col">
+        {/* Үндсэн контентыг дэлгэцийн үлдэгдэл өндрийг бүтэн дүүргэхийг шаардана */}
+        <main className="flex-1 flex flex-col w-full min-h-0">
           {children}
         </main>
         
