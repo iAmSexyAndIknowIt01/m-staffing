@@ -70,7 +70,7 @@ export default function JobFilterBar({
           />
         </div>
 
-        {/* Шүүлтүүрийн Тагууд - Дэлгэцээс хэтрэхгүй, дотроо scroll хийгдэнэ */}
+        {/* Шүүлтүүрийн Тагууд */}
         <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-1.5 py-0.5">
           {/* Ажлын төрлүүд */}
           {["fulltime", "parttime", "remote"].map((type) => (
@@ -87,20 +87,25 @@ export default function JobFilterBar({
             </button>
           ))}
 
-          {/* Категориуд */}
-          {categories.slice(0, 4).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
-              className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border whitespace-nowrap transition-all duration-150 active:scale-95 shrink-0 ${
-                selectedCategory === cat
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </button>
-          ))}
+          {/* Категориуд (Одоо давхардахгүй, цэвэрхэн харагдана) */}
+          {categories.map((cat) => {
+            // Харьцуулалтыг том жижиг үсэг харгалзахгүй хийнэ
+            const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase()
+
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(isSelected ? "" : cat)}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border whitespace-nowrap transition-all duration-150 active:scale-95 shrink-0 ${
+                  isSelected
+                    ? "bg-slate-900 text-white border-slate-900"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {cat}
+              </button>
+            )
+          })}
         </div>
 
       </div>
@@ -120,7 +125,8 @@ export default function JobFilterBar({
 
           {selectedCategory && (
             <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-[12px] text-slate-800 font-medium">
-              <span>{selectedCategory}</span>
+              {/* Сонгосон нэрийг яг хэвээр нь харуулна (IT бол IT, Marketing бол Marketing) */}
+              <span>{selectedCategory === "it" || selectedCategory === "IT" ? "IT" : selectedCategory}</span>
               <button onClick={() => setSelectedCategory("")} className="text-slate-400 hover:text-slate-600 ml-0.5">
                 <X className="w-3 h-3" />
               </button>
@@ -146,7 +152,6 @@ export default function JobFilterBar({
         </div>
       )}
 
-      {/* Scrollbar нуух CSS */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
