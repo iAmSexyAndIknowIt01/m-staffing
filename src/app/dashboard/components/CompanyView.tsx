@@ -7,7 +7,6 @@ interface CompanyViewProps {
   userId: string
 }
 
-// 🔥 ШИНЭЧЛЭГДСЭН: Зөвлөгөөний дата төрөл
 interface TipData {
   id: number
   title: string
@@ -44,7 +43,6 @@ interface DashboardData {
     time: string
     avatar: string | null
   }>
-  // 🔥 ШИНЭЧЛЭГДСЭН: API-аас ирэх зөвлөгөөнүүдийн массив
   tips: TipData[]
 }
 
@@ -52,8 +50,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // 🔥 ШИНЭЧЛЭГДСЭН: Олон зөвлөгөө ирвэл сэлгэж харах индекс
   const [activeTipIndex, setActiveTipIndex] = useState(0)
 
   const isFetched = useRef(false)
@@ -118,8 +114,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
   const { stats, activeJobs, recentApplicants, subscription, tips = [] } = data
   const displayedJobs = activeJobs.slice(0, 2)
   const isLimitReached = stats.openJobsCount >= subscription.jobLimit
-
-  // 🔥 ШИНЭЧЛЭГДСЭН: Одоогийн харагдаж буй идэвхтэй зөвлөгөө
   const currentTip = tips[activeTipIndex]
 
   return (
@@ -341,7 +335,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             </Link>
           </div>
 
-          {/* 🔥 ШИНЭЧЛЭГДСЭН: "Асуух зүйл байна уу?" -> Динамик Зөвлөгөөний карт */}
+          {/* ДИНАМИК ЗӨВЛӨГӨӨНИЙ КАРТ */}
           <div className="bg-indigo-50/60 border border-indigo-100 p-6 rounded-4xl shadow-sm space-y-4 relative overflow-hidden">
             {currentTip ? (
               <div className="space-y-3">
@@ -353,7 +347,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                     </span>
                   </div>
                   
-                  {/* Хэрэв 1-ээс олон зөвлөгөө олдвол дараагийнх руу шилжих товч */}
                   {tips.length > 1 && (
                     <button 
                       onClick={() => setActiveTipIndex((prev) => (prev + 1) % tips.length)}
@@ -374,20 +367,18 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                 </p>
 
                 <div className="flex justify-between items-center pt-2 border-t border-indigo-100/50">
-                  {/* 🔥 ШИНЭЧЛЭГДВЭЛ: Хэрэглэгчийг шууд шинээр үүсгэсэн tips хуудас руу чиглүүлнэ */}
                   <Link 
                     href="/dashboard/company/tips" 
                     className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
                   >
                     Илүүг унших →
                   </Link>
-                  <Link href="/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                  <Link href="/dashboard/company/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
                     Тусламж авах 🙋‍♂️
                   </Link>
                 </div>
               </div>
             ) : (
-              // Хэрэв датабаазад зөвлөгөө байхгүй бол харуулах Fallback хэсэг
               <div className="space-y-3">
                 <h4 className="font-black text-sm text-gray-900">Асуух зүйл байна уу? 🙋‍♂️</h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
