@@ -9,9 +9,10 @@ export async function POST(request: Request) {
     const userId = cookieStore.get("user_id")?.value
     const userRole = cookieStore.get("user_role")?.value
 
-    if (!userId || userRole !== "company") {
+    // Зөвшөөрөгдсөн ролуудыг шалгах (company эсвэл staff)
+    if (!userId || (userRole !== "company" && userRole !== "staff")) {
       return NextResponse.json(
-        { error: "Хандах эрхгүй байна. Зөвхөн компани эрхтэй хэрэглэгч хүсэлт илгээх боломжтой." },
+        { error: "Хандах эрхгүй байна. Зөвхөн бүртгэлтэй хэрэглэгч хүсэлт илгээх боломжтой." },
         { status: 403 }
       )
     }
@@ -35,12 +36,13 @@ export async function POST(request: Request) {
       .from("mt_support")
       .insert([
         {
-          id: randomId, // Үүсгэсэн 6 оронтой random тоогоо энд онооно
+          id: randomId,
           user_id: userId,
           category,
           title,
           message,
-          status: "pending"
+          status: "pending",
+          flag: userRole
         }
       ])
       .select()

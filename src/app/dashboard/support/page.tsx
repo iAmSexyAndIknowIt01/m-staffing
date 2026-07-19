@@ -16,7 +16,7 @@ export default function CompanySupportPage() {
     setStatusMsg(null)
 
     try {
-      const res = await fetch("/api/company/support", {
+      const res = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, title, message })
