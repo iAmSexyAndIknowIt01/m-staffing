@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import LoadingLayout from "@/components/staff/common/LoadingLayout"
 
 interface StaffViewProps {
   userId: string
@@ -41,6 +42,13 @@ interface DashboardData {
   profileProgress: number
   recommendedJobs: Job[]
   recentApplications: Application[]
+  // 🌟 ШИНЭ: Ганц зөвлөгөө байсныг массив бүтэцтэй болгон өөрчлөв
+  tips?: {
+    title: string
+    icon: string
+    content: string
+    detail_url: string
+  }[]
 }
 
 export default function StaffView({ userId }: StaffViewProps) {
@@ -80,7 +88,7 @@ export default function StaffView({ userId }: StaffViewProps) {
     return Number(numericValue).toLocaleString() + " ₮"
   }
 
-  // 🌟 ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
+  // ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
   const getCompanyViewStatus = (count: number) => {
     if (count === 0) return "Хандалт хийгээгүй (7 хоногт)"
     if (count <= 3) return "Идэвхтэй хандаж байна (7 хоногт)"
@@ -180,14 +188,12 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
-// --- ШИНЭЧЛЭГДСЭН handleApplyJob (Мэйл хүлээхгүй хувилбар) ---
   const handleApplyJob = async () => {
     if (!pendingJobId) return
     setIsSubmitting(true)
     setShowConfirmModal(false)
     setSliderX(0)
     try {
-      // 1. Үндсэн анкет хадгалах хүсэлт (Үүнийг заавал хүлээнэ)
       const response = await fetch("/api/jobRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -196,17 +202,14 @@ export default function StaffView({ userId }: StaffViewProps) {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
-      // 2. 🚀 МЭЙЛ ИЛГЕЭХ API-Г ХҮЛЭЭХГҮЙГЭЭР АРД ТАЛД АЖИЛЛУУЛАХ (await хассан)
       fetch("/api/mail/job-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_id: pendingJobId }),
       }).catch((mailErr) => {
-        // Мэйл илгээлтэд алдаа гарвал console дээр харуулна, хэрэглэгчийн үйлдлийг гацаахгүй
         console.error("Мэйл илгээхэд алдаа гарлаа (Background):", mailErr)
       })
 
-      // 3. Төлөв шинэчлэх (Анкет амжилттай хадгалагдсан тул шууд модал харуулна)
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
@@ -281,29 +284,13 @@ export default function StaffView({ userId }: StaffViewProps) {
   }, [isDragging, sliderX])
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-        <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-              mstaffing
-            </span>
-          </div>
-        </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-          Түр хүлээнэ үү...
-        </p>
-      </div>
-    )
+    return <LoadingLayout loading={loading} />
   }
 
   if (error) return <div className="text-center py-12 text-red-500 font-medium">{error}</div>
   if (!data) return null
 
-  const { stats, profileProgress, recommendedJobs, recentApplications } = data
+  const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
   const cleanCvViewRate = stats.cvViewRate.replace(/[^0-9]/g, "") || "0"
 
   return (
@@ -338,7 +325,6 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">✉️</div>
         </div>
 
-        {/* 🌟 ҮЗСЭН КОМПАНИУД (ДИНАМИК СТАТУСТАЙ БОЛСОН ХЭСЭГ) */}
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
@@ -492,23 +478,38 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
           </div>
 
-          <div className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💡</span>
-              <h4 className="font-black text-sm text-amber-900">Амжилтын зөвлөгөө</h4>
+          {/* 🌟 ШИНЭЧЛЭГДСЭН ЗӨВЛӨГӨӨНИЙ МАССИВ ХАРАГДАХ СЕКЦ */}
+          {tips && tips.length > 0 && (
+            <div className="space-y-4">
+              {tips.map((tip, index) => (
+                <div 
+                  key={index} 
+                  className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{tip.icon || "💡"}</span>
+                    <h4 className="font-black text-sm text-amber-900">{tip.title}</h4>
+                  </div>
+                  <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                    {tip.content}
+                  </p>
+                  <Link 
+                    href={tip.detail_url.startsWith("/") ? tip.detail_url : `/${tip.detail_url}`} 
+                    className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1"
+                  >
+                    Үргэлжлүүлж унших →
+                  </Link>
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-amber-800 leading-relaxed font-medium">
-              Технологийн компаниуд анкет шалгахдаа хамгийн түрүүнд хийсэн төслүүд болон ашигласан технологиудын жагсаалтыг хардаг. Түүнчлэн үр дүнгээ тоогоор илэрхийлэх нь давуу тал болно.
-            </p>
-            <Link href="/staff/blog/tips" className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1">Үргэлжлүүлж унших →</Link>
-          </div>
+          )}
         </div>
 
       </div>
 
       {/* 🏢 САНАЛ БОЛГОЖ БУЙ АЖЛЫН MODAL ЦОНХ */}
       {selectedJob && (() => {
-        const isModalJobApplied = appliedJobIds.includes(selectedJob.id);
+        const isJobApplied = appliedJobIds.includes(selectedJob.id);
         return (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white max-w-lg w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
@@ -539,7 +540,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                 </div>
               </div>
               <div className="pt-2 flex gap-3">
-                {isModalJobApplied ? (
+                {isJobApplied ? (
                   <button disabled className="flex-1 py-3 bg-red-100 text-red-700 font-bold text-sm text-center rounded-xl cursor-not-allowed shadow-inner">
                     Хүсэлт илгээгдсэн ✓
                   </button>

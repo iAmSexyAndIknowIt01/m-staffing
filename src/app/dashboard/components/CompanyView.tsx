@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import Image from "next/image"
 
 interface CompanyViewProps {
   userId: string
+}
+
+interface TipData {
+  id: number
+  title: string
+  icon: string
+  content: string
+  detail_url: string
 }
 
 interface DashboardData {
@@ -14,7 +21,6 @@ interface DashboardData {
     totalApplicantsCount: number
     interviewCount: number
   }
-  // 🔥 ШИНЭЧЛЭГДСЭН: Багцын мэдээллийн бүтэц
   subscription: {
     planName: string
     status: string
@@ -37,12 +43,14 @@ interface DashboardData {
     time: string
     avatar: string | null
   }>
+  tips: TipData[]
 }
 
 export default function CompanyView({ userId }: CompanyViewProps) {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTipIndex, setActiveTipIndex] = useState(0)
 
   const isFetched = useRef(false)
 
@@ -103,11 +111,10 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
   if (!data) return null
 
-  const { stats, activeJobs, recentApplicants, subscription } = data
+  const { stats, activeJobs, recentApplicants, subscription, tips = [] } = data
   const displayedJobs = activeJobs.slice(0, 2)
-
-  // Ажлын байрны лимит дүүрсэн эсэхийг шалгах
   const isLimitReached = stats.openJobsCount >= subscription.jobLimit
+  const currentTip = tips[activeTipIndex]
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -120,7 +127,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             Шинэ шилдэг боловсон хүчнүүдийг эндээс хялбархан удирдаарай.
           </p>
         </div>
-        {/* 🔥 ШИНЭЧЛЭЛТ: Лимит хэтэрсэн үед хамгаалалттай товч харуулах */}
         {isLimitReached ? (
           <button
             onClick={() => alert(`Таны ажлын байрны лимит (${subscription.jobLimit}) дүүрсэн байна. Шинэ зар оруулахын тулд багцаа ахиулна уу.`)}
@@ -216,7 +222,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                           🔥 {job.newApplicants} шинэ
                         </span>
                       )}
-                      {/* 🔄 ШИНЭЧЛЭГДСЭН ХЭСЭГ: Динамик ID дамжуулах зам */}
                       <Link 
                         href={`/dashboard/company/post-job/${job.id}/applicants`}
                         className="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/70 px-4 py-2.5 rounded-xl transition"
@@ -252,11 +257,6 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                             src={applicant.avatar} 
                             alt={applicant.name}
                             className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              const parent = e.currentTarget.parentElement;
-                              if (parent) parent.innerHTML = '🧑‍💻';
-                            }}
                           />
                         ) : (
                           "🧑‍💻"
@@ -286,7 +286,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
 
         </div>
 
-        {/* 🔥 БАРУУН ТАЛ: ДИНАМИК КОМПАНИЙН ТӨЛӨВ ХЭСЭГ */}
+        {/* БАРУУН ТАЛ: КОМПАНИЙН ТӨЛӨВ ХЭСЭГ */}
         <div className="space-y-6">
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-5">
             <div>
@@ -313,7 +313,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
               </div>
             </div>
 
-            {/* Прогресс бар: Зарласан ажлын байр / Нийт лимит */}
+            {/* Прогресс бар */}
             <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-gray-500">Ажлын байрны лимит</span>
@@ -335,14 +335,60 @@ export default function CompanyView({ userId }: CompanyViewProps) {
             </Link>
           </div>
 
-          <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-4xl shadow-sm space-y-3">
-            <h4 className="font-black text-sm text-gray-900">Асуух зүйл байна уу? 🙋‍♂️</h4>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Зар тавихад алдаа гарах, эсвэл тохирох ажилтан олдохгүй бол манай тусламжийн менежертэй шудут холбогдоорой.
-            </p>
-            <Link href="/support" className="inline-block text-xs font-bold text-indigo-600 hover:underline pt-1">
-              Чатлах →
-            </Link>
+          {/* ДИНАМИК ЗӨВЛӨГӨӨНИЙ КАРТ */}
+          <div className="bg-indigo-50/60 border border-indigo-100 p-6 rounded-4xl shadow-sm space-y-4 relative overflow-hidden">
+            {currentTip ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{currentTip.icon || '💡'}</span>
+                    <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider bg-indigo-100/80 px-2 py-0.5 rounded-md">
+                      Зөвлөгөө
+                    </span>
+                  </div>
+                  
+                  {tips.length > 1 && (
+                    <button 
+                      onClick={() => setActiveTipIndex((prev) => (prev + 1) % tips.length)}
+                      className="text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-all p-1 flex items-center gap-1"
+                      title="Дараагийн зөвлөгөө"
+                    >
+                      Дараагийнх 🔄
+                    </button>
+                  )}
+                </div>
+
+                <h4 className="font-black text-sm text-gray-900 leading-snug">
+                  {currentTip.title}
+                </h4>
+                
+                <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
+                  {currentTip.content}
+                </p>
+
+                <div className="flex justify-between items-center pt-2 border-t border-indigo-100/50">
+                  <Link 
+                    href="/dashboard/company/tips" 
+                    className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
+                  >
+                    Илүүг унших →
+                  </Link>
+                  <Link href="/dashboard/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                    Тусламж авах 🙋‍♂️
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <h4 className="font-black text-sm text-gray-900">Асуух зүйл байна уу? 🙋‍♂️</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Зар тавихад алдаа гарах, эсвэл тохирох ажилтан олдохгүй бол манай тусламжийн менежертэй шууд холбогдоорой.
+                </p>
+                <Link href="/support" className="inline-block text-xs font-bold text-indigo-600 hover:underline pt-1">
+                  Чатлах →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

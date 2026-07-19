@@ -88,7 +88,6 @@ export async function POST(req: Request) {
     })
 
   } catch (err) {
-    console.log(err)
     return NextResponse.json({ message: "Системийн алдаа" }, { status: 500 })
   }
 }

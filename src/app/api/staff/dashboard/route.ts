@@ -12,34 +12,51 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Хэрэглэгчийн ID шаардлагатай" }, { status: 400 });
     }
 
-    // 🌟 Долоо хоногийн эхлэлийг (Даваа гараг 00:00:00) тооцоолох
+    // Долоо хоногийн эхлэлийг (Даваа гараг 00:00:00) тооцоолох
     const now = new Date();
     const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Хэрэв Ням гараг бол -6, бусад үед Даваа гараг руу шилжүүлнэ
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     const startOfWeek = new Date(now.setDate(diff));
-    startOfWeek.setHours(0, 0, 0, 0); // Цагийг 00:00:00 болгоно
+    startOfWeek.setHours(0, 0, 0, 0);
     const startOfWeekISO = startOfWeek.toISOString();
 
-    // 1. Хүснэгтүүдийг хооронд нь холбохгүйгээр эхний ээлжинд хэрэгцээт датаг параллель татна
+    // 1. Параллель өгөгдөл татах (Зөвлөгөө татах логикийг салгаж, 2 тусдаа query болгов)
     const [
       jobRequestsCountResponse, 
       jobRequestsThisWeekResponse, 
       profileResponse,
       recentApplicationsResponse,
-      companyViewsCountResponse, // 🌟 ЭНД СҮҮЛИЙН ДОЛОО ХОНОГООР ШҮҮЛТ ОРНО
+      companyViewsCountResponse,
       cvViewsCountResponse,
-      companiesResponse
+      companiesResponse,
+      blogTipsResponse,         // 🌟 tips-д зориулсан query
+      interviewPrepResponse     // 🌟 interview-prep-д зориулсан query
     ] = await Promise.all([
       supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId),
       supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId).gte("created_at", startOfWeekISO),
       supabase.from("mt_profile").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("tr_job_request").select("id, status, created_at, job_id").eq("applicant_id", userId).order("created_at", { ascending: false }),
-      
-      // 🌟 ЗАСАРСАН: Компани үзсэн тоог зөвхөн энэ долоо хоногийн хугацаагаар шүүнэ (.gte)
       supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId).gte("created_at", startOfWeekISO),
-      
       supabase.from("tr_cv_views").select("*", { count: "exact", head: true }).eq("staff_id", userId),
-      supabase.from("mt_company").select("id, company_name")
+      supabase.from("mt_company").select("id, company_name"),
+      
+      // 🌟 "dashboard/staff/blog/tips" хаягтай хамгийн сүүлийн 1 идэвхтэй зөвлөгөө
+      supabase.from("mt_tips")
+        .select("title, icon, content, detail_url")
+        .eq("is_active", true)
+        .eq("detail_url", "dashboard/staff/blog/tips")
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // 🌟 "dashboard/staff/blog/interview-prep" хаягтай хамгийн сүүлийн 1 идэвхтэй зөвлөгөө
+      supabase.from("mt_tips")
+        .select("title, icon, content, detail_url")
+        .eq("is_active", true)
+        .eq("detail_url", "dashboard/staff/blog/interview-prep")
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle()
     ]);
 
     // Хэрэглэгчийн анкет илгээсэн ажлын байрнуудын ID-г массив болгож авна
@@ -100,19 +117,44 @@ export async function GET(request: Request) {
       return new Date(dateString).toLocaleDateString("mn-MN"); 
     };
 
-    // Фронтод очих эцсийн дата
     const thisWeekCount = jobRequestsThisWeekResponse.count || 0;
 
+    // 🌟 Хэрэв дата олдохгүй бол ашиглах default fallback зөвлөгөөнүүд
+    const defaultBlogTip = {
+      title: "Амжилтын зөвлөгөө",
+      icon: "💡",
+      content: "Технологийн компаниуд анкет шалгахдаа хамгийн түрүүнд хийсэн төслүүд болон ашигласан технологиудын жагсаалтыг хардаг.",
+      detail_url: "dashboard/staff/blog/tips"
+    };
+
+    const defaultInterviewTip = {
+      title: "Ярилцлагын бэлтгэл",
+      icon: "🤝",
+      content: "Ярилцлагад орохоос өмнө тухайн компанийн соёл, үнэ цэнэ болон бүтээгдэхүүний талаар урьдчилан судалсан байх нь давуу тал болно.",
+      detail_url: "dashboard/staff/blog/interview-prep"
+    };
+
+    // Олдсон өгөгдлийг нэгтгэн массив үүсгэх
+    const activeTips = [];
+    if (blogTipsResponse.data) activeTips.push(blogTipsResponse.data);
+    else activeTips.push(defaultBlogTip);
+
+    if (interviewPrepResponse.data) activeTips.push(interviewPrepResponse.data);
+    else activeTips.push(defaultInterviewTip);
+
+    // Фронтод очих эцсийн дата
     const finalData = {
       stats: {
         appliedCount: jobRequestsCountResponse.count || 0,
         appliedThisWeek: `+${thisWeekCount} энэ долоо хоногт`, 
-        // 🌟 Энд одоо зөвхөн энэ долоо хоногийн үзэлтийн тоо очих болно
         viewedCompaniesCount: companyViewsCountResponse.count || 0,
         cvViewRate: cvViewsCountResponse.count ? `${cvViewsCountResponse.count} удаа` : "0 удаа",
       },
       profileProgress: profileProgress,
       
+      // 🌟 Зөвлөгөөнүүдийг массив хэлбэрээр илгээнэ
+      tips: activeTips,
+
       // 1. Санал болгож буй ажлууд
       recommendedJobs: (openJobsResponse.data || []).map((job: any) => {
         const companyIdStr = job.user_id ? job.user_id.toString() : "";

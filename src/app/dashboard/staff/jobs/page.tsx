@@ -7,7 +7,7 @@ import AlertModal from "@/components/staff/jobs/AlertModal"
 import SuccessModal from "@/components/staff/jobs/SuccessModal"
 import ConfirmModal from "@/components/staff/jobs/ConfirmModal"
 import Pagination from "@/components/staff/jobs/Pagination"
-import LoadingLayout from "@/components/staff/jobs/LoadingLayout"
+import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 
@@ -140,7 +140,6 @@ export default function StaffJobsPage() {
         resume_url: ""
       }
 
-      // 1. Үндсэн анкет хадгалах хүсэлт
       const response = await fetch("/api/jobRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,8 +149,6 @@ export default function StaffJobsPage() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
-      // 2. 🔥 МЭЙЛ ИЛГЕЭХ API-Г ДУУДАХ
-      // Энд зөвхөн job_id-г илгээнэ. Күүки автоматаар хамт явна.
       fetch("/api/mail/job-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -255,8 +252,18 @@ export default function StaffJobsPage() {
     }
   }
 
+  // 🔥 ЗАССАН ХЭСЭГ: Категорийн давхардлыг арилгаж, зөв форматтай болгов
   const categories = useMemo(() => {
-    return Array.from(new Set(jobs.map((j) => j.category)))
+    const lowerCategories = jobs
+      .map((j) => j.category?.trim().toLowerCase())
+      .filter(Boolean)
+
+    const uniqueLower = Array.from(new Set(lowerCategories))
+
+    return uniqueLower.map((cat) => {
+      if (cat === "it") return "IT" // IT-ийг үргэлж томоор
+      return cat.charAt(0).toUpperCase() + cat.slice(1) // Бусдынх нь эхний үсгийг томоор
+    })
   }, [jobs])
 
   const getJobTypeText = (type: string) => {
@@ -291,7 +298,9 @@ export default function StaffJobsPage() {
         (job.mt_company?.name && job.mt_company.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
-      const matchesCategory = selectedCategory === "" || job.category === selectedCategory
+      const matchesCategory = selectedCategory === "" || 
+        (job.category && job.category.toLowerCase() === selectedCategory.toLowerCase())
+
       const matchesType = selectedJobType === "" || job.job_type === selectedJobType
 
       return matchesSearch && matchesCategory && matchesType
@@ -364,7 +373,7 @@ export default function StaffJobsPage() {
         </div>
       </div>
 
-      {/* 1. ШҮҮЛТҮҮРИЙН КОМПОНЕНТ */}
+      {/* ШҮҮЛТҮҮРИЙН КОМПОНЕНТ */}
       <JobFilterBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -424,7 +433,6 @@ export default function StaffJobsPage() {
 
             return (
               <React.Fragment key={job.id}>
-                {/* 2. АЖЛЫН КАРТ КОМПОНЕНТ */}
                 <JobCard
                   job={job}
                   isJobApplied={isJobApplied}
@@ -436,7 +444,6 @@ export default function StaffJobsPage() {
                   formatSalary={formatSalary}
                 />
 
-                {/* ОНЦЛОХ БОЛОМЖ БАННЕР (Хуудас бүрийн 5 дахь ажил тутамд) */}
                 {(index + 1) % 5 === 0 && (
                   <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -457,7 +464,7 @@ export default function StaffJobsPage() {
         </div>
       )}
 
-      {/* ХУУДАСЛАЛТ (PAGINATION) */}
+      {/* ХУУДАСЛАЛТ */}
       <Pagination
         filteredJobsCount={filteredJobs.length}
         totalPages={totalPages}
@@ -467,7 +474,7 @@ export default function StaffJobsPage() {
         setCurrentPage={setCurrentPage}
       />
 
-      {/* --- МОДАЛ ЦОНХНУУД --- */}
+      {/* МОДАЛ ЦОНХНУУД */}
       <JobDetailModal
         selectedJob={selectedJob}
         onClose={() => setSelectedJob(null)}

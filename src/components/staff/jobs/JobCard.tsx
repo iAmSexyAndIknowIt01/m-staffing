@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { Heart, Share2 } from "lucide-react"
 
 interface Company {
   id?: string
@@ -35,6 +36,18 @@ interface JobCardProps {
   formatSalary: (salary: string) => string
 }
 
+// Хугацааг "16 өдрийн өмнө" гэх мэтээр харуулах туслах функц
+function getDaysAgo(dateString: string) {
+  const created = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now.getTime() - created.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays <= 1) return "Өнөөдөр"
+  if (diffDays > 30) return `${Math.floor(diffDays / 30)} сарын өмнө`
+  return `${diffDays} өдрийн өмнө`
+}
+
 export default function JobCard({
   job,
   isJobApplied,
@@ -50,15 +63,17 @@ export default function JobCard({
   return (
     <div
       onClick={onClick}
-      className={`relative overflow-hidden bg-white border rounded-3xl p-6 hover:border-indigo-200 hover:shadow-lg transition cursor-pointer ${
-        isJobApplied ? "border-l-4 border-l-red-500 border-gray-100" : "border-gray-100"
+      className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-all duration-200 cursor-pointer ${
+        isJobApplied ? "border-l-4 border-l-red-500" : ""
       }`}
     >
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-        <div className="flex items-start gap-4 flex-1">
+      {/* Дээд хэсэг: Лого, Гарчиг, Үйлдэлүүд */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3.5">
+          {/* Лого (Квадрат, бөөрөнхий булантай) */}
           <div
             onClick={(e) => onCompanyClick(e, job.mt_company)}
-            className="w-25 h-25 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs hover:scale-105 transition cursor-pointer"
+            className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 transition hover:scale-105"
           >
             {logoFullUrl ? (
               <img
@@ -70,59 +85,86 @@ export default function JobCard({
                 }}
               />
             ) : (
-              <span className="text-lg font-black text-indigo-500 uppercase">
+              <span className="text-sm font-black text-indigo-500 uppercase">
                 {job.mt_company?.name?.substring(0, 2) || "CO"}
               </span>
             )}
           </div>
 
-          <div className="flex-1">
-            <div className="flex flex-wrap gap-2 mb-2">
-              {isJobApplied && (
-                <span className="px-3 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-xl flex items-center gap-1 animate-fade-in">
-                  ✓ Хүсэлт илгээсэн
-                </span>
-              )}
-              <span className="px-3 py-1 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-xl">
-                {job.category}
-              </span>
-              <span className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-xl">
-                {getJobTypeText(job.job_type)}
-              </span>
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition">
+          {/* Гарчиг ба Компанийн нэр */}
+          <div>
+            <h3 className="text-[16px] font-bold text-slate-900 leading-snug group-hover:text-indigo-600 transition">
               {job.title}
             </h3>
-
-            <p className="text-sm font-semibold mt-0.5">
+            
+            <div className="flex items-center gap-1 mt-1">
               {job.mt_company ? (
                 <span
                   onClick={(e) => onCompanyClick(e, job.mt_company)}
-                  className="text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1 transition cursor-pointer"
+                  className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                 >
-                  {job.mt_company.name} 🏢
+                  {job.mt_company.name}
                 </span>
               ) : (
-                <span className="text-gray-500 font-medium">Байгууллагын нэр нууцалсан</span>
+                <span className="text-xs text-gray-400">Байгууллагын нэр нууцалсан</span>
               )}
-            </p>
-
-            <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
-              <span>📍 {job.location || "Улаанбаатар"}</span>
-              <span className="text-emerald-600 font-semibold">
-                💰 {getSalaryTypeText(job.salary_type)}: {formatSalary(job.salary)}
-              </span>
-              <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+              {/* Lambda шиг цэнхэр баталгаажсан тэмдэг */}
+              {job.mt_company && (
+                <svg className="w-3.5 h-3.5 text-blue-500 fill-current" viewBox="0 0 24 24">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="flex lg:flex-col items-end justify-between lg:justify-center min-w-45 border-t lg:border-t-0 pt-4 lg:pt-0 border-gray-50">
-          <div className="text-xs text-gray-400 hidden lg:block">Нээлттэй ажлын байр</div>
-          <button className="hidden lg:inline-flex px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-xs transition">
-            Дэлгэрэнгүй →
+        {/* Баруун дээд булан: Хадгалах, Шэйрлэх (Lambda style) */}
+        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition">
+            <Heart className="w-4 h-4" />
           </button>
+          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition">
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Дунд хэсэг: Цалин ба Оруулсан хугацаа */}
+      <div className="mt-4 pt-1 flex items-baseline justify-between gap-2">
+        <div className="text-[15px] font-bold text-slate-800">
+          ₮ {formatSalary(job.salary)}
+          <span className="text-xs font-normal text-gray-400 ml-1">
+            / {getSalaryTypeText(job.salary_type)}
+          </span>
+        </div>
+        
+        <div className="text-[11px] text-gray-400 font-medium">
+          {getDaysAgo(job.created_at)}
+        </div>
+      </div>
+
+      {/* Доод хэсэг: Төрөл бүрийн Badge-үүд */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {/* Сайн цалин эсвэл төрөлжсөн Badge */}
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
+            <span>$</span> Сайн цалин
+          </span>
+          
+          <span className="px-2.5 py-1 text-xs font-medium text-gray-500 bg-gray-50 rounded-full border border-gray-100">
+            {getJobTypeText(job.job_type)}
+          </span>
+
+          {isJobApplied && (
+            <span className="px-2.5 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-full border border-red-100">
+              ✓ Илгээсэн
+            </span>
+          )}
+        </div>
+
+        {/* Онлайн байгаа эсэх эсвэл байршил (Сонголттой) */}
+        <div className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
+          <span>📍</span> {job.location || "Улаанбаатар"}
         </div>
       </div>
     </div>
