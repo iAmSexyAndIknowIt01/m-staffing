@@ -373,7 +373,7 @@ export default function CompanyView({ userId }: CompanyViewProps) {
                   >
                     Илүүг унших →
                   </Link>
-                  <Link href="/dashboard/company/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                  <Link href="/dashboard/support" className="text-xs text-gray-400 hover:text-gray-600 font-medium">
                     Тусламж авах 🙋‍♂️
                   </Link>
                 </div>
