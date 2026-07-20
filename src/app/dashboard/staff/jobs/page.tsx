@@ -10,6 +10,7 @@ import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
+import AdCard from "@/components/staff/jobs/AdCard"
 
 interface Company {
   id?: string
@@ -33,6 +34,18 @@ interface Job {
   mt_company?: Company
 }
 
+interface Ad {
+  id: string
+  title: string
+  description: string
+  image_url?: string
+  link_url?: string
+  created_at: string
+  color_from: string
+  color_to: string
+  badge: string
+}
+
 export default function StaffJobsPage() {
   const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
@@ -47,6 +60,7 @@ export default function StaffJobsPage() {
   
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [ads, setAds] = useState<Ad[]>([]);
 
   const [submitting, setSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false) 
@@ -112,19 +126,24 @@ export default function StaffJobsPage() {
   }
 
   useEffect(() => {
-    async function fetchJobs() {
-      try {
-        const response = await fetch("/api/staff/jobs")
-        const result = await response.json()
-        if (!response.ok) throw new Error(result.error || "Алдаа гарлаа")
-        setJobs(result.jobs || [])
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
+// Ажлын байр болон Ад-ыг зэрэг татах
+  async function fetchData() {
+    try {
+      const [jobsRes, adsRes] = await Promise.all([
+        fetch("/api/staff/jobs"),
+        fetch("/api/staff/ads") // mt_ads мастер хүснэгтээс мэдээлэл авна
+      ]);
+      const jobsData = await jobsRes.json();
+      const adsData = await adsRes.json();
+      setJobs(jobsData.jobs || []);
+      setAds(adsData.ads || []); // DB-ээс ирсэн ад-ууд
+    } catch (err) {
+      console.error("Өгөгдөл татахад алдаа гарлаа");
+    } finally {
+      setLoading(false);
     }
-    fetchJobs()
+  }
+  fetchData();
   }, [])
 
   const handleApplyJob = async () => {
@@ -392,16 +411,6 @@ export default function StaffJobsPage() {
         </div>
       )}
 
-      {/* ЯПОН АЖЛЫН БАННЕР */}
-      <div className="bg-linear-to-r from-orange-500 to-red-500 text-white rounded-3xl p-8 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-black">🇯🇵 Японд ажиллах боломж</h2>
-            <p className="mt-2 text-white/90">IT, Engineer, Tokutei Ginou ажлын байр</p>
-          </div>
-          <button className="px-6 py-3 bg-white text-orange-600 rounded-2xl font-bold">Дэлгэрэнгүй</button>
-        </div>
-      </div>
 
       {/* ЖАГСААЛТЫН ТӨЛӨВҮҮД */}
       {isFiltering ? (
@@ -431,6 +440,13 @@ export default function StaffJobsPage() {
           {paginatedJobs.map((job, index) => {
             const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
 
+          // ТАЙЛБАР: Хуудасны дугаар болон тухайн хуудсан дахь индексийг нэгтгэж 
+            // нийт (global) индексийг гаргана.
+            const globalIndex = (currentPage - 1) * jobsPerPage + index;
+
+            // Одоо globalIndex ашиглаж ад-ыг тооцоолно
+            const adIndex = Math.floor(globalIndex / 5) % ads.length;
+            const adToShow = ads.length > 0 && (globalIndex + 1) % 5 === 0 ? ads[adIndex] : null;
             return (
               <React.Fragment key={job.id}>
                 <JobCard
@@ -444,20 +460,7 @@ export default function StaffJobsPage() {
                   formatSalary={formatSalary}
                 />
 
-                {(index + 1) % 5 === 0 && (
-                  <div className="bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-3xl p-6 shadow-md my-4 animate-fade-in">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="bg-white/20 text-xs px-2.5 py-1 rounded-lg font-bold tracking-wide uppercase">Онцлох боломж</span>
-                        <h3 className="text-lg font-bold mt-2">✨ CV-гээ үнэгүй зөвлүүлэх үйлчилгээ</h3>
-                        <p className="text-xs text-white/80 mt-1">Мэргэжлийн рекрутерүүд таны анкетыг засаж, зөвлөгөө өгөх болно.</p>
-                      </div>
-                      <button className="px-5 py-2.5 bg-white text-indigo-600 rounded-xl text-sm font-bold shadow-xs shrink-0 self-end sm:self-center">
-                        Анкет засуулах
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {adToShow && <AdCard ad={adToShow} />}
               </React.Fragment>
             )
           })}
@@ -513,7 +516,6 @@ export default function StaffJobsPage() {
         alertModal={alertModal}
         onClose={() => setAlertModal((prev) => ({ ...prev, show: false }))}
       />
-
     </div>
   )
 }
