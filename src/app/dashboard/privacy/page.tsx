@@ -36,7 +36,7 @@ export default function PrivacyPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 md:py-12">
-      {/* 1. Буцах товч болон толгой хэсэг */}
+      {/* Header хэсэг */}
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={() => router.back()}
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      {/* 2. Хайлт */}
+      {/* Хайлт */}
       <div className="relative mb-8">
         <input 
           type="text" 
@@ -65,9 +65,23 @@ export default function PrivacyPage() {
         </svg>
       </div>
 
-      {/* 3. Контент */}
+      {/* Контент эсвэл Loader */}
       {loading ? (
-        <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-slate-100 rounded-xl animate-pulse" />)}</div>
+        <div className="flex flex-col items-center justify-center min-h-75 w-full">
+          <div className="relative flex items-center justify-center h-32 w-32">
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+              <span className="text-[10px] font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+                mstaffing
+              </span>
+            </div>
+          </div>
+          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+            Түр хүлээнэ үү...
+          </p>
+        </div>
       ) : (
         <div className="space-y-4">
           {currentItems.map((item) => (
@@ -79,7 +93,7 @@ export default function PrivacyPage() {
         </div>
       )}
 
-      {/* 4. Хуудаслалт */}
+      {/* Хуудаслалт */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           {[...Array(totalPages)].map((_, i) => (
