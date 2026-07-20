@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import LocationModal from "@/components/common/LocationModal"
 
 interface EditJobFormProps {
   jobId: string
@@ -28,8 +29,9 @@ interface ModalState {
 }
 
 export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
-  const router = useRouter()
-  const [isSaving, setIsSaving] = useState(false)
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   // Модалын төлөв
   const [modal, setModal] = useState<ModalState>({
@@ -105,6 +107,16 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
 
   return (
     <>
+      {/* 1. БАЙРШИЛ СОНГОХ МОДАЛ */}
+      <LocationModal 
+        isOpen={isLocationModalOpen} 
+        onClose={() => setIsLocationModalOpen(false)}
+        onSelect={(selectedLocation) => {
+          setFormData({ ...formData, location: selectedLocation });
+        }}
+      />
+
+
       {/* МЭДЭГДЭЛ ХАРУУЛАХ MODAL */}
       {modal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs">
@@ -236,16 +248,18 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Ажиллах байршил
+              Ажиллах байршил <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              placeholder="Жишээ нь: Улаанбаатар, Сүхбаатар дүүрэг"
-              className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 outline-none focus:border-orange-400 focus:bg-white transition"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            />
+            <div 
+              onClick={() => setIsLocationModalOpen(true)}
+              className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 cursor-pointer hover:border-orange-400 transition flex justify-between items-center"
+            >
+              <span className={formData.location ? "text-gray-900 font-semibold" : "text-gray-400"}>
+                {formData.location || "Байршил сонгох..."}
+              </span>
+              <span className="text-orange-500 text-xs font-bold">Өөрчлөх</span>
           </div>
+        </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">

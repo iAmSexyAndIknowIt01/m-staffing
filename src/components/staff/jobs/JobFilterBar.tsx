@@ -63,7 +63,7 @@ export default function JobFilterBar({
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
           <input
             type="text"
-            placeholder="Ажил хайх..."
+            placeholder="Ажил хайх (Байршил...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-2.5 bg-white text-slate-800 placeholder-slate-400 text-[14px] rounded-xl border border-slate-200 shadow-xs outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100/50 transition-all"

@@ -1,5 +1,6 @@
 "use client"
 
+import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
 
 interface PostJobFormProps {
@@ -17,7 +18,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
   const [jobType, setJobType] = useState("fulltime")
-  const [location, setLocation] = useState("Улаанбаатар")
+  const [location, setLocation] = useState("")
   
   // Цалингийн шинэ төлөвүүд (State)
   const [salaryType, setSalaryType] = useState<"monthly" | "hourly">("monthly")
@@ -25,6 +26,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
   
   const [description, setDescription] = useState("")
   const [requirements, setRequirements] = useState("")
+  const [isLocModalOpen, setIsLocModalOpen] = useState(false);
 
   // Модалын төлөв
   const [modal, setModal] = useState<ModalState>({
@@ -172,6 +174,15 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
         </div>
       )}
 
+      <LocationModal 
+        isOpen={isLocModalOpen} 
+        onClose={() => setIsLocModalOpen(false)} 
+        onSelect={(name: string) => {
+          setLocation(name);
+          setIsLocModalOpen(false);
+        }} 
+      />
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 1. Ажлын байрны нэр */}
         <div>
@@ -230,16 +241,14 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
         {/* 3. Байршил болон Цалингийн хэсэг */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Ажиллах байршил
-            </label>
-            <input
-              type="text"
-              placeholder="Жишээ нь: Улаанбаатар, Сүхбаатар дүүрэг"
-              className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 outline-none focus:border-orange-400 focus:bg-white transition"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+            <label className="block text-sm font-bold text-gray-700 mb-2">Ажиллах байршил</label>
+            <button
+              type="button"
+              onClick={() => setIsLocModalOpen(true)}
+              className="w-full text-left rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 focus:border-orange-400 focus:bg-white transition"
+            >
+              {location || "Байршил сонгох..."}
+            </button>
           </div>
 
           <div>
