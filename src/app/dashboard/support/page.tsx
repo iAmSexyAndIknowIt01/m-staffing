@@ -8,6 +8,7 @@ export default function CompanySupportPage() {
   const [title, setTitle] = useState("")
   const [message, setMessage] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false) // Хуудасны ачаалах төлөв
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +36,27 @@ export default function CompanySupportPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // Хэрэв хуудас ачаалж байгаа бол Loader-г харуулна
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-125 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-[10px] font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
+          </div>
+        </div>
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -102,8 +124,14 @@ export default function CompanySupportPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl transition shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl transition shadow-md shadow-indigo-600/10 flex items-center justify-center gap-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
+            {submitting && (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
             {submitting ? "Илгээж байна..." : "Хүсэлт илгээх 🚀"}
           </button>
         </form>
