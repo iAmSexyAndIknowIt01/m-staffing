@@ -1,6 +1,6 @@
 "use client"
 
-import LocationModal from "@/components/LocationModal"
+import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
 
 interface PostJobFormProps {

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import LocationModal from "@/components/LocationModal"
+import LocationModal from "@/components/common/LocationModal"
 
 interface EditJobFormProps {
   jobId: string
