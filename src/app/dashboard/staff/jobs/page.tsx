@@ -11,6 +11,7 @@ import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
+import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
 
 interface Company {
   id?: string
@@ -61,7 +62,7 @@ export default function StaffJobsPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [ads, setAds] = useState<Ad[]>([]);
-
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
@@ -460,7 +461,7 @@ export default function StaffJobsPage() {
                   formatSalary={formatSalary}
                 />
 
-                {adToShow && <AdCard ad={adToShow} />}
+                {adToShow && <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />}
               </React.Fragment>
             )
           })}
@@ -491,6 +492,12 @@ export default function StaffJobsPage() {
         handleCompanyClick={handleCompanyClick}
         triggerApplyConfirmation={triggerApplyConfirmation}
       />
+      {selectedAd && (
+        <AdDetailModal 
+          selectedAd={selectedAd} 
+          onClose={() => setSelectedAd(null)} 
+        />
+      )}
 
       <ConfirmModal
         show={showConfirmModal}
