@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { HelpCircle, ChevronsRight } from "lucide-react"
 
 interface ConfirmModalProps {
@@ -24,10 +25,18 @@ export default function ConfirmModal({
   onDragStart,
   onClose,
 }: ConfirmModalProps) {
-  if (!show) return null
+  const [mounted, setMounted] = useState(false)
 
-  return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-10000 flex items-center justify-center p-4 animate-in fade-in duration-200">
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!show || !mounted) return null
+
+  // createPortal ашиглан body рүү шууд гаргаж, z-index-ийг хамгийн өндөр болгоно
+  return createPortal(
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-100000 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 flex flex-col items-center animate-in zoom-in-95 duration-200">
         
         {/* Асуултын тэмдэг бүхий дүрс */}
@@ -92,6 +101,7 @@ export default function ConfirmModal({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

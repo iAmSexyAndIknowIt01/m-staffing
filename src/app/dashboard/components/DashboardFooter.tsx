@@ -45,7 +45,7 @@ export default function DashboardFooter() {
           </span>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-200/60 text-slate-600 text-[10px] font-bold border border-slate-300/40">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            v1.2.0
+            v1.0.0
           </div>
         </div>
 
