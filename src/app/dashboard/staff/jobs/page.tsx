@@ -87,6 +87,20 @@ export default function StaffJobsPage() {
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
+  // 🔒 МОДАЛ НЭЭГДЭХ ҮЕД SCROLL ХИЙХГҮЙ БОЛГОХ ЛОГИК
+  useEffect(() => {
+    if (selectedAd || selectedJob || showConfirmModal || showSuccessModal || alertModal.show) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "unset"
+    }
+
+    // Компонент устах үед scroll-ийг хэвийн болгох
+    return () => {
+      document.body.style.overflow = "unset"
+    }
+  }, [selectedAd, selectedJob, showConfirmModal, showSuccessModal, alertModal.show])
+
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
   }
@@ -127,24 +141,23 @@ export default function StaffJobsPage() {
   }
 
   useEffect(() => {
-// Ажлын байр болон Ад-ыг зэрэг татах
-  async function fetchData() {
-    try {
-      const [jobsRes, adsRes] = await Promise.all([
-        fetch("/api/staff/jobs"),
-        fetch("/api/staff/ads") // mt_ads мастер хүснэгтээс мэдээлэл авна
-      ]);
-      const jobsData = await jobsRes.json();
-      const adsData = await adsRes.json();
-      setJobs(jobsData.jobs || []);
-      setAds(adsData.ads || []); // DB-ээс ирсэн ад-ууд
-    } catch (err) {
-      console.error("Өгөгдөл татахад алдаа гарлаа");
-    } finally {
-      setLoading(false);
+    async function fetchData() {
+      try {
+        const [jobsRes, adsRes] = await Promise.all([
+          fetch("/api/staff/jobs"),
+          fetch("/api/staff/ads") 
+        ]);
+        const jobsData = await jobsRes.json();
+        const adsData = await adsRes.json();
+        setJobs(jobsData.jobs || []);
+        setAds(adsData.ads || []); 
+      } catch (err) {
+        console.error("Өгөгдөл татахад алдаа гарлаа");
+      } finally {
+        setLoading(false);
+      }
     }
-  }
-  fetchData();
+    fetchData();
   }, [])
 
   const handleApplyJob = async () => {
@@ -186,7 +199,6 @@ export default function StaffJobsPage() {
     }
   }
 
-  // --- SLIDER EVENT HANDLERS ---
   const handleDragStart = (clientX: number) => {
     if (submitting) return
     setIsDragging(true)
@@ -272,7 +284,6 @@ export default function StaffJobsPage() {
     }
   }
 
-  // 🔥 ЗАССАН ХЭСЭГ: Категорийн давхардлыг арилгаж, зөв форматтай болгов
   const categories = useMemo(() => {
     const lowerCategories = jobs
       .map((j) => j.category?.trim().toLowerCase())
@@ -281,8 +292,8 @@ export default function StaffJobsPage() {
     const uniqueLower = Array.from(new Set(lowerCategories))
 
     return uniqueLower.map((cat) => {
-      if (cat === "it") return "IT" // IT-ийг үргэлж томоор
-      return cat.charAt(0).toUpperCase() + cat.slice(1) // Бусдынх нь эхний үсгийг томоор
+      if (cat === "it") return "IT" 
+      return cat.charAt(0).toUpperCase() + cat.slice(1) 
     })
   }, [jobs])
 
@@ -440,12 +451,7 @@ export default function StaffJobsPage() {
         <div className="space-y-4">
           {paginatedJobs.map((job, index) => {
             const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
-
-          // ТАЙЛБАР: Хуудасны дугаар болон тухайн хуудсан дахь индексийг нэгтгэж 
-            // нийт (global) индексийг гаргана.
             const globalIndex = (currentPage - 1) * jobsPerPage + index;
-
-            // Одоо globalIndex ашиглаж ад-ыг тооцоолно
             const adIndex = Math.floor(globalIndex / 5) % ads.length;
             const adToShow = ads.length > 0 && (globalIndex + 1) % 5 === 0 ? ads[adIndex] : null;
             return (
@@ -492,6 +498,7 @@ export default function StaffJobsPage() {
         handleCompanyClick={handleCompanyClick}
         triggerApplyConfirmation={triggerApplyConfirmation}
       />
+      
       {selectedAd && (
         <AdDetailModal 
           selectedAd={selectedAd} 

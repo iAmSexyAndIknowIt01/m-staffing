@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-import { X, MapPin, DollarSign, Briefcase, Calendar, CheckCircle2 } from "lucide-react"
+import React, { useState } from "react"
+import { X, MapPin, DollarSign, Briefcase, Calendar, CheckCircle2, Copy, Check } from "lucide-react"
 
 interface Company {
   id?: string
@@ -52,17 +52,44 @@ export default function JobDetailModal({
   handleCompanyClick,
   triggerApplyConfirmation,
 }: JobDetailModalProps) {
+  const [copied, setCopied] = useState(false)
+
   if (!selectedJob) return null
 
   const isModalJobApplied = selectedJob.is_applied || appliedJobIds.includes(selectedJob.id)
   const modalLogoUrl = getCompanyLogoUrl(selectedJob.mt_company?.logo_url)
 
+  const handleCopyDetails = async () => {
+    const textToCopy = `
+Ажлын байр: ${selectedJob.title}
+Компани: ${selectedJob.mt_company?.name || "Байгууллагын нэр нууцалсан"}
+Ангилал: ${selectedJob.category}
+Байршил: ${selectedJob.location || "Улаанбаатар"}
+Төрөл: ${getJobTypeText(selectedJob.job_type)}
+Цалин: ₮ ${formatSalary(selectedJob.salary)} (${getSalaryTypeText(selectedJob.salary_type)})
+
+--- Ажлын үүрэг, тодорхойлолт ---
+${selectedJob.description}
+
+--- Тавигдах шаардлага ---
+${selectedJob.requirements}
+    `.trim()
+
+    try {
+      await navigator.clipboard.writeText(textToCopy)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Хуулж чадсангүй:", err)
+    }
+  }
+
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
-      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-9999 flex items-center justify-center p-3 sm:p-4 transition-all duration-300">
+      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white">
           <div className="flex items-start gap-4">
             {/* Компанийн Лого */}
             <div
@@ -115,17 +142,37 @@ export default function JobDetailModal({
             </div>
           </div>
 
-          {/* Хаах Товч */}
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition shrink-0"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Баруун дээд товчнууд (Copy & Close) */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleCopyDetails}
+              title="Мэдээллийг хуулах"
+              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition flex items-center gap-1 text-xs font-semibold"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  <span className="hidden sm:inline text-emerald-600">Хуулсан</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span className="hidden sm:inline">Хуулах</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
           
           {/* Ажлын үндсэн нөхцөлүүд (Grid хэлбэрээр) */}
           <div className="grid grid-cols-2 gap-3 bg-slate-50/60 p-4 rounded-2xl border border-slate-100">
@@ -188,13 +235,13 @@ export default function JobDetailModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-5 border-t border-slate-100 bg-slate-50 flex flex-sm-row items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
             <Calendar className="w-3.5 h-3.5" />
             <span>Нийтэлсэн: {new Date(selectedJob.created_at).toLocaleDateString("mn-MN")}</span>
           </div>
           
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               onClick={onClose}
               className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200/60 shadow-xs transition duration-200"
