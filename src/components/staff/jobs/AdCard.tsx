@@ -34,8 +34,7 @@ export default function AdCard({
         </div>
         
         <div className="shrink-0">
-          <button className="px-5 py-2.5 bg-white text-orange-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all flex items-center gap-2">
-            Дэлгэрэнгүй
+          <button className="px-5 py-2.5 bg-white text-orange-600 rounded-2xl text-sm font-bold shadow-sm hover:bg-orange-50 transition-all flex items-center gap-2">  
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>

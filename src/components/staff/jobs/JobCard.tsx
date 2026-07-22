@@ -52,7 +52,6 @@ export default function JobCard({
   job,
   isJobApplied,
   onClick,
-  onCompanyClick,
   getCompanyLogoUrl,
   getJobTypeText,
   getSalaryTypeText,
@@ -71,10 +70,7 @@ export default function JobCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3.5">
           {/* Лого (Квадрат, бөөрөнхий булантай) */}
-          <div
-            onClick={(e) => onCompanyClick(e, job.mt_company)}
-            className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 transition hover:scale-105"
-          >
+          <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
             {logoFullUrl ? (
               <img
                 src={logoFullUrl}
@@ -97,28 +93,28 @@ export default function JobCard({
               {job.title}
             </h3>
             
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1.5 mt-1">
               {job.mt_company ? (
-                <span
-                  onClick={(e) => onCompanyClick(e, job.mt_company)}
-                  className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                >
+                <span className="text-xs font-semibold text-[#1877F2]">
                   {job.mt_company.name}
                 </span>
               ) : (
                 <span className="text-xs text-gray-400">Байгууллагын нэр нууцалсан</span>
               )}
-              {/* Lambda шиг цэнхэр баталгаажсан тэмдэг */}
+              
+              {/* Facebook шиг цэнхэр дэвсгэртэй, цагаан зөв тэмдэг (Verified Badge) */}
               {job.mt_company && (
-                <svg className="w-3.5 h-3.5 text-blue-500 fill-current" viewBox="0 0 24 24">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-[#1877F2] rounded-full text-white shrink-0">
+                  <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Баруун дээд булан: Хадгалах, Шэйрлэх (Lambda style) */}
+        {/* Баруун дээд булан: Хадгалах, Шэйрлэх */}
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition">
             <Heart className="w-4 h-4" />
@@ -146,7 +142,6 @@ export default function JobCard({
       {/* Доод хэсэг: Төрөл бүрийн Badge-үүд */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
-          {/* Сайн цалин эсвэл төрөлжсөн Badge */}
           <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
             <span>$</span> Сайн цалин
           </span>
@@ -162,7 +157,6 @@ export default function JobCard({
           )}
         </div>
 
-        {/* Онлайн байгаа эсэх эсвэл байршил (Сонголттой) */}
         <div className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
           <span>📍</span> {job.location || "Улаанбаатар"}
         </div>
