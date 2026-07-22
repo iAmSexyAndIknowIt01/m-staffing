@@ -85,8 +85,9 @@ ${selectedJob.requirements}
   }
 
   return (
-    <div className="fixed inset-x-0 top-0 h-dvh bg-slate-900/40 backdrop-blur-md z-9999 flex items-center justify-center p-3 sm:p-4 pb-12 sm:pb-4 transition-all duration-300">
-      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[75vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    /* z-[9999] болгож өндөр түвшинд гаргасан бөгөөд pb-24 өгч мобайл navbar-аас дээгүүр зайтай харуулна */
+    <div className="fixed inset-0 h-dvh bg-slate-900/55 backdrop-blur-md z-[9999] flex items-center justify-center p-3 sm:p-4 pb-24 sm:pb-4 transition-all duration-300">
+      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[80vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white">
