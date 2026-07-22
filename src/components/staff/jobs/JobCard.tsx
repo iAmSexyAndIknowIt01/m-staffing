@@ -59,6 +59,14 @@ export default function JobCard({
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
+  // Цалингийн утгыг цэвэрлэж тоон хэлбэрт шилжүүлэх (Жишээ нь: "3,500,000₮" -> 3500000)
+  const numericSalary = Number(job.salary?.replace(/[^0-9.-]+/g, "")) || 0
+
+  // Бүтэн цагийн хувьд 3.5 саяас дээш, Хагас цагийн хувьд цагийн 12,000₮-өөс дээш бол сайн цалин гэж үзэх логик
+  const isGoodSalary = 
+    (job.job_type === "fulltime" && numericSalary >= 3500000) ||
+    ((job.job_type === "parttime" || job.salary_type === "hourly") && numericSalary >= 12000)
+
   return (
     <div
       onClick={onClick}
@@ -142,9 +150,12 @@ export default function JobCard({
       {/* Доод хэсэг: Төрөл бүрийн Badge-үүд */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
-            <span>$</span> Сайн цалин
-          </span>
+          {/* Нөхцөл хангасан үед л "Сайн цалин" badge харуулах ба ₮ тэмдэгтэй байх */}
+          {isGoodSalary && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
+              <span>₮</span> Сайн цалин
+            </span>
+          )}
           
           <span className="px-2.5 py-1 text-xs font-medium text-gray-500 bg-gray-50 rounded-full border border-gray-100">
             {getJobTypeText(job.job_type)}
