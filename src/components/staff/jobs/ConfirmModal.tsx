@@ -27,7 +27,7 @@ export default function ConfirmModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-70 flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-10000 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 flex flex-col items-center animate-in zoom-in-95 duration-200">
         
         {/* Асуултын тэмдэг бүхий дүрс */}
