@@ -163,8 +163,8 @@ white;
   .dashboard-content,
   #dashboard-main-container {
     overflow-y: auto !important;
-    padding-bottom: 7rem !important; /* ~112px утасны цэснээс холдуулах зай */
-    -webkit-overflow-scrolling: touch; /* iOS (iPhone) дээр скроллыг зөөлөн болгоно */
+    padding-bottom: 0px !important; /* 112px буюу 7rem зайг тэглэх */
+    -webkit-overflow-scrolling: touch;
   }
 }
 

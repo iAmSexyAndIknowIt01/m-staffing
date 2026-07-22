@@ -67,16 +67,12 @@ export default function RootLayout({
     <html
       lang="mn"
       data-scroll-behavior="smooth"
-      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       style={{ scrollBehavior: "smooth" }}
     >
-      {/* body дээр min-h-full болон flex-col өгч футерийг доор барих суурийг бэлдсэн */}
-      <body className="min-h-full flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0 overflow-x-hidden">
+      {/* body дээр min-h-screen болон flex-col өгч мобайл үеийн илүүдэл цагаан зайг арилгасан */}
+      <body className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0 overflow-x-hidden">
         
-        {/* 
-          pt-20-ийг хассан тул Dashboard-д ямар нэгэн илүүдэл зай гарахгүй.
-          Харин Navbar-тай хуудсууд дээрээ (жишээ нь landing page) тухайн хуудасных нь гадна талын div дээр pt-20-ийг өгөөрэй.
-        */}
         <main className="flex-1 w-full flex flex-col">
           {children}
         </main>
