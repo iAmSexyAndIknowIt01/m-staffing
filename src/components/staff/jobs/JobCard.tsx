@@ -48,6 +48,17 @@ function getDaysAgo(dateString: string) {
   return `${diffDays} өдрийн өмнө`
 }
 
+// Сүүлийн 3 хоногт нэмэгдсэн эсэхийг шалгах туслах функц
+function isNewJob(dateString: string) {
+  const created = new Date(dateString)
+  const now = new Date()
+  const diffTime = now.getTime() - created.getTime()
+  const diffDays = diffTime / (1000 * 60 * 60 * 24)
+  
+  // 3 хоног буюу түүнээс бага хугацаа өнгөрсөн бол true буцаана
+  return diffDays <= 3 && diffDays >= 0
+}
+
 export default function JobCard({
   job,
   isJobApplied,
@@ -59,13 +70,16 @@ export default function JobCard({
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
-  // Цалингийн утгыг цэвэрлэж тоон хэлбэрт шилжүүлэх (Жишээ нь: "3,500,000₮" -> 3500000)
+  // Цалингийн утгыг цэвэрлэж тоон хэлбэрт шилжүүлэх
   const numericSalary = Number(job.salary?.replace(/[^0-9.-]+/g, "")) || 0
 
-  // Бүтэн цагийн хувьд 3.5 саяас дээш, Хагас цагийн хувьд цагийн 12,000₮-өөс дээш бол сайн цалин гэж үзэх логик
+  // Бүтэн цагийн хувьд 3.5 саяас дээш, Хагас цагийн хувьд цагийн 12,000₮-өөс дээш бол сайн цалин гэж үзэх
   const isGoodSalary = 
     (job.job_type === "fulltime" && numericSalary >= 3500000) ||
     ((job.job_type === "parttime" || job.salary_type === "hourly") && numericSalary >= 12000)
+
+  // Сүүлийн 3 хоногт нэмэгдсэн эсэх
+  const isNew = isNewJob(job.created_at)
 
   return (
     <div
@@ -150,7 +164,14 @@ export default function JobCard({
       {/* Доод хэсэг: Төрөл бүрийн Badge-үүд */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
-          {/* Нөхцөл хангасан үед л "Сайн цалин" badge харуулах ба ₮ тэмдэгтэй байх */}
+          {/* Сүүлийн 3 хоногт нэмэгдсэн бол "Шинэ" badge харуулах */}
+          {isNew && (
+            <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200">
+              Шинэ
+            </span>
+          )}
+
+          {/* Сайн цалин badge */}
           {isGoodSalary && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
               <span>₮</span> Сайн цалин
