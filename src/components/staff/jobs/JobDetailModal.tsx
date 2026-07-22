@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { X, MapPin, DollarSign, Briefcase, Calendar, CheckCircle2, Copy, Check } from "lucide-react"
 
 interface Company {
@@ -53,8 +54,15 @@ export default function JobDetailModal({
   triggerApplyConfirmation,
 }: JobDetailModalProps) {
   const [copied, setCopied] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  if (!selectedJob) return null
+  // SSR (Server-Side Rendering) алдаанаас сэргийлж mount болсны дараа портал ажиллуулна
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!selectedJob || !mounted) return null
 
   const isModalJobApplied = selectedJob.is_applied || appliedJobIds.includes(selectedJob.id)
   const modalLogoUrl = getCompanyLogoUrl(selectedJob.mt_company?.logo_url)
@@ -84,13 +92,13 @@ ${selectedJob.requirements}
     }
   }
 
-  return (
-    /* z-[9999] болгож өндөр түвшинд гаргасан бөгөөд pb-24 өгч мобайл navbar-аас дээгүүр зайтай харуулна */
-    <div className="fixed inset-0 h-dvh bg-slate-900/55 backdrop-blur-md z-[9999] flex items-center justify-center p-3 sm:p-4 pb-24 sm:pb-4 transition-all duration-300">
-      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[80vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+  // createPortal ашиглан DOM-ын хамгийн гадна талд (body рүү шууд) render хийнэ
+  return createPortal(
+    <div className="fixed inset-0 h-dvh bg-slate-900/60 backdrop-blur-md z-99999 flex items-center justify-center p-3 sm:p-4 transition-all duration-300">
+      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white shrink-0">
           <div className="flex items-start gap-4">
             {/* Компанийн Лого */}
             <div
@@ -236,7 +244,7 @@ ${selectedJob.requirements}
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 shrink-0">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
             <Calendar className="w-3.5 h-3.5" />
             <span>Нийтэлсэн: {new Date(selectedJob.created_at).toLocaleDateString("mn-MN")}</span>
@@ -278,6 +286,7 @@ ${selectedJob.requirements}
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
