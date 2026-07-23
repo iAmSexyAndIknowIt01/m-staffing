@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Heart, Share2 } from "lucide-react"
 
 interface Company {
@@ -36,7 +36,6 @@ interface JobCardProps {
   formatSalary: (salary: string) => string
 }
 
-// Хугацааг "16 өдрийн өмнө" гэх мэтээр харуулах туслах функц
 function getDaysAgo(dateString: string) {
   const created = new Date(dateString)
   const now = new Date()
@@ -48,14 +47,12 @@ function getDaysAgo(dateString: string) {
   return `${diffDays} өдрийн өмнө`
 }
 
-// Сүүлийн 3 хоногт нэмэгдсэн эсэхийг шалгах туслах функц
 function isNewJob(dateString: string) {
   const created = new Date(dateString)
   const now = new Date()
   const diffTime = now.getTime() - created.getTime()
   const diffDays = diffTime / (1000 * 60 * 60 * 24)
   
-  // 3 хоног буюу түүнээс бага хугацаа өнгөрсөн бол true буцаана
   return diffDays <= 3 && diffDays >= 0
 }
 
@@ -70,20 +67,45 @@ export default function JobCard({
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
-  // Цалингийн утгыг цэвэрлэж тоон хэлбэрт шилжүүлэх
-  const numericSalary = Number(job.salary?.replace(/[^0-9.-]+/g, "")) || 0
+  // Өмнө нь дарж үзсэн эсэхийг localStorage болон хугацаагаар шалгах
+  const [hasVisited, setHasVisited] = useState(false)
 
-  // Бүтэн цагийн хувьд 3.5 саяас дээш, Хагас цагийн хувьд цагийн 12,000₮-өөс дээш бол сайн цалин гэж үзэх
+  useEffect(() => {
+    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
+    const visitTime = visitedJobs[job.id]
+    
+    if (visitTime) {
+      const now = new Date().getTime()
+      const diffDays = (now - visitTime) / (1000 * 60 * 60 * 24)
+      
+      // Жишээ нь: 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй байх
+      if (diffDays <= 7) {
+        setHasVisited(true)
+      }
+    }
+  }, [job.id])
+
+  const handleClick = () => {
+    setHasVisited(true)
+    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
+    
+    // Дарсан цаг/огноог хадгалах
+    visitedJobs[job.id] = new Date().getTime()
+    localStorage.setItem("visited_jobs", JSON.stringify(visitedJobs))
+    
+    onClick()
+  }
+
+  const numericSalary = Number(job.salary?.replace(/[^0-9.-]+/g, "")) || 0
   const isGoodSalary = 
     (job.job_type === "fulltime" && numericSalary >= 3500000) ||
     ((job.job_type === "parttime" || job.salary_type === "hourly") && numericSalary >= 12000)
 
-  // Сүүлийн 3 хоногт нэмэгдсэн эсэх
   const isNew = isNewJob(job.created_at)
 
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-all duration-200 cursor-pointer ${
         isJobApplied ? "border-l-4 border-l-red-500" : ""
       }`}
@@ -91,7 +113,6 @@ export default function JobCard({
       {/* Дээд хэсэг: Лого, Гарчиг, Үйлдэлүүд */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3.5">
-          {/* Лого (Квадрат, бөөрөнхий булантай) */}
           <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
             {logoFullUrl ? (
               <img
@@ -109,9 +130,11 @@ export default function JobCard({
             )}
           </div>
 
-          {/* Гарчиг ба Компанийн нэр */}
           <div>
-            <h3 className="text-[16px] font-bold text-slate-900 leading-snug group-hover:text-indigo-600 transition">
+            {/* Гарчиг: Хэрэв өмнө нь үзсэн бол бор хүрэн (brown-red), үгүй бол стандарт хар өнгөтэй байна */}
+            <h3 className={`text-[16px] font-bold leading-snug transition ${
+              hasVisited ? "text-[#8B263E]" : "text-slate-900 group-hover:text-indigo-600"
+            }`}>
               {job.title}
             </h3>
             
@@ -124,7 +147,6 @@ export default function JobCard({
                 <span className="text-xs text-gray-400">Байгууллагын нэр нууцалсан</span>
               )}
               
-              {/* Facebook шиг цэнхэр дэвсгэртэй, цагаан зөв тэмдэг (Verified Badge) */}
               {job.mt_company && (
                 <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-[#1877F2] rounded-full text-white shrink-0">
                   <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
@@ -136,7 +158,6 @@ export default function JobCard({
           </div>
         </div>
 
-        {/* Баруун дээд булан: Хадгалах, Шэйрлэх */}
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition">
             <Heart className="w-4 h-4" />
@@ -164,14 +185,12 @@ export default function JobCard({
       {/* Доод хэсэг: Төрөл бүрийн Badge-үүд */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
-          {/* Сүүлийн 3 хоногт нэмэгдсэн бол "Шинэ" badge харуулах */}
           {isNew && (
             <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200">
               Шинэ
             </span>
           )}
 
-          {/* Сайн цалин badge */}
           {isGoodSalary && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 rounded-full border border-amber-100">
               <span>₮</span> Сайн цалин
