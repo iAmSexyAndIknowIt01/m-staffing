@@ -67,24 +67,32 @@ export default function JobCard({
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
-  // Өмнө нь дарж үзсэн эсэхийг localStorage-оос шалгах
+  // Өмнө нь дарж үзсэн эсэхийг localStorage болон хугацаагаар шалгах
   const [hasVisited, setHasVisited] = useState(false)
 
   useEffect(() => {
-    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "[]")
-    if (visitedJobs.includes(job.id)) {
-      setHasVisited(true)
+    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
+    const visitTime = visitedJobs[job.id]
+    
+    if (visitTime) {
+      const now = new Date().getTime()
+      const diffDays = (now - visitTime) / (1000 * 60 * 60 * 24)
+      
+      // Жишээ нь: 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй байх
+      if (diffDays <= 7) {
+        setHasVisited(true)
+      }
     }
   }, [job.id])
 
   const handleClick = () => {
-    // Дарсан үед visited болгож localStorage руу хадгалах
     setHasVisited(true)
-    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "[]")
-    if (!visitedJobs.includes(job.id)) {
-      visitedJobs.push(job.id)
-      localStorage.setItem("visited_jobs", JSON.stringify(visitedJobs))
-    }
+    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
+    
+    // Дарсан цаг/огноог хадгалах
+    visitedJobs[job.id] = new Date().getTime()
+    localStorage.setItem("visited_jobs", JSON.stringify(visitedJobs))
+    
     onClick()
   }
 
