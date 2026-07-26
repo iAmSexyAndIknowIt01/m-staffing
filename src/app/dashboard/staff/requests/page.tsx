@@ -7,6 +7,7 @@ interface RequestItem {
   id: string
   jobTitle: string
   companyName: string
+  logoUrl: string | null
   type: "applied" | "invitation"
   status: "pending" | "approved" | "interview" | "rejected" | "accepted"
   date: string
@@ -26,7 +27,21 @@ export default function StaffRequestsPage() {
 
   // Pagination төлөвүүд
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const itemsPerPage = 5 // Нэг хуудсанд харуулах хүсэлтийн тоо
+  const itemsPerPage = 5
+
+  // Логоны URL-ийг шалгах функц (Аль хэдийн http-тэй эсвэл зөвхөн файлын нэр эсэхээс үл хамааран ажиллана)
+  const getCompanyLogoUrl = (logoUrl: string | null | undefined) => {
+    if (!logoUrl) return null
+    if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
+      return logoUrl
+    }
+    
+    // Хэрэв зөвхөн файлын нэр байвал Supabase public URL рүү холбоно (Bucket-ийн нэрээ шалгаарай)
+    const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "" 
+    if (!SUPABASE_PROJECT_URL) return logoUrl
+
+    return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`
+  }
 
   useEffect(() => {
     async function fetchRequests() {
@@ -44,6 +59,7 @@ export default function StaffRequestsPage() {
           id: item.id,
           jobTitle: item.mt_openjob?.title || "Тодорхойгүй ажлын байр",
           companyName: item.mt_openjob?.mt_company?.company_name || "Компанийн нэр байхгүй",
+          logoUrl: item.mt_openjob?.mt_company?.logo_url || null,
           type: "applied",
           status: item.status || "pending",
           date: new Date(item.created_at).toISOString().split("T")[0],
@@ -72,7 +88,6 @@ export default function StaffRequestsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Статусны өнгө болон тус бүрийн монгол нэршил гаргах функц
   const getStatusBadge = (status: RequestItem["status"]) => {
     switch (status) {
       case "pending":
@@ -99,17 +114,12 @@ export default function StaffRequestsPage() {
     rejected: "Татгалзсан"
   }
 
-  // Tab, Search, болон Status filter-ийг нэгтгэн шүүх
   const filteredRequests = useMemo(() => {
     return requests.filter((item) => {
-      // 1. Табаар шүүх
       if (activeTab === "applied" && item.type !== "applied") return false
       if (activeTab === "invitations" && item.type !== "invitation") return false
-
-      // 2. Статусаар шүүх
       if (statusFilter !== "all" && item.status !== statusFilter) return false
 
-      // 3. Хайлтын үгээр шүүх
       if (searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase()
         const matchesJob = item.jobTitle.toLowerCase().includes(query)
@@ -121,36 +131,25 @@ export default function StaffRequestsPage() {
     })
   }, [requests, activeTab, statusFilter, searchQuery])
 
-  // Хуудаслалтын тооцоолол
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage)
   const paginatedRequests = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage
     return filteredRequests.slice(start, start + itemsPerPage)
   }, [filteredRequests, currentPage])
 
-  // Хуудасны дугааруудыг ухаалгаар харуулах массив үүсгэх функц
   const getPaginationPages = (current: number, total: number) => {
-    if (total <= 5) {
-      return Array.from({ length: total }, (_, i) => i + 1)
-    }
-
-    if (current <= 3) {
-      return [1, 2, 3, 4, '...', total]
-    } else if (current >= total - 2) {
-      return [1, '...', total - 3, total - 2, total - 1, total]
-    } else {
-      return [1, '...', current - 1, current, current + 1, '...', total]
-    }
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
+    if (current <= 3) return [1, 2, 3, 4, '...', total]
+    if (current >= total - 2) return [1, '...', total - 3, total - 2, total - 1, total]
+    return [1, '...', current - 1, current, current + 1, '...', total]
   }
 
-  // Шүүлтүүр өөрчлөгдөхөд хуудасны дугаарыг 1 болгож шинэчлэх
   useEffect(() => {
     setCurrentPage(1)
   }, [activeTab, statusFilter, searchQuery])
 
   return (
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
-      {/* Толгой хэсэг */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-gray-900">Миний хүсэлтүүд</h1>
@@ -166,7 +165,6 @@ export default function StaffRequestsPage() {
         </div>
       </div>
 
-      {/* Ачаалж буй эсвэл алдаа гарсан үеийн төлөв */}
       {loading ? (
         <div className="text-center py-20 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
           <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
@@ -198,7 +196,6 @@ export default function StaffRequestsPage() {
         </div>
       ) : (
         <>
-          {/* Таб сонголтууд (Mobile scrollable) */}
           <div className="flex items-center gap-1.5 sm:gap-2 border-b border-gray-200 pb-2 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("all")}
@@ -226,9 +223,7 @@ export default function StaffRequestsPage() {
             </button>
           </div>
 
-          {/* Filterbar (Хайлт болон MStaffing Custom Dropdown) */}
           <div className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            {/* Хайлтын талбар */}
             <div className="relative w-full sm:w-72">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400 text-sm">
                 🔍
@@ -242,7 +237,6 @@ export default function StaffRequestsPage() {
               />
             </div>
 
-            {/* MStaffing Styled Custom Dropdown */}
             <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 relative" ref={dropdownRef}>
               <span className="text-xs sm:text-sm font-medium text-gray-500 shrink-0">Статус:</span>
               
@@ -290,41 +284,55 @@ export default function StaffRequestsPage() {
           </div>
 
           <div className="space-y-4">
-            {/* Жагсаалт хэсэг */}
             <div className="grid gap-3 sm:gap-4">
               {paginatedRequests.length > 0 ? (
-                paginatedRequests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 hover:shadow-md transition"
-                  >
-                    <div className="flex items-start gap-3 sm:gap-4 w-full md:w-auto">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg sm:text-xl shrink-0">
-                        {req.type === "applied" ? "📄" : "✉️"}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                          <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{req.jobTitle}</h3>
-                          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
-                            {req.type === "applied" ? "Анкет илгээсэн" : "Урилга"}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 font-medium mt-0.5 truncate">{req.companyName}</p>
-                        <p className="text-[11px] sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
-                      </div>
-                    </div>
+                paginatedRequests.map((req) => {
+                  const logoSrc = getCompanyLogoUrl(req.logoUrl)
 
-                    <div className="flex items-center justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-0 border-gray-100">
-                      <div>{getStatusBadge(req.status)}</div>
-                      <Link
-                        href={`/dashboard/staff/requests/${req.id}`}
-                        className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs sm:text-sm font-semibold transition shrink-0 inline-flex items-center justify-center"
-                      >
-                        Дэлгэрэнгүй
-                      </Link>
+                  return (
+                    <div
+                      key={req.id}
+                      className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 hover:shadow-md transition"
+                    >
+                      <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                          {logoSrc ? (
+                            <img
+                              src={logoSrc}
+                              alt={req.companyName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm sm:text-base font-bold text-indigo-600">
+                              {req.companyName ? req.companyName.charAt(0).toUpperCase() : "C"}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{req.jobTitle}</h3>
+                            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
+                              {req.type === "applied" ? "Анкет илгээсэн" : "Урилга"}
+                            </span>
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-600 font-medium mt-0.5 truncate">{req.companyName}</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-0 border-gray-100">
+                        <div>{getStatusBadge(req.status)}</div>
+                        <Link
+                          href={`/dashboard/staff/requests/${req.id}`}
+                          className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs sm:text-sm font-semibold transition shrink-0 inline-flex items-center justify-center"
+                        >
+                          Дэлгэрэнгүй
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div className="text-center py-14 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm px-4">
                   <div className="text-3xl sm:text-4xl mb-2">🔍</div>
@@ -334,7 +342,6 @@ export default function StaffRequestsPage() {
               )}
             </div>
 
-            {/* Pagination хэсэг */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-2xl border border-gray-100 shadow-sm gap-3">
                 <span className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">

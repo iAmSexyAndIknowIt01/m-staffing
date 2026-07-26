@@ -34,7 +34,8 @@ export async function GET() {
           id,
           title,
           mt_company (
-            company_name
+            company_name,
+            logo_url
           )
         )
       `)
