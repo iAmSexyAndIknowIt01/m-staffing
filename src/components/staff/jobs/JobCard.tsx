@@ -28,6 +28,8 @@ interface Job {
 interface JobCardProps {
   job: Job
   isJobApplied: boolean
+  isBookmarked: boolean // <-- Шинэ
+  onToggleBookmark: (e: React.MouseEvent) => void // <-- Шинэ
   onClick: () => void
   onCompanyClick: (e: React.MouseEvent, company: Company | undefined) => void
   getCompanyLogoUrl: (url: string | null | undefined) => string | null
@@ -59,6 +61,8 @@ function isNewJob(dateString: string) {
 export default function JobCard({
   job,
   isJobApplied,
+  isBookmarked,
+  onToggleBookmark,
   onClick,
   getCompanyLogoUrl,
   getJobTypeText,
@@ -159,8 +163,15 @@ export default function JobCard({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition">
-            <Heart className="w-4 h-4" />
+          <button
+            onClick={onToggleBookmark}
+            className={`p-2 rounded-lg transition ${
+              isBookmarked 
+                ? "text-red-500 bg-red-50 hover:bg-red-100" 
+                : "text-gray-400 hover:text-red-500 hover:bg-gray-50"
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
           </button>
           <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition">
             <Share2 className="w-4 h-4" />

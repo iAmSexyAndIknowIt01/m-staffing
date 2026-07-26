@@ -87,6 +87,51 @@ export default function StaffJobsPage() {
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
+// State-г localStorage оронд API-аар авдаг болгох
+  const [bookmarkedJobIds, setBookmarkedJobIds] = useState<string[]>([])
+
+  // Хуудас ачаалахад хэрэглэгчийн хадгалсан ажлуудыг татах
+  useEffect(() => {
+    async function fetchBookmarks() {
+      try {
+        const res = await fetch("/api/staff/bookmarks")
+        const data = await res.json()
+        if (res.ok) {
+          setBookmarkedJobIds(data.bookmarks || [])
+        }
+      } catch (err) {
+        console.error("Bookmark татахад алдаа гарлаа", err)
+      }
+    }
+    fetchBookmarks()
+  }, [])
+
+  // Зүрх дархад ажиллах функц (Database рүү хадгалах)
+  const handleToggleBookmark = async (e: React.MouseEvent, jobId: string) => {
+    e.stopPropagation()
+
+    // UI дээр шууд хариу үйлдэл үзүүлэх (Optimistic update)
+    setBookmarkedJobIds((prev) => 
+      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
+    )
+
+    try {
+      const res = await fetch("/api/staff/bookmarks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: jobId }),
+      })
+
+      if (!res.ok) {
+        // Хэрэв алдаа гарвал буцаах
+        const data = await res.json()
+        console.error(data.error)
+        // Шаардлагатай бол state-гээ хуучин рүү нь буцаах логик энд бичиж болно
+      }
+    } catch (err) {
+      console.error("Bookmark хадгалахад алдаа гарлаа", err)
+    }
+  }
   // 🔒 МОДАЛ НЭЭГДЭХ ҮЕД SCROLL ХИЙХГҮЙ БОЛГОХ ЛОГИК
   useEffect(() => {
     if (selectedAd || selectedJob || showConfirmModal || showSuccessModal || alertModal.show) {
@@ -459,7 +504,9 @@ export default function StaffJobsPage() {
                 <JobCard
                   job={job}
                   isJobApplied={isJobApplied}
-                  onClick={() => setSelectedJob(job)}
+                  isBookmarked={bookmarkedJobIds.includes(job.id)}
+                  onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
+                  onClick={() => setSelectedJob(job)}              
                   onCompanyClick={handleCompanyClick}
                   getCompanyLogoUrl={getCompanyLogoUrl}
                   getJobTypeText={getJobTypeText}
