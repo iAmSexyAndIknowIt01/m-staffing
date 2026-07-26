@@ -31,11 +31,9 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
   }
 
   return (
-    // Үндсэн контейнерыг бүх дэлгэц дээр flex-col (дээрээс доошоо) болгов.
-    // Том дэлгэц дээр (lg:flex-row) болж хажуу тийшээ зэрэгцэнэ.
     <div className="min-h-screen bg-[#f8faff] flex flex-col lg:flex-row w-full relative">
       
-      {/* 1. MOBILE NAVBAR (БҮТЦИЙН ХУВЬД ХАМГИЙН ДЭЭР НЬ ОРУУЛАВ) */}
+      {/* 1. MOBILE NAVBAR */}
       <div className="lg:hidden w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">
         <LinkNext 
           href="/dashboard" 
@@ -87,6 +85,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   📄 Миний CV
+                </LinkNext>
+                {/* --- Миний хүсэлт (Мобайл) --- */}
+                <LinkNext
+                  href="/dashboard/staff/requests"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  📨 Миний хүсэлт
                 </LinkNext>
               </>
             ) : (
@@ -207,6 +213,16 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                     </LinkNext>
                   )
                 })()}
+                {/* --- Миний хүсэлт (Десктоп) --- */}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/requests")
+                  return (
+                    <LinkNext href="/dashboard/staff/requests" className={linkClass}>
+                      <span className={iconClass}>📨</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний хүсэлт</span>}
+                    </LinkNext>
+                  )
+                })()}
               </>
             ) : (
               <>
@@ -265,10 +281,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         </div>
       </aside>
 
-      {/* 3. ҮНДСЭН КОНТЕНТ (ЗАСАРСАН ХЭСЭГ)
-          Мобайл үед fixed-оо больсон тул pt-24 гэх мэт хүчээр зай авах шаардлагагүй болсон.
-          Дээрх Mobile Navbar-ынхаа яг доороос (цагаан зай гаргахгүй, давхцахгүй) цэвэрхэн эхэлнэ.
-      */}
+      {/* 3. ҮНДСЭН КОНТЕНТ */}
       <main className="flex-1 p-6 md:p-12 overflow-y-auto w-full flex flex-col">
         {children}
       </main>
