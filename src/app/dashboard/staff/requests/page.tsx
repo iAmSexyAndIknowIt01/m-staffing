@@ -8,7 +8,7 @@ interface RequestItem {
   jobTitle: string
   companyName: string
   type: "applied" | "invitation"
-  status: "pending" | "accepted" | "rejected"
+  status: "pending" | "approved" | "interview" | "rejected" | "accepted"
   date: string
 }
 
@@ -72,13 +72,17 @@ export default function StaffRequestsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Статусны өнгө болон монгол нэршил гаргах функц
+  // Статусны өнгө болон тус бүрийн монгол нэршил гаргах функц
   const getStatusBadge = (status: RequestItem["status"]) => {
     switch (status) {
       case "pending":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
+      case "interview":
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200/50">Ярилцлагад урьж байна</span>
       case "accepted":
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/50">Зөвшөөрсөн</span>
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
+      case "approved":
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/50">Амжилттай тэнцсэн</span>
       case "rejected":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
       default:
@@ -89,7 +93,9 @@ export default function StaffRequestsPage() {
   const statusLabels: Record<string, string> = {
     all: "Бүгд",
     pending: "Хүлээгдэж буй",
-    accepted: "Зөвшөөрсөн",
+    interview: "Ярилцлагад урьж байна",
+    accepted: "Баталгаажсан",
+    approved: "Амжилттай тэнцсэн",
     rejected: "Татгалзсан"
   }
 
@@ -240,7 +246,7 @@ export default function StaffRequestsPage() {
             <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 relative" ref={dropdownRef}>
               <span className="text-xs sm:text-sm font-medium text-gray-500 shrink-0">Статус:</span>
               
-              <div className="relative w-full sm:w-48">
+              <div className="relative w-full sm:w-56">
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -310,9 +316,12 @@ export default function StaffRequestsPage() {
 
                     <div className="flex items-center justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-0 border-gray-100">
                       <div>{getStatusBadge(req.status)}</div>
-                      <button className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs sm:text-sm font-semibold transition shrink-0">
+                      <Link
+                        href={`/dashboard/staff/requests/${req.id}`}
+                        className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs sm:text-sm font-semibold transition shrink-0 inline-flex items-center justify-center"
+                      >
                         Дэлгэрэнгүй
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))
