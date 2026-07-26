@@ -9,7 +9,7 @@ interface RequestItem {
   companyName: string
   logoUrl: string | null
   type: "applied" | "invitation"
-  status: "pending" | "approved" | "interview" | "rejected" | "accepted"
+  status: "pending" | "approved" | "interview" | "rejected" | "accepted" | "not-approved"
   date: string
 }
 
@@ -29,14 +29,13 @@ export default function StaffRequestsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const itemsPerPage = 5
 
-  // Логоны URL-ийг шалгах функц (Аль хэдийн http-тэй эсвэл зөвхөн файлын нэр эсэхээс үл хамааран ажиллана)
+  // Логоны URL-ийг шалгах функц
   const getCompanyLogoUrl = (logoUrl: string | null | undefined) => {
     if (!logoUrl) return null
     if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
       return logoUrl
     }
     
-    // Хэрэв зөвхөн файлын нэр байвал Supabase public URL рүү холбоно (Bucket-ийн нэрээ шалгаарай)
     const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "" 
     if (!SUPABASE_PROJECT_URL) return logoUrl
 
@@ -98,6 +97,8 @@ export default function StaffRequestsPage() {
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/50">Амжилттай тэнцсэн</span>
+      case "not-approved":
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
       case "rejected":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
       default:
@@ -111,6 +112,7 @@ export default function StaffRequestsPage() {
     interview: "Ярилцлагад урьж байна",
     accepted: "Баталгаажсан",
     approved: "Амжилттай тэнцсэн",
+    "not-approved": "Тэнцээгүй",
     rejected: "Татгалзсан"
   }
 
