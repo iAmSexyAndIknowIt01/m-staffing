@@ -12,6 +12,7 @@ import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
 import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
+import ShareModal from "@/components/staff/jobs/ShareModal" // <-- Шинэ модалыг импортлох
 
 interface Company {
   id?: string
@@ -60,6 +61,7 @@ export default function StaffJobsPage() {
   const [filterApplied, setFilterApplied] = useState("all")
   
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
+  const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null) // <-- Share модалын state
   const [currentPage, setCurrentPage] = useState(1)
   const [ads, setAds] = useState<Ad[]>([]);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
@@ -87,8 +89,13 @@ export default function StaffJobsPage() {
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
-// State-г localStorage оронд API-аар авдаг болгох
   const [bookmarkedJobIds, setBookmarkedJobIds] = useState<string[]>([])
+
+  // --- Share хийх функц (ShareModal нээх) ---
+  const handleShare = (e: React.MouseEvent, job: Job) => {
+    e.stopPropagation()
+    setSelectedShareJob(job) // Товч дарахад Share модалыг утгатай болгож нээнэ
+  }
 
   // Хуудас ачаалахад хэрэглэгчийн хадгалсан ажлуудыг татах
   useEffect(() => {
@@ -106,11 +113,9 @@ export default function StaffJobsPage() {
     fetchBookmarks()
   }, [])
 
-  // Зүрх дархад ажиллах функц (Database рүү хадгалах)
   const handleToggleBookmark = async (e: React.MouseEvent, jobId: string) => {
     e.stopPropagation()
 
-    // UI дээр шууд хариу үйлдэл үзүүлэх (Optimistic update)
     setBookmarkedJobIds((prev) => 
       prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     )
@@ -123,28 +128,25 @@ export default function StaffJobsPage() {
       })
 
       if (!res.ok) {
-        // Хэрэв алдаа гарвал буцаах
         const data = await res.json()
         console.error(data.error)
-        // Шаардлагатай бол state-гээ хуучин рүү нь буцаах логик энд бичиж болно
       }
     } catch (err) {
       console.error("Bookmark хадгалахад алдаа гарлаа", err)
     }
   }
-  // 🔒 МОДАЛ НЭЭГДЭХ ҮЕД SCROLL ХИЙХГҮЙ БОЛГОХ ЛОГИК
+
   useEffect(() => {
-    if (selectedAd || selectedJob || showConfirmModal || showSuccessModal || alertModal.show) {
+    if (selectedAd || selectedJob || selectedShareJob || showConfirmModal || showSuccessModal || alertModal.show) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "unset"
     }
 
-    // Компонент устах үед scroll-ийг хэвийн болгох
     return () => {
       document.body.style.overflow = "unset"
     }
-  }, [selectedAd, selectedJob, showConfirmModal, showSuccessModal, alertModal.show])
+  }, [selectedAd, selectedJob, selectedShareJob, showConfirmModal, showSuccessModal, alertModal.show])
 
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
@@ -468,7 +470,6 @@ export default function StaffJobsPage() {
         </div>
       )}
 
-
       {/* ЖАГСААЛТЫН ТӨЛӨВҮҮД */}
       {isFiltering ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
@@ -506,7 +507,8 @@ export default function StaffJobsPage() {
                   isJobApplied={isJobApplied}
                   isBookmarked={bookmarkedJobIds.includes(job.id)}
                   onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
-                  onClick={() => setSelectedJob(job)}              
+                  onShare={handleShare}
+                  onClick={() => setSelectedJob(job)}       
                   onCompanyClick={handleCompanyClick}
                   getCompanyLogoUrl={getCompanyLogoUrl}
                   getJobTypeText={getJobTypeText}
@@ -544,6 +546,15 @@ export default function StaffJobsPage() {
         formatSalary={formatSalary}
         handleCompanyClick={handleCompanyClick}
         triggerApplyConfirmation={triggerApplyConfirmation}
+      />
+
+      {/* Share Modal нэмэгдсэн хэсэг */}
+      <ShareModal
+        show={!!selectedShareJob}
+        onClose={() => setSelectedShareJob(null)}
+        job={selectedShareJob}
+        formatSalary={formatSalary}
+        showAlert={showAlert}
       />
       
       {selectedAd && (

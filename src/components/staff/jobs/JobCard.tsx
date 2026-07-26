@@ -28,14 +28,15 @@ interface Job {
 interface JobCardProps {
   job: Job
   isJobApplied: boolean
-  isBookmarked: boolean // <-- Шинэ
-  onToggleBookmark: (e: React.MouseEvent) => void // <-- Шинэ
+  isBookmarked: boolean 
+  onToggleBookmark: (e: React.MouseEvent) => void 
   onClick: () => void
   onCompanyClick: (e: React.MouseEvent, company: Company | undefined) => void
   getCompanyLogoUrl: (url: string | null | undefined) => string | null
   getJobTypeText: (type: string) => string
   getSalaryTypeText: (type: string) => string
   formatSalary: (salary: string) => string
+  onShare: (e: React.MouseEvent, job: Job) => void
 }
 
 function getDaysAgo(dateString: string) {
@@ -63,6 +64,7 @@ export default function JobCard({
   isJobApplied,
   isBookmarked,
   onToggleBookmark,
+  onShare,
   onClick,
   getCompanyLogoUrl,
   getJobTypeText,
@@ -173,7 +175,11 @@ export default function JobCard({
           >
             <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
           </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition">
+          <button
+            onClick={(e) => onShare(e, job)}
+            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+            title="Хуваалцах"
+          >
             <Share2 className="w-4 h-4" />
           </button>
         </div>
