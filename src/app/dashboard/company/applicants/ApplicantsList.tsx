@@ -43,6 +43,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       pending: applicants.filter(a => ["new", "pending", ""].includes(a.status ? a.status.toLowerCase() : "")).length,
       interview: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "interview").length,
       accepted: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "accepted").length,
+      approved: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "approved").length,
+      "not-approved": applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "not-approved").length,
       rejected: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "rejected").length,
     }
   }, [applicants])
@@ -109,6 +111,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
         return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
         return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
+      case "not-approved":
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
       case "rejected":
         return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
       default:
@@ -163,6 +167,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
             <option value="pending">Хүлээгдэж буй ({statusCounts.pending})</option>
             <option value="interview">Ярилцлага ({statusCounts.interview})</option>
             <option value="accepted">Баталгаажсан ({statusCounts.accepted})</option>
+            <option value="approved">Тэнцсэн ({statusCounts.approved})</option>
+            <option value="not-approved">Тэнцээгүй ({statusCounts["not-approved"]})</option>
             <option value="rejected">Татгалзсан ({statusCounts.rejected})</option>
           </select>
         </div>
@@ -208,6 +214,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                   {filteredApplicants.map((app) => {
                     const currentStatus = app.status ? app.status.toLowerCase() : "";
                     const isPending = ["new", "pending", ""].includes(currentStatus);
+                    const isAccepted = currentStatus === "accepted";
 
                     return (
                       <tr key={app.id} className="hover:bg-gray-50/50 transition">
@@ -238,6 +245,12 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                                 <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Татгалзах</button>
                               </>
                             )}
+                            {isAccepted && (
+                              <>
+                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "approved")} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцсэн</button>
+                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "not-approved")} className="text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцээгүй</button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -253,6 +266,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
             {filteredApplicants.map((app) => {
               const currentStatus = app.status ? app.status.toLowerCase() : "";
               const isPending = ["new", "pending", ""].includes(currentStatus);
+              const isAccepted = currentStatus === "accepted";
 
               return (
                 <div key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
@@ -305,6 +319,26 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           onClick={() => handleStatusChange(app.id, "rejected")} 
                           className="px-3.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl transition disabled:opacity-50"
                           title="Татгалзах"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    )}
+
+                    {isAccepted && (
+                      <>
+                        <button 
+                          disabled={showLoader} 
+                          onClick={() => handleStatusChange(app.id, "approved")} 
+                          className="flex-1 text-xs font-bold bg-emerald-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
+                        >
+                          Тэнцсэн
+                        </button>
+                        <button 
+                          disabled={showLoader} 
+                          onClick={() => handleStatusChange(app.id, "not-approved")} 
+                          className="px-3.5 text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 py-2.5 rounded-xl transition disabled:opacity-50"
+                          title="Тэнцээгүй"
                         >
                           ✕
                         </button>
