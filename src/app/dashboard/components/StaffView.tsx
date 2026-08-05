@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
+import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal"
 
 interface StaffViewProps {
   userId: string
@@ -42,7 +43,6 @@ interface DashboardData {
   profileProgress: number
   recommendedJobs: Job[]
   recentApplications: Application[]
-  // 🌟 ШИНЭ: Ганц зөвлөгөө байсныг массив бүтэцтэй болгон өөрчлөв
   tips?: {
     title: string
     icon: string
@@ -66,6 +66,11 @@ export default function StaffView({ userId }: StaffViewProps) {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  
+  // 🌟 ШИНЭ: Профайл дутуу эсэхийг шалгах modal-ын state-үүд
+  const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
+  const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
+
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
   const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
     show: false,
@@ -79,7 +84,6 @@ export default function StaffView({ userId }: StaffViewProps) {
   const handleRef = useRef<HTMLDivElement>(null)
   const startXRef = useRef(0)
 
-  // ЦАЛИНГ ТАСЛАЛТАЙ БОЛГОХ ТУСЛАХ ФУНКЦ
   const formatSalary = (salaryStr: string) => {
     if (!salaryStr) return ""
     const numericValue = salaryStr.replace(/[^0-9]/g, "")
@@ -88,7 +92,6 @@ export default function StaffView({ userId }: StaffViewProps) {
     return Number(numericValue).toLocaleString() + " ₮"
   }
 
-  // ҮЗСЭН КОМПАНИЙН ТООНООС ХАМААРЧ СТАТУС БОДОХ ФУНКЦ
   const getCompanyViewStatus = (count: number) => {
     if (count === 0) return "Хандалт хийгээгүй (7 хоногт)"
     if (count <= 3) return "Идэвхтэй хандаж байна (7 хоногт)"
@@ -118,7 +121,6 @@ export default function StaffView({ userId }: StaffViewProps) {
     fetchData()
   }, [userId])
 
-  // CV Татах функц
   const handleDownloadCV = async () => {
     if (isDownloading) return
     setIsDownloading(true)
@@ -165,6 +167,7 @@ export default function StaffView({ userId }: StaffViewProps) {
     router.push(`/dashboard/company/profile/${companyId}`)
   }
 
+  // 🌟 ШИНЭЧЛЭСЭН: Профайл дутуу үед JobDetailModal-ийг хааж, ProfileIncompleteModal-ийг харуулна
   const triggerApplyConfirmation = async (jobId: string) => {
     if (checkingProfile) return
     setCheckingProfile(true)
@@ -174,7 +177,9 @@ export default function StaffView({ userId }: StaffViewProps) {
       const result = await response.json()
 
       if (!response.ok || result.isComplete === false) {
-        showAlert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.", "Профайл дутуу")
+        setProfileIncompleteMessage(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
+        setSelectedJob(null) // JobDetailModal-ийг хаах
+        setShowProfileIncompleteModal(true) // Профайл дутуу модалыг нээх
         return
       }
 
@@ -478,7 +483,6 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
           </div>
 
-          {/* 🌟 ШИНЭЧЛЭГДСЭН ЗӨВЛӨГӨӨНИЙ МАССИВ ХАРАГДАХ СЕКЦ */}
           {tips && tips.length > 0 && (
             <div className="space-y-4">
               {tips.map((tip, index) => (
@@ -659,6 +663,12 @@ export default function StaffView({ userId }: StaffViewProps) {
           </div>
         </div>
       )}
+
+      <ProfileIncompleteModal
+        show={showProfileIncompleteModal}
+        onClose={() => setShowProfileIncompleteModal(false)}
+        message={profileIncompleteMessage}
+      />
 
       {/* --- МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
       {alertModal.show && (

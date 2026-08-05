@@ -12,7 +12,8 @@ import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
 import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
-import ShareModal from "@/components/staff/jobs/ShareModal" // <-- Шинэ модалыг импортлох
+import ShareModal from "@/components/staff/jobs/ShareModal"
+import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Шинэ модалыг импортлох
 
 interface Company {
   id?: string
@@ -61,7 +62,7 @@ export default function StaffJobsPage() {
   const [filterApplied, setFilterApplied] = useState("all")
   
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-  const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null) // <-- Share модалын state
+  const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [ads, setAds] = useState<Ad[]>([]);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
@@ -72,6 +73,10 @@ export default function StaffJobsPage() {
   
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
+
+  // --- Профайл дутуу модалын state ---
+  const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
+  const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
 
   const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
     show: false,
@@ -91,13 +96,11 @@ export default function StaffJobsPage() {
 
   const [bookmarkedJobIds, setBookmarkedJobIds] = useState<string[]>([])
 
-  // --- Share хийх функц (ShareModal нээх) ---
   const handleShare = (e: React.MouseEvent, job: Job) => {
     e.stopPropagation()
-    setSelectedShareJob(job) // Товч дарахад Share модалыг утгатай болгож нээнэ
+    setSelectedShareJob(job)
   }
 
-  // Хуудас ачаалахад хэрэглэгчийн хадгалсан ажлуудыг татах
   useEffect(() => {
     async function fetchBookmarks() {
       try {
@@ -137,7 +140,7 @@ export default function StaffJobsPage() {
   }
 
   useEffect(() => {
-    if (selectedAd || selectedJob || selectedShareJob || showConfirmModal || showSuccessModal || alertModal.show) {
+    if (selectedAd || selectedJob || selectedShareJob || showConfirmModal || showSuccessModal || alertModal.show || showProfileIncompleteModal) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "unset"
@@ -146,7 +149,7 @@ export default function StaffJobsPage() {
     return () => {
       document.body.style.overflow = "unset"
     }
-  }, [selectedAd, selectedJob, selectedShareJob, showConfirmModal, showSuccessModal, alertModal.show])
+  }, [selectedAd, selectedJob, selectedShareJob, showConfirmModal, showSuccessModal, alertModal.show, showProfileIncompleteModal])
 
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
@@ -317,7 +320,9 @@ export default function StaffJobsPage() {
       const result = await response.json()
 
       if (!response.ok || result.isComplete === false) {
-        showAlert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.", "Профайл дутуу")
+        setProfileIncompleteMessage(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
+        setSelectedJob(null) // <-- JobDetailModal-ийг хаахын тулд selectedJob-ийг null болгоно
+        setShowProfileIncompleteModal(true)
         return
       }
 
@@ -508,7 +513,7 @@ export default function StaffJobsPage() {
                   isBookmarked={bookmarkedJobIds.includes(job.id)}
                   onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
                   onShare={handleShare}
-                  onClick={() => setSelectedJob(job)}       
+                  onClick={() => setSelectedJob(job)}      
                   onCompanyClick={handleCompanyClick}
                   getCompanyLogoUrl={getCompanyLogoUrl}
                   getJobTypeText={getJobTypeText}
@@ -548,7 +553,7 @@ export default function StaffJobsPage() {
         triggerApplyConfirmation={triggerApplyConfirmation}
       />
 
-      {/* Share Modal нэмэгдсэн хэсэг */}
+      {/* Share Modal */}
       <ShareModal
         show={!!selectedShareJob}
         onClose={() => setSelectedShareJob(null)}
@@ -563,6 +568,13 @@ export default function StaffJobsPage() {
           onClose={() => setSelectedAd(null)} 
         />
       )}
+
+      {/* Профайл дутуу эсэхийг сануулах модал */}
+      <ProfileIncompleteModal
+        show={showProfileIncompleteModal}
+        onClose={() => setShowProfileIncompleteModal(false)}
+        message={profileIncompleteMessage}
+      />
 
       <ConfirmModal
         show={showConfirmModal}
