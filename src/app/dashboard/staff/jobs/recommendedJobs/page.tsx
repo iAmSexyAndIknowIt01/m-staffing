@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Импортлох
 
 interface Job {
   id: string
@@ -34,9 +35,14 @@ export default function RecommendedJobsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
 
-  // SLIDER БАТАЛГААЖУУЛАЛТЫН ТӨЛӨВҮҮД
+  // SLIDER БАТАЛГААЖУУЛАЛТЫН ТӨЛӨВҮҮД болон ПРОФАЙЛ МОДАЛ
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  
+  // --- Профайл дутуу модалын state-үүд ---
+  const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
+  const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
+
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
   const [sliderX, setSliderX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -117,10 +123,14 @@ export default function RecommendedJobsPage() {
     try {
       const response = await fetch("/api/staff/jobs/profileCheck")
       const result = await response.json()
+      
       if (!response.ok || result.isComplete === false) {
-        showAlert(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.", "Профайл дутуу")
+        setProfileIncompleteMessage(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
+        setSelectedJob(null) // Нээгдсэн ажлын дэлгэрэнгүй модалыг хаах
+        setShowProfileIncompleteModal(true) // Профайл дутуу модалыг нээх
         return
       }
+
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
@@ -131,14 +141,12 @@ export default function RecommendedJobsPage() {
     }
   }
 
-  // --- ШИНЭЧЛЭГДСЭН handleApplyJob ---
   const handleApplyJob = async () => {
     if (!pendingJobId) return
     setIsSubmitting(true)
     setShowConfirmModal(false)
     setSliderX(0)
     try {
-      // 1. Үндсэн анкет хадгалах хүсэлт
       const response = await fetch("/api/jobRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,14 +155,12 @@ export default function RecommendedJobsPage() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
 
-      // 2. 🔥 МЭЙЛ ИЛГЕЭХ API-Г ДУУДАХ
       fetch("/api/mail/job-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_id: pendingJobId }),
       }).catch((err) => console.error("Мэйл илгээх API-д алдаа гарлаа:", err))
 
-      // 3. Төлөв шинэчлэх
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
@@ -211,27 +217,25 @@ export default function RecommendedJobsPage() {
     }
   }, [isDragging, sliderX])
 
-  // ... (Бусад loading болон UI хэсэг хэвээрээ үлдэнэ)
-
   if (loading) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-          <div className="relative flex items-center justify-center h-32 w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-                mstaffing
-              </span>
-            </div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
+        <div className="relative flex items-center justify-center h-32 w-32">
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
+            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              mstaffing
+            </span>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            Түр хүлээнэ үү...
-          </p>
         </div>
-      )
-    }
+        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          Түр хүлээнэ үү...
+        </p>
+      </div>
+    )
+  }
 
   if (!userId) {
     return (
@@ -246,7 +250,6 @@ export default function RecommendedJobsPage() {
 
   return (
     <div className="animate-fade-in space-y-6 max-w-5xl mx-auto p-4 md:p-8">
-      {/* ... (Үлдэх JSX хэсэг өөрчлөгдөхгүй) ... */}
       <div className="flex items-center justify-between">
         <button 
           onClick={() => router.back()}
@@ -317,10 +320,8 @@ export default function RecommendedJobsPage() {
         })}
       </div>
 
-      {/* МОДАЛУУД (ҮЛДЭХ ХЭСЭГ ХЭВЭЭРЭЭ...) */}
-      {/* ... selectedJob Modal, ConfirmModal, SuccessModal, AlertModal ... */}
-      {/* (Таны өмнөх кодтой ижилхэн) */}
-      {selectedJob && (() => {
+      {/* МОДАЛУУД */}
+      {selectedJob ? (() => {
         const isModalJobApplied = appliedJobIds.includes(selectedJob.id);
         return (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -367,12 +368,11 @@ export default function RecommendedJobsPage() {
             </div>
           </div>
         )
-      })()}
+      })() : null}
 
       {/* Баталгаажуулах Modal */}
       {showConfirmModal && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-           {/* ... Slider logic ... */}
            <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center">
              <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 mx-auto">❓</div>
              <h3 className="text-lg font-black text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
@@ -402,6 +402,13 @@ export default function RecommendedJobsPage() {
           </div>
         </div>
       )}
+
+      {/* ПРОФАЙЛ ДУТУУ ЕСӨХИЙГ САНУУЛАХ МОДАЛ */}
+      <ProfileIncompleteModal
+        show={showProfileIncompleteModal}
+        onClose={() => setShowProfileIncompleteModal(false)}
+        message={profileIncompleteMessage}
+      />
 
     </div>
   )
