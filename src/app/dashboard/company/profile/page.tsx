@@ -144,26 +144,17 @@ export default function CompanyProfilePage() {
     setMessage(null)
   }
 
-  // 🔄 Ямар нэгэн loading идэвхтэй байгаа эсэхийг шалгах
   const showLoader = pageLoading || actionLoading || uploadingLogo;
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in px-4 sm:px-0 pb-16 relative">
       
-      {/* 🔄 БРЭНДИНГ LOADER ДЭЛГЭЦ */}
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
-            {/* 1. Ард талын зөөлөн гэрэлтэлт */}
             <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            
-            {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
             <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            
-            {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
             <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
-            
-            {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
               <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
@@ -179,7 +170,6 @@ export default function CompanyProfilePage() {
         </div>
       )}
 
-      {/* 1. БРЭНДИНГ ХЭСЭГ (COVER & LOGO) */}
       <div className="relative mb-24">
         <div className="h-40 md:h-48 bg-linear-to-r from-indigo-500 to-purple-600 rounded-3xl relative overflow-hidden shadow-sm">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px]"></div>
@@ -198,7 +188,6 @@ export default function CompanyProfilePage() {
           className="hidden" 
         />
 
-        {/* Лого */}
         <div className="absolute -bottom-16 left-6 md:left-10 p-1 bg-[#f8faff] rounded-3xl">
           <div 
             onClick={() => isEditMode && !showLoader && fileInputRef.current?.click()}
@@ -219,7 +208,6 @@ export default function CompanyProfilePage() {
         </div>
       </div>
 
-      {/* 2. ТОЛГОЙ МЭДЭЭЛЭЛ & РЕЖИМ СОЛИХ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
@@ -260,10 +248,8 @@ export default function CompanyProfilePage() {
         </div>
       )}
 
-      {/* ҮНДСЭН ХАРАГДАЦ / ФОРМ */}
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        {/* А: Ерөнхий мэдээлэл карт */}
         <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
           <h3 className="text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
             <span>📝</span> Ерөнхий мэдээлэл
@@ -345,7 +331,6 @@ export default function CompanyProfilePage() {
           )}
         </div>
 
-        {/* Б: Холбоо барих карт */}
         <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
           <h3 className="text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
             <span>📞</span> Холбоо барих & Холбоосууд
@@ -398,25 +383,27 @@ export default function CompanyProfilePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
+                {/* Имэйл хаяг */}
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл хаяг</span>
-                  <span className="text-sm font-semibold text-gray-800">{formData.email}</span>
+                  <span className="text-sm font-semibold text-gray-800 block truncate max-w-full">{formData.email}</span>
                 </div>
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Утас</span>
-                  <span className="text-sm font-semibold text-gray-800">{formData.phone || "—"}</span>
+                  <span className="text-sm font-semibold text-gray-800 block truncate max-w-full">{formData.phone || "—"}</span>
                 </div>
               </div>
               <div className="space-y-3">
+                {/* Цахим хуудас */}
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Цахим хуудас</span>
                   {formData.website ? (
-                    <a href={formData.website} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline block">{formData.website}</a>
+                    <a href={formData.website} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline block truncate max-w-full">{formData.website}</a>
                   ) : <span className="text-sm text-gray-400">—</span>}
                 </div>
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Сошиал холбоос</span>
-                  <div className="flex gap-3 mt-1">
+                  <div className="flex flex-wrap gap-3 mt-1">
                     {formData.facebook_url ? (
                       <a href={formData.facebook_url} target="_blank" rel="noreferrer" className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">Facebook</a>
                     ) : null}
@@ -431,7 +418,6 @@ export default function CompanyProfilePage() {
           )}
         </div>
 
-        {/* ХАДГАЛАХ ТОВЧ */}
         {isEditMode && (
           <div className="flex justify-end pt-2">
             <button
