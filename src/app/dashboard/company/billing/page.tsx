@@ -36,6 +36,9 @@ export default function BillingPage() {
   // 🔥 ШИНЭ ТӨЛӨВ: Түүхээс сонгож харах Дэлгэрэнгүй Модал
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInfo | null>(null)
+
+  // 🔥 ШИНЭ ТӨЛӨВ: Төлбөр төлөлтийн санамж Dropdown нээгдэж хаагдах төлөв
+  const [isNoticeOpen, setIsNoticeOpen] = useState(false)
   
   const sliderRef = useRef<HTMLDivElement>(null)
   const startX = useRef(0)
@@ -187,7 +190,7 @@ export default function BillingPage() {
       id: "free",
       name: "Үнэгүй багц",
       price: "0 ₮",
-      period: "насан туршдаа",
+      period: "анх удаа",
       features: ["Идэвхтэй 10 ажлын байр зарлах", "Үндсэн анкет хүлээн авах", "Статистик хянах хянах хавтан", "Имэйл тусламж"],
       buttonText: "Үнэгүй багц",
       color: "border-gray-200"
@@ -206,7 +209,7 @@ export default function BillingPage() {
       name: "Premium Plan",
       price: "350,000 ₮",
       period: "сарын",
-      features: ["Хязгааргүй ажлын байр зарлах", "Мэргэжлийн HR зөвлөгөө", "Зарууд хайлтын эхэнд байрших", "VIP Менежер тусламж", "Ажил горилогчдыг шууд урих эрх"],
+      features: ["Идэвхтэй 100 ажлын байр зарлах", "Мэргэжлийн HR зөвлөгөө", "Зарууд хайлтын эхэнд байрших", "VIP Менежер тусламж", "Ажил горилогчдыг шууд урих эрх"],
       buttonText: "Багц ахиулах 🔥",
       color: "border-orange-200 shadow-xl"
     }
@@ -221,6 +224,47 @@ export default function BillingPage() {
         </Link>
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо 💳</h1>
         <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
+      </div>
+
+      {/* 🔥 ШИНЭЭР НЭМЭГДСЭН: Төлбөр төлөлт болон буцаалтын тухай санамж (Dropdown) */}
+      <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl overflow-hidden transition-all duration-200">
+        <button
+          onClick={() => setIsNoticeOpen(!isNoticeOpen)}
+          className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-amber-900 hover:bg-amber-100/50 transition"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-base">💡</span>
+            <span>Төлбөр төлөлт болон буцаалтын тухай санамж (Анхаарах зүйлс)</span>
+          </div>
+          <span className={`transform transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`}>
+            ▼
+          </span>
+        </button>
+
+        {isNoticeOpen && (
+          <div className="px-5 pb-5 pt-1 text-xs text-amber-950 space-y-2.5 border-t border-amber-200/50 leading-relaxed font-medium animate-fade-in">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold">•</span>
+              <p>Төлбөр шилжүүлэг хийхдээ дансны дугаар болон эзэмшигчийг сайтар шалгана уу.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold">•</span>
+              <p>Төлбөр төлөлт баталгаажсан бол буцаалт хийх боломжгүй.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold">•</span>
+              <p>Багц ахиулах тохиолдолд зөрүү төлөлтийг хийгээд ахиулах боломжтой.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold">•</span>
+              <p>Багц бууруулах тохиолдолд өмнөх багцын төлбөрийг буцаах боломжгүй.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold">•</span>
+              <p>Багц бууруулах тохиолдолд шинэ багцад ноогдох идэвхтэй ажлын тоо хэтэрсэн үед шинэ багцын хэмжээнд ноогдох хамгийн шинэ заруудыг идэвхтэй болгоно.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ОДООГИЙН ТӨЛӨВ */}
@@ -276,15 +320,18 @@ export default function BillingPage() {
                     ))}
                   </ul>
                 </div>
-                <button
-                  onClick={() => !isCurrent && handleOpenUpgradeModal(plan)}
-                  disabled={isCurrent}
-                  className={`mt-8 w-full py-3.5 rounded-2xl font-bold text-xs transition duration-200 ${
-                    isCurrent ? "bg-gray-100 text-gray-400 cursor-not-allowed" : plan.id === "premium" ? "bg-orange-500 text-white hover:bg-orange-600 shadow-md" : "bg-slate-900 text-white hover:bg-slate-800"
-                  }`}
-                >
-                  {plan.buttonText}
-                </button>
+                
+                {plan.id !== "free" && (
+                  <button
+                    onClick={() => !isCurrent && handleOpenUpgradeModal(plan)}
+                    disabled={isCurrent}
+                    className={`mt-8 w-full py-3.5 rounded-2xl font-bold text-xs transition duration-200 ${
+                      isCurrent ? "bg-gray-100 text-gray-400 cursor-not-allowed" : plan.id === "premium" ? "bg-orange-500 text-white hover:bg-orange-600 shadow-md" : "bg-slate-900 text-white hover:bg-slate-800"
+                    }`}
+                  >
+                    {plan.buttonText}
+                  </button>
+                )}
               </div>
             )
           })}
@@ -325,7 +372,6 @@ export default function BillingPage() {
                         {inv.status === "paid" ? "Төлөгдсөн" : "Хүлээгдэж буй"}
                       </span>
                     </td>
-                    {/* 🔥 ШИНЭЭР НЭМЭГДСЭН: Дэлгэрэнгүй харах товч */}
                     <td className="p-4 text-right">
                       <button 
                         onClick={() => handleOpenDetailModal(inv)}
@@ -342,7 +388,7 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* 🔥 SWIPE-TO-CONFIRM MODAL (Нэхэмжлэх шинээр үүсгэх) */}
+      {/* SWIPE-TO-CONFIRM MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-gray-100 shadow-2xl space-y-5">
@@ -395,17 +441,17 @@ export default function BillingPage() {
               <span className="text-[11px] font-black text-slate-400 tracking-wider uppercase pointer-events-none animate-pulse">
                 {updatingPlan ? "Нэхэмжлэх үүсгэж байна..." : "Баруун тийш гүйлгэж баталгаажуул"}
               </span>
+
             </div>
           </div>
         </div>
       )}
 
-      {/* 🔥 ШИНЭЭР НЭМЭГДСЭН: DETAIL MODAL (Төлбөрийн мэдээллийн дэлгэрэнгүй) */}
+      {/* DETAIL MODAL */}
       {isDetailModalOpen && selectedInvoice && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-gray-100 shadow-2xl space-y-5">
             
-            {/* Толгойн хэсэг */}
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-base font-black text-gray-900">Гүйлгээний дэлгэрэнгүй 📄</h3>
@@ -414,7 +460,6 @@ export default function BillingPage() {
               <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
 
-            {/* Мэдээллийн блок */}
             <div className="bg-slate-50 p-4 rounded-3xl space-y-3 border border-slate-100 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-400 font-bold">Сонгосон багц:</span>
@@ -435,7 +480,6 @@ export default function BillingPage() {
 
               <hr className="border-slate-200/60 my-1" />
 
-              {/* Шилжүүлэг хийх банкны зааварчилгаа (Төлөгдөөгүй үед дахин харах боломжтой) */}
               <div className="flex justify-between"><span className="text-gray-400 font-bold">Хүлээн авагч банк:</span><span className="font-bold text-gray-800">Хаан Банк</span></div>
               <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны дугаар:</span><span className="font-black text-slate-900 tracking-wider bg-white px-2 py-0.5 rounded border border-gray-100">5011XXXXXX</span></div>
               <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны нэр:</span><span className="font-bold text-gray-800">Эм СТАФФИНГ ХХК</span></div>
@@ -448,14 +492,12 @@ export default function BillingPage() {
               </div>
             </div>
 
-            {/* Анхааруулга (Хүлээгдэж буй үед л харуулна) */}
             {selectedInvoice.status !== "paid" && (
               <div className="bg-amber-50/70 border border-amber-100 text-amber-800 p-3.5 rounded-2xl text-[11px] leading-relaxed font-medium">
                 ℹ️ <b>Мэдэгдэл:</b> Та төлбөрөө дээрх данс руу шилжүүлсний дараа админ таны гүйлгээний утгыг шалгаж 5-15 минутын дотор багцыг идэвхжүүлэх болно.
               </div>
             )}
 
-            {/* Хаах товч */}
             <button 
               onClick={() => setIsDetailModalOpen(false)}
               className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-2xl transition duration-150"
