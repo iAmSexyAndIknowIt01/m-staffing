@@ -43,6 +43,8 @@ export default function BillingPage() {
   const sliderRef = useRef<HTMLDivElement>(null)
   const startX = useRef(0)
   const isFetched = useRef(false)
+  // BillingPage дотор
+  const [paymentStage, setPaymentStage] = useState<'initial' | 'confirm'>('initial');
 
   // 1. Өгөгдөл татах (Багц болон Төлбөрийн түүх)
   useEffect(() => {
@@ -80,6 +82,7 @@ export default function BillingPage() {
   const handleOpenUpgradeModal = async (plan: { id: string; name: string; price: string }) => {
     setSelectedPlan(plan)
     setInvoiceDetails(null)
+    setPaymentStage('initial');
     setIsSwiped(false)
     setSwipeX(0)
     setIsModalOpen(true)
@@ -105,7 +108,7 @@ export default function BillingPage() {
     setIsDetailModalOpen(true)
   }
 
-  // 3. Слайд амжилттай чирэгдэж дуусахад Бэкенд рүү хадгалах
+  // 3. Төлбөр шилжүүлсэн баталгаажуулах үйлдэл (Товч эсвэл Слайдаар дуудагдана)
   const confirmInvoiceCreation = async () => {
     if (!selectedPlan) return
     setUpdatingPlan(selectedPlan.id)
@@ -226,7 +229,7 @@ export default function BillingPage() {
         <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
       </div>
 
-      {/* 🔥 ШИНЭЭР НЭМЭГДСЭН: Төлбөр төлөлт болон буцаалтын тухай санамж (Dropdown) */}
+      {/* Төлбөр төлөлт болон буцаалтын тухай санамж (Dropdown) */}
       <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl overflow-hidden transition-all duration-200">
         <button
           onClick={() => setIsNoticeOpen(!isNoticeOpen)}
@@ -418,31 +421,53 @@ export default function BillingPage() {
             </div>
 
             <div className="bg-amber-50/70 border border-amber-100 text-amber-800 p-3.5 rounded-2xl text-[11px] leading-relaxed font-medium">
-              ⚠️ <b>Анхаар:</b> Та шилжүүлэг хийхдээ <b>Гүйлгээний утга</b>-ыг огт алдалгүй, яг дээрх хэлбэрээр бичнэ үү. Утга буруу орсон тохиолдолд багц автоматаар идэвхжих боломжгүй болно.
+              ⚠️ <b>Анхаар:</b> Та шилжүүлэг хийхдээ <b>Гүйлгээний утга</b>-ыг огт алдалгүй <span className="font-bold text-red-600">том үсгээр</span>, яг дээрх хэлбэрээр бичнэ үү. Утга буруу орсон тохиолдолд багц автоматаар идэвхжих боломжгүй болно.
             </div>
 
-            <div 
-              ref={sliderRef}
-              className="relative h-14 bg-slate-100 border border-slate-200/60 rounded-2xl select-none overflow-hidden p-1 flex items-center justify-center"
-              onMouseMove={(e) => handleMove(e.clientX)}
-              onMouseUp={handleEnd}
-              onMouseLeave={handleEnd}
-              onTouchMove={(e) => handleMove(e.touches[0].clientX)}
-              onTouchEnd={handleEnd}
-            >
-              <div 
-                className={`absolute left-1 top-1 bottom-1 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-md transition-all ${isDragging ? '' : 'transition-all duration-300'}`}
-                style={{ width: '50px', transform: `translateX(${swipeX}px)` }}
-                onMouseDown={(e) => handleStart(e.clientX)}
-                onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-              >
-                {updatingPlan ? "⏳" : "→"}
-              </div>
-              <span className="text-[11px] font-black text-slate-400 tracking-wider uppercase pointer-events-none animate-pulse">
-                {updatingPlan ? "Нэхэмжлэх үүсгэж байна..." : "Баруун тийш гүйлгэж баталгаажуул"}
-              </span>
+            {/* 🔥 ШИНЭ НЭМСЭН ТОВЧ болон Слайд хэсэг */}
+            {/* DYNAMIC CONTENT */}
+                  {paymentStage === 'initial' ? (
+                    <div className="space-y-4">
+                      <button
+                        onClick={() => setPaymentStage('confirm')} // Дараагийн шат руу шилжих
+                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-2xl transition"
+                      >
+                        Төлбөр амжилттай шилжүүлсэн
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                      <div className="text-center space-y-2 py-4">
+                        <div className="text-4xl">✅</div>
+                        <p className="text-sm font-bold text-gray-800">Шилжүүлгээ хийсэн бол баруун тийш гүйлгэж эцсийн баталгаажуулалт хийнэ үү.</p>
+                      </div>
+                      
+                      {/* Slider хэсэг */}
+                      <div 
+                        ref={sliderRef}
+                        className="relative h-16 bg-slate-100 border-2 border-dashed border-indigo-200 rounded-2xl select-none overflow-hidden p-1 flex items-center justify-center"
+                        onMouseMove={(e) => handleMove(e.clientX)}
+                        onMouseUp={handleEnd}
+                        // ... бусад event handlers
+                      >
+                        <div 
+                          className={`absolute left-1 top-1 bottom-1 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab shadow-lg transition-all`}
+                          style={{ width: '56px', transform: `translateX(${swipeX}px)` }}
+                          onMouseDown={(e) => handleStart(e.clientX)}
+                        >
+                          {updatingPlan ? "⏳" : "→"}
+                        </div>
+                        <span className="text-[11px] font-black text-indigo-400 tracking-widest uppercase pointer-events-none">
+                          Гүйлгэж баталгаажуул
+                        </span>
+                      </div>
 
-            </div>
+                      <button onClick={() => setPaymentStage('initial')} className="w-full text-xs font-bold text-gray-400 hover:text-gray-600">
+                        ← Буцах
+                      </button>
+                    </div>
+                  )}
+
           </div>
         </div>
       )}
