@@ -50,8 +50,11 @@ export default function CompanyProfilePage() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const handleBack = () => {
-    // Буцахдаа хуудасны дугаарыг нь хамт явуулна
-    router.push(`/dashboard/staff/jobs?page=${pageFrom}`)
+    // searchParams-ыг query string болгон хувиргана
+    const query = new URLSearchParams(searchParams.toString()).toString();
+    
+    // Хэрэв query байгаа бол ? тэмдэгттэйгээр, үгүй бол хоосноор залгана
+    router.push(`/dashboard/staff/jobs${query ? `?${query}` : ''}`);
   }
 
   useEffect(() => {

@@ -58,11 +58,6 @@ export default function StaffJobsPage() {
   const [isFiltering, setIsFiltering] = useState(false) 
   const [error, setError] = useState<string | null>(null)
   
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
-  const [selectedJobType, setSelectedJobType] = useState("")
-  const [filterApplied, setFilterApplied] = useState("all")
-
   const searchParams = useSearchParams()
   
   // URL-аас page утгыг авах, байхгүй бол 1 гэж үзэх
@@ -70,6 +65,10 @@ export default function StaffJobsPage() {
   const initialPage = pageParam ? parseInt(pageParam, 10) : 1
   
   const [currentPage, setCurrentPage] = useState<number>(initialPage)
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
+  const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
+  const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
   
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
@@ -83,6 +82,7 @@ export default function StaffJobsPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
 
+  
   // --- Профайл дутуу модалын state ---
   const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
   const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
@@ -111,41 +111,50 @@ export default function StaffJobsPage() {
     setSelectedShareJob(job)
   }
 
-
-  useEffect(() => {
-    const pageVal = searchParams.get("page")
-    const pageNum = pageVal ? parseInt(pageVal, 10) : 1
-    if (pageNum !== currentPage) {
-      setCurrentPage(pageNum)
-    }
-  }, [searchParams])
-  // Хуудас солигдох бүрт URL-ийг ?page=X болгож шинэчлэх
+  // Шүүлтүүр эсвэл хуудас өөрчлөгдөх бүрт URL-ийг шинэчлэх
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+
+    // Page
     if (currentPage === 1) {
       params.delete("page")
     } else {
       params.set("page", currentPage.toString())
     }
+
+    // Search query
+    if (searchQuery.trim() === "") {
+      params.delete("search")
+    } else {
+      params.set("search", searchQuery)
+    }
+
+    // Category
+    if (selectedCategory === "") {
+      params.delete("category")
+    } else {
+      params.set("category", selectedCategory)
+    }
+
+    // Job Type
+    if (selectedJobType === "") {
+      params.delete("type")
+    } else {
+      params.set("type", selectedJobType)
+    }
+
+    // Filter Applied
+    if (filterApplied === "all") {
+      params.delete("applied")
+    } else {
+      params.set("applied", filterApplied)
+    }
     
     const queryStr = params.toString()
     const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
     router.replace(newUrl, { scroll: false })
-  }, [currentPage, router])
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, router])
 
-  
-  useEffect(() => { 
-    // Хэрэв анх хуудас ачаалагдаж байгаа бөгөөд URL дээр page заасан байвал 1 рүү албаар унагахгүй байх
-    if (isFirstRender) {
-      setIsFirstRender(false)
-      return
-    }
-    
-    setIsFiltering(true)
-    const timer = setTimeout(() => setIsFiltering(false), 350) 
-    setCurrentPage(1) // Энд шүүлтүүр өөрчлөгдөхөд 1 рүү очих нь хэвээрээ байна
-    return () => clearTimeout(timer)
-  }, [searchQuery, selectedCategory, selectedJobType, filterApplied])
 
   useEffect(() => {
     async function fetchBookmarks() {
@@ -224,13 +233,14 @@ export default function StaffJobsPage() {
     const actualCompanyId = company.id || company.company_id
 
     if (actualCompanyId) {
-      fetch("/api/staff/companyView", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: actualCompanyId })
-      }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
+      // 1. Одоо байгаа бүх параметрүүдийг авах
+      const params = new URLSearchParams(searchParams.toString())
+      
+      // 2. Хуудасны дугаарыг шинэчлэх (шаардлагатай бол)
+      params.set("page", currentPage.toString())
 
-      router.push(`/dashboard/company/profile/${actualCompanyId}?page=${currentPage}`)
+      // 3. Бүх параметрийг string болгон хувиргаад URL-д залгах
+      router.push(`/dashboard/company/profile/${actualCompanyId}?${params.toString()}`)
     } else {
       console.warn("Компанийн ID олдсонгүй:", company)
     }
