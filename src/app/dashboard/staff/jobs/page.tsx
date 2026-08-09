@@ -14,6 +14,8 @@ import AdCard from "@/components/staff/jobs/AdCard"
 import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
 import ShareModal from "@/components/staff/jobs/ShareModal"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Шинэ модалыг импортлох
+import { useSearchParams } from "next/navigation"
+import page from "@/app/page"
 
 interface Company {
   id?: string
@@ -56,24 +58,31 @@ export default function StaffJobsPage() {
   const [isFiltering, setIsFiltering] = useState(false) 
   const [error, setError] = useState<string | null>(null)
   
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
-  const [selectedJobType, setSelectedJobType] = useState("")
-  const [filterApplied, setFilterApplied] = useState("all")
+  const searchParams = useSearchParams()
+  
+  // URL-аас page утгыг авах, байхгүй бол 1 гэж үзэх
+  const pageParam = searchParams.get("page")
+  const initialPage = pageParam ? parseInt(pageParam, 10) : 1
+  
+  const [currentPage, setCurrentPage] = useState<number>(initialPage)
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
+  const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
+  const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
   
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
   const [ads, setAds] = useState<Ad[]>([]);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
-  
+  const [isFirstRender, setIsFirstRender] = useState(true)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
 
+  
   // --- Профайл дутуу модалын state ---
   const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
   const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
@@ -95,11 +104,57 @@ export default function StaffJobsPage() {
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
   const [bookmarkedJobIds, setBookmarkedJobIds] = useState<string[]>([])
+  const isInitialMount = useRef(true)
 
   const handleShare = (e: React.MouseEvent, job: Job) => {
     e.stopPropagation()
     setSelectedShareJob(job)
   }
+
+  // Шүүлтүүр эсвэл хуудас өөрчлөгдөх бүрт URL-ийг шинэчлэх
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+
+    // Page
+    if (currentPage === 1) {
+      params.delete("page")
+    } else {
+      params.set("page", currentPage.toString())
+    }
+
+    // Search query
+    if (searchQuery.trim() === "") {
+      params.delete("search")
+    } else {
+      params.set("search", searchQuery)
+    }
+
+    // Category
+    if (selectedCategory === "") {
+      params.delete("category")
+    } else {
+      params.set("category", selectedCategory)
+    }
+
+    // Job Type
+    if (selectedJobType === "") {
+      params.delete("type")
+    } else {
+      params.set("type", selectedJobType)
+    }
+
+    // Filter Applied
+    if (filterApplied === "all") {
+      params.delete("applied")
+    } else {
+      params.set("applied", filterApplied)
+    }
+    
+    const queryStr = params.toString()
+    const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
+    router.replace(newUrl, { scroll: false })
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, router])
+
 
   useEffect(() => {
     async function fetchBookmarks() {
@@ -178,13 +233,14 @@ export default function StaffJobsPage() {
     const actualCompanyId = company.id || company.company_id
 
     if (actualCompanyId) {
-      fetch("/api/staff/companyView", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: actualCompanyId })
-      }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
+      // 1. Одоо байгаа бүх параметрүүдийг авах
+      const params = new URLSearchParams(searchParams.toString())
+      
+      // 2. Хуудасны дугаарыг шинэчлэх (шаардлагатай бол)
+      params.set("page", currentPage.toString())
 
-      router.push(`/dashboard/company/profile/${actualCompanyId}`)
+      // 3. Бүх параметрийг string болгон хувиргаад URL-д залгах
+      router.push(`/dashboard/company/profile/${actualCompanyId}?${params.toString()}`)
     } else {
       console.warn("Компанийн ID олдсонгүй:", company)
     }
@@ -391,6 +447,11 @@ export default function StaffJobsPage() {
   }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
 
   useEffect(() => {    
+    // Хэрэв анх хуудас ачаалагдаж байгаа эсвэл URL дээр page параметр байвал 1 рүү албаар унагахгүй байх
+    if (isFirstRender) {
+      setIsFirstRender(false)
+      return
+    }
     setIsFiltering(true)
     const timer = setTimeout(() => setIsFiltering(false), 350) 
     setCurrentPage(1)

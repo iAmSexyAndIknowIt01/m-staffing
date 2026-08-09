@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
 interface CompanyProfileData {
@@ -22,7 +22,10 @@ interface CompanyProfileData {
 export default function CompanyProfilePage() {
   const { id } = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // URL-аас ирсэн page утгыг барьж авна (жишээ нь: ?page=3)
+  const pageFrom = searchParams.get("page") || "1"
   
   const [isEditMode, setIsEditMode] = useState(false)
   const [isOwner, setIsOwner] = useState(false) 
@@ -46,6 +49,13 @@ export default function CompanyProfilePage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const handleBack = () => {
+    // searchParams-ыг query string болгон хувиргана
+    const query = new URLSearchParams(searchParams.toString()).toString();
+    
+    // Хэрэв query байгаа бол ? тэмдэгттэйгээр, үгүй бол хоосноор залгана
+    router.push(`/dashboard/staff/jobs${query ? `?${query}` : ''}`);
+  }
 
   useEffect(() => {
     async function fetchProfile() {
@@ -170,7 +180,7 @@ export default function CompanyProfilePage() {
       {/* БУЦАХ ТОВЧЛУУР */}
       <div className="flex items-center justify-between">
         <button 
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-100 hover:bg-gray-50 rounded-xl transition shadow-xs flex items-center gap-1.5"
         >
           ← Буцах
