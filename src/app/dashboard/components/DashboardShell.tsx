@@ -97,6 +97,13 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
               </>
             ) : (
               <>
+              <LinkNext
+                  href="/dashboard/company/search-staff" // Эсвэл таны ажилтан хайх хуудасны зам
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  🔎 Ажилтан хайх
+                </LinkNext>
                 <LinkNext
                   href="/dashboard/company/post-job"
                   onClick={() => setMobileMenuOpen(false)}
@@ -226,6 +233,15 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
               </>
             ) : (
               <>
+              {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/search-staff")
+                  return (
+                    <LinkNext href="/dashboard/company/search-staff" className={linkClass}>
+                      <span className={iconClass}>🔎</span>
+                      {!isCollapsed && <span className="text-sm truncate">Ажилтан хайх</span>}
+                    </LinkNext>
+                  )
+                })()}
                 {(() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/company/post-job")
                   return (
