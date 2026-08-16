@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Search, MapPin, Briefcase, User, UserCheck } from "lucide-react"
+import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface Staff {
@@ -92,9 +93,8 @@ export default function SearchStaffPage() {
         </div>
       </div>
 
-      {/* Filter Grid - Optimized for mobile view */}
+      {/* Filter Grid */}
       <div className="bg-white p-3 sm:p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-        {/* Нэрээр хайх */}
         <div className="relative">
           <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
           <input 
@@ -106,7 +106,6 @@ export default function SearchStaffPage() {
           />
         </div>
 
-        {/* Ур чадвараар хайх */}
         <div className="relative">
           <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
           <input 
@@ -118,7 +117,6 @@ export default function SearchStaffPage() {
           />
         </div>
 
-        {/* Туршлага / Албан тушаалаар хайх */}
         <div className="relative">
           <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
           <input 
@@ -130,7 +128,6 @@ export default function SearchStaffPage() {
           />
         </div>
 
-        {/* Боловсрол / Мэргэжлээр хайх */}
         <div className="relative">
           <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
           <input 
@@ -142,7 +139,6 @@ export default function SearchStaffPage() {
           />
         </div>
         
-        {/* Хүйсээр шүүх */}
         <select 
           value={genderFilter}
           className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
@@ -153,7 +149,6 @@ export default function SearchStaffPage() {
           <option value="Эмэгтэй">Эмэгтэй</option>
         </select>
 
-        {/* Туршлагын жил шүүх */}
         <select 
           value={minExp}
           className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
@@ -226,12 +221,12 @@ export default function SearchStaffPage() {
               </div>
 
               <div className="flex items-center gap-3 self-end sm:self-center w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                <button 
-                  onClick={() => window.location.href = `/staff/profile/${staff.id}`}
+                <Link 
+                  href={`/dashboard/company/search-staff/profile?id=${staff.id}`}
                   className="w-full sm:w-auto justify-center px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <UserCheck size={16} /> Профайл үзэх
-                </button>
+                </Link>
               </div>
             </div>
           ))
