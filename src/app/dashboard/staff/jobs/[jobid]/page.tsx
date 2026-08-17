@@ -7,6 +7,7 @@ import ConfirmModal from "@/components/staff/jobs/ConfirmModal";
 import SuccessModal from "@/components/staff/jobs/SuccessModal";
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal";
 import AlertModal from "@/components/staff/jobs/AlertModal";
+import LoadingLayout from "@/components/staff/common/LoadingLayout";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -141,7 +142,7 @@ export default function JobDetailPage() {
       setSliderX(0);
       setShowConfirmModal(true);
     } catch (err: any) {
-      showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа");
+      showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно үү.", "Алдаа");
     } finally {
       setCheckingProfile(false);
     }
@@ -252,7 +253,10 @@ export default function JobDetailPage() {
     };
   }, [isDragging, sliderX]);
 
-  if (loading) return <div className="container mx-auto p-8 text-center">Түр хүлээнэ үү...</div>;
+  if (loading) {
+    return <LoadingLayout loading={loading} />;
+  }
+
   if (!job) return <div className="container mx-auto p-8 text-center">Ажлын байр олдсонгүй</div>;
 
   return (
