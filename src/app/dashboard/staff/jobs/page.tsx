@@ -574,7 +574,7 @@ export default function StaffJobsPage() {
                   isBookmarked={bookmarkedJobIds.includes(job.id)}
                   onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
                   onShare={handleShare}
-                  onClick={() => setSelectedJob(job)}      
+                  onClick={() => router.push(`/dashboard/staff/jobs/${job.id}`)}      
                   onCompanyClick={handleCompanyClick}
                   getCompanyLogoUrl={getCompanyLogoUrl}
                   getJobTypeText={getJobTypeText}
@@ -600,7 +600,7 @@ export default function StaffJobsPage() {
       />
 
       {/* МОДАЛ ЦОНХНУУД */}
-      <JobDetailModal
+      {/* <JobDetailModal
         selectedJob={selectedJob}
         onClose={() => setSelectedJob(null)}
         appliedJobIds={appliedJobIds}
@@ -612,7 +612,7 @@ export default function StaffJobsPage() {
         formatSalary={formatSalary}
         handleCompanyClick={handleCompanyClick}
         triggerApplyConfirmation={triggerApplyConfirmation}
-      />
+      /> */}
 
       {/* Share Modal */}
       <ShareModal
