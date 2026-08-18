@@ -176,7 +176,10 @@ export default function JobCard({
             <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
           </button>
           <button
-            onClick={(e) => onShare(e, job)}
+            onClick={(e) => {
+              e.stopPropagation();       
+              onShare(e, job);
+            }}
             className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
             title="Хуваалцах"
           >
