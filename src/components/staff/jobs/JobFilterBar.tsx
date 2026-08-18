@@ -55,6 +55,7 @@ export default function JobFilterBar({
   const getJobTypeLabel = (type: string) => {
     if (type === "fulltime") return "Бүтэн цаг"
     if (type === "parttime") return "Хагас цагийн"
+    if(type === "intern") return "Дадлагажигч"
     if (type === "remote") return "Зайнаас (Remote)"
     return type
   }

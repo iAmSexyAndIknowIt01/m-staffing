@@ -66,6 +66,7 @@ export default function JobDetailPage() {
     switch (type) {
       case "fulltime": return "Бүтэн цаг";
       case "parttime": return "Хагас цаг";
+      case "intern" : return "Дадлагажигч";
       case "remote": return "Зайнаас (Remote)";
       default: return type;
     }

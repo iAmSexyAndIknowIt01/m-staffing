@@ -407,9 +407,10 @@ export default function StaffJobsPage() {
 
   const getJobTypeText = (type: string) => {
     switch (type) {
-      case "fulltime": return "Бүтэн цаг"
-      case "parttime": return "Хагас цаг"
-      case "remote": return "Зайнаас (Remote)"
+      case "fulltime": return "Бүтэн цаг";
+      case "parttime": return "Хагас цаг";
+      case "intern" : return "Дадлагажигч";
+      case "remote": return "Зайнаас (Remote)";
       default: return type
     }
   }
