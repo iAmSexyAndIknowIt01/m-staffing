@@ -22,7 +22,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
   if (!show || !job) return null
 
   const shareUrl = typeof window !== "undefined" 
-    ? `${window.location.origin}/dashboard/jobs` // эсвэл тухайн зарын дэлгэрэнгүй линк
+    ? `${window.location.origin}/dashboard/staff/jobs/${job?.id}` // эсвэл тухайн зарын дэлгэрэнгүй линк
     : ""
   
   const shareTitle = `${job.title} - ${job.mt_company?.name || "Компани"} | Цалин: ${formatSalary(job.salary)}`
