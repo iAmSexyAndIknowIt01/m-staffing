@@ -9,14 +9,13 @@ interface JobItem {
   title: string
   category: string
   salary: string
-  salary_type?: "monthly" | "hourly" // Цалингийн төрөл нэмэв
-  job_type?: string                  // Ажлын цагийн төрөл нэмэв
+  salary_type?: "monthly" | "hourly"
+  job_type?: string
   status: string
   created_at: string
   applicants_count: number
 }
 
-// Ажлын төрлийг Монголоор хөрвүүлэх туслах функц
 const getJobTypeLabel = (type?: string) => {
   switch (type) {
     case "fulltime": return "Бүтэн цагийн"
@@ -34,18 +33,23 @@ export default function PostJobPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  // ОЛОН НӨХЦӨЛТ ШҮҮЛТҮҮРИЙН STATE-ҮҮД
+  // Шинэ зар нэмэх үеийн шалгалтын төлөв болон модал
+  const [checkingApproval, setCheckingApproval] = useState(false)
+  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
+    show: false,
+    message: "",
+    title: "Анхааруулга"
+  })
+
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [salaryFilter, setSalaryFilter] = useState("all")
   const [applicantFilter, setApplicantFilter] = useState("all")
   const [dateSort, setDateSort] = useState("newest")
   
-  // ХУУДАСЛАЛТЫН ДИНАМИК STATE-ҮҮД
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
-  // API-аас дата татах хэсэг (StrictMode-д зориулж зассан)
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
@@ -79,6 +83,39 @@ export default function PostJobPage() {
     }
   }, [])
 
+  // Шинэ зар нэмэх товч дарах үед is_approved шалгах функц
+  const handleAddNewJobClick = async () => {
+    if (checkingApproval) return
+    setCheckingApproval(true)
+
+    try {
+      const res = await fetch("/api/company/check-approval")
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Компанийн төлөв шалгахад алдаа гарлаа.")
+      }
+
+      if (data.is_approved === "approved") {
+        router.push("/dashboard/company/post-job/add")
+      } else {
+        setAlertModal({
+          show: true,
+          title: "Зар оруулах боломжгүй",
+          message: "Таны компани админаар баталгаажаагүй байна. Админ баталгаажуулсны дараа зар оруулах боломжтой болно."
+        })
+      }
+    } catch (err: any) {
+      setAlertModal({
+        show: true,
+        title: "Алдаа гарлаа",
+        message: err.message || "Сүлжээний алдаа гарлаа. Дахин оролдоно уу."
+      })
+    } finally {
+      setCheckingApproval(false)
+    }
+  }
+
   const handleResetFilters = () => {
     searchQuery !== "" && setSearchQuery("")
     statusFilter !== "all" && setStatusFilter("all")
@@ -88,13 +125,11 @@ export default function PostJobPage() {
     setCurrentPage(1)
   }
 
-  // 🔄 Анкет үзэх холбоос руу шилжихээс өмнө Loader асаах функц
   const handleViewApplicants = (jobId: string) => {
     setLoading(true)
     router.push(`/dashboard/company/post-job/${jobId}/applicants`)
   }
 
-  // ШҮҮЛТҮҮР БОЛОН ЭРЭМБЭЛЭЛТ
   const filteredAndSortedJobs = jobs
     .filter((job) => {
       const query = searchQuery.toLowerCase()
@@ -130,7 +165,6 @@ export default function PostJobPage() {
     applicantFilter !== "all" ||
     dateSort !== "newest"
 
-  // ХУУДАСЛАЛТЫН ЛОГИК
   const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -144,23 +178,14 @@ export default function PostJobPage() {
       return Array.from({ length: total }, (_, i) => i + 1)
     }
 
-    const range: (number | string)[] = []
-    range.push(1)
-
-    if (current > 3) {
-      range.push("...")
-    }
+    const range: (number | string)[] = [1]
+    if (current > 3) range.push("...")
 
     const start = Math.max(2, current - 1)
     const end = Math.min(total - 1, current + 1)
 
-    for (let i = start; i <= end; i++) {
-      range.push(i)
-    }
-
-    if (current < total - 2) {
-      range.push("...")
-    }
+    for (let i = start; i <= end; i++) range.push(i)
+    if (current < total - 2) range.push("...")
 
     range.push(total)
     return range
@@ -174,8 +199,8 @@ export default function PostJobPage() {
   return (
     <div className="max-w-5xl mx-auto animate-fade-in space-y-6 md:space-y-8 px-4 sm:px-0 pb-6">
       
-      {/* CUSTOM MSTAFFING LOADER */}
-      {loading && (
+      {/* LOADER */}
+      {(loading || checkingApproval) && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
             <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
@@ -198,16 +223,18 @@ export default function PostJobPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага 💼</h1>
           <p className="text-gray-500 mt-1 text-xs md:text-base">
-            Танай компаниейн зарласан идэвхтэй болон хаагдсан ажлын байруудын жагсаалт.
+            Танай компанийн зарласан идэвхтэй болон хаагдсан ажлын байруудын жагсаалт.
           </p>
         </div>
         
-        <Link
-          href="/dashboard/company/post-job/add"
-          className="w-full sm:w-auto px-6 py-3.5 bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-orange-500/20 text-center flex items-center justify-center gap-2"
+        {/* Шинэ зар нэмэх товч (Шалгалт хийдэг болсон) */}
+        <button
+          onClick={handleAddNewJobClick}
+          disabled={checkingApproval}
+          className="w-full sm:w-auto px-6 py-3.5 bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-orange-500/20 text-center flex items-center justify-center gap-2 cursor-pointer"
         >
           <span className="text-base">+</span> Шинэ зар нэмэх
-        </Link>
+        </button>
       </div>
 
       {/* ШҮҮЛТҮҮРИЙН ПАНЕЛЬ */}
@@ -277,7 +304,7 @@ export default function PostJobPage() {
             <div className="flex justify-end pt-1">
               <button
                 onClick={handleResetFilters}
-                className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition"
+                className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition cursor-pointer"
               >
                 🔄 Шүүлтүүрүүдийг цэвэрлэх
               </button>
@@ -286,7 +313,7 @@ export default function PostJobPage() {
         </div>
       )}
 
-      {/* АЖЛЫН БАЙРНЫ ЛИСТ БОЛОН ХУУДАСЛАЛТ */}
+      {/* АЖЛЫН БАЙРНЫ ЖАГСААЛТ */}
       <div className="space-y-4">
         {!loading && (
           <div className="flex justify-between items-center px-1">
@@ -365,7 +392,7 @@ export default function PostJobPage() {
               ))}
             </div>
 
-            {/* ХУУДАСЛАЛТЫН КОНТЕЙНЕР */}
+            {/* ХУУДАСЛАЛТ */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 md:pt-6 animate-fade-in pb-4">
               <div className="flex items-center gap-2 text-xs font-bold text-gray-500 order-2 sm:order-1">
                 <span>Харуулах:</span>
@@ -388,7 +415,7 @@ export default function PostJobPage() {
                   <button
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition"
+                    className="px-3 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition cursor-pointer"
                   >
                     ← Өмнөх
                   </button>
@@ -406,7 +433,7 @@ export default function PostJobPage() {
                         <button
                           key={`page-${page}`}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`w-8 h-8 text-xs font-bold rounded-xl transition shadow-sm ${
+                          className={`w-8 h-8 text-xs font-bold rounded-xl transition shadow-sm cursor-pointer ${
                             currentPage === page
                               ? "bg-slate-950 text-white"
                               : "bg-white border border-gray-100 text-gray-600 hover:border-gray-200"
@@ -421,7 +448,7 @@ export default function PostJobPage() {
                   <button
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition"
+                    className="px-3 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-600 disabled:opacity-40 shadow-sm hover:border-gray-200 transition cursor-pointer"
                   >
                     Дараах →
                   </button>
@@ -446,22 +473,38 @@ export default function PostJobPage() {
               {isFilterActive ? (
                 <button
                   onClick={handleResetFilters}
-                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer"
                 >
                   Бүх зарыг буцааж харах 🔄
                 </button>
               ) : (
-                <Link
-                  href="/dashboard/company/post-job/add"
-                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition"
+                <button
+                  onClick={handleAddNewJobClick}
+                  className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer"
                 >
                   Анхны зараа оруулах 🚀
-                </Link>
+                </button>
               )}
             </div>
           )
         )}
       </div>
+
+      {/* АНХААРУУЛГА МОДАЛ */}
+      {alertModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl text-center">
+            <h3 className="text-lg font-bold text-gray-900">{alertModal.title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{alertModal.message}</p>
+            <button
+              onClick={() => setAlertModal((prev) => ({ ...prev, show: false }))}
+              className="w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition cursor-pointer"
+            >
+              Ойлголоо
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
