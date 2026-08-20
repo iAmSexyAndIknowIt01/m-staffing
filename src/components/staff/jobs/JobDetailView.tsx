@@ -44,8 +44,10 @@ export default function JobDetailView({
         {/* Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 bg-slate-50/50">
           {[
-            { icon: DollarSign, label: "Цалин", val: `₮ ${formatSalary(job.salary)}`, color: "text-emerald-600" },
+            { icon: DollarSign, label: "Цалин", val: `₮ ${formatSalary(job.salary)} (${getSalaryTypeText(job.salary_type)})`, color: "text-emerald-600" },
             { icon: Briefcase, label: "Ажлын төрөл", val: getJobTypeText(job.job_type), color: "text-indigo-600" },
+            { icon: MapPin, label: "Байршил", val: job.location || "Тодорхойгүй", color: "text-rose-600" },
+            { icon: Briefcase, label: "Ангилал", val: job.category || "Ангилалгүй", color: "text-amber-600" },
             { icon: Calendar, label: "Нийтэлсэн", val: new Date(job.created_at).toLocaleDateString("mn-MN"), color: "text-slate-600" }
           ].map((item, idx) => (
             <div key={idx} className={`p-4 sm:p-5 flex items-center gap-4 ${idx !== 2 ? 'border-b sm:border-b-0 sm:border-r border-slate-100' : ''}`}>
