@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck } from "lucide-react"
+import { Search, MapPin, Briefcase, User, UserCheck, Clock, Calendar } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 
@@ -20,6 +20,17 @@ interface Staff {
   agreement: boolean
 }
 
+// Долоо хоногийн өдрүүд (API рүү англи нэрээр нь явуулна)
+const DAYS_OF_WEEK = [
+  { label: "Даваа", value: "monday" },
+  { label: "Мягмар", value: "tuesday" },
+  { label: "Лхагва", value: "wednesday" },
+  { label: "Пүрэв", value: "thursday" },
+  { label: "Баасан", value: "friday" },
+  { label: "Бямба", value: "saturday" },
+  { label: "Ням", value: "sunday" },
+]
+
 export default function SearchStaffPage() {
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,6 +44,10 @@ export default function SearchStaffPage() {
   const [genderFilter, setGenderFilter] = useState("Бүгд")
   const [minExp, setMinExp] = useState(0)
 
+  // Шинэ: Цаг болон өдрийн шүүлтүүр
+  const [selectedDay, setSelectedDay] = useState("")
+  const [filterTime, setFilterTime] = useState("") // Жишээ нь: "10:00"
+
   useEffect(() => {
     async function fetchStaffs() {
       try {
@@ -45,6 +60,10 @@ export default function SearchStaffPage() {
         if (fieldQuery) params.append("field", fieldQuery)
         if (genderFilter !== "Бүгд") params.append("gender", genderFilter)
         if (minExp > 0) params.append("minExp", minExp.toString())
+        
+        // Шинэ параметрүүдийг нэмэх
+        if (selectedDay) params.append("day", selectedDay)
+        if (filterTime) params.append("time", filterTime)
 
         const res = await fetch(`/api/company/searchStaff?${params.toString()}`)
         const data = await res.json()
@@ -69,9 +88,8 @@ export default function SearchStaffPage() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp])
+  }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp, selectedDay, filterTime])
 
-  // Анх хуудас нээгдэх үед бүтэн дэлгэцийн loader харуулна
   if (isInitialLoad) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 bg-slate-50 min-h-screen relative">
@@ -83,7 +101,6 @@ export default function SearchStaffPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 bg-slate-50 min-h-screen relative">
       
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
@@ -159,6 +176,39 @@ export default function SearchStaffPage() {
           <option value={3}>3+ жил</option>
           <option value={5}>5+ жил</option>
         </select>
+
+        {/* ШИНЭ: Өдрөөр шүүх */}
+        <select 
+          value={selectedDay}
+          className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
+          onChange={(e) => setSelectedDay(e.target.value)}
+        >
+          <option value="">Бүх өдөр (Ажиллах боломжтой)</option>
+          {DAYS_OF_WEEK.map((d) => (
+            <option key={d.value} value={d.value}>{d.label} гариг</option>
+          ))}
+        </select>
+
+        {/* ШИНЭ: Цагаар шүүх (Тухайн өдөр сонгогдсон үед эсвэл цаг оруулсан үед ажиллана) */}
+        <div className="relative flex items-center">
+          <Clock className="absolute left-3.5 text-gray-400" size={18} />
+          <input 
+            type="time" 
+            value={filterTime}
+            onChange={(e) => setFilterTime(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all"
+            placeholder="Цаг сонгох"
+          />
+          {filterTime && (
+            <button 
+              type="button" 
+              onClick={() => setFilterTime("")}
+              className="absolute right-3 text-xs text-gray-400 hover:text-gray-600 font-bold"
+            >
+              Цэвэрлэх
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Нийт илэрц хэсэг */}

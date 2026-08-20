@@ -22,6 +22,10 @@ export async function GET(request: Request) {
     const fieldSearch = searchParams.get("field")?.trim().toLowerCase() || ""
     const genderFilter = searchParams.get("gender") || "Бүгд"
     const minExp = Number(searchParams.get("minExp")) || 0
+    
+    // 1. ШИНЭ: Өдөр болон цагийн шүүлтүүрийн утгыг авах
+    const dayFilter = searchParams.get("day") || ""     // Жишээ: "monday", "friday"
+    const timeFilter = searchParams.get("time") || ""   // Жишээ: "14:00"
 
     // 1. Профайлаа нээлттэй болгосон ажилчдын үндсэн мэдээллийг татах
     let query = supabase
@@ -105,6 +109,7 @@ export async function GET(request: Request) {
         role,
         experienceYears: totalExperienceYears,
         skills: profile.skills || { technical: [], languages: [] },
+        availability: profile.availability || {}, // 📌 Availability нэмэх
         positions,
         fields,
         location: "Улаанбаатар",
@@ -130,6 +135,27 @@ export async function GET(request: Request) {
       // Боловсролын чиглэлээр хайх (field)
       if (fieldSearch && !(staff.fields.some((f: string) => f.toLowerCase().includes(fieldSearch)))) {
         return false
+      }
+
+      // 📌 5. Ажиллах өдөр болон цагаар шүүх шинэ логик
+      if (dayFilter) {
+        const dayAvailability = staff.availability[dayFilter]
+        
+        // Хэрэв сонгосон өдөр нь байхгүй эсвэл enabled нь false байвал буцаана
+        if (!dayAvailability || !dayAvailability.enabled) {
+          return false
+        }
+
+        // Хэрэв цаг давхар сонгосон бол (Жишээ нь: "14:00")
+        if (timeFilter) {
+          const fromTime = dayAvailability.from // "09:00"
+          const toTime = dayAvailability.to     // "18:00"
+
+          // Сонгосон цаг нь ажилтны боломжит цагийн завсарт (from <= time <= to) багтаж байгаа эсэх
+          if (timeFilter < fromTime || timeFilter > toTime) {
+            return false
+          }
+        }
       }
 
       return true
