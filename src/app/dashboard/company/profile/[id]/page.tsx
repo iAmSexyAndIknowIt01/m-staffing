@@ -24,7 +24,7 @@ export default function CompanyProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // URL-аас ирсэн page утгыг барьж авна (жишээ нь: ?page=3)
+  
   const pageFrom = searchParams.get("page") || "1"
   
   const [isEditMode, setIsEditMode] = useState(false)
@@ -49,16 +49,14 @@ export default function CompanyProfilePage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
   const handleBack = () => {
-    // router.back() нь браузерын түүхэн дэх өмнөх хуудас руу 
-    // параметртэй нь хамт шууд буцаана.
     router.back();
   }
 
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // ✅ ЗАСАГДСАН: Динамик URL замаар (Restful) дуудна
         const response = await fetch(`/api/company/profile/${id}`)
         
         const result = await response.json()
@@ -132,7 +130,6 @@ export default function CompanyProfilePage() {
     setMessage(null)
 
     try {
-      // ✅ ЗАСАГДСАН: PUT хийхдээ мөн адил динамик ID замаа илгээнэ
       const response = await fetch(`/api/company/profile/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -162,7 +159,7 @@ export default function CompanyProfilePage() {
 
   if (pageLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-12 text-center text-gray-400 font-medium">
+      <div className="w-full max-w-4xl mx-auto p-12 text-center text-gray-400 font-medium">
         <div className="animate-pulse space-y-4">
           <div className="h-32 bg-gray-100 rounded-3xl w-full"></div>
           <div className="h-8 bg-gray-100 rounded-xl w-1/3"></div>
@@ -173,10 +170,10 @@ export default function CompanyProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in px-4 sm:px-0 pb-16 space-y-6">
+    <div className="w-full max-w-4xl mx-auto animate-fade-in px-4 sm:px-6 pb-16 space-y-6">
       
       {/* БУЦАХ ТОВЧЛУУР */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-4">
         <button 
           onClick={handleBack}
           className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-100 hover:bg-gray-50 rounded-xl transition shadow-xs flex items-center gap-1.5"
