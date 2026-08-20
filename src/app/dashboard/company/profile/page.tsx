@@ -144,10 +144,10 @@ export default function CompanyProfilePage() {
     setMessage(null)
   }
 
-  const showLoader = pageLoading || actionLoading || uploadingLogo;
+  const showLoader = pageLoading || actionLoading || uploadingLogo
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in px-4 sm:px-0 pb-16 relative">
+    <div className="w-full max-w-4xl mx-auto animate-fade-in px-4 sm:px-6 lg:px-8 pb-16 relative">
       
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
@@ -170,8 +170,9 @@ export default function CompanyProfilePage() {
         </div>
       )}
 
-      <div className="relative mb-24">
-        <div className="h-40 md:h-48 bg-linear-to-r from-indigo-500 to-purple-600 rounded-3xl relative overflow-hidden shadow-sm">
+      {/* Header & Cover section */}
+      <div className="relative mb-20 sm:mb-24">
+        <div className="h-32 sm:h-40 md:h-48 bg-linear-to-r from-indigo-500 to-purple-600 rounded-3xl relative overflow-hidden shadow-sm">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px]"></div>
           {isEditMode && (
             <button type="button" className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 backdrop-blur-md rounded-xl transition">
@@ -188,15 +189,15 @@ export default function CompanyProfilePage() {
           className="hidden" 
         />
 
-        <div className="absolute -bottom-16 left-6 md:left-10 p-1 bg-[#f8faff] rounded-3xl">
+        <div className="absolute -bottom-12 sm:-bottom-16 left-4 sm:left-6 md:left-10 p-1 bg-[#f8faff] rounded-3xl">
           <div 
             onClick={() => isEditMode && !showLoader && fileInputRef.current?.click()}
-            className={`w-28 h-28 md:w-32 md:h-32 bg-white border-4 border-white rounded-3xl shadow-md flex flex-col items-center justify-center relative group overflow-hidden ${isEditMode ? 'cursor-pointer' : 'cursor-default'}`}
+            className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-white border-4 border-white rounded-3xl shadow-md flex flex-col items-center justify-center relative group overflow-hidden ${isEditMode ? 'cursor-pointer' : 'cursor-default'}`}
           >
             {formData.logo_url ? (
               <img src={formData.logo_url} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
             ) : (
-              <span className="text-4xl">🏢</span>
+              <span className="text-3xl sm:text-4xl">🏢</span>
             )}
             
             {isEditMode && (
@@ -210,7 +211,7 @@ export default function CompanyProfilePage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
             {formData.company_name || "Компанийн нэр"}
           </h1>
           {formData.tagline && <p className="text-gray-500 mt-1 text-sm font-medium">{formData.tagline}</p>}
@@ -250,8 +251,8 @@ export default function CompanyProfilePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-          <h3 className="text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
+        <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 md:p-8 shadow-sm space-y-6">
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
             <span>📝</span> Ерөнхий мэдээлэл
           </h3>
           
@@ -323,7 +324,7 @@ export default function CompanyProfilePage() {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Компанийн тухай</h4>
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
                   {formData.description || "Танилцуулга мэдээлэл оруулаагүй байна."}
                 </p>
               </div>
@@ -331,8 +332,8 @@ export default function CompanyProfilePage() {
           )}
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-          <h3 className="text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
+        <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 md:p-8 shadow-sm space-y-6">
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
             <span>📞</span> Холбоо барих & Холбоосууд
           </h3>
 
@@ -383,7 +384,6 @@ export default function CompanyProfilePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-3">
-                {/* Имэйл хаяг */}
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл хаяг</span>
                   <span className="text-sm font-semibold text-gray-800 block truncate max-w-full">{formData.email}</span>
@@ -394,7 +394,6 @@ export default function CompanyProfilePage() {
                 </div>
               </div>
               <div className="space-y-3">
-                {/* Цахим хуудас */}
                 <div>
                   <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Цахим хуудас</span>
                   {formData.website ? (
