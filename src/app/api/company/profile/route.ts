@@ -1,13 +1,13 @@
 import { NextResponse, NextRequest } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 // 1. Компанийн профайл мэдээллийг авах (GET)
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const companyId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const companyId = session?.userId
+    const userRole = session?.role
 
     if (!companyId || userRole !== "company") {
       return NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 401 })
@@ -32,9 +32,9 @@ export async function GET() {
 // 2. Компанийн профайл мэдээллийг шинэчлэх (PUT)
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const companyId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const companyId = session?.userId
+    const userRole = session?.role
 
     if (!companyId || userRole !== "company") {
       return NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 401 })

@@ -1,11 +1,11 @@
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import StaffView from "./components/StaffView"
 import CompanyView from "./components/CompanyView"
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("user_id")?.value
-  const userRole = cookieStore.get("user_role")?.value
+  const session = await getSession()
+  const userId = session?.userId
+  const userRole = session?.role
 
   if (!userId) return null
 

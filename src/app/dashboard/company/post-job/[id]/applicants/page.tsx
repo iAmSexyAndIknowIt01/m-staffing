@@ -1,4 +1,5 @@
-import { cookies } from "next/headers"
+import { headers } from "next/headers"
+import { getSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import JobApplicantsList from "./JobApplicantsList"
@@ -11,9 +12,9 @@ interface PageProps {
 
 export default async function JobApplicantsPage({ params }: PageProps) {
   const { id: jobId } = await params
-  const cookieStore = await cookies()
-  const companyId = cookieStore.get("user_id")?.value
-  const userRole = cookieStore.get("user_role")?.value
+  const session = await getSession()
+  const companyId = session?.userId
+  const userRole = session?.role
 
   if (!companyId || userRole !== "company") {
     redirect("/dashboard")
@@ -27,7 +28,7 @@ export default async function JobApplicantsPage({ params }: PageProps) {
     // Дамжуулсан күүки толгойг (headers) ашиглан API Route-оо дуудна
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
     const response = await fetch(`${baseUrl}/api/company/jobrequest/${jobId}`, {
-      headers: { Cookie: `user_id=${companyId}; user_role=${userRole}` },
+      headers: { cookie: (await headers()).get("cookie") || "" },
       next: { revalidate: 0 }
     })
     

@@ -1,12 +1,12 @@
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import PostJobForm from "./PostJobForm" // Таны кодын харьцангуй замаас хамаарч байршлыг тааруулна уу
 
 export default async function AddJobPage() {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("user_id")?.value
-  const userRole = cookieStore.get("user_role")?.value
+  const session = await getSession()
+  const userId = session?.userId
+  const userRole = session?.role
 
   // Хамгаалалт: Хэрэв нэвтрээгүй эсвэл Ажил хайгч (staff) энэ хуудас руу орвол буцаана
   if (!userId || userRole !== "company") {

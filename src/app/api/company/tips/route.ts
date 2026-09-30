@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase" // Таны төслийн supabase client холболт
 
 export async function GET() {
   try {
     // 1. КОМПАНИ ЭРХТЭЙ ЭСЭХИЙГ ШАЛГАХ
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "company") {
       return NextResponse.json(

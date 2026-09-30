@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers"; // 🔥 Күүки уншихад ашиглана
+import { getSession } from "@/lib/session"; // 🔥 Күүки уншихад ашиглана
 import { supabase } from "@/lib/supabase"; 
 import nodemailer from "nodemailer";
 
@@ -9,7 +9,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
-  tls: { rejectUnauthorized: false },
 });
 
 export async function POST(req: Request) {
@@ -21,8 +20,8 @@ export async function POST(req: Request) {
     }
 
     // 1. 🔥 КҮҮКИ-ЭЭС STAFF_ID-Г УНШИЖ АВАХ
-    const cookieStore = await cookies();
-    const staffId = cookieStore.get("user_id")?.value; // Таны күүкиний нэр 'user_id' гэж үзэв
+    const session = await getSession();
+    const staffId = session?.userId; // Таны күүкиний нэр 'user_id' гэж үзэв
 
     if (!staffId) {
       return NextResponse.json({ message: "Хэрэглэгчийн сесс олдсонгүй (staff_id күүки байхгүй байна)" }, { status: 401 });

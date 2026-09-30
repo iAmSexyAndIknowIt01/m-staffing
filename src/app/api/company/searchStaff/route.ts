@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 export async function GET(request: Request) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "company") {
       return NextResponse.json(

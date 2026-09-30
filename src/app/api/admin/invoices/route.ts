@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { getSession } from "@/lib/session"
+
+const forbidden = () =>
+  NextResponse.json({ success: false, error: "Хандах эрхгүй байна." }, { status: 403 })
 
 // 1. БҮХ НЭХЭМЖЛЭХИЙГ ТАТАХ (GET)
 export async function GET() {
   try {
+    // Зөвхөн админ хандана
+    const session = await getSession()
+    if (!session?.isAdmin) return forbidden()
+
     const { data: invoices, error } = await supabase
       .from("mt_company_invoices")
       .select("*")
@@ -21,6 +29,10 @@ export async function GET() {
 // 2. ТӨЛБӨРИЙН ТӨЛӨВ ӨӨРЧЛӨХ (PUT) - Баталгаажуулах эсвэл Цуцлах хоёуланг нь шийднэ
 export async function PUT(req: Request) {
   try {
+    // Зөвхөн админ хандана
+    const session = await getSession()
+    if (!session?.isAdmin) return forbidden()
+
     const body = await req.json()
     const { invoice_id, status } = body // status нь "paid" эсвэл "decline" байна
 

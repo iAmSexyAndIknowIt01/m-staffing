@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase" 
 
 // ==========================================
@@ -7,9 +7,9 @@ import { supabase } from "@/lib/supabase"
 // ==========================================
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     // 1. Хамгаалалт: Нэвтрээгүй эсвэл компани биш бол хандалтыг таслах
     if (!userId || userRole !== "company") {
@@ -75,9 +75,9 @@ export async function POST(request: Request) {
 // ==========================================
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     // Хамгаалалт: Эрхгүй бол буцаах
     if (!userId || userRole !== "company") {
