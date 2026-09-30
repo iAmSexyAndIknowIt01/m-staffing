@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 // GET PROFILE
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(
@@ -151,9 +151,9 @@ export async function GET() {
 // ========================================
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(

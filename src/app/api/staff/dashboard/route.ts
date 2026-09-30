@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
 
 export const revalidate = 0;
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
+    // Хэрэглэгчийг URL-ээс биш, гарын үсэгтэй session-оос таньна
+    const session = await getSession();
+    const userId = session?.userId;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Хэрэглэгчийн ID шаардлагатай" }, { status: 400 });
+    if (!userId || session.role !== "staff") {
+      return NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 403 });
     }
 
     // Долоо хоногийн эхлэлийг (Даваа гараг 00:00:00) тооцоолох

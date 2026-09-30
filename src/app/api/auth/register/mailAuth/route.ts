@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase"; 
 import nodemailer from "nodemailer";
+import { randomInt } from "crypto";
 
 // Gmail SMTP тохиргоо
 // Gmail SMTP тохиргоог ингэж шинэчилнэ:
@@ -9,11 +10,7 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
-  },
-  tls: {
-    // SSL гэрчилгээний алдааг үл тоомсорлож, холболтыг үргэлжлүүлнэ
-    rejectUnauthorized: false,
-  },
+  }
 });
 
 export async function POST(req: Request) {
@@ -36,7 +33,7 @@ export async function POST(req: Request) {
     }
 
     // 6 оронтой код үүсгэх
-    const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const generatedCode = randomInt(100000, 1000000).toString();
 
     // register_auth хүснэгтэд хадгалах
     const { error: insertError } = await supabase

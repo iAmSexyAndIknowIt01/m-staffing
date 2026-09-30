@@ -1,13 +1,14 @@
-import { cookies, headers } from "next/headers"
+import { headers } from "next/headers"
+import { getSession } from "@/lib/session"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
 import EditJobForm from "./EditJobForm"
 
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("user_id")?.value
-  const userRole = cookieStore.get("user_role")?.value
+  const session = await getSession()
+  const userId = session?.userId
+  const userRole = session?.role
 
   // Хамгаалалт: Хэрэв нэвтрээгүй эсвэл Ажил хайгч (staff) энэ хуудас руу орвол буцаана
   if (!userId || userRole !== "company") {

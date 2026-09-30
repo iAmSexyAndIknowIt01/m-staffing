@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 // 1. ТӨЛБӨРИЙН ТҮҮХ ТАТАХ (GET)
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
+    const session = await getSession()
+    const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "company") {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
@@ -30,10 +30,10 @@ export async function GET() {
 // 2. НЭХЭМЖЛЭХ ҮҮСГЭХ / ХАДГАЛАХ (POST)
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
+    const session = await getSession()
+    const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "company") {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 

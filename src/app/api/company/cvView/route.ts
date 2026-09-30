@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies()
-    const companyId = cookieStore.get("user_id")?.value
+    const session = await getSession()
+    const companyId = session?.userId
 
     if (!companyId) {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })

@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase"
+import { createAuthClient } from "@/lib/supabase"
+import {
+  SESSION_COOKIE,
+  createSessionToken,
+  isAdminEmail,
+  sessionCookieOptions,
+} from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +17,16 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
+    if (role !== "staff" && role !== "company") {
+      return NextResponse.json(
+        { message: "Хэрэглэгчийн төрөл буруу байна" },
+        { status: 400 }
+      )
+    }
+
+    // Хүсэлт бүрт тусдаа клиент — session нь бусад хэрэглэгчтэй холилдохгүй
+    const supabase = createAuthClient()
 
     // 1. Supabase Auth Login
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -26,69 +42,49 @@ export async function POST(req: Request) {
     }
 
     const userId = data.user.id
+    const userEmail = data.user.email || email
+    const isAdmin = isAdminEmail(userEmail)
 
-    // 2. ROLE CHECK
-    if (role === "staff") {
-      const { data: staff, error: staffError } = await supabase
-        .from("mt_staff")
+    // 2. ROLE CHECK (админ бол staff/company бүртгэлгүй байж болно)
+    if (!isAdmin) {
+      const table = role === "staff" ? "mt_staff" : "mt_company"
+      const { data: account, error: accountError } = await supabase
+        .from(table)
         .select("id")
         .eq("id", userId)
         .maybeSingle()
 
-      if (staffError || !staff) {
+      if (accountError || !account) {
         await supabase.auth.signOut()
         return NextResponse.json(
-          { message: "Ажил хайгч бүртгэл олдсонгүй" },
+          {
+            message: role === "staff"
+              ? "Ажил хайгч бүртгэл олдсонгүй"
+              : "Ажил олгогч бүртгэл олдсонгүй",
+          },
           { status: 403 }
         )
       }
     }
 
-    if (role === "company") {
-      const { data: company, error: companyError } = await supabase
-        .from("mt_company")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle()
-
-      if (companyError || !company) {
-        await supabase.auth.signOut()
-        return NextResponse.json(
-          { message: "Ажил олгогч бүртгэл олдсонгүй" },
-          { status: 403 }
-        )
-      }
-    }
-
-    // 3. SUCCESS & SET COOKIE
-    const redirectUrl = role === "staff" ? "/dashboard" : "/dashboard"
+    // 3. SUCCESS & SET SIGNED SESSION COOKIE
     const response = NextResponse.json({
       success: true,
-      user: { id: userId, email: data.user.email, role },
-      redirect: redirectUrl,
+      user: { id: userId, email: userEmail, role },
+      redirect: isAdmin ? "/admin/dashboard" : "/dashboard",
     })
 
-    // Cookie-д хэрэглэгчийн мэдээллийг аюулгүй хадгалах
-    // Тэмдэглэл: Бодит амьдрал дээр Supabase Access Token-ийг мөн ингэж хадгалдаг
-    response.cookies.set("user_id", userId, {
-      path: "/",
-      httpOnly: false, // Dashboard (Client side) дээр унших шаардлагатай бол false, зөвхөн API/Server-д бол true
-      secure: process.env.NODE_ENV === "production", // Зөвхөн HTTPS дээр ажиллана (Production-д)
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7, // 7 хоног хадгална
-    })
+    const token = await createSessionToken({ userId, role, email: userEmail, isAdmin })
+    response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions)
 
-    response.cookies.set("user_role", role, {
-      path: "/",
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
-    })
+    // Хуучин гарын үсэггүй cookie-г устгана
+    response.cookies.delete("user_id")
+    response.cookies.delete("user_role")
 
     return response
 
-  } catch {
+  } catch (err) {
+    console.error("LOGIN_ERROR:", err)
     return NextResponse.json(
       { message: "Системийн алдаа" },
       { status: 500 }

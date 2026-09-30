@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 export async function GET(
@@ -7,8 +7,8 @@ export async function GET(
   { params }: { params: Promise<{ jobid: string }> }
 ) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
+    const session = await getSession()
+    const userId = session?.userId
 
     if (!userId) {
       return NextResponse.json(
