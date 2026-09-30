@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 export const revalidate = 0;
@@ -10,9 +10,9 @@ export async function GET(
 ) {
   try {
     const { jobid } = await params;
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("user_id")?.value;
-    const userRole = cookieStore.get("user_role")?.value;
+    const session = await getSession();
+    const userId = session?.userId;
+    const userRole = session?.role;
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(
@@ -93,9 +93,9 @@ async function handleUpdateStatus(
 ) {
   try {
     const { jobid } = await paramsPromise;
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("user_id")?.value;
-    const userRole = cookieStore.get("user_role")?.value;
+    const session = await getSession();
+    const userId = session?.userId;
+    const userRole = session?.role;
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(

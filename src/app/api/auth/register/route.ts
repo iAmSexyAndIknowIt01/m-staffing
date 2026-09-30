@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase"
+import { createAuthClient } from "@/lib/supabase"
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +17,9 @@ export async function POST(req: Request) {
     if (role === "company" && !companyName) {
       return NextResponse.json({ message: "Компанийн нэр шаардлагатай" }, { status: 400 })
     }
+
+    // Хүсэлт бүрт тусдаа клиент — шинэ хэрэглэгчийн session бусадтай холилдохгүй
+    const supabase = createAuthClient()
 
     // 1. Supabase Auth руу бүртгэнэ (Энэ үед имэйл автоматаар илгээгдэнэ)
     const { data, error } = await supabase.auth.signUp({

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 // 1. Хэрэглэгчийн хадгалсан бүх ажлын ID-г авах (GET)
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(
@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
 // 2. Bookmark нэмэх эсвэл хасах (POST) -> job_bookmarks рүү insert/delete хийх
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const userId = session?.userId
+    const userRole = session?.role
 
     if (!userId || userRole !== "staff") {
       return NextResponse.json(

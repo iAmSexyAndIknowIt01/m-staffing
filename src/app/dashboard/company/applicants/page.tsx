@@ -1,4 +1,4 @@
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import { supabase } from "@/lib/supabase" // Supabase-ийг шууд импортлов
 import ApplicantsList from "./ApplicantsList"
@@ -6,9 +6,9 @@ import ApplicantsList from "./ApplicantsList"
 export const dynamic = "force-dynamic"
 
 export default async function ApplicantsPage() {
-  const cookieStore = await cookies()
-  const companyId = cookieStore.get("user_id")?.value
-  const userRole = cookieStore.get("user_role")?.value
+  const session = await getSession()
+  const companyId = session?.userId
+  const userRole = session?.role
 
   if (!companyId || userRole !== "company") {
     redirect("/dashboard")

@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server"
-import { cookies } from "next/headers"
+import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 interface RouteParams {
@@ -11,9 +11,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params // URL-аас компанийн ID-г уншиж авна
     
-    const cookieStore = await cookies()
-    const currentUserId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const currentUserId = session?.userId
+    const userRole = session?.role
 
     // Компанийн мэдээллийг ID-аар нь баазаас хайна (Энд эрх шаардахгүй, хэн ч үзэж болно)
     const { data, error } = await supabase
@@ -42,9 +42,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params // URL-аас засах гэж буй компанийн ID-г авна
     
-    const cookieStore = await cookies()
-    const currentUserId = cookieStore.get("user_id")?.value
-    const userRole = cookieStore.get("user_role")?.value
+    const session = await getSession()
+    const currentUserId = session?.userId
+    const userRole = session?.role
 
     // АЮУЛГҮЙ БАЙДЛЫН ШАЛГАЛТ: Өөрийн компани мөн эсэхийг шалгана
     if (!currentUserId || currentUserId !== id || userRole !== "company") {
