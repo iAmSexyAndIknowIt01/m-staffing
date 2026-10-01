@@ -187,7 +187,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8 lg:py-0">
       {/* BG */}
       <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
 
@@ -199,23 +199,23 @@ export default function RegisterPage() {
 
       <Link
         href="/login"
-        className="fixed top-8 left-8 z-20 glass rounded-full px-6 py-3 transition hover:-translate-y-1"
+        className="fixed top-4 left-4 sm:top-8 sm:left-8 z-20 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base transition hover:-translate-y-1"
       >
         ← Нэвтрэх
       </Link>
 
-      <div className="relative z-10 max-w-300 w-full grid lg:grid-cols-2 gap-10 items-center">
+      <div className="relative z-10 max-w-300 w-full grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
         {/* LEFT */}
-        <div className="relative overflow-hidden rounded-[40px] min-h-155 flex flex-col justify-center p-14">
+        <div className="relative overflow-hidden rounded-[32px] lg:rounded-[40px] lg:min-h-155 flex flex-col justify-center px-6 py-10 lg:p-14">
           <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,rgba(255,140,0,.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,.06)_1px,transparent_1px)] bg-size-[56px_56px]" />
           <div className="absolute -left-32 top-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full bg-orange-300/20 blur-[140px]" />
 
           <div className="relative z-10">
             <p className="orange-text font-bold tracking-[6px]">MSTAFFING</p>
-            <h1 className="mt-6 text-5xl md:text-7xl font-black leading-[1.05]">
+            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05]">
               {role === "staff" ? "Шинэ боломж." : "Шинэ ажилтан."}
             </h1>
-            <p className="mt-8 text-gray-500 text-xl leading-9">
+            <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl leading-7 sm:leading-9">
               {role === "staff"
                 ? "Хэдхэн алхмаар бүртгүүлээд ажил хайж эхлээрэй."
                 : "Компаниа бүртгүүлээд ажилтан хайж эхлээрэй."}
@@ -224,7 +224,7 @@ export default function RegisterPage() {
         </div>
 
         {/* RIGHT */}
-        <div className="glass rounded-[40px] p-10">
+        <div className="glass rounded-[32px] sm:rounded-[40px] p-6 sm:p-10">
           <div className="bg-orange-50 rounded-full p-2 flex">
             <button
               type="button"
@@ -247,10 +247,10 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <h2 className="text-3xl font-black mt-10">Бүртгүүлэх</h2>
+          <h2 className="text-2xl sm:text-3xl font-black mt-8 sm:mt-10">Бүртгүүлэх</h2>
 
           {role === "staff" ? (
-            <div className="mt-8 grid grid-cols-2 gap-4">
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* ОВОГ INPUT */}
               <div>
                 <label className={`transition-colors ${lastNameError ? "text-red-500 font-medium" : ""}`}>Овог</label>

@@ -350,8 +350,8 @@ export default function BillingPage() {
             🧾 Одоогоор төлбөрийн түүх байхгүй байна.
           </div>
         ) : (
-          <div className="bg-white border border-gray-100 rounded-4xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs">
+          <div className="bg-white border border-gray-100 rounded-4xl overflow-x-auto shadow-sm">
+            <table className="w-full min-w-140 text-left text-xs">
               <thead className="bg-slate-50 text-gray-500 uppercase font-bold border-b border-gray-100">
                 <tr>
                   <th className="p-4">Огноо</th>

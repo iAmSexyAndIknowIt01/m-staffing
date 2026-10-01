@@ -34,7 +34,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
     <div className="min-h-screen bg-[#f8faff] flex flex-col lg:flex-row w-full relative">
       
       {/* 1. MOBILE NAVBAR */}
-      <div className="lg:hidden w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">
+      <div className="lg:hidden sticky top-0 w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">
         <LinkNext 
           href="/dashboard" 
           onClick={() => setMobileMenuOpen(false)}
@@ -45,6 +45,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? "Цэс хаах" : "Цэс нээх"}
           className="text-2xl p-2 focus:outline-none text-gray-700"
         >
           {mobileMenuOpen ? "✕" : "☰"}
@@ -53,7 +54,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
       {/* MOBILE MENU DROPDOWN */}
       {mobileMenuOpen && (
-        <div className="lg:hidden w-full bg-white border-b border-gray-100 z-40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden sticky top-16 w-full max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-gray-100 z-40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="p-4 space-y-3">
             <LinkNext
               href="/dashboard"
@@ -298,7 +299,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       </aside>
 
       {/* 3. ҮНДСЭН КОНТЕНТ */}
-      <main className="flex-1 p-6 md:p-12 overflow-y-auto w-full flex flex-col">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-12 overflow-y-auto w-full flex flex-col">
         {children}
       </main>
 
