@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { randomInt } from "crypto"
+
+const INVOICE_NUMBER_REGEX = /^MSTAFF-\d{6}$/
+
+function generateInvoiceNumber(): string {
+  return `MSTAFF-${randomInt(100000, 1000000)}`
+}
 
 // 1. ТӨЛБӨРИЙН ТҮҮХ ТАТАХ (GET)
 export async function GET() {
@@ -38,7 +45,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { plan_type, init_only } = body
+    const { plan_type, init_only, invoice_number } = body
 
     if (!plan_type || !["standard", "premium"].includes(plan_type)) {
       return NextResponse.json({ success: false, error: "Багцын төрөл буруу байна." }, { status: 400 })
@@ -51,9 +58,12 @@ export async function POST(req: Request) {
 
     const selectedPlan = planDetails[plan_type]
 
-    // Санамсаргүй 4 оронтой тоотой гүйлгээний утга үүсгэх
-    const randomDigits = Math.floor(1000 + Math.random() * 9000)
-    const invoiceNumber = `MSTAFF-${randomDigits}`
+    // Модал дээр харуулсан утгыг хэрэглэгч шилжүүлгийн утгад бичсэн тул хадгалахдаа тэрийг ашиглана.
+    // Үгүй бол криптографын санамсаргүй 6 оронтой утга үүсгэнэ (DB дээр unique constraint бий).
+    const invoiceNumber =
+      typeof invoice_number === "string" && INVOICE_NUMBER_REGEX.test(invoice_number)
+        ? invoice_number
+        : generateInvoiceNumber()
 
     const invoicePayload = {
       invoiceNumber: invoiceNumber,
@@ -78,6 +88,14 @@ export async function POST(req: Request) {
         amount: selectedPlan.price,
         status: "pending"
       })
+
+    // Гүйлгээний утга давхцсан (unique_violation)
+    if (invoiceError?.code === "23505") {
+      return NextResponse.json(
+        { success: false, error: "Гүйлгээний утга давхцлаа. Цонхоо хаагаад дахин оролдоно уу." },
+        { status: 409 }
+      )
+    }
 
     if (invoiceError) throw invoiceError
 
