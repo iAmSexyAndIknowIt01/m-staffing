@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server"
-import { createAuthClient } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
+
+// mailAuth PUT-ээр баталгаажсанаас хойш энэ хугацаанд бүртгэлээ дуусгах ёстой
+const VERIFIED_TTL_MS = 15 * 60 * 1000
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { role, firstName, lastName, companyName, email, password } = body
+    const { role, firstName, lastName, companyName, password } = body
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
 
     if (!role || !email || !password) {
       return NextResponse.json({ message: "Мэдээлэл дутуу байна" }, { status: 400 })
+    }
+
+    if (role !== "staff" && role !== "company") {
+      return NextResponse.json({ message: "Хэрэглэгчийн төрөл буруу байна" }, { status: 400 })
     }
 
     if (role === "staff" && (!firstName || !lastName)) {
@@ -18,21 +26,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Компанийн нэр шаардлагатай" }, { status: 400 })
     }
 
-    // Хүсэлт бүрт тусдаа клиент — шинэ хэрэглэгчийн session бусадтай холилдохгүй
-    const supabase = createAuthClient()
+    // 0. Имэйл кодоор баталгаажсан эсэхийг серверт шалгана.
+    // Ингэхгүй бол энэ API-г шууд дуудаж баталгаажуулалтыг алгасах боломжтой.
+    const { data: verification } = await supabase
+      .from("register_auth")
+      .select("verified_at")
+      .eq("mail", email)
+      .not("verified_at", "is", null)
+      .order("verified_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-    // 1. Supabase Auth руу бүртгэнэ (Энэ үед имэйл автоматаар илгээгдэнэ)
-    const { data, error } = await supabase.auth.signUp({
+    if (!verification || Date.now() - new Date(verification.verified_at).getTime() > VERIFIED_TTL_MS) {
+      return NextResponse.json(
+        { message: "Имэйл баталгаажаагүй байна. Дахин код авч баталгаажуулна уу." },
+        { status: 403 }
+      )
+    }
+
+    // 1. Supabase Auth руу бүртгэнэ. Имэйлийг манай кодоор аль хэдийн
+    // баталгаажуулсан тул email_confirm: true — Supabase дахин имэйл илгээхгүй.
+    const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          role,
-          first_name: firstName,
-          last_name: lastName,
-          company_name: companyName,
-        },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback`,
+      email_confirm: true,
+      user_metadata: {
+        role,
+        first_name: firstName,
+        last_name: lastName,
+        company_name: companyName,
       },
     })
 
@@ -45,20 +67,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Хэрэглэгч үүссэнгүй" }, { status: 500 })
     }
 
-    // 2. Хэрэв имэйл баталгаажуулалт идэвхтэй бөгөөд identities хоосон байвал
-    if (data.session === null) {
-      return NextResponse.json({
-        success: true,
-        requiresVerification: true,
-        message: "Бүртгэл амжилттай. Баталгаажуулах имэйлийг таны хаяг руу илгээлээ. Имэйлээ шалгана уу.",
-      })
-    }
+    // Баталгаажуулах кодыг дахин ашиглахгүйн тулд устгана
+    await supabase.from("register_auth").delete().eq("mail", email)
 
-    // 3. Хэрэв Supabase дээр Email Verification унтраалтай байвал шууд insert хийнэ
+    // 2. Профайлын хүснэгтүүдийг үүсгэнэ
     if (role === "staff") {
       await supabase.from("mt_staff").insert({ id: user.id, first_name: firstName, last_name: lastName, email })
       await supabase.from("mt_profile").insert({ user_id: user.id, email, phone: "", bio: "", skills: "", experience: "", education: "" })
-    } else if (role === "company") {
+    } else {
       // А) Компанийн үндсэн мэдээллийг оруулна
       const { error: companyError } = await supabase
         .from("mt_company")
@@ -66,7 +82,7 @@ export async function POST(req: Request) {
 
       if (companyError) throw companyError
 
-      // Б) 🔥 ШИНЭЧЛЭЛТ: Тухайн компанид зориулж default (Free) багцыг үүсгэнэ
+      // Б) Тухайн компанид зориулж default (Free) багцыг үүсгэнэ
       const { error: subError } = await supabase
         .from("mt_company_subscriptions")
         .insert({
@@ -79,7 +95,7 @@ export async function POST(req: Request) {
 
       if (subError) {
         console.error("Subscription үүсгэхэд алдаа гарлаа:", subError)
-        // Тэмдэглэл: Компани амжилттай үүссэн ч багц дээр алдаа гарвал 
+        // Тэмдэглэл: Компани амжилттай үүссэн ч багц дээр алдаа гарвал
         // dashboard API өөрөө default датаг буцаадаг хамгаалалттай байгаа.
       }
     }
@@ -91,6 +107,7 @@ export async function POST(req: Request) {
     })
 
   } catch (err) {
+    console.error("REGISTER_ERROR:", err)
     return NextResponse.json({ message: "Системийн алдаа" }, { status: 500 })
   }
 }
