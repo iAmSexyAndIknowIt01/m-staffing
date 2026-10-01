@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { uploadImage } from "@/lib/uploadImage"
 
 interface CompanyProfileData {
   id?: string
@@ -101,19 +101,7 @@ export default function CompanyProfilePage() {
     setMessage(null)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `logos/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from("company-logos")
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("company-logos")
-        .getPublicUrl(filePath)
+      const publicUrl = await uploadImage(file, "company-logos")
 
       setFormData((prev) => ({ ...prev, logo_url: publicUrl }))
       setMessage({ type: "success", text: "Лого ачаалагдлаа. Хадгалах товчийг дарж баталгаажуулна уу." })

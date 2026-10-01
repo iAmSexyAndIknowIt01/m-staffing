@@ -117,7 +117,8 @@ export default function BillingPage() {
       const res = await fetch("/api/company/billing/upgrade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan_type: selectedPlan.id })
+        // Модал дээр харуулсан гүйлгээний утгыг хадгална (шинээр үүсгэвэл хэрэглэгчийн шилжүүлсэн утгатай таарахгүй)
+        body: JSON.stringify({ plan_type: selectedPlan.id, invoice_number: invoiceDetails?.invoiceNumber })
       })
       const result = await res.json()
       if (result.success) {

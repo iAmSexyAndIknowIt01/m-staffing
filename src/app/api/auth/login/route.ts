@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createAuthClient } from "@/lib/supabase"
+import { createAuthClient, supabase } from "@/lib/supabase"
 import {
   SESSION_COOKIE,
   createSessionToken,
@@ -26,10 +26,10 @@ export async function POST(req: Request) {
     }
 
     // Хүсэлт бүрт тусдаа клиент — session нь бусад хэрэглэгчтэй холилдохгүй
-    const supabase = createAuthClient()
+    const authClient = createAuthClient()
 
     // 1. Supabase Auth Login
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await authClient.auth.signInWithPassword({
       email,
       password,
     })
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         .maybeSingle()
 
       if (accountError || !account) {
-        await supabase.auth.signOut()
+        await authClient.auth.signOut()
         return NextResponse.json(
           {
             message: role === "staff"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { supabase } from "@/lib/supabase"
+import { uploadImage } from "@/lib/uploadImage"
 import BioModal from "@/components/profile/modals/BioModal"
 import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
@@ -130,19 +130,7 @@ export default function StaffProfilePage() {
     setError(null)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath)
+      const publicUrl = await uploadImage(file, "avatars")
 
       setAvatarUrl(publicUrl)
       setMessage("Зураг түр ачаалагдлаа. 'Профайл хадгалах' товчийг дарж баталгаажуулна уу.")
