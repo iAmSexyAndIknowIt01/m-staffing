@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
 // ⚠️ Зөвхөн сервер талд (API route, Server Component) ашиглана.
 // service_role key нь RLS-ийг тойрдог тул клиент компонентоос хэзээ ч импортлохгүй.
@@ -16,12 +16,26 @@ function getServiceRoleKey(): string {
   return key
 }
 
-// Сервер талд бүх хүсэлт хуваалцдаг клиент — auth session хадгалахгүй
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  getServiceRoleKey(),
-  { auth: { persistSession: false, autoRefreshToken: false } }
-)
+let serviceClient: SupabaseClient | null = null
+
+function getServiceClient(): SupabaseClient {
+  serviceClient ??= createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    getServiceRoleKey(),
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  )
+  return serviceClient
+}
+
+// Сервер талд бүх хүсэлт хуваалцдаг клиент — auth session хадгалахгүй.
+// Анх ашиглах үед үүсгэнэ: `next build` импортлох үед key шаардахгүй.
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    const client = getServiceClient()
+    const value = Reflect.get(client, prop)
+    return typeof value === "function" ? value.bind(client) : value
+  },
+})
 
 // Нэвтрэх үед (signInWithPassword) хүсэлт бүрт шинэ клиент үүсгэнэ.
 // Ингэхгүй бол нэг хэрэглэгчийн session хуваалцсан клиент дээр үлдэнэ.
