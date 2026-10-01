@@ -107,14 +107,22 @@ async function handleUpdateStatus(
     const body = await request.json();
     const newStatus = body.status || "accepted";
 
-    // Тухайн хүсэлт нь зөвхөн нэвтэрсэн хэрэглэгчийнх (applicant_id) мөн эсэхийг шалгаад update хийх
+    // Ажилтан зөвхөн ярилцлагын урилгыг (interview) хүлээн авч чадна.
+    // Бусад төлөвийг (approved, rejected г.м.) зөвхөн компани тогтооно.
+    if (newStatus !== "accepted") {
+      return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 });
+    }
+
+    // Тухайн хүсэлт нь зөвхөн нэвтэрсэн хэрэглэгчийнх (applicant_id) бөгөөд
+    // ярилцлагад урьсан төлөвтэй байгаа эсэхийг шалгаад update хийх
     const { data, error } = await supabase
       .from("tr_job_request")
       .update({ status: newStatus })
       .eq("id", jobid)
       .eq("applicant_id", userId)
+      .eq("status", "interview")
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Supabase update error:", error);

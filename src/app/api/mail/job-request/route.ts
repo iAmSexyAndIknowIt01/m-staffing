@@ -11,6 +11,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function POST(req: Request) {
   try {
     const { job_id } = await req.json();
@@ -23,8 +32,25 @@ export async function POST(req: Request) {
     const session = await getSession();
     const staffId = session?.userId; // Таны күүкиний нэр 'user_id' гэж үзэв
 
-    if (!staffId) {
+    if (!staffId || session.role !== "staff") {
       return NextResponse.json({ message: "Хэрэглэгчийн сесс олдсонгүй (staff_id күүки байхгүй байна)" }, { status: 401 });
+    }
+
+    // Анкет бүрт зөвхөн нэг удаа мэйл илгээнэ: notified_at-г атомаар тэмдэглэж,
+    // анкет байхгүй эсвэл өмнө нь мэйл явсан бол илгээхгүй (spam-аас сэргийлнэ)
+    const { data: claimed, error: claimError } = await supabase
+      .from("tr_job_request")
+      .update({ notified_at: new Date().toISOString() })
+      .eq("job_id", job_id)
+      .eq("applicant_id", staffId)
+      .is("notified_at", null)
+      .select("id")
+      .maybeSingle();
+
+    if (claimError) throw claimError;
+
+    if (!claimed) {
+      return NextResponse.json({ message: "Мэйл аль хэдийн илгээгдсэн эсвэл анкет олдсонгүй" }, { status: 409 });
     }
 
     // 2. Ажил хайгчийн (Staff) мэдээллийг баазаас шүүж авах
@@ -60,8 +86,11 @@ export async function POST(req: Request) {
     }
 
     const companyEmail = (jobData.mt_company as any).email;
-    const companyName = (jobData.mt_company as any).company_name;
-    const jobTitle = jobData.title;
+    // Хэрэглэгчийн оруулсан утгуудыг HTML-д escape хийнэ (мэйл дотор линк/HTML шигтгэхээс сэргийлнэ)
+    const companyName = escapeHtml((jobData.mt_company as any).company_name);
+    const jobTitle = escapeHtml(jobData.title);
+    const safeFullName = escapeHtml(fullName);
+    const safeStaffEmail = escapeHtml(staffData.email);
 
     if (!companyEmail) {
       return NextResponse.json({ message: "Ажил олгогчийн мэйл хаяг бүртгэлгүй байна" }, { status: 400 });
@@ -71,7 +100,7 @@ export async function POST(req: Request) {
     await transporter.sendMail({
       from: `"MSTAFFING" <${process.env.GMAIL_USER}>`,
       to: companyEmail,
-      subject: `[MSTAFFING] Шинэ анкет ирлээ - ${jobTitle}`,
+      subject: `[MSTAFFING] Шинэ анкет ирлээ - ${String(jobData.title ?? "").replace(/[\r\n]+/g, " ")}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px;">
           <h2 style="color: #4f46e5; text-align: center;">MSTAFFING</h2>
@@ -80,8 +109,8 @@ export async function POST(req: Request) {
           
           <div style="background-color: #f5f3ff; border: 1px solid #ddd6fe; padding: 15px; margin: 20px 0; border-radius: 8px;">
             <p style="margin: 0; font-size: 14px; color: #4c1d95; line-height: 1.6;">
-              <strong>Ажил хайгчийн нэр:</strong> ${fullName}<br/>
-              <strong>Холбоо барих мэйл:</strong> ${staffData.email}<br/>
+              <strong>Ажил хайгчийн нэр:</strong> ${safeFullName}<br/>
+              <strong>Холбоо барих мэйл:</strong> ${safeStaffEmail}<br/>
               <span style="display: block; margin-top: 8px; font-weight: bold;">
                 Дэлгэрэнгүйг Ажил олгогчийн хянах самбар (Dashboard) руугаа нэвтэрч үзнэ үү.
               </span>

@@ -54,6 +54,8 @@ export async function GET() {
   }
 }
 
+const COMPANY_STATUSES = ["interview", "rejected", "approved", "not-approved"]
+
 // Статус шинэчлэх (Урих, Татгалзах) үед ашиглах PUT request
 export async function PUT(request: Request) {
   try {
@@ -69,6 +71,11 @@ export async function PUT(request: Request) {
 
     if (!id || !status) {
       return NextResponse.json({ error: "Мэдээлэл дутуу байна." }, { status: 400 })
+    }
+
+    // Компани зөвхөн эдгээр төлөвийг тогтооно ("accepted"-ийг ажилтан өөрөө тогтооно)
+    if (!COMPANY_STATUSES.includes(status)) {
+      return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 })
     }
 
     // Аюулгүй байдлын үүднээс зөвхөн өөрийн компанийн зарт ирсэн хүсэлт мөн эсэхийг 
