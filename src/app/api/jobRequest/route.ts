@@ -8,9 +8,9 @@ export async function POST(request: Request) {
     const session = await getSession()
     const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "staff") {
       return NextResponse.json(
-        { error: "Анкет илгээхийн тулд нэвтрэх шаардлагатай." },
+        { error: "Анкет илгээхийн тулд ажил хайгчаар нэвтрэх шаардлагатай." },
         { status: 401 }
       )
     }
@@ -54,6 +54,11 @@ export async function POST(request: Request) {
           status: 'pending'
         }
       ])
+
+    // Нэг ажлын байранд давтан анкет илгээх (unique_violation)
+    if (insertError?.code === "23505") {
+      return NextResponse.json({ error: "Та энэ ажлын байранд анкет илгээсэн байна." }, { status: 409 })
+    }
 
     if (insertError) throw new Error(insertError.message)
 

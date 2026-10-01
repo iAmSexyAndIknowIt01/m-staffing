@@ -30,8 +30,9 @@ export async function GET(request: Request) {
     // 3. АНКЕТЫН ID-ААР СУУРЬ АЖИЛТНЫ STAFF_ID-Г ОЛОХ
     const { data: applicationData, error: appError } = await supabase
       .from("tr_job_request")
-      .select("applicant_id, job_id")
+      .select("applicant_id, job_id, mt_openjob!inner(user_id)")
       .eq("id", jobID)
+      .eq("mt_openjob.user_id", userId) // Зөвхөн өөрийн зарласан ажлын байранд ирсэн анкет
       .maybeSingle()
 
     if (appError) {
