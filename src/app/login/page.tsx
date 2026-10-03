@@ -248,6 +248,11 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <div className="mt-3 text-right">
+              <Link href="/forgot-password" className="orange-text text-sm hover:underline">
+                Нууц үгээ мартсан уу?
+              </Link>
+            </div>
           </div>
 
           <button
