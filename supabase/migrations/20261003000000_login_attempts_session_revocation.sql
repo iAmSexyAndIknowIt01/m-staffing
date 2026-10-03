@@ -10,7 +10,8 @@ begin;
 -- 1. Нэвтрэх оролдлогууд — /api/auth/login нь сүүлийн 15 минутын
 --    амжилтгүй оролдлогыг имэйл болон IP-ээр тоолж хязгаарлана.
 create table if not exists public.auth_login_attempts (
-  id bigint generated always as identity primary key,
+  -- Дараалсан дугаар биш, таах боломжгүй санамсаргүй UUID (v4, 122 бит)
+  id uuid primary key default gen_random_uuid(),
   email text not null,
   ip text,
   created_at timestamptz not null default now()
