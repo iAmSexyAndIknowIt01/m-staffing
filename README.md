@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MSTAFFING
 
-## Getting Started
+Ажил хайгч (staff) болон ажил олгогч (company)-ыг холбох платформ.
+Next.js 16 (App Router) + Supabase (Postgres, Auth, Storage).
 
-First, run the development server:
+## Эхлүүлэх
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # утгуудыг бөглөнө
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Скриптүүд
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Команд | Үүрэг |
+| --- | --- |
+| `npm run dev` | Хөгжүүлэлтийн сервер |
+| `npm run build` / `npm start` | Production build / ажиллуулах |
+| `npm run typecheck` | TypeScript шалгалт |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest unit тест |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pull request бүр дээр GitHub Actions (`.github/workflows/ci.yml`) дээрх 4 шалгалт болон build-ийг ажиллуулна.
 
-## Learn More
+## Орчны хувьсагч
 
-To learn more about Next.js, take a look at the following resources:
+Бүрэн жагсаалт `.env.example`-д бий.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Хувьсагч | Тайлбар |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase төсөл. Anon key зөвхөн нэвтрэлтэд ашиглагдана |
+| `SUPABASE_SERVICE_ROLE_KEY` | Сервер талын бүх DB/Storage хандалт. **Клиент рүү хэзээ ч гаргахгүй** |
+| `SESSION_SECRET` | Session cookie-н HMAC түлхүүр, 32+ тэмдэгт |
+| `ADMIN_EMAILS` | Админ имэйлүүд (таслалаар). Жагсаалтаас хасахад тухайн админы session шууд хүчингүй болно |
+| `GMAIL_USER`, `GMAIL_APP_PASSWORD` | Бүртгэлийн баталгаажуулах код илгээх |
+| `BILLING_BANK_NAME`, `BILLING_ACCOUNT_NUMBER`, `BILLING_ACCOUNT_NAME` | Багц ахиулах үед харуулах данс. Тохируулаагүй бол төлбөрийн цонх 503 буцаана |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Архитектур
 
-## Deploy on Vercel
+- **Auth**: Supabase Auth-аар нууц үг шалгаад, өөрсдийн HMAC гарын үсэгтэй `session` cookie (`src/lib/session.ts`) олгоно. `src/proxy.ts` нь `/dashboard`, `/admin`-ыг хамгаална; API бүр `getSession()`-оор эрхээ шалгана.
+- **DB хандалт**: Бүх хүснэгт RLS асаалттай, anon/authenticated эрхгүй. Зөвхөн API route-ууд `service_role` клиентээр (`src/lib/supabase.ts`) хандана.
+- **Багц**: Үнэ, лимит `src/lib/plans.ts`-д (Free 10 / Standard 50 / Premium 100 идэвхтэй зар). Хугацаа дууссан төлбөртэй багц Free лимиттэй болно.
+- **Зураг хуулах**: Зөвхөн `/api/upload` (төрөл, хэмжээ, magic byte шалгана).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Migration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`supabase/migrations/` доторх файлуудыг дарааллаар нь ажиллуулна:
+
+```bash
+npx supabase db push
+```
+
+## Хэрэглэгчийг албадан гаргах
+
+Тухайн хэрэглэгчийн одоо байгаа бүх session-ийг хүчингүй болгох:
+
+```sql
+insert into auth_session_revocations (user_id, revoked_before)
+values ('<user-uuid>', now())
+on conflict (user_id) do update set revoked_before = now();
+```
