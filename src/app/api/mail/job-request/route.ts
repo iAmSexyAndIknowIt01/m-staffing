@@ -128,6 +128,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("MAIL_JOB_REQUEST_POST_ERROR:", error);
-    return NextResponse.json({ message: "Мэйл илгээх явцад алдаа гарлаа", error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Мэйл илгээх явцад алдаа гарлаа" }, { status: 500 });
   }
 }

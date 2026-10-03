@@ -81,7 +81,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("Ажлын зарууд татахад алдаа гарлаа:", error)
     return NextResponse.json(
-      { error: error.message || "Серверт алдаа гарлаа." },
+      { error: "Серверт алдаа гарлаа." },
       { status: 500 }
     )
   }

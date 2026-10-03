@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // 2. Алдаа гарвал буцаах хэсэг
     if (error) {
       return NextResponse.json(
-        { error: error.message },
+        { error: "Серверийн алдаа гарлаа." },
         { status: 500 }
       )
     }

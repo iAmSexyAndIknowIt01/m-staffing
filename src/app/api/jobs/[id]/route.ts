@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { hasReachedJobLimit } from "@/lib/plans"
+
+const JOB_STATUSES = ["active", "draft", "closed"]
 
 // ==========================================
 // 1. СҮДЭРЛЭХ / ХАРАХ ХЭСЭГ (GET)
@@ -48,7 +51,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Ажлын мэдээлэл татахад алдаа гарлаа:", error)
     return NextResponse.json(
-      { error: error.message || "Серверт алдаа гарлаа." },
+      { error: "Серверт алдаа гарлаа." },
       { status: 500 }
     )
   }
@@ -87,6 +90,35 @@ export async function PUT(
       )
     }
 
+    if (status !== undefined && !JOB_STATUSES.includes(status)) {
+      return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 })
+    }
+
+    // Идэвхгүй зарыг идэвхжүүлэх үед л багцын лимит шалгана
+    if (status === "active") {
+      const { data: current, error: currentError } = await supabase
+        .from("mt_openjob")
+        .select("status")
+        .eq("id", id)
+        .eq("user_id", userId)
+        .maybeSingle()
+
+      if (currentError) throw currentError
+      if (!current) {
+        return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
+      }
+
+      const { reached, limit } = current.status === "active"
+        ? { reached: false, limit: 0 }
+        : await hasReachedJobLimit(userId, id)
+      if (reached) {
+        return NextResponse.json(
+          { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна.` },
+          { status: 403 }
+        )
+      }
+    }
+
     // Баазад байгаа датаг шинэчлэх
     const { data, error } = await supabase
     .from("mt_openjob")
@@ -118,7 +150,7 @@ export async function PUT(
   } catch (error: any) {
     console.error("Жоб шинэчлэхэд алдаа гарлаа:", error)
     return NextResponse.json(
-      { error: error.message || "Серверт алдаа гарлаа." },
+      { error: "Серверт алдаа гарлаа." },
       { status: 500 }
     )
   }

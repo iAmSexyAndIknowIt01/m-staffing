@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("SUPPORT API ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа гарлаа." },
+      { error: "Серверийн алдаа гарлаа." },
       { status: 500 }
     )
   }

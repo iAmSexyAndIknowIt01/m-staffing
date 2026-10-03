@@ -1,36 +1,26 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { PLANS, getEffectiveSubscription } from "@/lib/plans"
 
 export async function GET() {
   try {
     const session = await getSession()
     const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "company") {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    // 1. Компанийн багцын мэдээллийг авах
-    let { data: subData, error: subError } = await supabase
-      .from("mt_company_subscriptions")
-      .select("plan_type, status, job_limit, expires_at")
-      .eq("user_id", userId)
-      .single()
-
-    if (subError && subError.code === "PGRST116") {
-      subData = { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
-    } else if (subError) {
-      throw subError
-    }
-
-    const subscriptionData = subData ?? { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
+    // 1. Компанийн одоо хүчинтэй багц (хугацаа дууссан бол Free лимит)
+    const subscriptionData = await getEffectiveSubscription(userId)
 
     // 2. Нээлттэй ажлын байрны тоо
     const { count: openJobsCount, error: openJobsError } = await supabase
       .from("mt_openjob")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
+      .eq("status", "active")
 
     if (openJobsError) throw openJobsError
 
@@ -130,12 +120,6 @@ export async function GET() {
 
     if (tipsError) console.error("Tips Fetch Error:", tipsError) // Алдаа гарвал консолд хэвлээд цааш ажиллана
 
-    const planNames: Record<string, string> = {
-      free: "Үнэгүй багц",
-      standard: "Standard Plan",
-      premium: "Premium Plan"
-    }
-
     return NextResponse.json({
       success: true,
       stats: {
@@ -144,10 +128,10 @@ export async function GET() {
         interviewCount: interviewCount || 0
       },
       subscription: {
-        planName: planNames[subscriptionData.plan_type] || "Тодорхойгүй багц",
+        planName: PLANS[subscriptionData.planType].name,
         status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
-        jobLimit: subscriptionData.job_limit,
-        expiresAt: subscriptionData.expires_at ? new Date(subscriptionData.expires_at).toLocaleDateString("mn-MN") : "Хугацаагүй"
+        jobLimit: subscriptionData.jobLimit,
+        expiresAt: subscriptionData.expiresAt ? new Date(subscriptionData.expiresAt).toLocaleDateString("mn-MN") : "Хугацаагүй"
       },
       activeJobs,
       recentApplicants,

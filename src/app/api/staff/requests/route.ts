@@ -44,7 +44,7 @@ export async function GET() {
 
     if (error) {
       console.error("Supabase error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data }, { status: 200 });

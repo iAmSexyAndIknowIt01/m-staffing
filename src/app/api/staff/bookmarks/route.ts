@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       .eq("user_id", userId)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 })
     }
 
     return NextResponse.json({ bookmarks: data.map((b) => b.job_id) })

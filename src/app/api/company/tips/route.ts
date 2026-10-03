@@ -37,7 +37,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("COMPANY GET TIPS ERROR:", error)
     return NextResponse.json(
-      { success: false, error: error.message || "Зөвлөгөөний мэдээллийг татаж чадсангүй." },
+      { success: false, error: "Зөвлөгөөний мэдээллийг татаж чадсангүй." },
       { status: 500 }
     )
   }

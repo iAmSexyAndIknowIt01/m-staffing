@@ -140,7 +140,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }
@@ -379,7 +379,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }

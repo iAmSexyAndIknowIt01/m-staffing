@@ -82,6 +82,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: "Амжилттай шинэчлэгдлээ" })
   } catch (error: any) {
     console.error("PUT Company Profile Error:", error)
-    return NextResponse.json({ error: error.message || "Серверт алдаа гарлаа." }, { status: 500 })
+    return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }
 }

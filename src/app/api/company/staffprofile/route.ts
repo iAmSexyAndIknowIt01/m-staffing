@@ -168,7 +168,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("COMPANY GET STAFF PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }

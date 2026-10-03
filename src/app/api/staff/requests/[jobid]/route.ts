@@ -58,7 +58,7 @@ export async function GET(
 
     if (error) {
       console.error("Supabase error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
     }
 
     if (!data) {
@@ -126,7 +126,7 @@ async function handleUpdateStatus(
 
     if (error) {
       console.error("Supabase update error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
     }
 
     if (!data) {
