@@ -83,21 +83,29 @@ export async function POST(req: Request) {
       .update({ attempts: RESET_MAX_ATTEMPTS })
       .eq("email", email)
 
-    const { error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from("password_reset_codes")
       .insert({ user_id: userId, email, code_hash: hashResetCode(code) })
+      .select("id")
+      .single()
 
     if (insertError) throw insertError
 
-    await transporter.sendMail({
-      from: MAIL_FROM,
-      to: email,
-      subject: "MSTAFFING - Нууц үг сэргээх код",
-      html: codeEmailHtml(
-        "Таны МSTAFFING бүртгэлийн нууц үг сэргээх 6 оронтой код (10 минут хүчинтэй):",
-        code
-      ),
-    })
+    try {
+      await transporter.sendMail({
+        from: MAIL_FROM,
+        to: email,
+        subject: "MSTAFFING - Нууц үг сэргээх код",
+        html: codeEmailHtml(
+          "Таны МSTAFFING бүртгэлийн нууц үг сэргээх 6 оронтой код (10 минут хүчинтэй):",
+          code
+        ),
+      })
+    } catch (mailError) {
+      // Илгээгдээгүй кодыг устгана — эс бөгөөс хэрэглэгч cooldown-д орж дахин оролдож чадахгүй
+      await supabase.from("password_reset_codes").delete().eq("id", inserted.id)
+      throw mailError
+    }
 
     return NextResponse.json({ success: true, message: GENERIC_SENT_MESSAGE })
   } catch (error) {
