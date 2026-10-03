@@ -53,7 +53,7 @@ function lockedResponse(unlockAt: Date | null) {
   const minutes = minutesUntil(unlockAt)
   return NextResponse.json(
     {
-      message: `Нууц үгээ ${MAX_FAILS_PER_EMAIL} удаа буруу оруулсан тул бүртгэл түр түгжигдлээ. ${minutes} минутын дараа дахин оролдоно уу.`,
+      message: `Нууц үгээ ${MAX_FAILS_PER_EMAIL} удаа буруу оруулсан тул бүртгэл түр түгжигдлээ. ${minutes} минутын дараа дахин оролдох, эсвэл «Нууц үгээ мартсан уу?» холбоосоор нууц үгээ сэргээнэ үү.`,
       locked: true,
       unlockAt: unlockAt?.toISOString() ?? null,
     },
