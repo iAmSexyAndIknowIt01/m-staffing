@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { one } from "@/lib/relation"
 
 // GET PROFILE
 export async function GET(request: Request) {
@@ -86,13 +87,13 @@ export async function GET(request: Request) {
 
     const technicalSkills =
       skillData
-        ?.filter((row: any) => row.mt_skill?.skill_type === "technical")
-        .map((row: any) => row.mt_skill.skill_name) || []
+        ?.filter((row) => one(row.mt_skill)?.skill_type === "technical")
+        .map((row) => one(row.mt_skill)!.skill_name) || []
 
     const languageSkills =
       skillData
-        ?.filter((row: any) => row.mt_skill?.skill_type === "languages")
-        .map((row: any) => row.mt_skill.skill_name) || []
+        ?.filter((row) => one(row.mt_skill)?.skill_type === "languages")
+        .map((row) => one(row.mt_skill)!.skill_name) || []
 
     // 4. EXPERIENCE DATA
     const { data: expData, error: expError } = await supabase
@@ -105,7 +106,7 @@ export async function GET(request: Request) {
       throw expError
     }
 
-    const formattedExperience = expData?.map((exp: any) => ({
+    const formattedExperience = expData?.map((exp) => ({
       company: exp.company,
       position: exp.position,
       startDate: exp.start_date,
@@ -124,7 +125,7 @@ export async function GET(request: Request) {
       throw eduError
     }
 
-    const formattedEducation = eduData?.map((edu: any) => ({
+    const formattedEducation = eduData?.map((edu) => ({
       school: edu.school,
       degree: edu.degree,
       field: edu.field || "",
@@ -154,10 +155,10 @@ export async function GET(request: Request) {
       success: true,
       profile,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal"
+import { getErrorMessage } from "@/lib/errors"
 
 interface StaffViewProps {
   userId: string
@@ -112,8 +113,8 @@ export default function StaffView({ userId }: StaffViewProps) {
         if (!res.ok) throw new Error("Dashboard-ын өгөгдлийг татаж чадсангүй.")
         const result = await res.json()
         setData(result)
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }
@@ -142,8 +143,8 @@ export default function StaffView({ userId }: StaffViewProps) {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-    } catch (err: any) {
-      showAlert(err.message || "CV татахад алдаа гарлаа. Та дараа дахин оролдоно уу.", "Алдаа")
+    } catch (err) {
+      showAlert(getErrorMessage(err, "CV татахад алдаа гарлаа. Та дараа дахин оролдоно уу."), "Алдаа")
     } finally {
       setIsDownloading(false)
     }
@@ -186,7 +187,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
-    } catch (err: any) {
+    } catch (err) {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
@@ -218,8 +219,8 @@ export default function StaffView({ userId }: StaffViewProps) {
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
-    } catch (err: any) {
-      showAlert(err.message, "Алдаа гарлаа")
+    } catch (err) {
+      showAlert(getErrorMessage(err), "Алдаа гарлаа")
     } finally {
       setIsSubmitting(false)
       setPendingJobId(null)

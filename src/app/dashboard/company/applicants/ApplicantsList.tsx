@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 
 interface Applicant {
   id: string
@@ -23,14 +23,6 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedJobFilter, setSelectedJobFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
-  
-  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
-
-  useEffect(() => {
-    if (initialApplicants) {
-      setIsInitialLoading(false)
-    }
-  }, [initialApplicants])
 
   const uniqueJobs = useMemo(() => {
     const jobs = applicants.map((app) => app.job_title)
@@ -120,7 +112,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
     }
   }
 
-  const showLoader = isInitialLoading || updatingId !== null;
+  const showLoader = updatingId !== null;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -139,7 +131,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
             </div>
           </div>
           <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
-            {isInitialLoading ? "Анкетуудыг ачаалж байна..." : "Төлөв шинэчилж байна..."}
+            Төлөв шинэчилж байна...
           </p>
         </div>
       )}

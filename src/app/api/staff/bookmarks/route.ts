@@ -23,11 +23,11 @@ export async function GET(request: NextRequest) {
       .eq("user_id", userId)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 })
     }
 
     return NextResponse.json({ bookmarks: data.map((b) => b.job_id) })
-  } catch (err: any) {
+  } catch (err) {
     console.error("GET BOOKMARKS ERROR:", err)
     return NextResponse.json(
       { error: "Серверийн алдаа гарлаа." },
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json({ status: "added" })
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error("POST BOOKMARKS ERROR:", err)
     return NextResponse.json(
       { error: "Серверийн алдаа гарлаа." },

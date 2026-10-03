@@ -24,7 +24,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ success: true, is_approved: company.is_approved }, { status: 200 })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Компанийн төлөв шалгахад алдаа гарлаа:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }

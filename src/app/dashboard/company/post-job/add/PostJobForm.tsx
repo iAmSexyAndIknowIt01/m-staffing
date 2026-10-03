@@ -2,6 +2,7 @@
 
 import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
+import { getErrorMessage } from "@/lib/errors"
 
 interface PostJobFormProps {
   userId: string
@@ -88,12 +89,12 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
           message: "Ажлын байр амжилттай зарлагдаж, баазад хадгалагдлаа! 🚀"
         })
         
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+     
+    } catch (error) {
         setModal({
           isOpen: true,
           type: "error",
-          message: error.message || "Зарыг нийтлэх үед алдаа гарлаа."
+          message: getErrorMessage(error, "Зарыг нийтлэх үед алдаа гарлаа.")
         })
     } finally {
         setLoading(false)

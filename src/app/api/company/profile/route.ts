@@ -23,7 +23,7 @@ export async function GET() {
     if (error) throw new Error(error.message)
 
     return NextResponse.json({ data })
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET Company Profile Error:", error)
     return NextResponse.json({ error: "Датаг ачааллахад алдаа гарлаа." }, { status: 500 })
   }
@@ -80,8 +80,8 @@ export async function PUT(request: NextRequest) {
     if (error) throw new Error(error.message)
 
     return NextResponse.json({ message: "Амжилттай шинэчлэгдлээ" })
-  } catch (error: any) {
+  } catch (error) {
     console.error("PUT Company Profile Error:", error)
-    return NextResponse.json({ error: error.message || "Серверт алдаа гарлаа." }, { status: 500 })
+    return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }
 }

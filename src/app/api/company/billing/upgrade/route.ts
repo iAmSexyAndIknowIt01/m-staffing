@@ -2,11 +2,21 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { randomInt } from "crypto"
+import { PLANS } from "@/lib/plans"
 
 const INVOICE_NUMBER_REGEX = /^MSTAFF-\d{6}$/
 
 function generateInvoiceNumber(): string {
   return `MSTAFF-${randomInt(100000, 1000000)}`
+}
+
+// Хүлээн авах дансыг кодонд биш орчны хувьсагчид хадгална
+function getBankAccount() {
+  const bankName = process.env.BILLING_BANK_NAME
+  const accountNumber = process.env.BILLING_ACCOUNT_NUMBER
+  const accountName = process.env.BILLING_ACCOUNT_NAME
+  if (!bankName || !accountNumber || !accountName) return null
+  return { bankName, accountNumber, accountName }
 }
 
 // 1. ТӨЛБӨРИЙН ТҮҮХ ТАТАХ (GET)
@@ -21,14 +31,14 @@ export async function GET() {
 
     const { data: invoices, error } = await supabase
       .from("mt_company_invoices")
-      .select("*")
+      .select("id, invoice_number, plan_type, amount, status, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }) // Шинэ нь дээрээ харагдана
 
     if (error) throw error
 
     return NextResponse.json({ success: true, invoices })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Fetch Invoices Error:", error)
     return NextResponse.json({ success: false, error: "Түүх татахад алдаа гарлаа." }, { status: 500 })
   }
@@ -45,18 +55,26 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { plan_type, init_only, invoice_number } = body
+    const { plan_type, init_only, invoice_number } = body as {
+      plan_type?: unknown
+      init_only?: boolean
+      invoice_number?: unknown
+    }
 
-    if (!plan_type || !["standard", "premium"].includes(plan_type)) {
+    if (plan_type !== "standard" && plan_type !== "premium") {
       return NextResponse.json({ success: false, error: "Багцын төрөл буруу байна." }, { status: 400 })
     }
 
-    const planDetails: Record<string, { price: number }> = {
-      standard: { price: 150000 },
-      premium: { price: 350000 }
+    const bankAccount = getBankAccount()
+    if (!bankAccount) {
+      console.error("BILLING_BANK_ENV_MISSING: BILLING_BANK_NAME / BILLING_ACCOUNT_NUMBER / BILLING_ACCOUNT_NAME тохируулаагүй")
+      return NextResponse.json(
+        { success: false, error: "Төлбөрийн мэдээлэл түр ашиглах боломжгүй байна. Дараа дахин оролдоно уу." },
+        { status: 503 }
+      )
     }
 
-    const selectedPlan = planDetails[plan_type]
+    const selectedPlan = PLANS[plan_type]
 
     // Модал дээр харуулсан утгыг хэрэглэгч шилжүүлгийн утгад бичсэн тул хадгалахдаа тэрийг ашиглана.
     // Үгүй бол криптографын санамсаргүй 6 оронтой утга үүсгэнэ (DB дээр unique constraint бий).
@@ -68,9 +86,7 @@ export async function POST(req: Request) {
     const invoicePayload = {
       invoiceNumber: invoiceNumber,
       amount: selectedPlan.price,
-      bankName: "Хаан Банк",
-      accountNumber: "5011XXXXXX", // Өөрийн дансаар солиорой
-      accountName: "Эм СТАФФИНГ ХХК"
+      ...bankAccount,
     }
 
     // Хэрэв зөвхөн анх модал нээхэд данс харах гэж байгаа бол Insert хийхгүй
@@ -101,7 +117,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, message: "Амжилттай хадгалагдлаа." })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Billing Upgrade API Error:", error)
     return NextResponse.json({ success: false, error: "Серверийн алдаа гарлаа." }, { status: 500 })
   }

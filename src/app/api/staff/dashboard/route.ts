@@ -63,7 +63,7 @@ export async function GET() {
 
     // Хэрэглэгчийн анкет илгээсэн ажлын байрнуудын ID-г массив болгож авна
     const appliedJobIds = (recentApplicationsResponse.data || [])
-      .map((r: any) => r.job_id)
+      .map((r) => r.job_id)
       .filter(Boolean);
 
     // 2. Илгээсэн ажлын ID-нуудаа хасаж, Санал болгох 100 ажлыг баазаас татна
@@ -81,23 +81,23 @@ export async function GET() {
       .limit(100);
 
     // Анкет илгээсэн ажлын байрнуудын мэдээллийг тусад нь татна
-    let relatedJobs: any[] = [];
+    let relatedJobs: { id: string; title: string; user_id: string; description: string }[] = [];
     if (appliedJobIds.length > 0) {
       const { data } = await supabase.from("mt_openjob").select("id, title, user_id, description").in("id", appliedJobIds);
       relatedJobs = data || [];
     }
 
     // Компаниудыг ID-аар нь хурдан хайх Map үүсгэнэ
-    const companyMap = (companiesResponse.data || []).reduce((acc: any, curr: any) => {
+    const companyMap = (companiesResponse.data || []).reduce((acc, curr) => {
       if (curr.id) acc[curr.id.toString()] = curr.company_name;
       return acc;
-    }, {});
+    }, {} as Record<string, string>);
 
     // Ажлын байруудыг ID-аар нь хурдан хайх Map үүсгэнэ
-    const jobMap = relatedJobs.reduce((acc: any, curr: any) => {
+    const jobMap = relatedJobs.reduce((acc, curr) => {
       if (curr.id) acc[curr.id.toString()] = curr;
       return acc;
-    }, {});
+    }, {} as Record<string, (typeof relatedJobs)[number]>);
 
     // Профайл хувь бодох логик
     const profile = profileResponse.data;
@@ -158,7 +158,7 @@ export async function GET() {
       tips: activeTips,
 
       // 1. Санал болгож буй ажлууд
-      recommendedJobs: (openJobsResponse.data || []).map((job: any) => {
+      recommendedJobs: (openJobsResponse.data || []).map((job) => {
         const companyIdStr = job.user_id ? job.user_id.toString() : "";
         return {
           id: job.id,
@@ -174,7 +174,7 @@ export async function GET() {
       }),
 
       // 2. Илгээсэн анкет
-      recentApplications: (recentApplicationsResponse.data || []).map((app: any) => {
+      recentApplications: (recentApplicationsResponse.data || []).map((app) => {
         const jobIdStr = app.job_id ? app.job_id.toString() : "";
         const correspondingJob = jobMap[jobIdStr];
         

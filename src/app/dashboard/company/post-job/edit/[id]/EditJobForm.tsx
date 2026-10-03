@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import LocationModal from "@/components/common/LocationModal"
+import { getErrorMessage } from "@/lib/errors"
 
 interface EditJobFormProps {
   jobId: string
@@ -94,11 +95,11 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
         type: "success",
         message: "Ажлын байрны өөрчлөлт амжилттай хадгалагдлаа! ✏️"
       })
-    } catch (err: any) {
+    } catch (err) {
       setModal({
         isOpen: true,
         type: "error",
-        message: err.message || "Серверт алдаа гарлаа. Дараа дахин оролдоно уу."
+        message: getErrorMessage(err, "Серверт алдаа гарлаа. Дараа дахин оролдоно уу.")
       })
     } finally {
       setIsSaving(false)

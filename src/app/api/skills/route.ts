@@ -44,7 +44,7 @@ export async function GET(
   if (error) {
     return NextResponse.json(
       {
-        error: error.message
+        error: "Серверийн алдаа гарлаа."
       },
       {
         status: 500

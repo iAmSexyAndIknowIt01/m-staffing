@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { PLANS } from "@/lib/plans"
 
 // mailAuth PUT-ээр баталгаажсанаас хойш энэ хугацаанд бүртгэлээ дуусгах ёстой
 const VERIFIED_TTL_MS = 15 * 60 * 1000
@@ -59,7 +60,15 @@ export async function POST(req: Request) {
     })
 
     if (error) {
-      return NextResponse.json({ message: error.message }, { status: 400 })
+      // DB-ийн дотоод мессежийг клиент рүү дамжуулахгүй
+      const message =
+        error.code === "email_exists" || error.code === "user_already_exists"
+          ? "Энэ имэйл хаяг бүртгэгдсэн байна."
+          : error.code === "weak_password"
+            ? "Нууц үг хэт сул байна. Илүү урт, нийлмэл нууц үг оруулна уу."
+            : "Бүртгэл үүсгэхэд алдаа гарлаа."
+      console.error("REGISTER_CREATE_USER_ERROR:", error)
+      return NextResponse.json({ message }, { status: 400 })
     }
 
     const user = data.user
@@ -67,38 +76,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Хэрэглэгч үүссэнгүй" }, { status: 500 })
     }
 
-    // Баталгаажуулах кодыг дахин ашиглахгүйн тулд устгана
-    await supabase.from("register_auth").delete().eq("mail", email)
+    // 2. Профайлын хүснэгтүүдийг үүсгэнэ. Аль нэг нь алдаа өгвөл auth хэрэглэгчийг
+    // устгана — FK нь ON DELETE CASCADE тул үүссэн мөрүүд хамт устаж "хагас" бүртгэл үлдэхгүй.
+    try {
+      if (role === "staff") {
+        const { error: staffError } = await supabase
+          .from("mt_staff")
+          .insert({ id: user.id, first_name: firstName, last_name: lastName, email })
+        if (staffError) throw staffError
 
-    // 2. Профайлын хүснэгтүүдийг үүсгэнэ
-    if (role === "staff") {
-      await supabase.from("mt_staff").insert({ id: user.id, first_name: firstName, last_name: lastName, email })
-      await supabase.from("mt_profile").insert({ user_id: user.id, email, phone: "", bio: "", skills: "", experience: "", education: "" })
-    } else {
-      // А) Компанийн үндсэн мэдээллийг оруулна
-      const { error: companyError } = await supabase
-        .from("mt_company")
-        .insert({ id: user.id, company_name: companyName, email })
+        const { error: profileError } = await supabase
+          .from("mt_profile")
+          .insert({ user_id: user.id, email, phone: "", bio: "", skills: "", experience: "", education: "" })
+        if (profileError) throw profileError
+      } else {
+        const { error: companyError } = await supabase
+          .from("mt_company")
+          .insert({ id: user.id, company_name: companyName, email })
+        if (companyError) throw companyError
 
-      if (companyError) throw companyError
-
-      // Б) Тухайн компанид зориулж default (Free) багцыг үүсгэнэ
-      const { error: subError } = await supabase
-        .from("mt_company_subscriptions")
-        .insert({
-          user_id: user.id,
-          plan_type: "free",    // Үнэгүй багц
-          status: "active",     // Төлөв: Идэвхтэй
-          job_limit: 10,         // Зарлах ажлын байрны лимит
-          expires_at: null      // Хугацаагүй (Үнэгүй багц тул)
-        })
-
-      if (subError) {
-        console.error("Subscription үүсгэхэд алдаа гарлаа:", subError)
-        // Тэмдэглэл: Компани амжилттай үүссэн ч багц дээр алдаа гарвал
-        // dashboard API өөрөө default датаг буцаадаг хамгаалалттай байгаа.
+        // Default (Free) багц
+        const { error: subError } = await supabase
+          .from("mt_company_subscriptions")
+          .insert({
+            user_id: user.id,
+            plan_type: "free",
+            status: "active",
+            job_limit: PLANS.free.jobLimit,
+            expires_at: null,
+          })
+        if (subError) throw subError
       }
+    } catch (profileErr) {
+      const { error: rollbackError } = await supabase.auth.admin.deleteUser(user.id)
+      if (rollbackError) console.error("REGISTER_ROLLBACK_ERROR:", rollbackError)
+      throw profileErr
     }
+
+    // Баталгаажуулах кодыг дахин ашиглахгүйн тулд бүртгэл амжилттай болсны дараа устгана
+    await supabase.from("register_auth").delete().eq("mail", email)
 
     return NextResponse.json({
       success: true,

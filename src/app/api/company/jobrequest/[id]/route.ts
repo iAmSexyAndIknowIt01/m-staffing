@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { one } from "@/lib/relation"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -59,10 +60,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       throw new Error(error.message)
     }
 
-    const formattedData = requests?.map((req: any) => ({
+    const formattedData = requests?.map((req) => ({
       id: req.id,
       user_name: req.applicant_name || "Нэргүй ажил горилогч",
-      job_title: req.mt_openjob?.title || jobTitle,
+      job_title: one(req.mt_openjob)?.title || jobTitle,
       email: req.applicant_email || "Хоосон",
       phone: req.applicant_phone || "Хоосон",
       created_at: req.created_at,
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       jobTitle: jobTitle 
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Get Applicants Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }

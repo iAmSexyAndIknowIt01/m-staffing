@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
+import type { AvailabilityDay } from "@/types/profile"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { one } from "@/lib/relation"
 
 // GET PROFILE
 export async function GET() {
@@ -69,13 +71,13 @@ export async function GET() {
 
     const technicalSkills =
       skillData
-        ?.filter((row: any) => row.mt_skill?.skill_type === "technical")
-        .map((row: any) => row.mt_skill.skill_name) || []
+        ?.filter((row) => one(row.mt_skill)?.skill_type === "technical")
+        .map((row) => one(row.mt_skill)!.skill_name) || []
 
     const languageSkills =
       skillData
-        ?.filter((row: any) => row.mt_skill?.skill_type === "languages")
-        .map((row: any) => row.mt_skill.skill_name) || []
+        ?.filter((row) => one(row.mt_skill)?.skill_type === "languages")
+        .map((row) => one(row.mt_skill)!.skill_name) || []
 
     // 4. EXPERIENCE DATA
     const { data: expData, error: expError } = await supabase
@@ -88,7 +90,7 @@ export async function GET() {
       throw expError
     }
 
-    const formattedExperience = expData?.map((exp: any) => ({
+    const formattedExperience = expData?.map((exp) => ({
       company: exp.company,
       position: exp.position,
       startDate: exp.start_date,
@@ -107,7 +109,7 @@ export async function GET() {
       throw eduError
     }
 
-    const formattedEducation = eduData?.map((edu: any) => ({
+    const formattedEducation = eduData?.map((edu) => ({
       school: edu.school,
       degree: edu.degree,
       field: edu.field || "",
@@ -137,10 +139,10 @@ export async function GET() {
       success: true,
       profile,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }
@@ -215,13 +217,13 @@ export async function POST(request: Request) {
     }
 
     // AVAILABILITY VALIDATION
-    const enabledDays = Object.entries(availability || {}).filter(
-      ([, value]: any) => value?.enabled
+    const enabledDays = (Object.entries(availability || {}) as [string, AvailabilityDay | null][]).filter(
+      ([, value]) => value?.enabled
     )
     if (enabledDays.length === 0) {
       return NextResponse.json({ error: "Дор хаяж нэг ажиллах өдөр сонгоно уу." }, { status: 400 })
     }
-    for (const [dayName, day] of enabledDays as any[]) {
+    for (const [dayName, day] of enabledDays) {
       if (!day?.from || !day?.to) {
         return NextResponse.json(
           { error: `${dayName} гарагийн ажиллах цаг дутуу байна.` },
@@ -324,7 +326,7 @@ export async function POST(request: Request) {
     }
 
     if (experience && experience.length > 0) {
-      const insertExpRows = experience.map((exp: any) => ({
+      const insertExpRows = experience.map((exp) => ({
         staff_id: userId,
         company: exp.company,
         position: exp.position,
@@ -353,7 +355,7 @@ export async function POST(request: Request) {
     }
 
     if (education && education.length > 0) {
-      const insertEduRows = education.map((edu: any) => ({
+      const insertEduRows = education.map((edu) => ({
         staff_id: userId,
         school: edu.school,
         degree: edu.degree,
@@ -376,10 +378,10 @@ export async function POST(request: Request) {
       message: "Профайл амжилттай хадгалагдлаа.",
       data,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("POST PROFILE ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Серверийн алдаа" },
+      { error: "Серверийн алдаа" },
       { status: 500 }
     )
   }

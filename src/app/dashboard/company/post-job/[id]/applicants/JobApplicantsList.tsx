@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 
 interface Applicant {
   id: string
@@ -21,16 +21,6 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
-  
-  // 🔄 Анхны дата уншиж байх үеийн төлөв
-  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
-
-  // Хуудас анх ачаалагдаж, initialApplicants ирэхэд loader-ийг хаана
-  useEffect(() => {
-    if (initialApplicants) {
-      setIsInitialLoading(false)
-    }
-  }, [initialApplicants])
 
   // Статусаар шүүх логик
   const filteredApplicants = useMemo(() => {
@@ -65,7 +55,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
   }
 
   // Аль нэг ачаалж буй төлөв идэвхтэй үед Loader-ийг харуулна
-  const showLoader = isInitialLoading || updatingId !== null
+  const showLoader = updatingId !== null
 
   return (
     <div className="space-y-6 relative">
@@ -92,7 +82,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
           </div>
           
           <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            {isInitialLoading ? "Анкетуудыг ачаалж байна..." : "Төлөв шинэчилж байна..."}
+            Төлөв шинэчилж байна...
           </p>
         </div>
       )}

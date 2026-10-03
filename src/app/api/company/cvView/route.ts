@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: "Үзэлтийг амжилттай бүртгэлээ." })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("CV View Insert Error:", error)
     return NextResponse.json({ success: false, error: "Серверийн алдаа гарлаа." }, { status: 500 })
   }

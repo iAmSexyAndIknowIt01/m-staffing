@@ -44,11 +44,11 @@ export async function GET() {
 
     if (error) {
       console.error("Supabase error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data }, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Server error:", err);
     return NextResponse.json({ error: "Серверийн алдаа гарлаа" }, { status: 500 });
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 export type Education = {
   school: string
@@ -25,20 +25,11 @@ const initialForm: Education = {
   isCurrent: false,
 }
 
-export default function EducationModal({ open, value, onSave, onClose }: Props) {
-  const [list, setList] = useState<Education[]>([])
+function EducationModalContent({ value, onSave, onClose }: Props) {
+  const [list, setList] = useState<Education[]>(Array.isArray(value) ? value : [])
   const [form, setForm] = useState<Education>(initialForm)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (open) {
-      setList(Array.isArray(value) ? value : [])
-      setForm(initialForm)
-      setEditingIndex(null)
-    }
-  }, [open, value])
-
-  if (!open) return null
 
   const handleAddOrUpdate = () => {
     if (!form.school.trim()) return alert("Сургуулийн нэрийг оруулна уу")
@@ -211,4 +202,10 @@ export default function EducationModal({ open, value, onSave, onClose }: Props) 
       </div>
     </div>
   )
+}
+
+// Модал нээгдэх бүрд дотоод state-ийг props-оос шинээр эхлүүлэхийн тулд зөвхөн нээлттэй үед mount хийнэ
+export default function EducationModal(props: Props) {
+  if (!props.open) return null
+  return <EducationModalContent {...props} />
 }
