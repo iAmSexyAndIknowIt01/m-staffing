@@ -93,6 +93,8 @@ export async function verifySessionToken(token: string | undefined | null): Prom
 // - админ эрх ADMIN_EMAILS-ээс хасагдсан бол хүчингүй
 // - staff/company бүртгэл устсан бол хүчингүй
 // - auth_session_revocations-д бүртгэгдсэнээс өмнө үүссэн бол хүчингүй (албадан гаргах)
+let revocationErrorLogged = false
+
 async function isSessionStillValid(session: Session): Promise<boolean> {
   // proxy.ts энэ модулийг импортлодог тул supabase-г зөвхөн хэрэгтэй үед ачаална
   const { supabase } = await import("@/lib/supabase")
@@ -116,9 +118,13 @@ async function isSessionStillValid(session: Session): Promise<boolean> {
   if (account.error) throw account.error
   if (!account.data) return false
 
-  // Хүснэгт хараахан үүсээгүй (migration ажиллаагүй) үед нэвтрэлтийг хаахгүй
+  // Хүснэгт хараахан үүсээгүй (migration ажиллаагүй) үед нэвтрэлтийг хаахгүй.
+  // Хүсэлт бүрт лог дүүргэхгүйн тулд процесс бүрт нэг л удаа анхааруулна.
   if (revocation.error) {
-    console.error("SESSION_REVOCATION_CHECK_ERROR:", revocation.error)
+    if (!revocationErrorLogged) {
+      revocationErrorLogged = true
+      console.error("SESSION_REVOCATION_CHECK_ERROR (auth_session_revocations migration ажилласан эсэхийг шалгана уу):", revocation.error)
+    }
     return true
   }
   if (revocation.data) {
