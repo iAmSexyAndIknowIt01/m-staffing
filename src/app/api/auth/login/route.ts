@@ -6,39 +6,59 @@ import {
   isAdminEmail,
   sessionCookieOptions,
 } from "@/lib/session"
-
-// Brute force хамгаалалт: 15 минутад нэг имэйл рүү 5, нэг IP-ээс 20 амжилтгүй оролдлого
-const WINDOW_MS = 15 * 60 * 1000
-const MAX_FAILS_PER_EMAIL = 5
-const MAX_FAILS_PER_IP = 20
+import {
+  LOCK_UNAVAILABLE,
+  LOCK_WINDOW_MS,
+  MAX_FAILS_PER_EMAIL,
+  type LockStatus,
+  computeLock,
+  minutesUntil,
+} from "@/lib/loginLock"
 
 function getClientIp(req: Request): string | null {
   const forwarded = req.headers.get("x-forwarded-for")
   return forwarded?.split(",")[0].trim() || req.headers.get("x-real-ip") || null
 }
 
-async function isRateLimited(email: string, ip: string | null): Promise<boolean> {
-  const since = new Date(Date.now() - WINDOW_MS).toISOString()
-
-  const countFails = (column: "email" | "ip", value: string) =>
-    supabase
-      .from("auth_login_attempts")
-      .select("id", { count: "exact", head: true })
-      .eq(column, value)
-      .gte("created_at", since)
+async function getLockStatus(email: string, ip: string | null): Promise<LockStatus> {
+  const since = new Date(Date.now() - LOCK_WINDOW_MS).toISOString()
 
   const [byEmail, byIp] = await Promise.all([
-    countFails("email", email),
-    ip ? countFails("ip", ip) : Promise.resolve({ count: 0, error: null }),
+    supabase
+      .from("auth_login_attempts")
+      .select("created_at")
+      .eq("email", email)
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(MAX_FAILS_PER_EMAIL),
+    ip
+      ? supabase
+          .from("auth_login_attempts")
+          .select("id", { count: "exact", head: true })
+          .eq("ip", ip)
+          .gte("created_at", since)
+      : Promise.resolve({ count: 0, error: null }),
   ])
 
   if (byEmail.error || byIp.error) {
     // Хязгаарлалтын хүснэгт ажиллахгүй бол нэвтрэлтийг бүхэлд нь хаахгүй
     console.error("LOGIN_RATE_LIMIT_ERROR:", byEmail.error || byIp.error)
-    return false
+    return LOCK_UNAVAILABLE
   }
 
-  return (byEmail.count ?? 0) >= MAX_FAILS_PER_EMAIL || (byIp.count ?? 0) >= MAX_FAILS_PER_IP
+  return computeLock((byEmail.data ?? []).map((r) => r.created_at), byIp.count ?? 0)
+}
+
+function lockedResponse(unlockAt: Date | null) {
+  const minutes = minutesUntil(unlockAt)
+  return NextResponse.json(
+    {
+      message: `Нууц үгээ ${MAX_FAILS_PER_EMAIL} удаа буруу оруулсан тул бүртгэл түр түгжигдлээ. ${minutes} минутын дараа дахин оролдоно уу.`,
+      locked: true,
+      unlockAt: unlockAt?.toISOString() ?? null,
+    },
+    { status: 429, headers: { "Retry-After": String(minutes * 60) } }
+  )
 }
 
 async function recordFailure(email: string, ip: string | null) {
@@ -73,11 +93,9 @@ export async function POST(req: Request) {
     }
 
     const ip = getClientIp(req)
-    if (await isRateLimited(email, ip)) {
-      return NextResponse.json(
-        { message: "Хэт олон удаа буруу оролдлоо. 15 минутын дараа дахин оролдоно уу." },
-        { status: 429 }
-      )
+    const lock = await getLockStatus(email, ip)
+    if (lock.locked) {
+      return lockedResponse(lock.unlockAt)
     }
 
     // Хүсэлт бүрт тусдаа клиент — session нь бусад хэрэглэгчтэй холилдохгүй
@@ -91,8 +109,24 @@ export async function POST(req: Request) {
 
     if (error || !data.user) {
       await recordFailure(email, ip)
+
+      // Түгжээний хүснэгт ажиллахгүй бол үлдсэн оролдлогын тоог (буруу) харуулахгүй
+      if (!lock.available) {
+        return NextResponse.json({ message: "Имэйл эсвэл нууц үг буруу байна" }, { status: 401 })
+      }
+
+      // Энэ оролдлогоор түгжигдсэн бол шууд мэдэгдэнэ
+      const remaining = MAX_FAILS_PER_EMAIL - (lock.failsByEmail + 1)
+      if (remaining <= 0) {
+        return lockedResponse(new Date(Date.now() + LOCK_WINDOW_MS))
+      }
+
+      // Бүртгэлгүй имэйлд ч адилхан тоолж хариулдаг тул имэйл бүртгэлтэй эсэх ил гарахгүй
       return NextResponse.json(
-        { message: "Имэйл эсвэл нууц үг буруу байна" },
+        {
+          message: `Имэйл эсвэл нууц үг буруу байна. ${remaining} оролдлого үлдлээ.`,
+          remainingAttempts: remaining,
+        },
         { status: 401 }
       )
     }
