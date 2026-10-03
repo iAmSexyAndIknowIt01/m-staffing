@@ -80,7 +80,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, job: formattedJob }, { status: 200 })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Ажлын байрны дэлгэрэнгүй татахад алдаа гарлаа:", error)
     return NextResponse.json(
       { error: "Серверт алдаа гарлаа." },

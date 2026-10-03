@@ -28,7 +28,7 @@ export default function BillingPage() {
   // 1. Нэхэмжлэх шинээр үүсгэх Swipe Modal-ийн төлөвүүд
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<{ id: string; name: string; price: string } | null>(null)
-  const [invoiceDetails, setInvoiceDetails] = useState<any>(null)
+  const [invoiceDetails, setInvoiceDetails] = useState<{ invoiceNumber: string; amount: number; bankName: string; accountNumber: string; accountName: string } | null>(null)
   const [isSwiped, setIsSwiped] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { one } from "@/lib/relation"
 
 export async function GET(request: Request) {
   try {
@@ -74,12 +75,12 @@ export async function GET(request: Request) {
     const eduData = eduRes.data || []
 
     // 3. Өгөгдлийг нэгтгэн боловсруулах
-    const formattedStaffList = profileList.map((profile: any) => {
+    const formattedStaffList = profileList.map((profile) => {
       const staffExp = expData.filter((e) => e.staff_id === profile.user_id)
       const staffEdu = eduData.filter((e) => e.staff_id === profile.user_id)
       
       let totalExperienceYears = 0
-      staffExp.forEach((exp: any) => {
+      staffExp.forEach((exp) => {
         const start = new Date(exp.start_date).getFullYear()
         const end = exp.end_date ? new Date(exp.end_date).getFullYear() : new Date().getFullYear()
         if (!isNaN(start)) {
@@ -87,8 +88,8 @@ export async function GET(request: Request) {
         }
       })
 
-      const firstName = profile.mt_staff?.first_name || ""
-      const lastName = profile.mt_staff?.last_name || ""
+      const firstName = one(profile.mt_staff)?.first_name || ""
+      const lastName = one(profile.mt_staff)?.last_name || ""
       const fullName = `${lastName} ${firstName}`.trim()
       
       const technicalSkills = profile.skills?.technical || []
@@ -165,7 +166,7 @@ export async function GET(request: Request) {
       success: true,
       staff: filteredStaff,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("SEARCH STAFF API ERROR:", error)
     return NextResponse.json(
       { error: "Серверийн алдаа гарлаа" },

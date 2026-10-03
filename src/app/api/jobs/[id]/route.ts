@@ -47,8 +47,8 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: job }, { status: 200 })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+   
+  } catch (error) {
     console.error("Ажлын мэдээлэл татахад алдаа гарлаа:", error)
     return NextResponse.json(
       { error: "Серверт алдаа гарлаа." },
@@ -146,8 +146,8 @@ export async function PUT(
       { status: 200 }
     )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+   
+  } catch (error) {
     console.error("Жоб шинэчлэхэд алдаа гарлаа:", error)
     return NextResponse.json(
       { error: "Серверт алдаа гарлаа." },

@@ -11,6 +11,7 @@ export async function GET() {
     if (error) throw error;
     return NextResponse.json({ success: true, data });
   } catch (error) {
+    console.error("TERMS_ERROR:", error)
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

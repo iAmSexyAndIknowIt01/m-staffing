@@ -15,14 +15,13 @@ type Props = {
   onClose: () => void
 }
 
-export default function SkillsModal({
-  open,
+function SkillsModalContent({
   value,
   onSave,
   onClose,
 }: Props) {
-  const [technical, setTechnical] = useState<string[]>([])
-  const [languages, setLanguages] = useState<string[]>([])
+  const [technical, setTechnical] = useState<string[]>(value.technical || [])
+  const [languages, setLanguages] = useState<string[]>(value.languages || [])
 
   const [techInput, setTechInput] = useState("")
   const [langInput, setLangInput] = useState("")
@@ -38,7 +37,7 @@ export default function SkillsModal({
       }
 
       const response = await fetch(
-        `/api/skills?q=${techInput}&type=technical`
+        `/api/skills?q=${encodeURIComponent(techInput)}&type=technical`
       )
       const data = await response.json()
 
@@ -49,7 +48,7 @@ export default function SkillsModal({
       }
       setTechSuggestions(
         data
-          .map((item: any) => item.skill_name)
+          .map((item) => item.skill_name)
           .filter((skill: string) => !technical.includes(skill))
       )
     }, 300)
@@ -65,7 +64,7 @@ export default function SkillsModal({
       }
 
       const response = await fetch(
-        `/api/skills?q=${langInput}&type=languages`
+        `/api/skills?q=${encodeURIComponent(langInput)}&type=languages`
       )
       const data = await response.json()
 
@@ -77,7 +76,7 @@ export default function SkillsModal({
 
       setLangSuggestions(
         data
-          .map((item: any) => item.skill_name)
+          .map((item) => item.skill_name)
           .filter((skill: string) => !languages.includes(skill))
       )
     }, 300)
@@ -97,14 +96,6 @@ export default function SkillsModal({
     setLangInput("")
   }
 
-  useEffect(() => {
-    if (open) {
-      setTechnical(value.technical || [])
-      setLanguages(value.languages || [])
-    }
-  }, [open, value])
-
-  if (!open) return null
 
   // Техникийн болон Хэлний мэдлэг хоёулаа хоосон эсэхийг шалгах нөхцөл
   const isDisabled = technical.length === 0 && languages.length === 0
@@ -263,4 +254,10 @@ export default function SkillsModal({
       </div>
     </div>
   )
+}
+
+// Модал нээгдэх бүрд дотоод state-ийг props-оос шинээр эхлүүлэхийн тулд зөвхөн нээлттэй үед mount хийнэ
+export default function SkillsModal(props: Props) {
+  if (!props.open) return null
+  return <SkillsModalContent {...props} />
 }

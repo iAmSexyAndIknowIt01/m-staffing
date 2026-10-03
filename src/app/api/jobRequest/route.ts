@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     if (insertError) throw new Error(insertError.message)
 
     return NextResponse.json({ message: "Анкет амжилттай илгээгдлээ." }, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Job Request Error:", error)
     return NextResponse.json(
       { error: "Серверт алдаа гарлаа. Дахин оролдоно уу." },

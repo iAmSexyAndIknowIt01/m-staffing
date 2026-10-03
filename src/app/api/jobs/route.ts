@@ -109,8 +109,8 @@ export async function GET() {
     if (error) throw error
 
     // Ирсэн датаг форматлах
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedJobs = jobs?.map((job: any) => ({
+     
+    const formattedJobs = jobs?.map((job) => ({
       ...job,
       applicants_count: job.tr_job_request?.[0]?.count || 0
     }))

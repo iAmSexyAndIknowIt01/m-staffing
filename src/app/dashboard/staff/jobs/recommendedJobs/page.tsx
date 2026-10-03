@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Импортлох
+import { getErrorMessage } from "@/lib/errors"
 
 interface Job {
   id: string
@@ -75,8 +76,8 @@ export default function RecommendedJobsPage() {
         if (!res.ok) throw new Error("Ажлын байрны өгөгдлийг татаж чадсангүй.")
         const result = await res.json()
         setJobs(result.recommendedJobs || [])
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }
@@ -134,7 +135,7 @@ export default function RecommendedJobsPage() {
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
-    } catch (err: any) {
+    } catch (err) {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
@@ -164,8 +165,8 @@ export default function RecommendedJobsPage() {
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
-    } catch (err: any) {
-      showAlert(err.message, "Алдаа гарлаа")
+    } catch (err) {
+      showAlert(getErrorMessage(err), "Алдаа гарлаа")
     } finally {
       setIsSubmitting(false)
       setPendingJobId(null)

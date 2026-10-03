@@ -66,7 +66,7 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, data }, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Server error:", err);
     return NextResponse.json({ error: "Серверийн алдаа гарлаа" }, { status: 500 });
   }
@@ -140,7 +140,7 @@ async function handleUpdateStatus(
       { success: true, message: "Амжилттай шинэчиллээ", data },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("Server update error:", err);
     return NextResponse.json({ error: "Серверийн алдаа гарлаа" }, { status: 500 });
   }

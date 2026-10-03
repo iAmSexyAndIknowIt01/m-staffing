@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { getErrorMessage } from "@/lib/errors"
 
 interface Prep {
   id: string
@@ -24,8 +25,8 @@ export default function InterviewPrepPage() {
         if (!res.ok) throw new Error("Ярилцлагын бэлтгэлүүдийг ачаалж чадсангүй.")
         const data = await res.json()
         setPreps(data)
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }

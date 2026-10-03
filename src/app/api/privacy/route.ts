@@ -12,6 +12,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
+    console.error("PRIVACY_ERROR:", error)
     return NextResponse.json(
       { success: false },
       { status: 500 }

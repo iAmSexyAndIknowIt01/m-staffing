@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { PLANS, getEffectiveSubscription } from "@/lib/plans"
+import { one } from "@/lib/relation"
 
 export async function GET() {
   try {
@@ -50,13 +51,13 @@ export async function GET() {
 
     if (jobsError) throw jobsError
 
-    let activeJobs = (jobsData || []).map((job: any) => ({
+    const activeJobs = (jobsData || []).map((job) => ({
       id: job.id,
       title: job.title,
       totalApplicants: job.tr_job_request ? job.tr_job_request.length : 0,
       newApplicants: 0,
       status: "Идэвхтэй",
-      views: job.views || 0
+      views: 0 // mt_openjob-д үзэлтийн тоо хадгалдаггүй
     }))
 
     activeJobs.sort((a, b) => {
@@ -75,10 +76,10 @@ export async function GET() {
 
     if (recentError) throw recentError
 
-    let recentApplicants: any[] = []
+    let recentApplicants: { id: string; name: string; role: string; time: string; avatar: string | null }[] = []
 
     if (recentRequests && recentRequests.length > 0) {
-      const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
+      const applicantIds = recentRequests.map((r) => r.applicant_id).filter(Boolean)
 
       const [staffResult, profileResult] = await Promise.all([
         supabase.from("mt_staff").select("id, last_name, first_name").in("id", applicantIds),
@@ -88,12 +89,12 @@ export async function GET() {
       const staffData = staffResult.data || []
       const profileData = profileResult.data || []
 
-      recentApplicants = recentRequests.map((app: any) => {
-        const staff = staffData.find((s: any) => s.id === app.applicant_id)
-          const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
+      recentApplicants = recentRequests.map((app) => {
+        const staff = staffData.find((s) => s.id === app.applicant_id)
+          const profile = profileData.find((p) => p.user_id === app.applicant_id)
 
           const fullName = `${staff?.last_name ? staff.last_name + " " : ""}${staff?.first_name || ""}`.trim()
-          let finalAvatarUrl = profile?.photo_url?.startsWith("http") 
+          const finalAvatarUrl = profile?.photo_url?.startsWith("http") 
             ? profile.photo_url 
             : profile?.photo_url 
               ? supabase.storage.from("avatars").getPublicUrl(profile.photo_url).data.publicUrl 
@@ -102,7 +103,7 @@ export async function GET() {
           return {
             id: app.id, 
             name: fullName || "Ажил горилогч", 
-            role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
+            role: one(app.mt_openjob)?.title || "Тодорхойгүй ажлын байр", 
             time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
             avatar: finalAvatarUrl
           }
@@ -139,7 +140,7 @@ export async function GET() {
       tips: tipsData || []
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Dashboard API Error:", error)
     return NextResponse.json({ success: false, error: "Серверийн алдаа гарлаа." }, { status: 500 })
   }

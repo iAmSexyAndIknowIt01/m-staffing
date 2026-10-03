@@ -18,7 +18,7 @@ describe("session token", () => {
     const token = await createSessionToken(base)
     const session = await verifySessionToken(token)
     expect(session).toMatchObject(base)
-    expect(session?.exp! - session?.iat!).toBe(SESSION_MAX_AGE)
+    expect(session && session.iat && session.exp - session.iat).toBe(SESSION_MAX_AGE)
   })
 
   it("payload-ыг өөрчилбөл хүчингүй", async () => {

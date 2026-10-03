@@ -15,6 +15,7 @@ export async function GET() {
       ads: data // Өмнөх жишгээр 'ads' гэсэн түлхүүрээр буцаав
     });
   } catch (error) {
+    console.error("STAFF_ADS_ERROR:", error)
     return NextResponse.json(
       { success: false },
       { status: 500 }

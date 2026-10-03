@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session"; // 🔥 Күүки уншихад ашиглана
 import { supabase } from "@/lib/supabase"; 
 import nodemailer from "nodemailer";
+import { one } from "@/lib/relation";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -85,9 +86,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Ажлын байр эсвэл компанийн мэдээлэл олдсонгүй" }, { status: 404 });
     }
 
-    const companyEmail = (jobData.mt_company as any).email;
+    const company = one(jobData.mt_company);
+    const companyEmail = company?.email;
     // Хэрэглэгчийн оруулсан утгуудыг HTML-д escape хийнэ (мэйл дотор линк/HTML шигтгэхээс сэргийлнэ)
-    const companyName = escapeHtml((jobData.mt_company as any).company_name);
+    const companyName = escapeHtml(company?.company_name ?? "");
     const jobTitle = escapeHtml(jobData.title);
     const safeFullName = escapeHtml(fullName);
     const safeStaffEmail = escapeHtml(staffData.email);
@@ -126,7 +128,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, message: "Ажил олгогчид мэдэгдэл амжилттай хүргэгдлээ." });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("MAIL_JOB_REQUEST_POST_ERROR:", error);
     return NextResponse.json({ message: "Мэйл илгээх явцад алдаа гарлаа" }, { status: 500 });
   }

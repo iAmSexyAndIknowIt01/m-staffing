@@ -6,6 +6,7 @@ import BioModal from "@/components/profile/modals/BioModal"
 import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
 import EducationModal from "@/components/profile/modals/EducationModal"
+import { getErrorMessage } from "@/lib/errors"
 
 type Experience = {
   company: string
@@ -82,9 +83,15 @@ export default function StaffProfilePage() {
   // ========================================
   // FETCH PROFILE
   // ========================================
+  // Дахин ачаалах (хадгалсны дараа гэх мэт) — loader харуулна
   async function fetchProfile() {
+    setLoading(true)
+    await loadProfile()
+  }
+
+  // Анх mount болоход дуудна. loading аль хэдийн true тул await-аас өмнө state өөрчлөхгүй
+  async function loadProfile() {
     try {
-      setLoading(true)
       const response = await fetch("/api/staff/profile")
       const result = await response.json()
 
@@ -112,8 +119,8 @@ export default function StaffProfilePage() {
           ...(result.profile.availability || {})
         })
       }
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -134,8 +141,8 @@ export default function StaffProfilePage() {
 
       setAvatarUrl(publicUrl)
       setMessage("Зураг түр ачаалагдлаа. 'Профайл хадгалах' товчийг дарж баталгаажуулна уу.")
-    } catch (err: any) {
-      setError(err.message || "Зураг хуулахад алдаа гарлаа.")
+    } catch (err) {
+      setError(getErrorMessage(err, "Зураг хуулахад алдаа гарлаа."))
     } finally {
       setUploadingAvatar(false)
     }
@@ -180,7 +187,7 @@ export default function StaffProfilePage() {
   }
 
   useEffect(() => {
-    fetchProfile()
+    loadProfile()
   }, [])
 
   // ========================================
@@ -226,8 +233,8 @@ export default function StaffProfilePage() {
       setMessage("Профайл амжилттай хадгалагдлаа 🎉")
       window.scrollTo({ top: 0, behavior: "smooth" })
       setTimeout(() => setMessage(null), 4000)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(getErrorMessage(err))
       window.scrollTo({ top: 0, behavior: "smooth" })
     } finally {
       setSaving(false)

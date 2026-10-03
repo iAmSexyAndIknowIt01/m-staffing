@@ -1,43 +1,14 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { createPortal } from "react-dom"
 import { X, MapPin, DollarSign, Briefcase, Calendar, CheckCircle2, Copy, Check } from "lucide-react"
+import type { JobDetail, JobDetailHelpers } from "@/types/job"
+import { useIsClient } from "@/lib/useIsClient"
 
-interface Company {
-  id?: string
-  company_id?: string
-  name: string
-  logo_url: string | null
-}
-
-interface Job {
-  id: string
-  title: string
-  category: string
-  job_type: string
-  salary_type: string
-  location: string
-  salary: string
-  description: string
-  requirements: string
-  created_at: string
-  is_applied: boolean
-  mt_company?: Company
-}
-
-interface JobDetailModalProps {
-  selectedJob: Job | null
+interface JobDetailModalProps extends JobDetailHelpers {
+  selectedJob: JobDetail | null
   onClose: () => void
-  appliedJobIds: string[]
-  submitting: boolean
-  checkingProfile: boolean
-  getCompanyLogoUrl: (logoUrl: string | null | undefined) => string | null
-  getJobTypeText: (type: string) => string
-  getSalaryTypeText: (type: string) => string
-  formatSalary: (salaryStr: string | null | undefined) => string
-  handleCompanyClick: (e: React.MouseEvent, company: Company | undefined) => void
-  triggerApplyConfirmation: (jobId: string) => Promise<void>
 }
 
 export default function JobDetailModal({
@@ -54,13 +25,8 @@ export default function JobDetailModal({
   triggerApplyConfirmation,
 }: JobDetailModalProps) {
   const [copied, setCopied] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  // SSR (Server-Side Rendering) алдаанаас сэргийлж mount болсны дараа портал ажиллуулна
-  useEffect(() => {
-    setMounted(true)
-    return () => setMounted(false)
-  }, [])
+  // SSR (Server-Side Rendering) алдаанаас сэргийлж браузерт л портал ажиллуулна
+  const mounted = useIsClient()
 
   if (!selectedJob || !mounted) return null
 

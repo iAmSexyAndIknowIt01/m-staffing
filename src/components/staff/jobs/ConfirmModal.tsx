@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React from "react"
 import { createPortal } from "react-dom"
 import { HelpCircle, ChevronsRight } from "lucide-react"
+import { useIsClient } from "@/lib/useIsClient"
 
 interface ConfirmModalProps {
   show: boolean
@@ -25,12 +26,7 @@ export default function ConfirmModal({
   onDragStart,
   onClose,
 }: ConfirmModalProps) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-    return () => setMounted(false)
-  }, [])
+  const mounted = useIsClient()
 
   if (!show || !mounted) return null
 

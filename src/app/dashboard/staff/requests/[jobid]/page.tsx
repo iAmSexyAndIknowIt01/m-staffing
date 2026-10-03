@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, Clock, CheckCircle, XCircle, Users, Copy, Check, CheckCheck } from "lucide-react"
+import { getErrorMessage } from "@/lib/errors"
 
 interface Company {
   id?: string
@@ -74,9 +75,9 @@ export default function StaffRequestDetailPage({ params }: { params: Promise<{ j
         }
 
         setJob(formattedJob)
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching detail:", err)
-        setError(err.message || "Серверийн алдаа гарлаа")
+        setError(getErrorMessage(err, "Серверийн алдаа гарлаа"))
       } finally {
         setLoading(false)
       }
@@ -103,9 +104,9 @@ export default function StaffRequestDetailPage({ params }: { params: Promise<{ j
       }
 
       setJob((prev) => (prev ? { ...prev, status: "accepted" } : null))
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error updating status:", err)
-      alert(err.message || "Серверийн алдаа гарлаа")
+      alert(getErrorMessage(err, "Серверийн алдаа гарлаа"))
     } finally {
       setUpdating(false)
     }

@@ -30,7 +30,7 @@ export async function GET() {
     const rawJobs = jobsData || []
 
     // 2. Олдсон ажлын байруудаас компаниудын ID-г (user_id) ялгаж авна
-    const companyIds = Array.from(new Set(rawJobs.map((j: any) => j.user_id).filter(Boolean)))
+    const companyIds = Array.from(new Set(rawJobs.map((j) => j.user_id).filter(Boolean)))
 
     // ТҮЛХҮҮР ӨӨРЧЛӨЛТ: Record-ийн тип дээр 'id: string' нэмж өгөв
     let companiesMap: Record<string, { id: string; name: string; logo_url: string | null }> = {}
@@ -46,19 +46,19 @@ export async function GET() {
 
       // ЗАССАН: Компаниудыг ID-аар нь Map болгохдоо 'id'-г нь хамт хадгална
       if (companiesData) {
-        companiesMap = companiesData.reduce((acc: any, company: any) => {
+        companiesMap = companiesData.reduce((acc, company) => {
           acc[company.id] = { 
             id: company.id, // <-- Фронт руу дамжуулах ID
             name: company.company_name, 
             logo_url: company.logo_url 
           }
           return acc
-        }, {})
+        }, {} as Record<string, { id: string; name: string; logo_url: string | null }>)
       }
     }
 
     // 4. Ажлын байр бүрт өөрийнх нь компанийн мэдээллийг гараар нэгтгэж (Merge) форматлана
-    const formattedJobs = rawJobs.map((job: any) => {
+    const formattedJobs = rawJobs.map((job) => {
       const isApplied = job.tr_job_request && job.tr_job_request.length > 0
       const { tr_job_request, ...cleanedJob } = job
 
@@ -78,7 +78,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, jobs: formattedJobs }, { status: 200 })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Ажлын зарууд татахад алдаа гарлаа:", error)
     return NextResponse.json(
       { error: "Серверт алдаа гарлаа." },

@@ -2,6 +2,15 @@
 
 import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
+import { getErrorMessage } from "@/lib/errors"
+
+// /api/staff/requests-ийн буцаах мөр
+interface ApiRequestRow {
+  id: string
+  status: RequestItem["status"] | null
+  created_at: string
+  mt_openjob: { title: string | null; mt_company: { company_name: string | null; logo_url: string | null } | null } | null
+}
 
 interface RequestItem {
   id: string
@@ -54,7 +63,7 @@ export default function StaffRequestsPage() {
           throw new Error(result.error || "Дата татахад алдаа гарлаа")
         }
 
-        const formattedData: RequestItem[] = (result.data || []).map((item: any) => ({
+        const formattedData: RequestItem[] = ((result.data || []) as ApiRequestRow[]).map((item) => ({
           id: item.id,
           jobTitle: item.mt_openjob?.title || "Тодорхойгүй ажлын байр",
           companyName: item.mt_openjob?.mt_company?.company_name || "Компанийн нэр байхгүй",
@@ -65,9 +74,9 @@ export default function StaffRequestsPage() {
         }))
 
         setRequests(formattedData)
-      } catch (err: any) {
+      } catch (err) {
         console.error("Fetch requests error:", err)
-        setError(err.message || "Серверийн алдаа гарлаа")
+        setError(getErrorMessage(err, "Серверийн алдаа гарлаа"))
       } finally {
         setLoading(false)
       }
@@ -146,10 +155,6 @@ export default function StaffRequestsPage() {
     return [1, '...', current - 1, current, current + 1, '...', total]
   }
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [activeTab, statusFilter, searchQuery])
-
   return (
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
@@ -200,7 +205,7 @@ export default function StaffRequestsPage() {
         <>
           <div className="flex items-center gap-1.5 sm:gap-2 border-b border-gray-200 pb-2 overflow-x-auto no-scrollbar">
             <button
-              onClick={() => setActiveTab("all")}
+              onClick={() => { setActiveTab("all"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
                 activeTab === "all" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
               }`}
@@ -208,7 +213,7 @@ export default function StaffRequestsPage() {
               Бүгд ({requests.length})
             </button>
             <button
-              onClick={() => setActiveTab("applied")}
+              onClick={() => { setActiveTab("applied"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
                 activeTab === "applied" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
               }`}
@@ -216,7 +221,7 @@ export default function StaffRequestsPage() {
               Миний явуулсан анкетууд
             </button>
             <button
-              onClick={() => setActiveTab("invitations")}
+              onClick={() => { setActiveTab("invitations"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
                 activeTab === "invitations" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
               }`}
@@ -234,7 +239,7 @@ export default function StaffRequestsPage() {
                 type="text"
                 placeholder="Ажлын нэр эсвэл компаниар хайх..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
                 className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-indigo-500 transition"
               />
             </div>
@@ -267,6 +272,7 @@ export default function StaffRequestsPage() {
                         type="button"
                         onClick={() => {
                           setStatusFilter(key)
+                          setCurrentPage(1)
                           setIsDropdownOpen(false)
                         }}
                         className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-medium transition flex items-center justify-between ${

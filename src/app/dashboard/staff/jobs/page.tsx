@@ -16,6 +16,7 @@ import ShareModal from "@/components/staff/jobs/ShareModal"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Шинэ модалыг импортлох
 import { useSearchParams } from "next/navigation"
 import page from "@/app/page"
+import { getErrorMessage } from "@/lib/errors"
 
 interface Company {
   id?: string
@@ -78,7 +79,6 @@ export default function StaffJobsPage() {
   const [checkingProfile, setCheckingProfile] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [isFirstRender, setIsFirstRender] = useState(true)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingJobId, setPendingJobId] = useState<string | null>(null)
 
@@ -297,8 +297,8 @@ export default function StaffJobsPage() {
       setAppliedJobIds((prev) => [...prev, pendingJobId])
       setSelectedJob(null)
       setShowSuccessModal(true)
-    } catch (err: any) {
-      showAlert(err.message, "Алдаа гарлаа")
+    } catch (err) {
+      showAlert(getErrorMessage(err), "Алдаа гарлаа")
     } finally {
       setSubmitting(false)
       setPendingJobId(null)
@@ -385,7 +385,7 @@ export default function StaffJobsPage() {
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
-    } catch (err: any) {
+    } catch (err) {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
@@ -447,28 +447,35 @@ export default function StaffJobsPage() {
     })
   }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
 
-  useEffect(() => {    
-    // Хэрэв анх хуудас ачаалагдаж байгаа эсвэл URL дээр page параметр байвал 1 рүү албаар унагахгүй байх
-    if (isFirstRender) {
-      setIsFirstRender(false)
-      return
-    }
-    setIsFiltering(true)
-    const timer = setTimeout(() => setIsFiltering(false), 350) 
-    setCurrentPage(1)
-    return () => clearTimeout(timer)
-  }, [searchQuery, selectedCategory, selectedJobType, filterApplied])
-
+  // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
+  const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
   useEffect(() => {
+    if (!filteringFlash) return
+    const timer = setTimeout(() => setIsFiltering(false), filteringFlash.ms)
+    return () => clearTimeout(timer)
+  }, [filteringFlash])
+
+  const flashFiltering = (ms: number) => {
     setIsFiltering(true)
-    const timer = setTimeout(() => setIsFiltering(false), 300)
-    
+    setFilteringFlash({ ms }) // шинэ объект тул дараалсан дуудалт бүр таймерыг дахин эхлүүлнэ
+  }
+
+  // Шүүлтүүр өөрчлөгдөхөд эхний хуудас руу буцна.
+  // Анх ачаалахад дуудагдахгүй тул URL дээрх page параметр хадгалагдана.
+  const withPageReset = (setter: (val: string) => void) => (val: string) => {
+    setter(val)
+    setCurrentPage(1)
+    flashFiltering(350)
+  }
+
+  const changePage = (page: number) => {
+    setCurrentPage(page)
+    flashFiltering(300)
     jobsTopRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     })
-    return () => clearTimeout(timer)
-  }, [currentPage])
+  }
 
   const totalPages = useMemo(
     () => Math.ceil(filteredJobs.length / jobsPerPage),
@@ -521,13 +528,13 @@ export default function StaffJobsPage() {
       {/* ШҮҮЛТҮҮРИЙН КОМПОНЕНТ */}
       <JobFilterBar
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        setSearchQuery={withPageReset(setSearchQuery)}
         selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
+        setSelectedCategory={withPageReset(setSelectedCategory)}
         selectedJobType={selectedJobType}
-        setSelectedJobType={setSelectedJobType}
+        setSelectedJobType={withPageReset(setSelectedJobType)}
         filterApplied={filterApplied}
-        setFilterApplied={setFilterApplied}
+        setFilterApplied={withPageReset(setFilterApplied)}
         categories={categories}
       />
 
@@ -597,7 +604,7 @@ export default function StaffJobsPage() {
         isFiltering={isFiltering}
         currentPage={currentPage}
         visiblePages={visiblePages}
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={changePage}
       />
 
       {/* МОДАЛ ЦОНХНУУД */}

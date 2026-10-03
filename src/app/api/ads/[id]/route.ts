@@ -20,6 +20,7 @@ export async function GET(
 
     return NextResponse.json({ ad: data });
   } catch (error) {
+    console.error("ADS_DETAIL_ERROR:", error)
     return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
   }
 }

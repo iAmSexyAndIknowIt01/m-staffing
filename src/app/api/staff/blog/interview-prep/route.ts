@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Амжилттай бол өгөгдлийг буцаана
     return NextResponse.json(data)
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       { error: "Серверийн алдаа гарлаа." },
       { status: 500 }

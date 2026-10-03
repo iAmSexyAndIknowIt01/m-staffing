@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import type { AvailabilityDay } from "@/types/profile"
 import { useRouter } from "next/navigation"
+import { getErrorMessage } from "@/lib/errors"
 
 interface ProfileData {
   full_name: string
@@ -28,7 +30,7 @@ interface ProfileData {
     graduationYear: string
     isCurrent: boolean
   }>
-  availability: any
+  availability: Record<string, AvailabilityDay | null> | null
 }
 
 export default function StaffCVPage() {
@@ -51,8 +53,8 @@ export default function StaffCVPage() {
         } else {
           throw new Error(result.error || "Өгөгдөл олдсонгүй.")
         }
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }

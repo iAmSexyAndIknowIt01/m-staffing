@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: "Үзэлт амжилттай бүртгэгдлээ" }, { status: 200 })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Company view log error:", error)
     return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 })
   }
