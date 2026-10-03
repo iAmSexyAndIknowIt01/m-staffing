@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from("mt_ads")
-      .select("*")
+      .select("id, title, description, full_content, badge, color_from, color_to, created_at")
       .order("created_at", { ascending: false }); // Шинэ ад эхэнд харагдана
 
     if (error) throw error;
@@ -14,7 +14,7 @@ export async function GET() {
       success: true, 
       ads: data // Өмнөх жишгээр 'ads' гэсэн түлхүүрээр буцаав
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
       { success: false },
       { status: 500 }

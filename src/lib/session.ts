@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { cookies } from "next/headers"
 import type { UserRole } from "@/types/auth"
 
@@ -13,6 +14,7 @@ export interface Session {
   role: UserRole
   email: string
   isAdmin: boolean
+  iat?: number // unix seconds — хуучин cookie-д байхгүй байж болно
   exp: number // unix seconds
 }
 
@@ -57,8 +59,9 @@ export function isAdminEmail(email: string | undefined | null): boolean {
   return admins.includes(email.toLowerCase())
 }
 
-export async function createSessionToken(data: Omit<Session, "exp">): Promise<string> {
-  const session: Session = { ...data, exp: Math.floor(Date.now() / 1000) + SESSION_MAX_AGE }
+export async function createSessionToken(data: Omit<Session, "iat" | "exp">): Promise<string> {
+  const now = Math.floor(Date.now() / 1000)
+  const session: Session = { ...data, iat: now, exp: now + SESSION_MAX_AGE }
   const payload = toBase64Url(encoder.encode(JSON.stringify(session)))
   const signature = await crypto.subtle.sign("HMAC", await getKey(), encoder.encode(payload))
   return `${payload}.${toBase64Url(new Uint8Array(signature))}`
@@ -86,11 +89,60 @@ export async function verifySessionToken(token: string | undefined | null): Prom
   }
 }
 
-// Server Component / Route Handler дотроос одоогийн хэрэглэгчийг авах
-export async function getSession(): Promise<Session | null> {
-  const cookieStore = await cookies()
-  return verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value)
+// Гарын үсэг зөв ч session одоо хүчинтэй хэвээр эсэхийг DB-ээс шалгана:
+// - админ эрх ADMIN_EMAILS-ээс хасагдсан бол хүчингүй
+// - staff/company бүртгэл устсан бол хүчингүй
+// - auth_session_revocations-д бүртгэгдсэнээс өмнө үүссэн бол хүчингүй (албадан гаргах)
+async function isSessionStillValid(session: Session): Promise<boolean> {
+  // proxy.ts энэ модулийг импортлодог тул supabase-г зөвхөн хэрэгтэй үед ачаална
+  const { supabase } = await import("@/lib/supabase")
+
+  const issuedAt = session.iat ?? session.exp - SESSION_MAX_AGE
+  const accountTable = session.role === "staff" ? "mt_staff" : "mt_company"
+
+  const [revocation, account] = await Promise.all([
+    supabase
+      .from("auth_session_revocations")
+      .select("revoked_before")
+      .eq("user_id", session.userId)
+      .maybeSingle(),
+    session.isAdmin
+      ? Promise.resolve({ data: { id: session.userId }, error: null })
+      : supabase.from(accountTable).select("id").eq("id", session.userId).maybeSingle(),
+  ])
+
+  if (session.isAdmin && !isAdminEmail(session.email)) return false
+
+  if (account.error) throw account.error
+  if (!account.data) return false
+
+  // Хүснэгт хараахан үүсээгүй (migration ажиллаагүй) үед нэвтрэлтийг хаахгүй
+  if (revocation.error) {
+    console.error("SESSION_REVOCATION_CHECK_ERROR:", revocation.error)
+    return true
+  }
+  if (revocation.data) {
+    const revokedBefore = Math.floor(new Date(revocation.data.revoked_before).getTime() / 1000)
+    if (issuedAt < revokedBefore) return false
+  }
+
+  return true
 }
+
+// Server Component / Route Handler дотроос одоогийн хэрэглэгчийг авах.
+// cache() — нэг render дотор олон дуудагдсан ч DB-г нэг л удаа шалгана.
+export const getSession = cache(async (): Promise<Session | null> => {
+  const cookieStore = await cookies()
+  const session = await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value)
+  if (!session) return null
+
+  try {
+    return (await isSessionStillValid(session)) ? session : null
+  } catch (err) {
+    console.error("SESSION_VALIDATION_ERROR:", err)
+    return null
+  }
+})
 
 export const sessionCookieOptions = {
   path: "/",

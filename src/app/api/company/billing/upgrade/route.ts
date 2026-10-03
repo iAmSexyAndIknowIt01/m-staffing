@@ -31,7 +31,7 @@ export async function GET() {
 
     const { data: invoices, error } = await supabase
       .from("mt_company_invoices")
-      .select("*")
+      .select("id, invoice_number, plan_type, amount, status, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }) // Шинэ нь дээрээ харагдана
 

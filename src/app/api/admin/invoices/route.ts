@@ -15,7 +15,7 @@ export async function GET() {
 
     const { data: invoices, error } = await supabase
       .from("mt_company_invoices")
-      .select("*")
+      .select("id, user_id, invoice_number, plan_type, amount, status, created_at")
       .order("created_at", { ascending: false })
 
     if (error) throw error
@@ -44,7 +44,7 @@ export async function PUT(req: Request) {
     // А. Нэхэмжлэхийг олох
     const { data: invoice, error: findError } = await supabase
       .from("mt_company_invoices")
-      .select("*")
+      .select("id, user_id, plan_type, status")
       .eq("id", invoice_id)
       .single()
 

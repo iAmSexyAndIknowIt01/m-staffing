@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { data, error } = await supabase
       .from("mt_ads")
-      .select("*")
+      .select("id, title, description, full_content, badge, color_from, color_to, created_at")
       .eq("id", id) // Энд params.id-ын оронд шууд id-г ашиглана
       .single();
 
@@ -19,7 +19,7 @@ export async function GET(
     if (!data) return NextResponse.json({ error: "Ads not found" }, { status: 404 });
 
     return NextResponse.json({ ad: data });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 });
   }
 }
