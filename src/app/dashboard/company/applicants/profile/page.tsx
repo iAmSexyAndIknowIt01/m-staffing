@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import { getErrorMessage } from "@/lib/errors"
 
 type Experience = {
   company: string
@@ -140,8 +141,8 @@ function ApplicantProfileContent() {
             })
           }
         }
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { getErrorMessage } from "@/lib/errors"
 
 interface CompanyViewProps {
   userId: string
@@ -70,8 +71,8 @@ export default function CompanyView({ userId }: CompanyViewProps) {
         } else {
           throw new Error(result.error || "Алдаа гарлаа.")
         }
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
         isFetched.current = false 
       } finally {
         setLoading(false)

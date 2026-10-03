@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
-import { supabase } from "@/lib/supabase" 
+import { supabase } from "@/lib/supabase"
+import { hasReachedJobLimit } from "@/lib/plans"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -31,7 +32,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // 4. ДАТАБЕЙС РҮҮ ХАДГАЛАХ ХЭСЭГ
+    // 4. Багцын идэвхтэй зарын лимит шалгах (хугацаа дууссан бол Free лимит)
+    const { reached, limit } = await hasReachedJobLimit(userId)
+    if (reached) {
+      return NextResponse.json(
+        { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна. Багцаа ахиулах эсвэл хуучин зараа хаана уу.` },
+        { status: 403 }
+      )
+    }
+
+    // 5. ДАТАБЕЙС РҮҮ ХАДГАЛАХ ХЭСЭГ
     const { data, error } = await supabase
       .from("mt_openjob")
       .insert([
@@ -60,11 +70,10 @@ export async function POST(request: Request) {
       { status: 201 }
     )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error("Жоб үүсгэхэд алдаа гарлаа:", error)
     return NextResponse.json(
-      { error: error.message || "Серверт алдаа гарлаа. Дараа дахин оролдоно уу." },
+      { error: "Серверт алдаа гарлаа. Дараа дахин оролдоно уу." },
       { status: 500 }
     )
   }
@@ -100,19 +109,18 @@ export async function GET() {
     if (error) throw error
 
     // Ирсэн датаг форматлах
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedJobs = jobs?.map((job: any) => ({
+     
+    const formattedJobs = jobs?.map((job) => ({
       ...job,
       applicants_count: job.tr_job_request?.[0]?.count || 0
     }))
 
     return NextResponse.json({ success: true, data: formattedJobs }, { status: 200 })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error("Жагсаалт татахад алдаа гарлаа:", error)
     return NextResponse.json(
-      { error: error.message || "Серверт алдаа гарлаа." },
+      { error: "Серверт алдаа гарлаа." },
       { status: 500 }
     )
   }

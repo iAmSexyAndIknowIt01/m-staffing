@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 type Props = {
   open: boolean
@@ -9,23 +9,14 @@ type Props = {
   onClose: () => void
 }
 
-export default function BioModal({
-  open,
+function BioModalContent({
   value,
   onSave,
   onClose,
 }: Props) {
   // Bio-ийн бичвэрийг удирдах state
-  const [text, setText] = useState("")
+  const [text, setText] = useState(value || "")
 
-  // Модал нээгдэх бүрд гаднаас ирсэн анхны утгыг онооно
-  useEffect(() => {
-    if (open) {
-      setText(value || "")
-    }
-  }, [open, value])
-
-  if (!open) return null
 
   // Текст хоосон эсвэл зөвхөн хоосон зайнууд байвал идэвхгүй болгох нөхцөл
   const isDisabled = !text.trim()
@@ -104,4 +95,10 @@ export default function BioModal({
 
     </div>
   )
+}
+
+// Модал нээгдэх бүрд дотоод state-ийг props-оос шинээр эхлүүлэхийн тулд зөвхөн нээлттэй үед mount хийнэ
+export default function BioModal(props: Props) {
+  if (!props.open) return null
+  return <BioModalContent {...props} />
 }

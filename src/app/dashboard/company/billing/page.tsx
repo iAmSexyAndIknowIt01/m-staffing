@@ -28,7 +28,7 @@ export default function BillingPage() {
   // 1. Нэхэмжлэх шинээр үүсгэх Swipe Modal-ийн төлөвүүд
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<{ id: string; name: string; price: string } | null>(null)
-  const [invoiceDetails, setInvoiceDetails] = useState<any>(null)
+  const [invoiceDetails, setInvoiceDetails] = useState<{ invoiceNumber: string; amount: number; bankName: string; accountNumber: string; accountName: string } | null>(null)
   const [isSwiped, setIsSwiped] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -350,8 +350,8 @@ export default function BillingPage() {
             🧾 Одоогоор төлбөрийн түүх байхгүй байна.
           </div>
         ) : (
-          <div className="bg-white border border-gray-100 rounded-4xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs">
+          <div className="bg-white border border-gray-100 rounded-4xl overflow-x-auto shadow-sm">
+            <table className="w-full min-w-140 text-left text-xs">
               <thead className="bg-slate-50 text-gray-500 uppercase font-bold border-b border-gray-100">
                 <tr>
                   <th className="p-4">Огноо</th>

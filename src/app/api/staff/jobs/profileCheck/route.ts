@@ -14,7 +14,7 @@ export async function GET() {
     // ЗАССАН: .eq("id", userId)-ийг .eq("user_id", userId) болгов
     const { data: profile, error: profileError } = await supabase
       .from("mt_profile")
-      .select("*")
+      .select("email, phone, bio, skills, experience, education")
       .eq("user_id", userId)
       .maybeSingle() // single() нь дата олдохгүй үед 406 алдаа шиддэг тул maybeSingle() ашиглах нь найдвартай
 
@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     // ЗАССАН: Таны mt_profile хүснэгтийн бодит багануудын нэрсээр солив
-    const requiredFields = [
+    const requiredFields: (keyof typeof profile)[] = [
       "email", 
       "phone", 
       "bio", 
@@ -52,7 +52,7 @@ export async function GET() {
     // Бүх зүйл амжилттай бөглөгдсөн бол
     return NextResponse.json({ isComplete: true })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Profile Check Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 export default function PrivacyPage() {
   const router = useRouter()
-  const [privacyData, setPrivacyData] = useState<any[]>([])
+  const [privacyData, setPrivacyData] = useState<{ id: number; title: string; content: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)

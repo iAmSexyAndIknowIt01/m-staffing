@@ -1,7 +1,24 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useSyncExternalStore } from "react"
 import { Heart, Share2 } from "lucide-react"
+
+const VISITED_JOBS_KEY = "visited_jobs"
+const VISITED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй
+const noopSubscribe = () => () => {}
+
+function readVisitedJobs(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(VISITED_JOBS_KEY) || "{}")
+  } catch {
+    return {}
+  }
+}
+
+function isRecentlyVisited(jobId: string): boolean {
+  const visitTime = readVisitedJobs()[jobId]
+  return typeof visitTime === "number" && Date.now() - visitTime <= VISITED_TTL_MS
+}
 
 interface Company {
   id?: string
@@ -73,32 +90,26 @@ export default function JobCard({
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
-  // Өмнө нь дарж үзсэн эсэхийг localStorage болон хугацаагаар шалгах
-  const [hasVisited, setHasVisited] = useState(false)
-
-  useEffect(() => {
-    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
-    const visitTime = visitedJobs[job.id]
-    
-    if (visitTime) {
-      const now = new Date().getTime()
-      const diffDays = (now - visitTime) / (1000 * 60 * 60 * 24)
-      
-      // Жишээ нь: 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй байх
-      if (diffDays <= 7) {
-        setHasVisited(true)
-      }
-    }
-  }, [job.id])
+  // Өмнө нь дарж үзсэн эсэхийг localStorage болон хугацаагаар шалгах (SSR үед false)
+  const visitedRecently = useSyncExternalStore(
+    noopSubscribe,
+    () => isRecentlyVisited(job.id),
+    () => false
+  )
+  const [clicked, setClicked] = useState(false)
+  const hasVisited = clicked || visitedRecently
 
   const handleClick = () => {
-    setHasVisited(true)
-    const visitedJobs = JSON.parse(localStorage.getItem("visited_jobs") || "{}")
-    
-    // Дарсан цаг/огноог хадгалах
-    visitedJobs[job.id] = new Date().getTime()
-    localStorage.setItem("visited_jobs", JSON.stringify(visitedJobs))
-    
+    setClicked(true)
+    try {
+      const visitedJobs = readVisitedJobs()
+      // Дарсан цаг/огноог хадгалах
+      visitedJobs[job.id] = Date.now()
+      localStorage.setItem(VISITED_JOBS_KEY, JSON.stringify(visitedJobs))
+    } catch {
+      // localStorage хаалттай (private горим гэх мэт) үед өнгө л өөрчлөгдөхгүй
+    }
+
     onClick()
   }
 

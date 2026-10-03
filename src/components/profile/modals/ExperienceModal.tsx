@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 type Experience = {
   company: string
@@ -25,21 +25,13 @@ const initialForm: Experience = {
   description: "",
 }
 
-export default function ExperienceModal({ open, value, onSave, onClose }: Props) {
-  const [list, setList] = useState<Experience[]>([])
+function ExperienceModalContent({ value, onSave, onClose }: Props) {
+  const [list, setList] = useState<Experience[]>(value ?? [])
   const [form, setForm] = useState<Experience>(initialForm)
   const [isCurrentJob, setIsCurrentJob] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    if (open) {
-      setList(value ?? [])
-      resetForm()
-    }
-  }, [value, open])
-
-  if (!open) return null
 
   const resetForm = () => {
     setForm(initialForm)
@@ -276,4 +268,10 @@ export default function ExperienceModal({ open, value, onSave, onClose }: Props)
       </div>
     </div>
   )
+}
+
+// Модал нээгдэх бүрд дотоод state-ийг props-оос шинээр эхлүүлэхийн тулд зөвхөн нээлттэй үед mount хийнэ
+export default function ExperienceModal(props: Props) {
+  if (!props.open) return null
+  return <ExperienceModalContent {...props} />
 }

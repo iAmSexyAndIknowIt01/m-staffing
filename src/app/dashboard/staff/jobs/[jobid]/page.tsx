@@ -3,11 +3,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import JobDetailView from "@/components/staff/jobs/JobDetailView";
+import type { JobCompany, JobDetail } from "@/types/job";
 import ConfirmModal from "@/components/staff/jobs/ConfirmModal";
 import SuccessModal from "@/components/staff/jobs/SuccessModal";
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal";
 import AlertModal from "@/components/staff/jobs/AlertModal";
 import LoadingLayout from "@/components/staff/common/LoadingLayout";
+import { getErrorMessage } from "@/lib/errors"
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -17,7 +19,7 @@ export default function JobDetailPage() {
   const rawId = params?.jobid || params?.id;
   const jobId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : null;
 
-  const [job, setJob] = useState<any>(null);
+  const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(false);
@@ -82,7 +84,7 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleCompanyClick = (e: React.MouseEvent, company: any) => {
+  const handleCompanyClick = (e: React.MouseEvent, company: JobCompany | undefined) => {
     e.preventDefault();
     if (!company) return;
     const actualCompanyId = company.id || company.company_id;
@@ -142,7 +144,7 @@ export default function JobDetailPage() {
       setPendingJobId(id);
       setSliderX(0);
       setShowConfirmModal(true);
-    } catch (err: any) {
+    } catch (err) {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно үү.", "Алдаа");
     } finally {
       setCheckingProfile(false);
@@ -183,8 +185,8 @@ export default function JobDetailPage() {
         setJob({ ...job, is_applied: true });
       }
       setShowSuccessModal(true);
-    } catch (err: any) {
-      showAlert(err.message, "Алдаа гарлаа");
+    } catch (err) {
+      showAlert(getErrorMessage(err), "Алдаа гарлаа");
     } finally {
       setSubmitting(false);
       setPendingJobId(null);

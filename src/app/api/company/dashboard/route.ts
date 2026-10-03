@@ -1,36 +1,27 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { PLANS, getEffectiveSubscription } from "@/lib/plans"
+import { one } from "@/lib/relation"
 
 export async function GET() {
   try {
     const session = await getSession()
     const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "company") {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    // 1. Компанийн багцын мэдээллийг авах
-    let { data: subData, error: subError } = await supabase
-      .from("mt_company_subscriptions")
-      .select("plan_type, status, job_limit, expires_at")
-      .eq("user_id", userId)
-      .single()
-
-    if (subError && subError.code === "PGRST116") {
-      subData = { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
-    } else if (subError) {
-      throw subError
-    }
-
-    const subscriptionData = subData ?? { plan_type: "free", status: "active", job_limit: 3, expires_at: null }
+    // 1. Компанийн одоо хүчинтэй багц (хугацаа дууссан бол Free лимит)
+    const subscriptionData = await getEffectiveSubscription(userId)
 
     // 2. Нээлттэй ажлын байрны тоо
     const { count: openJobsCount, error: openJobsError } = await supabase
       .from("mt_openjob")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
+      .eq("status", "active")
 
     if (openJobsError) throw openJobsError
 
@@ -60,13 +51,13 @@ export async function GET() {
 
     if (jobsError) throw jobsError
 
-    let activeJobs = (jobsData || []).map((job: any) => ({
+    const activeJobs = (jobsData || []).map((job) => ({
       id: job.id,
       title: job.title,
       totalApplicants: job.tr_job_request ? job.tr_job_request.length : 0,
       newApplicants: 0,
       status: "Идэвхтэй",
-      views: job.views || 0
+      views: 0 // mt_openjob-д үзэлтийн тоо хадгалдаггүй
     }))
 
     activeJobs.sort((a, b) => {
@@ -85,10 +76,10 @@ export async function GET() {
 
     if (recentError) throw recentError
 
-    let recentApplicants: any[] = []
+    let recentApplicants: { id: string; name: string; role: string; time: string; avatar: string | null }[] = []
 
     if (recentRequests && recentRequests.length > 0) {
-      const applicantIds = recentRequests.map((r: any) => r.applicant_id).filter(Boolean)
+      const applicantIds = recentRequests.map((r) => r.applicant_id).filter(Boolean)
 
       const [staffResult, profileResult] = await Promise.all([
         supabase.from("mt_staff").select("id, last_name, first_name").in("id", applicantIds),
@@ -98,12 +89,12 @@ export async function GET() {
       const staffData = staffResult.data || []
       const profileData = profileResult.data || []
 
-      recentApplicants = recentRequests.map((app: any) => {
-        const staff = staffData.find((s: any) => s.id === app.applicant_id)
-          const profile = profileData.find((p: any) => p.user_id === app.applicant_id)
+      recentApplicants = recentRequests.map((app) => {
+        const staff = staffData.find((s) => s.id === app.applicant_id)
+          const profile = profileData.find((p) => p.user_id === app.applicant_id)
 
           const fullName = `${staff?.last_name ? staff.last_name + " " : ""}${staff?.first_name || ""}`.trim()
-          let finalAvatarUrl = profile?.photo_url?.startsWith("http") 
+          const finalAvatarUrl = profile?.photo_url?.startsWith("http") 
             ? profile.photo_url 
             : profile?.photo_url 
               ? supabase.storage.from("avatars").getPublicUrl(profile.photo_url).data.publicUrl 
@@ -112,7 +103,7 @@ export async function GET() {
           return {
             id: app.id, 
             name: fullName || "Ажил горилогч", 
-            role: app.mt_openjob?.title || "Тодорхойгүй ажлын байр", 
+            role: one(app.mt_openjob)?.title || "Тодорхойгүй ажлын байр", 
             time: new Date(app.created_at).toLocaleDateString("mn-MN") + " ирсэн",
             avatar: finalAvatarUrl
           }
@@ -130,12 +121,6 @@ export async function GET() {
 
     if (tipsError) console.error("Tips Fetch Error:", tipsError) // Алдаа гарвал консолд хэвлээд цааш ажиллана
 
-    const planNames: Record<string, string> = {
-      free: "Үнэгүй багц",
-      standard: "Standard Plan",
-      premium: "Premium Plan"
-    }
-
     return NextResponse.json({
       success: true,
       stats: {
@@ -144,10 +129,10 @@ export async function GET() {
         interviewCount: interviewCount || 0
       },
       subscription: {
-        planName: planNames[subscriptionData.plan_type] || "Тодорхойгүй багц",
+        planName: PLANS[subscriptionData.planType].name,
         status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
-        jobLimit: subscriptionData.job_limit,
-        expiresAt: subscriptionData.expires_at ? new Date(subscriptionData.expires_at).toLocaleDateString("mn-MN") : "Хугацаагүй"
+        jobLimit: subscriptionData.jobLimit,
+        expiresAt: subscriptionData.expiresAt ? new Date(subscriptionData.expiresAt).toLocaleDateString("mn-MN") : "Хугацаагүй"
       },
       activeJobs,
       recentApplicants,
@@ -155,7 +140,7 @@ export async function GET() {
       tips: tipsData || []
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Dashboard API Error:", error)
     return NextResponse.json({ success: false, error: "Серверийн алдаа гарлаа." }, { status: 500 })
   }

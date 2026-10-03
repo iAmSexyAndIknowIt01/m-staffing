@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const session = await getSession()
     const companyId = session?.userId
 
-    if (!companyId) {
+    if (!companyId || session.role !== "company") {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
@@ -21,8 +21,9 @@ export async function POST(request: Request) {
     // 1. tr_job_request хүснэгтээс ажил горилогчийн applicant_id-г олж авах
     const { data: jobRequest, error: fetchError } = await supabase
       .from("tr_job_request")
-      .select("applicant_id")
+      .select("applicant_id, mt_openjob!inner(user_id)")
       .eq("id", applicationId)
+      .eq("mt_openjob.user_id", companyId) // Зөвхөн өөрийн ажлын байранд ирсэн анкет
       .single()
 
     if (fetchError || !jobRequest) {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: "Үзэлтийг амжилттай бүртгэлээ." })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("CV View Insert Error:", error)
     return NextResponse.json({ success: false, error: "Серверийн алдаа гарлаа." }, { status: 500 })
   }

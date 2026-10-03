@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { getErrorMessage } from "@/lib/errors"
 
 interface Tip {
   id: string
@@ -24,8 +25,8 @@ export default function TipsPage() {
         if (!res.ok) throw new Error("Зөвлөгөөнүүдийг ачаалж чадсангүй.")
         const data = await res.json()
         setTips(data)
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }

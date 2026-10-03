@@ -220,7 +220,7 @@ export default function AdminDashboard() {
               // Хайлтаар илэрц олдоогүй үеийн төлөв
               <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center space-y-2 shadow-xs">
                 <p className="text-gray-800 font-bold text-sm">Илэрц олдсонгүй</p>
-                <p className="text-gray-400 text-xs">"{searchQuery}" утгад тохирох нэхэмжлэх олдсонгүй. Хайлтын утгаа шалгана уу.</p>
+                <p className="text-gray-400 text-xs">&quot;{searchQuery}&quot; утгад тохирох нэхэмжлэх олдсонгүй. Хайлтын утгаа шалгана уу.</p>
                 <button 
                   onClick={() => setSearchQuery("")}
                   className="text-xs font-bold text-indigo-600 underline"
@@ -229,8 +229,8 @@ export default function AdminDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xs">
-                <table className="w-full text-left text-xs">
+              <div className="bg-white border border-gray-100 rounded-3xl overflow-x-auto shadow-xs">
+                <table className="w-full min-w-160 text-left text-xs">
                   <thead className="bg-slate-50 text-gray-500 uppercase font-bold border-b border-gray-100">
                     <tr>
                       <th className="p-4">Огноо</th>

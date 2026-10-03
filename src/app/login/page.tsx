@@ -53,19 +53,29 @@ export default function LoginPage() {
         items-center
         justify-center
         overflow-hidden
-        px-6
+        px-4
+        sm:px-6
+        pt-20
+        pb-8
+        lg:py-0
       "
     >
       <Link
         href="/"
         className="
           fixed
-          top-8
-          left-8
+          top-4
+          left-4
+          sm:top-8
+          sm:left-8
           glass
           rounded-full
-          px-6
-          py-3
+          px-4
+          py-2
+          sm:px-6
+          sm:py-3
+          text-sm
+          sm:text-base
           flex
           items-center
           gap-3
@@ -83,7 +93,8 @@ export default function LoginPage() {
           w-full
           grid
           lg:grid-cols-2
-          gap-10
+          gap-6
+          lg:gap-10
           items-center
         "
       >
@@ -92,12 +103,15 @@ export default function LoginPage() {
           className="
             relative
             overflow-hidden
-            rounded-[44px]
-            min-h-180
+            rounded-[32px]
+            lg:rounded-[44px]
+            lg:min-h-180
             flex
             items-center
-            px-10
+            px-6
+            py-10
             md:px-16
+            lg:py-0
           "
         >
           {/* GRID */}
@@ -144,12 +158,12 @@ export default function LoginPage() {
             <p className="orange-text font-bold tracking-[6px]">
               MSTAFFING
             </p>
-            <h1 className="mt-6 text-5xl md:text-7xl font-black">
+            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black">
               {role === "staff" ? "Ажлаа ол." : "Багаа бүрдүүл."}
               <br />
               Тавтай морил.
             </h1>
-            <p className="mt-8 text-gray-500 text-xl">
+            <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl">
               {role === "staff"
                 ? "Өөрт тохирох ажлаа олоод шууд эхлээрэй."
                 : "Шилдэг ажилтнаа хурдан олоорой."}
@@ -161,8 +175,10 @@ export default function LoginPage() {
         <div
           className="
             glass
-            rounded-[40px]
-            p-10
+            rounded-[32px]
+            sm:rounded-[40px]
+            p-6
+            sm:p-10
             shadow-[0_40px_100px_rgba(255,122,0,.08)]
           "
         >
@@ -188,7 +204,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <h2 className="text-3xl font-black mt-10">
+          <h2 className="text-2xl sm:text-3xl font-black mt-8 sm:mt-10">
             Нэвтрэх
           </h2>
 

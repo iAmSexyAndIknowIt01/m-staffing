@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { getErrorMessage } from "@/lib/errors"
 
 interface JobItem {
   id: string
@@ -65,9 +66,9 @@ export default function PostJobPage() {
         }
 
         setJobs(result.data || [])
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          setError(err.message)
+      } catch (err) {
+        if (!(err instanceof Error && err.name === "AbortError")) {
+          setError(getErrorMessage(err))
         }
       } finally {
         if (!signal.aborted) {
@@ -105,11 +106,11 @@ export default function PostJobPage() {
           message: "Таны компани админаар баталгаажаагүй байна. Админ баталгаажуулсны дараа зар оруулах боломжтой болно."
         })
       }
-    } catch (err: any) {
+    } catch (err) {
       setAlertModal({
         show: true,
         title: "Алдаа гарлаа",
-        message: err.message || "Сүлжээний алдаа гарлаа. Дахин оролдоно уу."
+        message: getErrorMessage(err, "Сүлжээний алдаа гарлаа. Дахин оролдоно уу.")
       })
     } finally {
       setCheckingApproval(false)

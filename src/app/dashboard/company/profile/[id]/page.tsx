@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
+import { getErrorMessage } from "@/lib/errors"
 
 interface CompanyProfileData {
   id?: string
@@ -84,8 +85,8 @@ export default function CompanyProfilePage() {
             setIsOwner(true)
           }
         }
-      } catch (err: any) {
-        setMessage({ type: "error", text: err.message })
+      } catch (err) {
+        setMessage({ type: "error", text: getErrorMessage(err) })
       } finally {
         setPageLoading(false)
       }
@@ -105,8 +106,8 @@ export default function CompanyProfilePage() {
 
       setFormData((prev) => ({ ...prev, logo_url: publicUrl }))
       setMessage({ type: "success", text: "Лого ачаалагдлаа. Хадгалах товчийг дарж баталгаажуулна уу." })
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Лого хуулахад алдаа гарлаа." })
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Лого хуулахад алдаа гарлаа.") })
     } finally {
       setUploadingLogo(false)
     }
@@ -131,8 +132,8 @@ export default function CompanyProfilePage() {
       setIsEditMode(false)
       setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ! 🎉" })
       window.scrollTo({ top: 0, behavior: "smooth" })
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message })
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err) })
       window.scrollTo({ top: 0, behavior: "smooth" })
     } finally {
       setActionLoading(false)

@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, Check, Copy } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar } from "lucide-react";
+import type { JobDetail, JobDetailHelpers } from "@/types/job";
 
 export default function JobDetailView({ 
   job, 
@@ -14,7 +14,7 @@ export default function JobDetailView({
   handleCompanyClick, 
   triggerApplyConfirmation,
   onClose 
-}: any) {
+}: JobDetailHelpers & { job: JobDetail; onClose: () => void }) {
   const isApplied = job.is_applied || (Array.isArray(appliedJobIds) && appliedJobIds.includes(job.id));
   const logoUrl = getCompanyLogoUrl(job.mt_company?.logo_url);
 

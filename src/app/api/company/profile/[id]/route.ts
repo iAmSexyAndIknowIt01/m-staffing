@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const isOwner = currentUserId === id && userRole === "company"
 
     return NextResponse.json({ data, isOwner })
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET Company Profile Error:", error)
     return NextResponse.json({ error: "Датаг ачааллахад алдаа гарлаа." }, { status: 500 })
   }
@@ -89,8 +89,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (error) throw new Error(error.message)
 
     return NextResponse.json({ message: "Амжилттай шинэчлэгдлээ" })
-  } catch (error: any) {
+  } catch (error) {
     console.error("PUT Company Profile Error:", error)
-    return NextResponse.json({ error: error.message || "Серверт алдаа гарлаа." }, { status: 500 })
+    return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
   }
 }

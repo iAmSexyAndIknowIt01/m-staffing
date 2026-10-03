@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 export default function TermsPage() {
   const router = useRouter()
-  const [termsData, setTermsData] = useState<any[]>([])
+  const [termsData, setTermsData] = useState<{ id: number; title: string; content: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)

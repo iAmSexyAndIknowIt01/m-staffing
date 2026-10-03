@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import { supabase } from "@/lib/supabase" // Supabase-ийг шууд импортлов
 import ApplicantsList from "./ApplicantsList"
+import { one } from "@/lib/relation"
 
 export const dynamic = "force-dynamic"
 
@@ -14,7 +15,7 @@ export default async function ApplicantsPage() {
     redirect("/dashboard")
   }
 
-  let applicants: { id: any; user_name: any; job_title: any; email: any; phone: any; created_at: any; status: any }[] = []
+  let applicants: { id: string; user_name: string; job_title: string; email: string; phone: string; created_at: string; status: string }[] = []
   let errorMsg = ""
 
   try {
@@ -42,17 +43,17 @@ export default async function ApplicantsPage() {
     }
 
     // Ирсэн датаг ApplicantsList-д зориулж хөрвүүлэх (Map)
-    applicants = requests?.map((req: any) => ({
+    applicants = requests?.map((req) => ({
       id: req.id,
       user_name: req.applicant_name || "Нэргүй ажил горилогч",
-      job_title: req.mt_openjob?.title || "Тодорхойгүй ажлын байр",
+      job_title: one(req.mt_openjob)?.title || "Тодорхойгүй ажлын байр",
       email: req.applicant_email || "Хоосон",
       phone: req.applicant_phone || "Хоосон",
       created_at: req.created_at,
       status: req.status || "new",
     })) || []
 
-  } catch (err: any) {
+  } catch (err) {
     console.error("Fetch applicants error:", err)
     errorMsg = "Анкетын мэдээллийг ачааллахад алдаа гарлаа."
   }

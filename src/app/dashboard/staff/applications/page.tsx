@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { getErrorMessage } from "@/lib/errors"
 
 interface Application {
   id: string
@@ -45,8 +46,8 @@ export default function ApplicationsHistoryPage() {
         
         const result = await res.json()
         setApplications(result.recentApplications || [])
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(getErrorMessage(err))
       } finally {
         setLoading(false)
       }
