@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 
 interface Applicant {
@@ -23,6 +24,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedJobFilter, setSelectedJobFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const router = useRouter()
 
   const uniqueJobs = useMemo(() => {
     const jobs = applicants.map((app) => app.job_title)
@@ -85,6 +87,25 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
     } catch (err) {
       alert("Алдаа гарлаа. Дахин оролдоно уу.")
     } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  // Тэнцсэн анкетаас гэрээний ноорог үүсгэж (эсвэл байгааг нь) нээнэ
+  const handleCreateContract = async (id: string) => {
+    try {
+      setUpdatingId(id)
+      const response = await fetch("/api/company/contracts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_request_id: id }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || "Амжилтгүй боллоо")
+
+      router.push(`/dashboard/company/contracts/${result.data.id}`)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.")
       setUpdatingId(null)
     }
   }
@@ -207,6 +228,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                     const currentStatus = app.status ? app.status.toLowerCase() : "";
                     const isPending = ["new", "pending", ""].includes(currentStatus);
                     const isAccepted = currentStatus === "accepted";
+                    const isApproved = currentStatus === "approved";
 
                     return (
                       <tr key={app.id} className="hover:bg-gray-50/50 transition">
@@ -243,6 +265,9 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                                 <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "not-approved")} className="text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцээгүй</button>
                               </>
                             )}
+                            {isApproved && (
+                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">📑 Гэрээ</button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -259,6 +284,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
               const currentStatus = app.status ? app.status.toLowerCase() : "";
               const isPending = ["new", "pending", ""].includes(currentStatus);
               const isAccepted = currentStatus === "accepted";
+              const isApproved = currentStatus === "approved";
 
               return (
                 <div key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
@@ -335,6 +361,16 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           ✕
                         </button>
                       </>
+                    )}
+
+                    {isApproved && (
+                      <button
+                        disabled={showLoader}
+                        onClick={() => handleCreateContract(app.id)}
+                        className="flex-1 text-xs font-bold bg-indigo-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
+                      >
+                        📑 Гэрээ
+                      </button>
                     )}
                   </div>
                 </div>

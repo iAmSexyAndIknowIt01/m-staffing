@@ -31,7 +31,10 @@ export async function GET(request: Request) {
     // 3. АНКЕТЫН ID-ААР СУУРЬ АЖИЛТНЫ STAFF_ID-Г ОЛОХ
     const { data: applicationData, error: appError } = await supabase
       .from("tr_job_request")
-      .select("applicant_id, job_id, mt_openjob!inner(user_id)")
+      .select(`
+        applicant_id, job_id, status, created_at,
+        mt_openjob!inner(user_id, title, category, job_type, salary, salary_type, location, description, requirements)
+      `)
       .eq("id", jobID)
       .eq("mt_openjob.user_id", userId) // Зөвхөн өөрийн зарласан ажлын байранд ирсэн анкет
       .maybeSingle()
@@ -161,9 +164,29 @@ export async function GET(request: Request) {
       availability: profileData?.availability || {},
     }
 
+    // Тухайн анкетаар горилж буй ажлын байр (Гэрээ хуудасны дэлгэрэнгүй цонхонд)
+    const job = one(applicationData.mt_openjob)
+    const application = {
+      status: applicationData.status,
+      created_at: applicationData.created_at,
+      job: job
+        ? {
+            title: job.title,
+            category: job.category,
+            job_type: job.job_type,
+            salary: job.salary,
+            salary_type: job.salary_type,
+            location: job.location,
+            description: job.description,
+            requirements: job.requirements,
+          }
+        : null,
+    }
+
     return NextResponse.json({
       success: true,
       profile,
+      application,
     })
 
   } catch (error) {
