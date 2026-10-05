@@ -95,6 +95,13 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   📨 Миний хүсэлт
                 </LinkNext>
+                <LinkNext
+                  href="/dashboard/staff/contracts"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  📑 Миний гэрээ
+                </LinkNext>
               </>
             ) : (
               <>
@@ -125,6 +132,13 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                   className="block p-3 rounded-xl hover:bg-gray-50"
                 >
                   🏢 Компани профайл
+                </LinkNext>
+                <LinkNext
+                  href="/dashboard/company/contracts"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block p-3 rounded-xl hover:bg-gray-50"
+                >
+                  📑 Гэрээ
                 </LinkNext>
               </>
             )}
@@ -231,6 +245,15 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                     </LinkNext>
                   )
                 })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/contracts")
+                  return (
+                    <LinkNext href="/dashboard/staff/contracts" className={linkClass}>
+                      <span className={iconClass}>📑</span>
+                      {!isCollapsed && <span className="text-sm truncate">Миний гэрээ</span>}
+                    </LinkNext>
+                  )
+                })()}
               </>
             ) : (
               <>
@@ -267,6 +290,15 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                     <LinkNext href="/dashboard/company/profile" className={linkClass}>
                       <span className={iconClass}>🏢</span>
                       {!isCollapsed && <span className="text-sm truncate">Компани профайл</span>}
+                    </LinkNext>
+                  )
+                })()}
+                {(() => {
+                  const { linkClass, iconClass } = getLinkStyles("/dashboard/company/contracts")
+                  return (
+                    <LinkNext href="/dashboard/company/contracts" className={linkClass}>
+                      <span className={iconClass}>📑</span>
+                      {!isCollapsed && <span className="text-sm truncate">Гэрээ</span>}
                     </LinkNext>
                   )
                 })()}

@@ -1,16 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import nodemailer from "nodemailer";
 import { randomInt } from "crypto";
-
-// Gmail SMTP тохиргоо
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  }
-});
+import { MAIL_FROM, transporter } from "@/lib/mailer";
 
 const CODE_TTL_MS = 5 * 60 * 1000       // Код 5 минут хүчинтэй
 const RESEND_COOLDOWN_MS = 60 * 1000    // Нэг имэйл рүү 60 секундэд нэг удаа л код илгээнэ
@@ -75,7 +66,7 @@ export async function POST(req: Request) {
     if (insertError) throw insertError;
 
     await transporter.sendMail({
-      from: `"MSTAFFING" <${process.env.GMAIL_USER}>`,
+      from: MAIL_FROM,
       to: email,
       subject: "MSTAFFING - Бүртгэл баталгаажуулах код",
       html: `
