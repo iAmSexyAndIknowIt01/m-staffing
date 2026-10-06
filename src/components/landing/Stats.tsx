@@ -1,3 +1,7 @@
+import Reveal from "./Reveal"
+import TiltCard from "./TiltCard"
+import CountUp from "./CountUp"
+
 const data = [
   {
     value: "100+",
@@ -98,7 +102,7 @@ export default function Stats() {
       <div className="relative z-10 max-w-350 mx-auto px-6">
         
         {/* HEADER */}
-        <div className="text-center">
+        <Reveal className="text-center">
           <div
             className="
               inline-flex
@@ -151,7 +155,7 @@ export default function Stats() {
             илүү хурдан, илүү ил тод
             болгож буй платформ.
           </p>
-        </div>
+        </Reveal>
 
         {/* STATS CARDS */}
         <div
@@ -165,11 +169,13 @@ export default function Stats() {
             md:gap-8
           "
         >
-          {data.map((item) => (
+          {data.map((item, index) => (
+            <Reveal key={item.title} delay={index * 120}>
+            <TiltCard>
             <div
-              key={item.title}
               className="
                 group
+                h-full
                 relative
                 overflow-hidden
                 rounded-4xl
@@ -196,6 +202,9 @@ export default function Stats() {
                 flex-col
               "
             >
+              {/* CURSOR SPOTLIGHT */}
+              <div className="card-spotlight [--spot:rgba(255,140,0,.14)]" />
+
               {/* HOVER HOVER LIGHT GLOW - Зөвхөн компьютер дээр */}
               <div
                 className="
@@ -250,7 +259,7 @@ export default function Stats() {
                   tracking-tight
                 "
               >
-                {item.value}
+                <CountUp value={item.value} />
               </h2>
 
               {/* TITLE */}
@@ -322,6 +331,8 @@ export default function Stats() {
               </div>
 
             </div>
+            </TiltCard>
+            </Reveal>
           ))}
         </div>
       </div>
