@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
 import { getErrorMessage } from "@/lib/errors"
 
@@ -23,11 +23,8 @@ interface CompanyProfileData {
 export default function CompanyProfilePage() {
   const { id } = useParams()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  const pageFrom = searchParams.get("page") || "1"
-  
+
   const [isEditMode, setIsEditMode] = useState(false)
   const [isOwner, setIsOwner] = useState(false) 
   

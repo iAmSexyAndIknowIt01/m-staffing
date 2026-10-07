@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase"
 import { MAIL_FROM, noticeEmailHtml, transporter } from "@/lib/mailer"
 import { effectiveStatus, todayISO } from "@/lib/contracts"
+import { getAppOrigin } from "@/lib/url"
 import type { Contract, ContractParty } from "@/types/contract"
 
 // Гэрээний API route-уудын хуваалцдаг DB / мэйл туслахууд
@@ -56,9 +57,10 @@ export async function logContractEvent(
   if (error) console.error("CONTRACT_EVENT_LOG_ERROR:", error)
 }
 
-export function getClientIp(req: Request): string | null {
-  const forwarded = req.headers.get("x-forwarded-for")
-  return forwarded?.split(",")[0].trim() || req.headers.get("x-real-ip") || null
+// Мэйл дэх "Гэрээг харах" линк. APP_URL тохируулаагүй production орчинд линкгүй явна.
+export function contractLink(req: Request, path: string): { href: string; label: string } | undefined {
+  const origin = getAppOrigin(req)
+  return origin ? { href: `${origin}${path}`, label: "Гэрээг харах" } : undefined
 }
 
 // Мэдэгдлийн мэйл. Илгээж чадаагүй ч гэрээний үйлдэл амжилттай хэвээр.

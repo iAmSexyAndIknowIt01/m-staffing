@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { getSession } from "@/lib/session"
-import { PAID_PLAN_DAYS, PLANS, type PlanType } from "@/lib/plans"
+import { PLANS, type PlanType, computePaidExpiry } from "@/lib/plans"
 
 const forbidden = () =>
   NextResponse.json({ success: false, error: "Хандах эрхгүй байна." }, { status: 403 })
@@ -74,8 +74,24 @@ export async function PUT(req: Request) {
     // В. Хэрэв АДМИН ТӨЛБӨРИЙГ БАТАЛГААЖУУЛСАН БОЛ (`paid`) Багцыг нь сунгана
     if (status === "paid") {
       const planType: PlanType = invoice.plan_type === "premium" ? "premium" : "standard"
-      const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + PAID_PLAN_DAYS)
+
+      // Ижил багцаа хугацаа дуусахаас өмнө сунгавал үлдсэн хоног нь алдагдахгүй
+      const { data: currentSub, error: currentSubError } = await supabase
+        .from("mt_company_subscriptions")
+        .select("plan_type, status, expires_at")
+        .eq("user_id", invoice.user_id)
+        .maybeSingle()
+
+      if (currentSubError) {
+        console.error("Subscription fetch error:", currentSubError)
+        await supabase.from("mt_company_invoices").update({ status: "pending" }).eq("id", invoice_id)
+        return NextResponse.json(
+          { success: false, error: "Багц идэвхжүүлэхэд алдаа гарлаа. Дахин оролдоно уу." },
+          { status: 500 }
+        )
+      }
+
+      const expiresAt = computePaidExpiry(currentSub, planType)
 
       // Багцын мөр байхгүй байсан ч үүсгэнэ (user_id нь unique)
       const { error: subError } = await supabase

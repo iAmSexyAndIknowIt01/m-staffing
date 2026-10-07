@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase" // Supabase client импортлох
 import { one } from "@/lib/relation"
+import { canCompanySetStatus } from "@/lib/jobRequest"
 
 export async function GET() {
   try {
@@ -55,9 +56,8 @@ export async function GET() {
   }
 }
 
-const COMPANY_STATUSES = ["interview", "rejected", "approved", "not-approved"]
-
-// Статус шинэчлэх (Урих, Татгалзах) үед ашиглах PUT request
+// Статус шинэчлэх (Урих, Татгалзах) үед ашиглах PUT request.
+// Шилжилтийн дүрмийг @/lib/jobRequest хянана ("accepted"-ийг ажилтан өөрөө тогтооно).
 export async function PUT(request: Request) {
   try {
     const session = await getSession()
@@ -74,31 +74,35 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Мэдээлэл дутуу байна." }, { status: 400 })
     }
 
-    // Компани зөвхөн эдгээр төлөвийг тогтооно ("accepted"-ийг ажилтан өөрөө тогтооно)
-    if (!COMPANY_STATUSES.includes(status)) {
-      return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 })
-    }
-
-    // Аюулгүй байдлын үүднээс зөвхөн өөрийн компанийн зарт ирсэн хүсэлт мөн эсэхийг 
+    // Аюулгүй байдлын үүднээс зөвхөн өөрийн компанийн зарт ирсэн хүсэлт мөн эсэхийг
     // шалгаж байж статусыг шинэчилнэ.
     const { data: checkData } = await supabase
       .from("tr_job_request")
-      .select("id, mt_openjob!inner(user_id)")
+      .select("id, status, mt_openjob!inner(user_id)")
       .eq("id", id)
       .eq("mt_openjob.user_id", companyId)
-      .single()
+      .maybeSingle()
 
     if (!checkData) {
       return NextResponse.json({ error: "Энэ анкетыг засах эрхгүй байна эсвэл олдсонгүй." }, { status: 403 })
     }
 
-    // Төлөв шинэчлэх
-    const { error: updateError } = await supabase
+    if (!canCompanySetStatus(checkData.status, status)) {
+      return NextResponse.json({ error: "Анкетын одоогийн төлөвөөс энэ төлөв рүү шилжүүлэх боломжгүй." }, { status: 400 })
+    }
+
+    // Хооронд нь төлөв өөрчлөгдсөн бол (ажилтан урилга хүлээж авсан г.м.) шинэчлэхгүй
+    const { data: updated, error: updateError } = await supabase
       .from("tr_job_request")
       .update({ status: status })
       .eq("id", id)
+      .eq("status", checkData.status)
+      .select("id")
 
     if (updateError) throw new Error(updateError.message)
+    if (!updated || updated.length === 0) {
+      return NextResponse.json({ error: "Анкетын төлөв өөрчлөгдсөн байна. Хуудсаа шинэчилнэ үү." }, { status: 409 })
+    }
 
     return NextResponse.json({ success: true, message: "Төлөв амжилттай шинэчлэгдлээ" })
   } catch (error) {

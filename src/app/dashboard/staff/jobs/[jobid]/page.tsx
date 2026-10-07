@@ -144,7 +144,7 @@ export default function JobDetailPage() {
       setPendingJobId(id);
       setSliderX(0);
       setShowConfirmModal(true);
-    } catch (err) {
+    } catch {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно үү.", "Алдаа");
     } finally {
       setCheckingProfile(false);
@@ -234,12 +234,18 @@ export default function JobDetailPage() {
     }
   };
 
+  // Сүүлийн render-ийн handler-уудыг ref-д хадгална — window listener-ийг чирэлт бүрт нэг л удаа бүртгэнэ
+  const dragHandlersRef = useRef({ move: handleDragMove, end: handleDragEnd });
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX);
+    dragHandlersRef.current = { move: handleDragMove, end: handleDragEnd };
+  });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => dragHandlersRef.current.move(e.clientX);
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) handleDragMove(e.touches[0].clientX);
+      if (e.touches.length > 0) dragHandlersRef.current.move(e.touches[0].clientX);
     };
-    const handleEnd = () => handleDragEnd();
+    const handleEnd = () => dragHandlersRef.current.end();
 
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove);
@@ -254,7 +260,7 @@ export default function JobDetailPage() {
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleEnd);
     };
-  }, [isDragging, sliderX]);
+  }, [isDragging]);
 
   if (loading) {
     return <LoadingLayout loading={loading} />;

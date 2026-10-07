@@ -21,6 +21,13 @@ describe("session token", () => {
     expect(session && session.iat && session.exp - session.iat).toBe(SESSION_MAX_AGE)
   })
 
+  it("token бүр давтагдашгүй jti-тэй (гарах үед тухайн token-ийг хүчингүй болгоно)", async () => {
+    const [a, b] = await Promise.all([createSessionToken(base), createSessionToken(base)])
+    const [sa, sb] = await Promise.all([verifySessionToken(a), verifySessionToken(b)])
+    expect(sa?.jti).toMatch(/^[0-9a-f-]{36}$/)
+    expect(sa?.jti).not.toBe(sb?.jti)
+  })
+
   it("payload-ыг өөрчилбөл хүчингүй", async () => {
     const token = await createSessionToken(base)
     const [, signature] = token.split(".")

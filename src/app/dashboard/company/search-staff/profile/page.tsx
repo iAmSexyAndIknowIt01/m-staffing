@@ -86,59 +86,54 @@ export default function StaffProfilePage() {
   // ========================================
   // FETCH PROFILE
   // ========================================
-  async function fetchProfile() {
-    if (!staffId) {
-      setError("Ажилтны ID олдсонгүй.")
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    await loadProfile()
-  }
-
-  // Анх mount болоход дуудна. loading аль хэдийн true тул await-аас өмнө state өөрчлөхгүй
-  async function loadProfile() {
-    try {
-      const response = await fetch(`/api/company/searchStaff/profile?id=${staffId}`)
-      const result = await response.json()
-
-      if (!response.ok) throw new Error(result.error || "Мэдээлэл татахад алдаа гарлаа.")
-
-      if (result.profile) {
-        setFullName(result.profile.full_name || "")
-        setEmail(result.profile.email || "")
-        setPhone(result.profile.phone || "")
-        setBio(result.profile.bio || "")
-        setAvatarUrl(result.profile.avatar_url || "")
-        setGender(result.profile.gender || "") 
-        setAgreement(!!result.profile.agreement)
-        
-        setSkills({
-          technical: result.profile.skills?.technical || [],
-          languages: result.profile.skills?.languages || []
-        })
-        
-        setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
-        setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
-        
-        setAvailability({
-          ...initialAvailability,
-          ...(result.profile.availability || {})
-        })
-      }
-    } catch (err) {
-      setError(getErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }
+  // reloadKey өөрчлөгдөхөд (хадгалсны дараа) дахин татна
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    if (staffId) {
-      loadProfile()
+    if (!staffId) return
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const response = await fetch(`/api/company/searchStaff/profile?id=${staffId}`)
+        const result = await response.json()
+        if (cancelled) return // өөр ажилтан руу шилжсэн бол хуучин хариуг хэрэглэхгүй
+
+        if (!response.ok) throw new Error(result.error || "Мэдээлэл татахад алдаа гарлаа.")
+
+        if (result.profile) {
+          setFullName(result.profile.full_name || "")
+          setEmail(result.profile.email || "")
+          setPhone(result.profile.phone || "")
+          setBio(result.profile.bio || "")
+          setAvatarUrl(result.profile.avatar_url || "")
+          setGender(result.profile.gender || "") 
+          setAgreement(!!result.profile.agreement)
+          
+          setSkills({
+            technical: result.profile.skills?.technical || [],
+            languages: result.profile.skills?.languages || []
+          })
+          
+          setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
+          setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
+          
+          setAvailability({
+            ...initialAvailability,
+            ...(result.profile.availability || {})
+          })
+        }
+      } catch (err) {
+        setError(getErrorMessage(err))
+      } finally {
+        setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
-  }, [staffId])
+  }, [staffId, reloadKey])
 
   // ========================================
   // AVATAR UPLOAD HANDLER
@@ -239,7 +234,8 @@ export default function StaffProfilePage() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error)
 
-      await fetchProfile()
+      setLoading(true)
+      setReloadKey((key) => key + 1)
       setIsEditMode(false)
       setMessage("Профайл амжилттай хадгалагдлаа 🎉")
       window.scrollTo({ top: 0, behavior: "smooth" })
@@ -250,6 +246,10 @@ export default function StaffProfilePage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  if (!staffId) {
+    return <div className="max-w-5xl mx-auto bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">⚠️ Ажилтны ID олдсонгүй.</div>
   }
 
   if (loading) {

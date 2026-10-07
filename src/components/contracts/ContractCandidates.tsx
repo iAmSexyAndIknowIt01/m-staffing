@@ -62,7 +62,7 @@ export default function ContractCandidates() {
   const locationFilter = get("loc", "all")
   const appliedFrom = get("from")
   const appliedTo = get("to")
-  const sort = (get("sort", "new") in SORTS ? get("sort", "new") : "new") as SortKey
+  const sort = (Object.hasOwn(SORTS, get("sort", "new")) ? get("sort", "new") : "new") as SortKey
   const page = Math.max(1, Number(get("page", "1")) || 1)
   const hasFilters = Boolean(searchQuery || appliedFrom || appliedTo) ||
     [jobFilter, jobTypeFilter, locationFilter].some((v) => v !== "all")

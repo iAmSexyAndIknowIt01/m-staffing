@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { randomInt } from "crypto";
-import { MAIL_FROM, transporter } from "@/lib/mailer";
+import { MAIL_FROM, codeEmailHtml, transporter } from "@/lib/mailer";
+import { escapeLikePattern, generateCode, hashCode, isCodeMatch, normalizeEmail } from "@/lib/authCode";
+import { getClientIp } from "@/lib/clientIp";
+import { MAIL_CODE_MAX_PER_IP, MAIL_CODE_WINDOW_MS, isRateLimited, recordRateEvent } from "@/lib/rateLimit";
 
 const CODE_TTL_MS = 5 * 60 * 1000       // Код 5 минут хүчинтэй
 const RESEND_COOLDOWN_MS = 60 * 1000    // Нэг имэйл рүү 60 секундэд нэг удаа л код илгээнэ
 const MAX_ATTEMPTS = 5                  // Буруу кодыг 5-аас олон удаа оруулбал код хүчингүй болно
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-function normalizeEmail(email: unknown): string | null {
-  if (typeof email !== "string") return null
-  const trimmed = email.trim().toLowerCase()
-  return EMAIL_REGEX.test(trimmed) && trimmed.length <= 254 ? trimmed : null
-}
 
 // -------------------------------------------------------------
 // 1. POST ХҮСЭЛТ: 6 оронтой код үүсгэж имэйлээр илгээнэ.
@@ -27,10 +21,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Зөв имэйл хаяг оруулна уу" }, { status: 400 });
     }
 
-    // Хэрэглэгч бүртгэгдсэн эсэхийг шалгах (ажилтан болон компани)
+    // Хэрэглэгч бүртгэгдсэн эсэхийг шалгах (ажилтан болон компани).
+    // ilike нь хуучин том үсэгтэй хадгалсан имэйлийг ч олно; %, _ тэмдэгтийг escape хийнэ.
+    const emailPattern = escapeLikePattern(email)
     const [{ data: existingStaff }, { data: existingCompany }] = await Promise.all([
-      supabase.from("mt_staff").select("id").ilike("email", email).maybeSingle(),
-      supabase.from("mt_company").select("id").ilike("email", email).maybeSingle(),
+      supabase.from("mt_staff").select("id").ilike("email", emailPattern).limit(1).maybeSingle(),
+      supabase.from("mt_company").select("id").ilike("email", emailPattern).limit(1).maybeSingle(),
     ])
 
     if (existingStaff || existingCompany) {
@@ -53,33 +49,36 @@ export async function POST(req: Request) {
       )
     }
 
-    // 6 оронтой код үүсгэх
-    const generatedCode = randomInt(100000, 1000000).toString();
+    // Нэг IP-ээс олон өөр имэйл рүү код явуулахыг хязгаарлана
+    const ip = getClientIp(req)
+    if (await isRateLimited("mail_code", ip, MAIL_CODE_MAX_PER_IP, MAIL_CODE_WINDOW_MS)) {
+      return NextResponse.json(
+        { message: "Хэт олон удаа код хүссэн байна. Түр хүлээгээд дахин оролдоно уу." },
+        { status: 429 }
+      )
+    }
 
-    // Өмнөх кодуудыг устгаад шинийг хадгална
+    const generatedCode = generateCode();
+
+    // Өмнөх кодуудыг устгаад шинийг хадгална (кодыг ил биш, hash-аар)
     await supabase.from("register_auth").delete().eq("mail", email)
 
     const { error: insertError } = await supabase
       .from("register_auth")
-      .insert([{ mail: email, code: generatedCode }]);
+      .insert([{ mail: email, code: hashCode(generatedCode) }]);
 
     if (insertError) throw insertError;
+
+    await recordRateEvent("mail_code", ip)
 
     await transporter.sendMail({
       from: MAIL_FROM,
       to: email,
       subject: "MSTAFFING - Бүртгэл баталгаажуулах код",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px;">
-          <h2 style="color: #f97316; text-align: center;">МSTAFFING</h2>
-          <p>Сайн байна уу?</p>
-          <p>МSTAFFING системд бүртгүүлсэнд баярлалаа. Таны бүртгэлийг баталгаажуулах 6 оронтой код:</p>
-          <div style="background-color: #fff7ed; border: 1px dashed #fed7aa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 8px; color: #ea580c; margin: 20px 0; border-radius: 8px;">
-            ${generatedCode}
-          </div>
-          <p style="color: #666; font-size: 12px;">Энэхүү кодыг хэнд ч дамжуулж болохгүй. Хэрэв та бүртгүүлээгүй бол энэ имэйлийг үл тоомсорлоорой.</p>
-        </div>
-      `,
+      html: codeEmailHtml(
+        "МSTAFFING системд бүртгүүлсэнд баярлалаа. Таны бүртгэлийг баталгаажуулах 6 оронтой код:",
+        generatedCode
+      ),
     });
 
     return NextResponse.json({
@@ -131,7 +130,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: "Хэт олон удаа буруу оролдлоо. Дахин код авна уу." }, { status: 429 });
     }
 
-    if (latestAuth.code !== code) {
+    if (!isCodeMatch(code, latestAuth.code)) {
       await supabase
         .from("register_auth")
         .update({ attempts: (latestAuth.attempts ?? 0) + 1 })

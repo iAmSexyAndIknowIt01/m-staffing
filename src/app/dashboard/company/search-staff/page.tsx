@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck, Clock, Calendar } from "lucide-react"
+import { Search, MapPin, Briefcase, User, UserCheck, Clock } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 

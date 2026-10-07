@@ -9,51 +9,56 @@ import {
 import {
   LOCK_UNAVAILABLE,
   LOCK_WINDOW_MS,
-  MAX_FAILS_PER_EMAIL,
+  MAX_FAILS_PER_EMAIL_IP,
+  type LockReason,
   type LockStatus,
   computeLock,
   minutesUntil,
 } from "@/lib/loginLock"
-
-function getClientIp(req: Request): string | null {
-  const forwarded = req.headers.get("x-forwarded-for")
-  return forwarded?.split(",")[0].trim() || req.headers.get("x-real-ip") || null
-}
+import { getClientIp } from "@/lib/clientIp"
 
 async function getLockStatus(email: string, ip: string | null): Promise<LockStatus> {
   const since = new Date(Date.now() - LOCK_WINDOW_MS).toISOString()
+  const attempts = () => supabase.from("auth_login_attempts")
 
-  const [byEmail, byIp] = await Promise.all([
-    supabase
-      .from("auth_login_attempts")
-      .select("created_at")
-      .eq("email", email)
-      .gte("created_at", since)
-      .order("created_at", { ascending: false })
-      .limit(MAX_FAILS_PER_EMAIL),
+  // IP тодорхойгүй бол (локал орчин г.м.) IP-гүй оролдлогуудыг нэг бүлэг гэж үзнэ
+  const byEmailIpQuery = attempts()
+    .select("created_at")
+    .eq("email", email)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(MAX_FAILS_PER_EMAIL_IP)
+
+  const [byEmailIp, byEmail, byIp] = await Promise.all([
+    ip ? byEmailIpQuery.eq("ip", ip) : byEmailIpQuery.is("ip", null),
+    attempts().select("id", { count: "exact", head: true }).eq("email", email).gte("created_at", since),
     ip
-      ? supabase
-          .from("auth_login_attempts")
-          .select("id", { count: "exact", head: true })
-          .eq("ip", ip)
-          .gte("created_at", since)
+      ? attempts().select("id", { count: "exact", head: true }).eq("ip", ip).gte("created_at", since)
       : Promise.resolve({ count: 0, error: null }),
   ])
 
-  if (byEmail.error || byIp.error) {
+  const error = byEmailIp.error || byEmail.error || byIp.error
+  if (error) {
     // Хязгаарлалтын хүснэгт ажиллахгүй бол нэвтрэлтийг бүхэлд нь хаахгүй
-    console.error("LOGIN_RATE_LIMIT_ERROR:", byEmail.error || byIp.error)
+    console.error("LOGIN_RATE_LIMIT_ERROR:", error)
     return LOCK_UNAVAILABLE
   }
 
-  return computeLock((byEmail.data ?? []).map((r) => r.created_at), byIp.count ?? 0)
+  return computeLock({
+    emailIpFailTimes: (byEmailIp.data ?? []).map((r) => r.created_at),
+    emailFails: byEmail.count ?? 0,
+    ipFails: byIp.count ?? 0,
+  })
 }
 
-function lockedResponse(unlockAt: Date | null) {
+function lockedResponse(unlockAt: Date | null, reason: LockReason | null) {
   const minutes = minutesUntil(unlockAt)
+  const cause = reason === "email_ip"
+    ? `Нууц үгээ ${MAX_FAILS_PER_EMAIL_IP} удаа буруу оруулсан тул бүртгэл түр түгжигдлээ.`
+    : "Хэт олон удаа буруу оролдлого хийгдсэн тул нэвтрэлт түр хаагдлаа."
   return NextResponse.json(
     {
-      message: `Нууц үгээ ${MAX_FAILS_PER_EMAIL} удаа буруу оруулсан тул бүртгэл түр түгжигдлээ. ${minutes} минутын дараа дахин оролдох, эсвэл «Нууц үгээ мартсан уу?» холбоосоор нууц үгээ сэргээнэ үү.`,
+      message: `${cause} ${minutes} минутын дараа дахин оролдох, эсвэл «Нууц үгээ мартсан уу?» холбоосоор нууц үгээ сэргээнэ үү.`,
       locked: true,
       unlockAt: unlockAt?.toISOString() ?? null,
     },
@@ -95,7 +100,7 @@ export async function POST(req: Request) {
     const ip = getClientIp(req)
     const lock = await getLockStatus(email, ip)
     if (lock.locked) {
-      return lockedResponse(lock.unlockAt)
+      return lockedResponse(lock.unlockAt, lock.reason)
     }
 
     // Хүсэлт бүрт тусдаа клиент — session нь бусад хэрэглэгчтэй холилдохгүй
@@ -116,9 +121,9 @@ export async function POST(req: Request) {
       }
 
       // Энэ оролдлогоор түгжигдсэн бол шууд мэдэгдэнэ
-      const remaining = MAX_FAILS_PER_EMAIL - (lock.failsByEmail + 1)
+      const remaining = MAX_FAILS_PER_EMAIL_IP - (lock.failsByEmailIp + 1)
       if (remaining <= 0) {
-        return lockedResponse(new Date(Date.now() + LOCK_WINDOW_MS))
+        return lockedResponse(new Date(Date.now() + LOCK_WINDOW_MS), "email_ip")
       }
 
       // Бүртгэлгүй имэйлд ч адилхан тоолж хариулдаг тул имэйл бүртгэлтэй эсэх ил гарахгүй

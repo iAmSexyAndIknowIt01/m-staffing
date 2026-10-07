@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
+import { selectInChunks } from "@/lib/chunk";
 
 export const revalidate = 0;
 
@@ -30,7 +31,6 @@ export async function GET() {
       recentApplicationsResponse,
       companyViewsCountResponse,
       cvViewsCountResponse,
-      companiesResponse,
       blogTipsResponse,         // 🌟 tips-д зориулсан query
       interviewPrepResponse     // 🌟 interview-prep-д зориулсан query
     ] = await Promise.all([
@@ -40,8 +40,6 @@ export async function GET() {
       supabase.from("tr_job_request").select("id, status, created_at, job_id").eq("applicant_id", userId).order("created_at", { ascending: false }),
       supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId).gte("created_at", startOfWeekISO),
       supabase.from("tr_cv_views").select("*", { count: "exact", head: true }).eq("staff_id", userId),
-      supabase.from("mt_company").select("id, company_name"),
-      
       // 🌟 "dashboard/staff/blog/tips" хаягтай хамгийн сүүлийн 1 идэвхтэй зөвлөгөө
       supabase.from("mt_tips")
         .select("title, icon, content, detail_url")
@@ -66,29 +64,36 @@ export async function GET() {
       .map((r) => r.job_id)
       .filter(Boolean);
 
-    // 2. Илгээсэн ажлын ID-нуудаа хасаж, Санал болгох 100 ажлыг баазаас татна
-    let openJobsQuery = supabase
+    // 2. Илгээсэн ажлуудаа хасаж, Санал болгох 100 ажлыг татна.
+    // ID-уудыг URL-д (not.in) оруулбал олон анкеттай үед URL хэт урт болдог тул
+    // илгээсэн тоогоор нь илүү татаж, санах ойд шүүнэ.
+    const appliedSet = new Set(appliedJobIds.map(String));
+    const openJobsResponse = await supabase
       .from("mt_openjob")
       .select("id, title, category, job_type, location, salary, user_id, description")
-      .eq("status", "active");
-
-    if (appliedJobIds.length > 0) {
-      openJobsQuery = openJobsQuery.not("id", "in", `(${appliedJobIds.join(",")})`);
-    }
-
-    const openJobsResponse = await openJobsQuery
+      .eq("status", "active")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(Math.min(100 + appliedSet.size, 1000));
+
+    if (openJobsResponse.error) throw openJobsResponse.error;
+    const recommendedJobs = (openJobsResponse.data || [])
+      .filter((job) => !appliedSet.has(String(job.id)))
+      .slice(0, 100);
 
     // Анкет илгээсэн ажлын байрнуудын мэдээллийг тусад нь татна
-    let relatedJobs: { id: string; title: string; user_id: string; description: string }[] = [];
-    if (appliedJobIds.length > 0) {
-      const { data } = await supabase.from("mt_openjob").select("id, title, user_id, description").in("id", appliedJobIds);
-      relatedJobs = data || [];
-    }
+    const relatedJobs = await selectInChunks<{ id: string; title: string; user_id: string; description: string }>(
+      appliedJobIds,
+      (ids) => supabase.from("mt_openjob").select("id, title, user_id, description").in("id", ids)
+    );
+
+    // Бүх компанийг биш, зөвхөн харуулах ажлуудын компанийн нэрийг татна
+    const companies = await selectInChunks<{ id: string; company_name: string }>(
+      [...recommendedJobs, ...relatedJobs].map((job) => job.user_id).filter(Boolean),
+      (ids) => supabase.from("mt_company").select("id, company_name").in("id", ids)
+    );
 
     // Компаниудыг ID-аар нь хурдан хайх Map үүсгэнэ
-    const companyMap = (companiesResponse.data || []).reduce((acc, curr) => {
+    const companyMap = companies.reduce((acc, curr) => {
       if (curr.id) acc[curr.id.toString()] = curr.company_name;
       return acc;
     }, {} as Record<string, string>);
@@ -158,7 +163,7 @@ export async function GET() {
       tips: activeTips,
 
       // 1. Санал болгож буй ажлууд
-      recommendedJobs: (openJobsResponse.data || []).map((job) => {
+      recommendedJobs: recommendedJobs.map((job) => {
         const companyIdStr = job.user_id ? job.user_id.toString() : "";
         return {
           id: job.id,

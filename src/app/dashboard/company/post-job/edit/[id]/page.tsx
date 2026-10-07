@@ -1,5 +1,5 @@
-import { headers } from "next/headers"
 import { getSession } from "@/lib/session"
+import { getCompanyJob } from "@/lib/companyJobs"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
 import EditJobForm from "./EditJobForm"
@@ -15,24 +15,11 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
     redirect("/dashboard")
   }
 
-  // Сэрвэр тал дээр засах гэж буй ажлын анхны өгөгдлийг татах
+  // Сэрвэр тал дээр засах гэж буй ажлын анхны өгөгдлийг DB-ээс шууд татах
+  // (өөрийн API-г HTTP-ээр дуудахгүй — production дээр localhost руу хандаж алдаа өгдөг байсан)
   let initialData = null
   try {
-    const requestHeaders = await headers()
-    
-    // Таны шинээр үүсгэсэн /api/jobs/[id] РҮҮ ХАНДАНА
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/jobs/${id}`, {
-      cache: 'no-store',
-      headers: {
-        // Сэрвэр талын fetch учраас нэвтрэлтийн күүкиг гараар дамжуулна
-        cookie: requestHeaders.get('cookie') || '',
-      }
-    })
-    
-    const result = await response.json()
-    if (response.ok && result.data) {
-      initialData = result.data
-    }
+    initialData = await getCompanyJob(id, userId)
   } catch (error) {
     console.error("Дата татахад алдаа гарлаа:", error)
   }

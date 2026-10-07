@@ -2,6 +2,7 @@
 
 import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 
 interface PostJobFormProps {
@@ -15,6 +16,7 @@ interface ModalState {
 }
 
 export default function PostJobForm({ userId }: PostJobFormProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
@@ -40,7 +42,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
   const handleModalClose = () => {
     setModal((prev) => ({ ...prev, isOpen: false }))
     if (modal.type === "success") {
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     }
   }
 

@@ -46,11 +46,13 @@ export async function POST(req: Request) {
 
     const formData = await req.formData()
     const file = formData.get("file")
-    const bucket = formData.get("bucket") as BucketName | null
+    const bucketInput = formData.get("bucket")
 
-    if (!bucket || !(bucket in BUCKETS)) {
+    // "constructor" г.м. prototype-ийн түлхүүрийг bucket гэж хүлээж авахгүй
+    if (typeof bucketInput !== "string" || !Object.hasOwn(BUCKETS, bucketInput)) {
       return NextResponse.json({ success: false, error: "Bucket буруу байна." }, { status: 400 })
     }
+    const bucket = bucketInput as BucketName
 
     // Компанийн лого зөвхөн компани эсвэл админ хуулна
     if (bucket === "company-logos" && session.role !== "company" && !session.isAdmin) {

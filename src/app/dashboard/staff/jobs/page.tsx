@@ -2,10 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import JobDetailModal from "@/components/staff/jobs/JobDetailModal"
 import AlertModal from "@/components/staff/jobs/AlertModal"
-import SuccessModal from "@/components/staff/jobs/SuccessModal"
-import ConfirmModal from "@/components/staff/jobs/ConfirmModal"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
@@ -13,9 +10,7 @@ import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
 import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
 import ShareModal from "@/components/staff/jobs/ShareModal"
-import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Шинэ модалыг импортлох
 import { useSearchParams } from "next/navigation"
-import page from "@/app/page"
 import { getErrorMessage } from "@/lib/errors"
 
 interface Company {
@@ -71,40 +66,19 @@ export default function StaffJobsPage() {
   const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
   const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
   
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
   const [ads, setAds] = useState<Ad[]>([]);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [checkingProfile, setCheckingProfile] = useState(false) 
-  const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [pendingJobId, setPendingJobId] = useState<string | null>(null)
-
-  
-  // --- Профайл дутуу модалын state ---
-  const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
-  const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
-
   const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
     show: false,
     message: "",
     title: "Мэдэгдэл"
   })
 
-  // --- SLIDE TO CONFIRM STATES & REFS ---
-  const [sliderX, setSliderX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const handleRef = useRef<HTMLDivElement>(null)
-  const startXRef = useRef(0)
-
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
 
   const [bookmarkedJobIds, setBookmarkedJobIds] = useState<string[]>([])
-  const isInitialMount = useRef(true)
 
   const handleShare = (e: React.MouseEvent, job: Job) => {
     e.stopPropagation()
@@ -195,7 +169,7 @@ export default function StaffJobsPage() {
   }
 
   useEffect(() => {
-    if (selectedAd || selectedJob || selectedShareJob || showConfirmModal || showSuccessModal || alertModal.show || showProfileIncompleteModal) {
+    if (selectedAd || selectedShareJob || alertModal.show) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "unset"
@@ -204,7 +178,7 @@ export default function StaffJobsPage() {
     return () => {
       document.body.style.overflow = "unset"
     }
-  }, [selectedAd, selectedJob, selectedShareJob, showConfirmModal, showSuccessModal, alertModal.show, showProfileIncompleteModal])
+  }, [selectedAd, selectedShareJob, alertModal.show])
 
   const showAlert = (message: string, title: string = "Анхааруулга") => {
     setAlertModal({ show: true, message, title })
@@ -254,143 +228,20 @@ export default function StaffJobsPage() {
           fetch("/api/staff/ads") 
         ]);
         const jobsData = await jobsRes.json();
-        const adsData = await adsRes.json();
+        if (!jobsRes.ok) throw new Error(jobsData.error || "Ажлын зар татахад алдаа гарлаа.");
         setJobs(jobsData.jobs || []);
-        setAds(adsData.ads || []); 
+
+        // Сурталчилгаа татагдаагүй ч ажлын зарыг харуулна
+        const adsData = adsRes.ok ? await adsRes.json() : {};
+        setAds(adsData.ads || []);
       } catch (err) {
-        console.error("Өгөгдөл татахад алдаа гарлаа");
+        setError(getErrorMessage(err, "Өгөгдөл татахад алдаа гарлаа. Хуудсаа дахин ачаална уу."));
       } finally {
         setLoading(false);
       }
     }
     fetchData();
   }, [])
-
-  const handleApplyJob = async () => {
-    if (!pendingJobId) return
-    
-    setSubmitting(true)
-    setShowConfirmModal(false)
-    setSliderX(0)
-    
-    try {
-      const applicationData = {
-        job_id: pendingJobId,
-        resume_url: ""
-      }
-
-      const response = await fetch("/api/jobRequest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(applicationData),
-      })
-
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
-
-      fetch("/api/mail/job-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_id: pendingJobId }),
-      }).catch((err) => console.error("Мэйл илгээх API-д алдаа гарлаа:", err))
-
-      setAppliedJobIds((prev) => [...prev, pendingJobId])
-      setSelectedJob(null)
-      setShowSuccessModal(true)
-    } catch (err) {
-      showAlert(getErrorMessage(err), "Алдаа гарлаа")
-    } finally {
-      setSubmitting(false)
-      setPendingJobId(null)
-    }
-  }
-
-  const handleDragStart = (clientX: number) => {
-    if (submitting) return
-    setIsDragging(true)
-    startXRef.current = clientX - sliderX
-  }
-
-  const handleDragMove = (clientX: number) => {
-    if (!isDragging || !trackRef.current || !handleRef.current) return
-
-    const trackWidth = trackRef.current.clientWidth
-    const handleWidth = handleRef.current.clientWidth
-    const maxSlide = trackWidth - handleWidth - 8
-
-    let currentX = clientX - startXRef.current
-    if (currentX < 0) currentX = 0
-    if (currentX > maxSlide) currentX = maxSlide
-
-    setSliderX(currentX)
-
-    if (currentX >= maxSlide - 2) {
-      setIsDragging(false)
-      handleApplyJob()
-    }
-  }
-
-  const handleDragEnd = () => {
-    if (!isDragging) return
-    setIsDragging(false)
-    
-    if (trackRef.current && handleRef.current) {
-      const trackWidth = trackRef.current.clientWidth
-      const handleWidth = handleRef.current.clientWidth
-      const maxSlide = trackWidth - handleWidth - 8
-      
-      if (sliderX < maxSlide - 2) {
-        setSliderX(0)
-      }
-    }
-  }
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) handleDragMove(e.touches[0].clientX)
-    }
-    const handleEnd = () => handleDragEnd()
-
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("mouseup", handleEnd)
-      window.addEventListener("touchmove", handleTouchMove, { passive: false })
-      window.addEventListener("touchend", handleEnd)
-    }
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("mouseup", handleEnd)
-      window.removeEventListener("touchmove", handleTouchMove)
-      window.removeEventListener("touchend", handleEnd)
-    }
-  }, [isDragging, sliderX])
-
-  const triggerApplyConfirmation = async (jobId: string) => {
-    if (checkingProfile) return
-    setCheckingProfile(true)
-
-    try {
-      const response = await fetch("/api/staff/jobs/profileCheck")
-      const result = await response.json()
-
-      if (!response.ok || result.isComplete === false) {
-        setProfileIncompleteMessage(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
-        setSelectedJob(null) // <-- JobDetailModal-ийг хаахын тулд selectedJob-ийг null болгоно
-        setShowProfileIncompleteModal(true)
-        return
-      }
-
-      setPendingJobId(jobId)
-      setSliderX(0)
-      setShowConfirmModal(true)
-    } catch (err) {
-      showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
-    } finally {
-      setCheckingProfile(false)
-    }
-  }
 
   const categories = useMemo(() => {
     const lowerCategories = jobs
@@ -427,7 +278,7 @@ export default function StaffJobsPage() {
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
-      const isJobApplied = job.is_applied || appliedJobIds.includes(job.id)
+      const isJobApplied = job.is_applied
 
       if (filterApplied === "applied" && !isJobApplied) return false
       if (filterApplied === "not_applied" && isJobApplied) return false
@@ -445,7 +296,7 @@ export default function StaffJobsPage() {
 
       return matchesSearch && matchesCategory && matchesType
     })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, appliedJobIds])
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied])
 
   // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
   const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
@@ -507,12 +358,6 @@ export default function StaffJobsPage() {
   return (
     <div ref={jobsTopRef} className="space-y-8 min-h-screen pb-12">
       
-      {checkingProfile && (
-        <div className="fixed top-0 left-0 right-0 h-1.5 bg-indigo-100 z-100 overflow-hidden">
-          <div className="h-full bg-indigo-600 rounded-full w-1/2 animate-[bounce_1.5s_infinite] origin-left" style={{ animationDuration: '1s' }} />
-        </div>
-      )}
-
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -570,7 +415,7 @@ export default function StaffJobsPage() {
       ) : (
         <div className="space-y-4">
           {paginatedJobs.map((job, index) => {
-            const isJobApplied = job.is_applied || appliedJobIds.includes(job.id);
+            const isJobApplied = job.is_applied;
             const globalIndex = (currentPage - 1) * jobsPerPage + index;
             const adIndex = Math.floor(globalIndex / 5) % ads.length;
             const adToShow = ads.length > 0 && (globalIndex + 1) % 5 === 0 ? ads[adIndex] : null;
@@ -608,20 +453,6 @@ export default function StaffJobsPage() {
       />
 
       {/* МОДАЛ ЦОНХНУУД */}
-      {/* <JobDetailModal
-        selectedJob={selectedJob}
-        onClose={() => setSelectedJob(null)}
-        appliedJobIds={appliedJobIds}
-        submitting={submitting}
-        checkingProfile={checkingProfile}
-        getCompanyLogoUrl={getCompanyLogoUrl}
-        getJobTypeText={getJobTypeText}
-        getSalaryTypeText={getSalaryTypeText}
-        formatSalary={formatSalary}
-        handleCompanyClick={handleCompanyClick}
-        triggerApplyConfirmation={triggerApplyConfirmation}
-      /> */}
-
       {/* Share Modal */}
       <ShareModal
         show={!!selectedShareJob}
@@ -637,33 +468,6 @@ export default function StaffJobsPage() {
           onClose={() => setSelectedAd(null)} 
         />
       )}
-
-      {/* Профайл дутуу эсэхийг сануулах модал */}
-      <ProfileIncompleteModal
-        show={showProfileIncompleteModal}
-        onClose={() => setShowProfileIncompleteModal(false)}
-        message={profileIncompleteMessage}
-      />
-
-      <ConfirmModal
-        show={showConfirmModal}
-        submitting={submitting}
-        sliderX={sliderX}
-        isDragging={isDragging}
-        trackRef={trackRef}
-        handleRef={handleRef}
-        onDragStart={handleDragStart}
-        onClose={() => {
-          setShowConfirmModal(false);
-          setPendingJobId(null);
-          setSliderX(0);
-        }}
-      />
-
-      <SuccessModal
-          show={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-      />
 
       <AlertModal
         alertModal={alertModal}

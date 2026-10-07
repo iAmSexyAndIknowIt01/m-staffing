@@ -111,7 +111,6 @@ export default function ApplicantDetailModal({ jobRequestId, onClose, footer }: 
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 shrink-0 bg-indigo-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
                   {profile.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-2xl font-black text-indigo-600">{profile.full_name.charAt(0) || "👤"}</span>

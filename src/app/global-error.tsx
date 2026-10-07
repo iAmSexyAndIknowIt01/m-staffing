@@ -41,12 +41,14 @@ export default function GlobalError({
             >
               Дахин оролдох
             </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="w-full px-8 py-3 bg-white text-slate-700 font-semibold rounded-2xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
+            {/* Апп бүхэлдээ унасан тул client router-оор биш, хуудсыг бүрэн дахин ачаална */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
+              href="/"
+              className="block w-full px-8 py-3 bg-white text-slate-700 font-semibold rounded-2xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
             >
               Нүүр хуудас
-            </button>
+            </a>
           </div>
 
           {/* Development log - Илүү цэвэрхэн */}
