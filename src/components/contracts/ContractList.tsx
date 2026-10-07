@@ -66,7 +66,7 @@ export default function ContractList({ party }: ContractListProps) {
   const salaryTypeFilter = get("stype", "all")
   const startFrom = get("from")
   const startTo = get("to")
-  const sort = (get("sort", "new") in SORTS ? get("sort", "new") : "new") as SortKey
+  const sort = (Object.hasOwn(SORTS, get("sort", "new")) ? get("sort", "new") : "new") as SortKey
   const page = Math.max(1, Number(get("page", "1")) || 1)
   const hasFilters = Boolean(searchQuery || startFrom || startTo) ||
     [statusFilter, positionFilter, salaryTypeFilter].some((v) => v !== "all")

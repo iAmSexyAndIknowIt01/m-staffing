@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     if (!applicationData || !applicationData.applicant_id) {
       return NextResponse.json(
         { error: "Энэ анкеттай холбоотой ажилтан олдсонгүй." },
-        { status: 444 }
+        { status: 404 }
       )
     }
 

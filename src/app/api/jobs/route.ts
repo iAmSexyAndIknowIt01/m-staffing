@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
+import { jobPostError } from "@/lib/jobPost"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
         { error: "Заавал бөглөх талбаруудыг бөглөнө үү." },
         { status: 400 }
       )
+    }
+
+    const inputError = jobPostError({ title, category, jobType, location, salary, salaryType, description, requirements })
+    if (inputError) {
+      return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
     // 4. Багцын идэвхтэй зарын лимит шалгах (хугацаа дууссан бол Free лимит)

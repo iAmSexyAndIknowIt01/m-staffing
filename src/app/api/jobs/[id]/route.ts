@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
+import { jobPostError } from "@/lib/jobPost"
 
 const JOB_STATUSES = ["active", "draft", "closed"]
 
@@ -92,6 +93,14 @@ export async function PUT(
 
     if (status !== undefined && !JOB_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 })
+    }
+
+    const inputError = jobPostError({
+      title, category, jobType, location, salary, description, requirements,
+      salaryType: salary_type || salaryType || undefined,
+    })
+    if (inputError) {
+      return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
     // Идэвхгүй зарыг идэвхжүүлэх үед л багцын лимит шалгана

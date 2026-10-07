@@ -14,6 +14,7 @@ export interface Session {
   role: UserRole
   email: string
   isAdmin: boolean
+  jti?: string // token-ий давтагдашгүй ID (гарах үед тухайн token-ийг хүчингүй болгоно) — хуучин cookie-д байхгүй
   iat?: number // unix seconds — хуучин cookie-д байхгүй байж болно
   exp: number // unix seconds
 }
@@ -59,9 +60,9 @@ export function isAdminEmail(email: string | undefined | null): boolean {
   return admins.includes(email.toLowerCase())
 }
 
-export async function createSessionToken(data: Omit<Session, "iat" | "exp">): Promise<string> {
+export async function createSessionToken(data: Omit<Session, "jti" | "iat" | "exp">): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
-  const session: Session = { ...data, iat: now, exp: now + SESSION_MAX_AGE }
+  const session: Session = { ...data, jti: crypto.randomUUID(), iat: now, exp: now + SESSION_MAX_AGE }
   const payload = toBase64Url(encoder.encode(JSON.stringify(session)))
   const signature = await crypto.subtle.sign("HMAC", await getKey(), encoder.encode(payload))
   return `${payload}.${toBase64Url(new Uint8Array(signature))}`
@@ -93,7 +94,16 @@ export async function verifySessionToken(token: string | undefined | null): Prom
 // - админ эрх ADMIN_EMAILS-ээс хасагдсан бол хүчингүй
 // - staff/company бүртгэл устсан бол хүчингүй
 // - auth_session_revocations-д бүртгэгдсэнээс өмнө үүссэн бол хүчингүй (албадан гаргах)
-let revocationErrorLogged = false
+// - auth_revoked_sessions-д jti нь бүртгэгдсэн бол хүчингүй (тухайн төхөөрөмжөөс гарсан)
+const loggedRevocationErrors = new Set<string>()
+
+// Хүснэгт хараахан үүсээгүй (migration ажиллаагүй) үед нэвтрэлтийг хаахгүй.
+// Хүсэлт бүрт лог дүүргэхгүйн тулд процесс бүрт нэг л удаа анхааруулна.
+function logRevocationErrorOnce(table: string, error: unknown) {
+  if (loggedRevocationErrors.has(table)) return
+  loggedRevocationErrors.add(table)
+  console.error(`SESSION_REVOCATION_CHECK_ERROR (${table} migration ажилласан эсэхийг шалгана уу):`, error)
+}
 
 async function isSessionStillValid(session: Session): Promise<boolean> {
   // proxy.ts энэ модулийг импортлодог тул supabase-г зөвхөн хэрэгтэй үед ачаална
@@ -102,12 +112,15 @@ async function isSessionStillValid(session: Session): Promise<boolean> {
   const issuedAt = session.iat ?? session.exp - SESSION_MAX_AGE
   const accountTable = session.role === "staff" ? "mt_staff" : "mt_company"
 
-  const [revocation, account] = await Promise.all([
+  const [revocation, tokenRevocation, account] = await Promise.all([
     supabase
       .from("auth_session_revocations")
       .select("revoked_before")
       .eq("user_id", session.userId)
       .maybeSingle(),
+    session.jti
+      ? supabase.from("auth_revoked_sessions").select("jti").eq("jti", session.jti).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
     session.isAdmin
       ? Promise.resolve({ data: { id: session.userId }, error: null })
       : supabase.from(accountTable).select("id").eq("id", session.userId).maybeSingle(),
@@ -118,13 +131,14 @@ async function isSessionStillValid(session: Session): Promise<boolean> {
   if (account.error) throw account.error
   if (!account.data) return false
 
-  // Хүснэгт хараахан үүсээгүй (migration ажиллаагүй) үед нэвтрэлтийг хаахгүй.
-  // Хүсэлт бүрт лог дүүргэхгүйн тулд процесс бүрт нэг л удаа анхааруулна.
+  if (tokenRevocation.error) {
+    logRevocationErrorOnce("auth_revoked_sessions", tokenRevocation.error)
+  } else if (tokenRevocation.data) {
+    return false
+  }
+
   if (revocation.error) {
-    if (!revocationErrorLogged) {
-      revocationErrorLogged = true
-      console.error("SESSION_REVOCATION_CHECK_ERROR (auth_session_revocations migration ажилласан эсэхийг шалгана уу):", revocation.error)
-    }
+    logRevocationErrorOnce("auth_session_revocations", revocation.error)
     return true
   }
   if (revocation.data) {
@@ -133,6 +147,26 @@ async function isSessionStillValid(session: Session): Promise<boolean> {
   }
 
   return true
+}
+
+// Гарах үед: cookie устгахаас гадна token-ийг сервер талд хүчингүй болгоно.
+// Ингэснээр cookie хулгайлагдсан ч гарсны дараа ашиглах боломжгүй.
+export async function revokeSessionToken(token: string | undefined | null) {
+  const session = await verifySessionToken(token)
+  if (!session) return
+
+  const { supabase } = await import("@/lib/supabase")
+
+  // jti-гүй хуучин cookie-г тусад нь хаах боломжгүй тул энэ хэрэглэгчийн бүх session-ийг хүчингүй болгоно
+  const { error } = session.jti
+    ? await supabase
+        .from("auth_revoked_sessions")
+        .upsert({ jti: session.jti, expires_at: new Date(session.exp * 1000).toISOString() }, { onConflict: "jti" })
+    : await supabase
+        .from("auth_session_revocations")
+        .upsert({ user_id: session.userId, revoked_before: new Date().toISOString() }, { onConflict: "user_id" })
+
+  if (error) console.error("SESSION_REVOKE_ERROR:", error)
 }
 
 // Server Component / Route Handler дотроос одоогийн хэрэглэгчийг авах.

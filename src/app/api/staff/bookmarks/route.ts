@@ -3,7 +3,7 @@ import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 
 // 1. Хэрэглэгчийн хадгалсан бүх ажлын ID-г авах (GET)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getSession()
     const userId = session?.userId
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (findError) {
-      return NextResponse.json({ error: findError.message }, { status: 500 })
+      return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 })
     }
 
     if (existing) {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         .eq("job_id", job_id)
 
       if (deleteError) {
-        return NextResponse.json({ error: deleteError.message }, { status: 500 })
+        return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 })
       }
       return NextResponse.json({ status: "removed" })
     } else {
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         .insert({ user_id: userId, job_id })
 
       if (insertError) {
-        return NextResponse.json({ error: insertError.message }, { status: 500 })
+        return NextResponse.json({ error: "Серверийн алдаа гарлаа." }, { status: 500 })
       }
       return NextResponse.json({ status: "added" })
     }

@@ -39,7 +39,7 @@ const TRANSITIONS: Record<ContractAction, { from: ContractStatus[]; to: Contract
 }
 
 export function isContractAction(value: unknown): value is ContractAction {
-  return typeof value === "string" && value in TRANSITIONS
+  return typeof value === "string" && Object.hasOwn(TRANSITIONS, value)
 }
 
 // Тухайн тал энэ үйлдлийг хийж болох бол шинэ төлөвийг, болохгүй бол null буцаана
@@ -70,7 +70,7 @@ export function effectiveStatus(
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
-function isValidDate(value: string): boolean {
+export function isValidDate(value: string): boolean {
   if (!DATE_RE.test(value)) return false
   const d = new Date(`${value}T00:00:00Z`)
   return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(value)
@@ -99,7 +99,7 @@ export function validateContractTerms(input: unknown): ValidationResult {
     return { ok: false, error: "Цалингийн дүн буруу байна." }
   }
 
-  if (typeof body.salary_type !== "string" || !(body.salary_type in SALARY_TYPE_LABELS)) {
+  if (typeof body.salary_type !== "string" || !Object.hasOwn(SALARY_TYPE_LABELS, body.salary_type)) {
     return { ok: false, error: "Цалингийн төрөл буруу байна." }
   }
 
@@ -172,7 +172,7 @@ export function parseSalary(value: string | null | undefined): number {
 }
 
 export function toContractSalaryType(value: string | null | undefined): ContractSalaryType {
-  return value && value in SALARY_TYPE_LABELS ? (value as ContractSalaryType) : "monthly"
+  return value && Object.hasOwn(SALARY_TYPE_LABELS, value) ? (value as ContractSalaryType) : "monthly"
 }
 
 export const DEFAULT_CONTRACT_TERMS = `1. Ажил олгогч нь ажилтныг дээр дурдсан албан тушаалд томилж, гэрээнд заасан цалин хөлсийг сар бүр олгоно.

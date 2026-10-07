@@ -13,6 +13,6 @@ export default async function DashboardPage() {
   return userRole === "staff" ? (
     <StaffView userId={userId} />
   ) : (
-    <CompanyView userId={userId} />
+    <CompanyView />
   )
 }

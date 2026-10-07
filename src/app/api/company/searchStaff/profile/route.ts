@@ -3,6 +3,22 @@ import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { one } from "@/lib/relation"
 
+async function companyCanViewStaff(companyId: string, staffId: string): Promise<boolean> {
+  const [profile, application] = await Promise.all([
+    supabase.from("mt_profile").select("agreement").eq("user_id", staffId).maybeSingle(),
+    supabase
+      .from("tr_job_request")
+      .select("id, mt_openjob!inner(user_id)")
+      .eq("applicant_id", staffId)
+      .eq("mt_openjob.user_id", companyId)
+      .limit(1)
+      .maybeSingle(),
+  ])
+  if (profile.error) throw profile.error
+  if (application.error) throw application.error
+  return profile.data?.agreement === true || application.data !== null
+}
+
 // GET PROFILE
 export async function GET(request: Request) {
   try {
@@ -30,6 +46,15 @@ export async function GET(request: Request) {
     if (!canView) {
       return NextResponse.json(
         { error: "Хандах эрхгүй байна." },
+        { status: 403 }
+      )
+    }
+
+    // Компани зөвхөн профайлаа нээлттэй болгосон (agreement), эсвэл
+    // өөрийнх нь зарт анкет илгээсэн ажилтны мэдээллийг харна
+    if (userRole === "company" && !session?.isAdmin && !(await companyCanViewStaff(session!.userId, userId))) {
+      return NextResponse.json(
+        { error: "Энэ ажилтан профайлаа нээлттэй болгоогүй байна." },
         { status: 403 }
       )
     }

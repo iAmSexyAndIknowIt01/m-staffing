@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { PLANS } from "@/lib/plans"
+import { validateNewPassword } from "@/lib/password"
 
 // mailAuth PUT-ээр баталгаажсанаас хойш энэ хугацаанд бүртгэлээ дуусгах ёстой
 const VERIFIED_TTL_MS = 15 * 60 * 1000
@@ -25,6 +26,12 @@ export async function POST(req: Request) {
 
     if (role === "company" && !companyName) {
       return NextResponse.json({ message: "Компанийн нэр шаардлагатай" }, { status: 400 })
+    }
+
+    // Нууц үг сэргээхтэй ижил шаардлага (Supabase-ийн анхдагч 6 тэмдэгтээс хатуу)
+    const passwordError = validateNewPassword(password)
+    if (passwordError) {
+      return NextResponse.json({ message: passwordError }, { status: 400 })
     }
 
     // 0. Имэйл кодоор баталгаажсан эсэхийг серверт шалгана.

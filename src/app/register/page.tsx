@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { validateNewPassword } from "@/lib/password"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -96,6 +97,13 @@ export default function RegisterPage() {
 
     if (role === "company" && !companyName) {
       showAlert("Анхааруулга", "Компанийн нэр оруулна уу", "warning")
+      return
+    }
+
+    // Код илгээхээс өмнө шалгана — эс бөгөөс имэйлээ баталгаажуулсны дараа бүртгэл амжилтгүй болно
+    const passwordError = validateNewPassword(password)
+    if (passwordError) {
+      showAlert("Анхааруулга", passwordError, "warning")
       return
     }
 
@@ -316,10 +324,12 @@ export default function RegisterPage() {
             <label>Нууц үг</label>
             <input
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
             />
+            <p className="mt-2 text-xs text-gray-400">Хамгийн багадаа 8 тэмдэгт, үсэг болон тоо агуулсан байна.</p>
           </div>
 
           <button

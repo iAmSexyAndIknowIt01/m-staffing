@@ -59,8 +59,8 @@ export async function GET() {
 
     // 4. Ажлын байр бүрт өөрийнх нь компанийн мэдээллийг гараар нэгтгэж (Merge) форматлана
     const formattedJobs = rawJobs.map((job) => {
-      const isApplied = job.tr_job_request && job.tr_job_request.length > 0
-      const { tr_job_request, ...cleanedJob } = job
+      const { tr_job_request: applications, ...cleanedJob } = job
+      const isApplied = Array.isArray(applications) && applications.length > 0
 
       // ЗАССАН: Хэрэв компани олдохгүй бол id: null байхаар fallback утгыг засав
       const companyInfo = companiesMap[job.user_id] || { 

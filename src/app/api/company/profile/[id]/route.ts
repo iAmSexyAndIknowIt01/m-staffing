@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { parseCompanyProfile } from "@/lib/companyProfile"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -51,39 +52,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Танд энэ профайлыг өөрчлөх эрх байхгүй байна." }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { 
-      company_name, 
-      phone, 
-      website,
-      tagline,
-      description,
-      industry,
-      company_size,
-      facebook_url,
-      linkedin_url,
-      logo_url 
-    } = body
-
-    if (!company_name || !company_name.trim()) {
-      return NextResponse.json({ error: "Компанийн нэрийг заавал бөглөнө үү." }, { status: 400 })
+    const parsed = parseCompanyProfile(await request.json())
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
 
     // Бааз руу өөрчлөлтийг хадгалах
     const { error } = await supabase
       .from("mt_company")
-      .update({ 
-        company_name: company_name.trim(), 
-        phone: phone ? phone.trim() : null, 
-        website: website ? website.trim() : null,
-        tagline: tagline ? tagline.trim() : null,
-        description: description ? description.trim() : null,
-        industry: industry || null,
-        company_size: company_size || null,
-        facebook_url: facebook_url ? facebook_url.trim() : null,
-        linkedin_url: linkedin_url ? linkedin_url.trim() : null,
-        logo_url: logo_url ? logo_url.trim() : null 
-      })
+      .update(parsed.data)
       .eq("id", id)
 
     if (error) throw new Error(error.message)

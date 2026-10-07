@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { validateNewPassword } from "@/lib/password"
 
 type Step = "email" | "reset" | "done"
 
@@ -52,6 +53,11 @@ export default function ForgotPasswordPage() {
     setError(null)
     if (!/^\d{6}$/.test(code.trim())) {
       setError("Имэйлээр ирсэн 6 оронтой кодыг оруулна уу.")
+      return
+    }
+    const passwordError = validateNewPassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
     if (password !== passwordConfirm) {

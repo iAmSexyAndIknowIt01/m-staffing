@@ -84,19 +84,6 @@ function SkillsModalContent({
     return () => clearTimeout(timer)
   }, [langInput, languages])
 
-  function addTechnical() {
-    if (!techInput.trim()) return
-    setTechnical([...technical, techInput.trim()])
-    setTechInput("")
-  }
-
-  function addLanguage() {
-    if (!langInput.trim()) return
-    setLanguages([...languages, langInput.trim()])
-    setLangInput("")
-  }
-
-
   // Техникийн болон Хэлний мэдлэг хоёулаа хоосон эсэхийг шалгах нөхцөл
   const isDisabled = technical.length === 0 && languages.length === 0
 

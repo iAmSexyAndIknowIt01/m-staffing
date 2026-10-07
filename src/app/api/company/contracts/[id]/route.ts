@@ -10,7 +10,7 @@ import {
   readyToSendError,
   validateContractTerms,
 } from "@/lib/contracts"
-import { CONTRACT_COLUMNS, logContractEvent, normalizeContract, sendContractMail } from "@/lib/contractServer"
+import { CONTRACT_COLUMNS, contractLink, logContractEvent, normalizeContract, sendContractMail } from "@/lib/contractServer"
 import type { Contract } from "@/types/contract"
 
 export const revalidate = 0
@@ -160,7 +160,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     await logContractEvent(id, "company", companyId, action, reason ? { reason } : undefined)
 
-    const link = { href: `${new URL(request.url).origin}/dashboard/staff/contracts/${id}`, label: "Гэрээг харах" }
+    const link = contractLink(request, `/dashboard/staff/contracts/${id}`)
     if (action === "send") {
       await sendContractMail(contract.staff_email, "Танд гэрээ ирлээ", [
         `${contract.company_name} танд "${contract.position}" албан тушаалын хөдөлмөрийн гэрээ илгээлээ.`,
