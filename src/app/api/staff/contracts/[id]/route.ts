@@ -45,6 +45,21 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const contract = await getStaffContract(id, userId)
     if (!contract) return notFound()
 
+    // Гарын үсэг хүлээж буй гэрээг анх нээхэд тэмдэглэнэ — компани "нээж үзсэн" гэж харна.
+    // viewed_at багана (20261008000000 migration) байхгүй бол алгасна.
+    if (contract.status === "sent") {
+      const { data: viewed, error: viewError } = await supabase
+        .from("tr_contract")
+        .update({ viewed_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("staff_id", userId)
+        .eq("status", "sent")
+        .is("viewed_at", null)
+        .select("id")
+      if (viewError) console.error("CONTRACT_VIEW_MARK_ERROR:", viewError)
+      else if (viewed && viewed.length > 0) await logContractEvent(id, "staff", userId, "view")
+    }
+
     return NextResponse.json({ success: true, data: contract })
   } catch (error) {
     console.error("Staff Contract Fetch Error:", error)

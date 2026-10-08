@@ -6,9 +6,8 @@ import { useEffect, useMemo, useState, type SetStateAction } from "react"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import Pagination from "@/components/staff/jobs/Pagination"
 import { getErrorMessage } from "@/lib/errors"
-import { CONTRACT_STATUS_LABELS, SALARY_TYPE_LABELS } from "@/lib/contracts"
+import { CONTRACT_STATUS_LABELS, SALARY_TYPE_LABELS, expiresSoonDays } from "@/lib/contracts"
 import type { ContractParty, ContractSalaryType, ContractStatus } from "@/types/contract"
-import ApplicantDetailModal from "./ApplicantDetailModal"
 import ContractStatusBadge from "./ContractStatusBadge"
 import { DateRange, LabeledSelect, ResultSummary, SearchInput, filterSelectClass } from "./FilterControls"
 import { formatDate, formatSalary } from "./format"
@@ -31,7 +30,6 @@ type SortKey = keyof typeof SORTS
 
 interface ContractListItem {
   id: string
-  job_request_id?: string // зөвхөн компанийн API буцаана
   contract_number: string
   company_name: string
   staff_name: string
@@ -48,12 +46,22 @@ interface ContractListProps {
   party: ContractParty
 }
 
+// Хүчинтэй гэрээ дуусах дөхсөн бол (30 хоног) анхааруулах тэмдэг
+function ExpiresSoon({ contract }: { contract: ContractListItem }) {
+  const days = expiresSoonDays(contract)
+  if (days === null) return null
+  return (
+    <div className="mt-1 text-[11px] font-bold text-amber-600" suppressHydrationWarning>
+      ⏳ {days === 0 ? "Өнөөдөр дуусна" : `${days} хоногийн дараа дуусна`}
+    </div>
+  )
+}
+
 // Компани, ажилтны "Гэрээ" жагсаалт. Нөгөө талын нэрийг харуулна.
 export default function ContractList({ party }: ContractListProps) {
   const [contracts, setContracts] = useState<ContractListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selected, setSelected] = useState<ContractListItem | null>(null)
   const [clearCount, setClearCount] = useState(0)
   const router = useRouter()
 
@@ -76,12 +84,27 @@ export default function ContractList({ party }: ContractListProps) {
     setClearCount((n) => n + 1)
   }
 
-  // Компани мөр дээр дарахад ажилтны дэлгэрэнгүй цонх нээгдэнэ
-  const openDetail = (c: ContractListItem) => {
-    if (party === "company" && c.job_request_id) setSelected(c)
-  }
-
   const basePath = `/dashboard/${party}/contracts`
+
+  // Мөр дээр дарахад гэрээний дэлгэрэнгүй хуудас руу шилжинэ (ажилтан, ажлын байр нь тэнд таб болж харагдана)
+  const openDetail = (c: ContractListItem) => router.push(`${basePath}/${c.id}`)
+  // Мөр товч биш тул гарнаас (Tab → Enter/Space) нээх боломж олгоно
+  const rowProps = (c: ContractListItem) => ({
+    role: "link" as const,
+    tabIndex: 0,
+    onClick: () => openDetail(c),
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.target !== e.currentTarget) return // доторх линк өөрөө ажиллана
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        openDetail(c)
+      }
+    },
+  })
+
+  // Компанид мөр дээр дарахад л хангалттай тул "Дэлгэрэнгүй" товчгүй.
+  // Ажилтанд "Унших & гарын үсэг" гэсэн үйлдлийн товч хэвээр харагдана.
+  const showActions = party === "staff"
 
   useEffect(() => {
     async function fetchContracts() {
@@ -209,15 +232,15 @@ export default function ContractList({ party }: ContractListProps) {
                   <th className="px-5 py-5">Цалин</th>
                   <th className="px-5 py-5">Хугацаа</th>
                   <th className="px-5 py-5">Төлөв</th>
-                  <th className="px-6 py-5 text-right">Үйлдэл</th>
+                  {showActions && <th className="px-6 py-5 text-right">Үйлдэл</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {paged.map((c) => (
                   <tr
                     key={c.id}
-                    onClick={() => openDetail(c)}
-                    className={`hover:bg-gray-50/50 transition ${party === "company" ? "cursor-pointer" : ""}`}
+                    {...rowProps(c)}
+                    className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-indigo-50/50"
                   >
                     <td className="px-6 py-5">
                       <div className="font-bold text-gray-900">{c.position}</div>
@@ -230,16 +253,19 @@ export default function ContractList({ party }: ContractListProps) {
                     </td>
                     <td className="px-5 py-5">
                       <ContractStatusBadge status={c.status} />
+                      <ExpiresSoon contract={c} />
                     </td>
-                    <td className="px-6 py-5 text-right">
-                      <Link
-                        href={`${basePath}/${c.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-xs font-bold bg-gray-900 hover:bg-gray-800 text-white px-3 py-2 rounded-xl transition inline-block"
-                      >
-                        {party === "staff" && c.status === "sent" ? "Унших & гарын үсэг" : "Дэлгэрэнгүй"}
-                      </Link>
-                    </td>
+                    {showActions && (
+                      <td className="px-6 py-5 text-right">
+                        <Link
+                          href={`${basePath}/${c.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs font-bold bg-gray-900 hover:bg-gray-800 text-white px-3 py-2 rounded-xl transition inline-block"
+                        >
+                          {c.status === "sent" ? "Унших & гарын үсэг" : "Дэлгэрэнгүй"}
+                        </Link>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -251,8 +277,8 @@ export default function ContractList({ party }: ContractListProps) {
             {paged.map((c) => (
               <div
                 key={c.id}
-                onClick={() => (party === "company" ? openDetail(c) : router.push(`${basePath}/${c.id}`))}
-                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer"
+                {...rowProps(c)}
+                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
@@ -268,6 +294,7 @@ export default function ContractList({ party }: ContractListProps) {
                   <span>💰 {formatSalary(c.salary, c.salary_type)}</span>
                   <span>📅 {formatDate(c.start_date)}</span>
                 </div>
+                <ExpiresSoon contract={c} />
               </div>
             ))}
           </div>
@@ -281,21 +308,6 @@ export default function ContractList({ party }: ContractListProps) {
             setCurrentPage={setPage}
           />
         </>
-      )}
-
-      {selected?.job_request_id && (
-        <ApplicantDetailModal
-          jobRequestId={selected.job_request_id}
-          onClose={() => setSelected(null)}
-          footer={
-            <Link
-              href={`${basePath}/${selected.id}`}
-              className="text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white transition"
-            >
-              📑 Гэрээ нээх
-            </Link>
-          }
-        />
       )}
     </div>
   )

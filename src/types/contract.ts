@@ -43,6 +43,7 @@ export interface Contract extends ContractTerms {
   termination_reason: string | null
   created_at: string
   updated_at: string
+  viewed_at?: string | null // зөвхөн компанийн дэлгэрэнгүй API буцаана
 }
 
 export interface ContractEvent {

@@ -46,13 +46,21 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const contract = await getCompanyContract(id, companyId)
     if (!contract) return notFound()
 
-    const { data: events } = await supabase
-      .from("tr_contract_event")
-      .select("id, actor_role, action, meta, created_at")
-      .eq("contract_id", id)
-      .order("created_at", { ascending: true })
+    const [{ data: events }, viewed] = await Promise.all([
+      supabase
+        .from("tr_contract_event")
+        .select("id, actor_role, action, meta, created_at")
+        .eq("contract_id", id)
+        .order("created_at", { ascending: true }),
+      // viewed_at багана (20261008000000 migration) байхгүй бол null гэж үзнэ
+      supabase.from("tr_contract").select("viewed_at").eq("id", id).maybeSingle(),
+    ])
 
-    return NextResponse.json({ success: true, data: contract, events: events || [] })
+    return NextResponse.json({
+      success: true,
+      data: { ...contract, viewed_at: viewed.error ? null : (viewed.data?.viewed_at ?? null) },
+      events: events || [],
+    })
   } catch (error) {
     console.error("Company Contract Fetch Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
@@ -160,6 +168,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     await logContractEvent(id, "company", companyId, action, reason ? { reason } : undefined)
 
+    // Шинэ (засварласан) хувилбарыг илгээхэд "нээж үзсэн" тэмдэглэгээг шинэчилнэ.
+    // viewed_at багана байхгүй бол алдааг үл тооцно (үндсэн үйлдэл амжилттай болсон).
+    if (action === "send") {
+      const { error: resetError } = await supabase.from("tr_contract").update({ viewed_at: null }).eq("id", id)
+      if (resetError) console.error("CONTRACT_VIEW_RESET_ERROR:", resetError)
+    }
+
     const link = contractLink(request, `/dashboard/staff/contracts/${id}`)
     if (action === "send") {
       await sendContractMail(contract.staff_email, "Танд гэрээ ирлээ", [
@@ -172,6 +187,22 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         `${contract.company_name} ${contract.contract_number} дугаартай гэрээг цуцаллаа.`,
         `Шалтгаан: ${reason}`,
       ], link)
+    } else if (contract.status === "sent" && (action === "revise" || action === "cancel")) {
+      // Ажилтан гарын үсэг хүлээж буй гэрээгээ харж байсан — ноорог/цуцалсан гэрээ ажилтанд харагдахгүй
+      // тул тайлбаргүй алга болохоос сэргийлж мэдэгдэнэ
+      await sendContractMail(
+        contract.staff_email,
+        action === "revise" ? "Гэрээ засварлахаар буцаагдлаа" : "Гэрээ цуцлагдлаа",
+        action === "revise"
+          ? [
+              `${contract.company_name} танд илгээсэн ${contract.contract_number} дугаартай "${contract.position}" гэрээг засварлахаар буцаалаа.`,
+              "Засварласан хувилбарыг дахин илгээхэд танд мэдэгдэнэ. Одоогоор гарын үсэг зурах шаардлагагүй.",
+            ]
+          : [
+              `${contract.company_name} танд илгээсэн ${contract.contract_number} дугаартай "${contract.position}" гэрээг цуцаллаа.`,
+              "Энэ гэрээнд гарын үсэг зурах шаардлагагүй болсон.",
+            ]
+      )
     }
 
     return NextResponse.json({ success: true, data: normalizeContract(data as unknown as Contract) })

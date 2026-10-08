@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { STAFF_VISIBLE_STATUSES } from "@/lib/contracts"
-import { CONTRACT_LIST_COLUMNS, expireContracts, normalizeContract } from "@/lib/contractServer"
+import { CONTRACT_LIST_COLUMNS, normalizeContract, refreshContractDeadlines } from "@/lib/contractServer"
 
 export const revalidate = 0
 
 // Ажилтанд ирсэн гэрээнүүд (ноорог болон илгээгдэхээс өмнө цуцалсан гэрээ харагдахгүй)
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getSession()
     const userId = session?.userId
@@ -15,7 +15,7 @@ export async function GET() {
       return NextResponse.json({ error: "Хандах эрхгүй байна." }, { status: 403 })
     }
 
-    await expireContracts({ column: "staff_id", id: userId })
+    await refreshContractDeadlines({ column: "staff_id", id: userId }, request)
 
     const { data, error } = await supabase
       .from("tr_contract")

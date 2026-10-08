@@ -1,23 +1,41 @@
 "use client"
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import ContractCandidates from "./ContractCandidates"
 import ContractList from "./ContractList"
+import TabSwitch, { tabPanelProps } from "./TabSwitch"
 
 type Tab = "contracts" | "new"
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: "contracts", label: "📑 Гэрээнүүд" },
-  { key: "new", label: "➕ Шинээр үүсгэх" },
-]
+interface Summary {
+  awaiting: number
+  drafts: number
+  candidates: number
+}
 
 // Компанийн "Гэрээ" хуудас: үүссэн гэрээнүүд / тэнцсэн анкетаас шинээр үүсгэх.
 // Сонгосон таб URL-д (?tab=new) хадгалагдана; табуудын шүүлтүүр бие биеэсээ тусдаа.
+// Таб дээр анхаарах зүйлийн тоог харуулна (ноорог + гарын үсэг хүлээж буй, гэрээ хүлээж буй анкет).
 export default function CompanyContractsTabs() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const tab: Tab = searchParams.get("tab") === "new" ? "new" : "contracts"
+  const [summary, setSummary] = useState<Summary | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/company/contracts/summary")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((result) => !cancelled && result?.data && setSummary(result.data))
+      .catch(() => {
+        // Тоо харагдахгүй ч табууд ажиллана
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const selectTab = (next: Tab) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -27,23 +45,28 @@ export default function CompanyContractsTabs() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
 
+  const tabs = [
+    { key: "contracts" as const, label: "📑 Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
+    { key: "new" as const, label: "➕ Шинээр үүсгэх", badge: summary?.candidates },
+  ]
+
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="inline-flex w-full sm:w-auto bg-gray-100/80 p-1 rounded-2xl">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => selectTab(t.key)}
-            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition ${
-              tab === t.key ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <TabSwitch idPrefix="contracts" ariaLabel="Гэрээ" tabs={tabs} value={tab} onChange={selectTab} />
+        {summary && (summary.drafts > 0 || summary.awaiting > 0) && (
+          <p className="text-[11px] text-gray-400 px-1">
+            {[
+              summary.drafts > 0 && `${summary.drafts} ноорог илгээгээгүй`,
+              summary.awaiting > 0 && `${summary.awaiting} гэрээ ажилтны гарын үсэг хүлээж байна`,
+            ].filter(Boolean).join(" · ")}
+          </p>
+        )}
       </div>
 
-      {tab === "contracts" ? <ContractList party="company" /> : <ContractCandidates />}
+      <div {...tabPanelProps("contracts", tab)}>
+        {tab === "contracts" ? <ContractList party="company" /> : <ContractCandidates />}
+      </div>
     </div>
   )
 }

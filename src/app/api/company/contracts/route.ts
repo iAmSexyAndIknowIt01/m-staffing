@@ -3,24 +3,24 @@ import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { one } from "@/lib/relation"
 import { DEFAULT_CONTRACT_TERMS, parseSalary, toContractSalaryType, todayISO } from "@/lib/contracts"
-import { CONTRACT_LIST_COLUMNS, expireContracts, logContractEvent, normalizeContract } from "@/lib/contractServer"
+import { CONTRACT_LIST_COLUMNS, logContractEvent, normalizeContract, refreshContractDeadlines } from "@/lib/contractServer"
 
 export const revalidate = 0
 
 const unauthorized = () => NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 401 })
 
 // 1. Компанийн бүх гэрээ
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getSession()
     const companyId = session?.userId
     if (!companyId || session?.role !== "company") return unauthorized()
 
-    await expireContracts({ column: "company_id", id: companyId })
+    await refreshContractDeadlines({ column: "company_id", id: companyId }, request)
 
     const { data, error } = await supabase
       .from("tr_contract")
-      .select(`${CONTRACT_LIST_COLUMNS}, job_request_id`)
+      .select(CONTRACT_LIST_COLUMNS)
       .eq("company_id", companyId)
       .order("created_at", { ascending: false })
 
