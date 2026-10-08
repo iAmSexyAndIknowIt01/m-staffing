@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { validateNewPassword } from "@/lib/password"
+import PasswordInput from "@/components/common/PasswordInput"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -322,12 +323,12 @@ export default function RegisterPage() {
 
           <div className="mt-6">
             <label>Нууц үг</label>
-            <input
-              type="password"
+            <PasswordInput
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+              wrapperClassName="mt-3"
+              className="w-full rounded-2xl border border-orange-100 px-5 py-4"
             />
             <p className="mt-2 text-xs text-gray-400">Хамгийн багадаа 8 тэмдэгт, үсэг болон тоо агуулсан байна.</p>
           </div>
