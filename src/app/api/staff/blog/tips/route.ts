@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // 1. Супабэйс рүү хүсэлт илгээж mt_tips хүснэгтээс датаг шүүнэ
     const { data, error } = await supabase
@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       // Таны өгөгдлийн санд яг аль замаар хадгалагдсанаас хамаарч шүүнэ
       // Энд inline эсвэл dashboard-той бүтэн замаар нь шүүхэд алдахгүй байхаар (.in) ашиглав
       .in("detail_url", ["dashboard/staff/blog/tips"])
+      .eq("is_active", true) // Идэвхгүй болгосон зөвлөгөөг харуулахгүй
       .order("created_at", { ascending: false })
 
     // 2. Алдаа гарвал буцаах хэсэг
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Амжилттай бол өгөгдлийг буцаана
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Серверийн алдаа гарлаа." },
       { status: 500 }

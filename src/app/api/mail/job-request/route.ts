@@ -1,25 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session"; // 🔥 Күүки уншихад ашиглана
 import { supabase } from "@/lib/supabase"; 
-import nodemailer from "nodemailer";
 import { one } from "@/lib/relation";
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+import { MAIL_FROM, escapeHtml, transporter } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -89,10 +72,10 @@ export async function POST(req: Request) {
     const company = one(jobData.mt_company);
     const companyEmail = company?.email;
     // Хэрэглэгчийн оруулсан утгуудыг HTML-д escape хийнэ (мэйл дотор линк/HTML шигтгэхээс сэргийлнэ)
-    const companyName = escapeHtml(company?.company_name ?? "");
-    const jobTitle = escapeHtml(jobData.title);
+    const companyName = escapeHtml(String(company?.company_name ?? ""));
+    const jobTitle = escapeHtml(String(jobData.title ?? ""));
     const safeFullName = escapeHtml(fullName);
-    const safeStaffEmail = escapeHtml(staffData.email);
+    const safeStaffEmail = escapeHtml(String(staffData.email ?? ""));
 
     if (!companyEmail) {
       return NextResponse.json({ message: "Ажил олгогчийн мэйл хаяг бүртгэлгүй байна" }, { status: 400 });
@@ -100,7 +83,7 @@ export async function POST(req: Request) {
 
     // 4. Gmail-ээр ажил олгогч руу мэйл илгээх
     await transporter.sendMail({
-      from: `"MSTAFFING" <${process.env.GMAIL_USER}>`,
+      from: MAIL_FROM,
       to: companyEmail,
       subject: `[MSTAFFING] Шинэ анкет ирлээ - ${String(jobData.title ?? "").replace(/[\r\n]+/g, " ")}`,
       html: `

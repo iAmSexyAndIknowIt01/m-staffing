@@ -4,12 +4,13 @@ import { supabase } from "@/lib/supabase"
 import { CONTRACT_STATUS_LABELS, STAFF_VISIBLE_STATUSES, effectiveStatus, isContractAction, nextStatus } from "@/lib/contracts"
 import {
   CONTRACT_COLUMNS,
-  getClientIp,
+  contractLink,
   getCompanyEmail,
   logContractEvent,
   normalizeContract,
   sendContractMail,
 } from "@/lib/contractServer"
+import { getClientIp } from "@/lib/clientIp"
 import type { Contract } from "@/types/contract"
 
 export const revalidate = 0
@@ -127,7 +128,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     await logContractEvent(id, "staff", userId, action, reason ? { reason } : undefined)
 
     const companyEmail = await getCompanyEmail(contract.company_id)
-    const link = { href: `${new URL(request.url).origin}/dashboard/company/contracts/${id}`, label: "Гэрээг харах" }
+    const link = contractLink(request, `/dashboard/company/contracts/${id}`)
     const subjects = {
       sign: "Ажилтан гэрээнд гарын үсэг зурлаа",
       decline: "Ажилтан гэрээнээс татгалзлаа",

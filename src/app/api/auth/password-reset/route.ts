@@ -6,12 +6,11 @@ import {
   RESET_MAX_ATTEMPTS,
   RESET_MAX_CODES_PER_HOUR,
   RESET_RESEND_COOLDOWN_MS,
-  generateResetCode,
-  hashResetCode,
-  isResetCodeMatch,
-  normalizeEmail,
   validateNewPassword,
 } from "@/lib/passwordReset"
+import { generateCode, hashCode, isCodeMatch, normalizeEmail } from "@/lib/authCode"
+import { getClientIp } from "@/lib/clientIp"
+import { MAIL_CODE_MAX_PER_IP, MAIL_CODE_WINDOW_MS, isRateLimited, recordRateEvent } from "@/lib/rateLimit"
 
 // Имэйл бүртгэлтэй эсэхээс үл хамааран ижил хариу өгнө —
 // ингэснээр энэ API-аар хэний имэйл бүртгэлтэйг тааж олох боломжгүй.
@@ -69,12 +68,22 @@ export async function POST(req: Request) {
       }
     }
 
+    // Нэг IP-ээс олон өөр имэйл рүү код явуулахыг хязгаарлана (бүртгэлгүй имэйлд ч адил тоолно)
+    const ip = getClientIp(req)
+    if (await isRateLimited("mail_code", ip, MAIL_CODE_MAX_PER_IP, MAIL_CODE_WINDOW_MS)) {
+      return NextResponse.json(
+        { message: "Хэт олон удаа код хүссэн байна. Түр хүлээгээд дахин оролдоно уу." },
+        { status: 429 }
+      )
+    }
+    await recordRateEvent("mail_code", ip)
+
     const userId = await findUserIdByEmail(email)
     if (!userId) {
       return NextResponse.json({ success: true, message: GENERIC_SENT_MESSAGE })
     }
 
-    const code = generateResetCode()
+    const code = generateCode()
 
     // Өмнөх кодууд хүчингүй — зөвхөн хамгийн сүүлийнх нь ажиллана.
     // Устгахгүй, attempts-ийг дүүргэнэ: цагийн хязгаарын тоололд орсон хэвээр үлдэнэ.
@@ -85,7 +94,7 @@ export async function POST(req: Request) {
 
     const { data: inserted, error: insertError } = await supabase
       .from("password_reset_codes")
-      .insert({ user_id: userId, email, code_hash: hashResetCode(code) })
+      .insert({ user_id: userId, email, code_hash: hashCode(code) })
       .select("id")
       .single()
 
@@ -151,7 +160,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: INVALID_CODE_MESSAGE }, { status: 400 })
     }
 
-    if (!isResetCodeMatch(code, latest.code_hash)) {
+    if (!isCodeMatch(code, latest.code_hash)) {
       const attempts = latest.attempts + 1
       await supabase.from("password_reset_codes").update({ attempts }).eq("id", latest.id)
 

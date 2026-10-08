@@ -1,7 +1,6 @@
 import { NextResponse, NextRequest } from "next/server"
 import { getSession } from "@/lib/session"
-import { supabase } from "@/lib/supabase"
-import { one } from "@/lib/relation"
+import { getJobApplicants } from "@/lib/companyJobs"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -23,59 +22,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Хандах эрхгүй байна" }, { status: 401 })
     }
 
-    // 1. Анкет ирээгүй байсан ч ажлын нэрийг харуулахын тулд зарын мэдээллийг авах
-    let jobTitle = "Ажлын байр"
-    const { data: jobData } = await supabase
-      .from("mt_openjob")
-      .select("title")
-      .eq("id", jobId)
-      .eq("user_id", companyId)
-      .single()
+    const { data, jobTitle } = await getJobApplicants(jobId, companyId)
 
-    if (jobData) {
-      jobTitle = jobData.title
-    }
-
-    // 2. Ирсэн хүсэлтүүдийг татах
-    const { data: requests, error } = await supabase
-      .from("tr_job_request")
-      .select(`
-        id,
-        status,
-        created_at,
-        applicant_name,
-        applicant_email,
-        applicant_phone,
-        mt_openjob!inner (
-          id,
-          title,
-          user_id
-        )
-      `)
-      .eq("job_id", jobId)
-      .eq("mt_openjob.user_id", companyId)
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    const formattedData = requests?.map((req) => ({
-      id: req.id,
-      user_name: req.applicant_name || "Нэргүй ажил горилогч",
-      job_title: one(req.mt_openjob)?.title || jobTitle,
-      email: req.applicant_email || "Хоосон",
-      phone: req.applicant_phone || "Хоосон",
-      created_at: req.created_at,
-      status: req.status || "new",
-    })) || []
-
-    // Хэрэгцээт бүх датаг нэгтгэн буцаана
-    return NextResponse.json({ 
-      data: formattedData,
-      jobTitle: jobTitle 
-    })
-
+    return NextResponse.json({ data, jobTitle })
   } catch (error) {
     console.error("Get Applicants Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })

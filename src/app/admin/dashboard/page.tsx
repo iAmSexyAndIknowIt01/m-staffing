@@ -57,7 +57,7 @@ export default function AdminDashboard() {
       } else {
         alert(result.error || "Алдаа гарлаа.")
       }
-    } catch (err) {
+    } catch {
       alert("Серверийн алдаа гарлаа.")
     } finally {
       setActionLoading(null)

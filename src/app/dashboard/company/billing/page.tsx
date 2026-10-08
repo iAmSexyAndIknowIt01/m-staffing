@@ -128,7 +128,7 @@ export default function BillingPage() {
         alert(result.error || "Алдаа гарлаа.")
         resetSwipe()
       }
-    } catch (err) {
+    } catch {
       alert("Серверийн алдаа гарлаа.")
       resetSwipe()
     } finally {

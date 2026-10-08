@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { randomInt } from "crypto"
 
 export async function POST(request: Request) {
   try {
@@ -21,33 +22,48 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { category, title, message } = body
 
-    if (!category || !title || !message) {
+    if (
+      typeof category !== "string" || typeof title !== "string" || typeof message !== "string" ||
+      !category.trim() || !title.trim() || !message.trim()
+    ) {
       return NextResponse.json(
         { error: "Бүх талбарыг бүрэн бөглөнө үү." },
         { status: 400 }
       )
     }
 
-    // 3. 6 ОРОНТОЙ RANDOM ID ҮҮСГЭХ (100,000 - 999,999)
-    const randomId = Math.floor(100000 + Math.random() * 900000)
+    if (category.length > 100 || title.length > 200 || message.length > 5000) {
+      return NextResponse.json(
+        { error: "Оруулсан мэдээлэл хэт урт байна." },
+        { status: 400 }
+      )
+    }
 
-    // 4. ДАТАБАЗАД ХАДГАЛАХ
-    const { data, error } = await supabase
-      .from("mt_support")
-      .insert([
-        {
-          id: randomId,
-          user_id: userId,
-          category,
-          title,
-          message,
-          status: "pending",
-          flag: userRole
-        }
-      ])
-      .select()
+    // 3-4. 6 ОРОНТОЙ RANDOM ID ҮҮСГЭЖ ХАДГАЛАХ (100,000 - 999,999).
+    // ID давхцвал (unique_violation) шинэ ID-аар дахин оролдоно.
+    let data = null
+    for (let attempt = 0; attempt < 5 && !data; attempt++) {
+      const result = await supabase
+        .from("mt_support")
+        .insert([
+          {
+            id: randomInt(100000, 1000000),
+            user_id: userId,
+            category: category.trim(),
+            title: title.trim(),
+            message: message.trim(),
+            status: "pending",
+            flag: userRole
+          }
+        ])
+        .select()
 
-    if (error) throw error
+      if (result.error?.code === "23505") continue
+      if (result.error) throw result.error
+      data = result.data
+    }
+
+    if (!data) throw new Error("SUPPORT_ID_COLLISION")
 
     return NextResponse.json({
       success: true,

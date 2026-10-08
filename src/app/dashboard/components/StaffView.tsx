@@ -62,7 +62,6 @@ export default function StaffView({ userId }: StaffViewProps) {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false) 
   const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
 
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -122,34 +121,6 @@ export default function StaffView({ userId }: StaffViewProps) {
     fetchData()
   }, [userId])
 
-  const handleDownloadCV = async () => {
-    if (isDownloading) return
-    setIsDownloading(true)
-    try {
-      const response = await fetch(`/api/staff/cv/download?userId=${userId}`, {
-        method: "GET",
-      })
-
-      if (!response.ok) {
-        throw new Error("CV файлыг татахад алдаа гарлаа.")
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `CV_${userId}.pdf` 
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (err) {
-      showAlert(getErrorMessage(err, "CV татахад алдаа гарлаа. Та дараа дахин оролдоно уу."), "Алдаа")
-    } finally {
-      setIsDownloading(false)
-    }
-  }
-
   const handleCompanyClick = (e: React.MouseEvent, companyId: string | undefined) => {
     e.preventDefault()
     e.stopPropagation() 
@@ -187,7 +158,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
-    } catch (err) {
+    } catch {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
@@ -267,12 +238,18 @@ export default function StaffView({ userId }: StaffViewProps) {
     }
   }
 
+  // Сүүлийн render-ийн handler-уудыг ref-д хадгална — window listener-ийг чирэлт бүрт нэг л удаа бүртгэнэ
+  const dragHandlersRef = useRef({ move: handleDragMove, end: handleDragEnd })
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
+    dragHandlersRef.current = { move: handleDragMove, end: handleDragEnd }
+  })
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => dragHandlersRef.current.move(e.clientX)
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) handleDragMove(e.touches[0].clientX)
+      if (e.touches.length > 0) dragHandlersRef.current.move(e.touches[0].clientX)
     }
-    const handleEnd = () => handleDragEnd()
+    const handleEnd = () => dragHandlersRef.current.end()
 
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove)
@@ -287,7 +264,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       window.removeEventListener("touchmove", handleTouchMove)
       window.removeEventListener("touchend", handleEnd)
     }
-  }, [isDragging, sliderX])
+  }, [isDragging])
 
   if (loading) {
     return <LoadingLayout loading={loading} />

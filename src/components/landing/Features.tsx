@@ -1,3 +1,6 @@
+import Reveal from "./Reveal"
+import TiltCard from "./TiltCard"
+
 const items = [
   {
     icon: "CV",
@@ -92,7 +95,7 @@ export default function Features() {
       <div className="relative z-10 max-w-350 mx-auto px-6">
         
         {/* HEADER */}
-        <div className="text-center">
+        <Reveal className="text-center">
           <div
             className="
               inline-flex
@@ -124,7 +127,7 @@ export default function Features() {
           >
             Ажлын хайлтыг
             <br />
-            <span className="orange-text">
+            <span className="text-shimmer">
               шинэ түвшинд
             </span>
           </h2>
@@ -145,7 +148,7 @@ export default function Features() {
             Илүү хурдан. Илүү ухаалаг.
             Илүү мэргэжлийн ажлын экосистем.
           </p>
-        </div>
+        </Reveal>
 
         {/* CARDS */}
         <div
@@ -160,11 +163,13 @@ export default function Features() {
             md:gap-8
           "
         >
-          {items.map((item) => (
+          {items.map((item, index) => (
+            <Reveal key={item.title} delay={index * 120}>
+            <TiltCard>
             <div
-              key={item.title}
               className="
                 group
+                h-full
                 relative
                 overflow-hidden
                 rounded-4xl
@@ -190,6 +195,9 @@ export default function Features() {
                 hover:shadow-[0_30px_80px_rgba(0,0,0,.06)]
               "
             >
+              {/* CURSOR SPOTLIGHT */}
+              <div className="card-spotlight" />
+
               {/* TOP LIGHT */}
               <div
                 className="
@@ -338,6 +346,8 @@ export default function Features() {
               </div>
 
             </div>
+            </TiltCard>
+            </Reveal>
           ))}
         </div>
       </div>

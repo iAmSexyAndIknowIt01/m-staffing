@@ -2,11 +2,12 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import DashboardShell from "./components/DashboardShell"
 import DashboardFooter from "./components/DashboardFooter" // Үүсгэсэн footer-ээ импортлох
-import { SESSION_COOKIE, getSession } from "@/lib/session"
+import { SESSION_COOKIE, getSession, revokeSessionToken } from "@/lib/session"
 
 async function handleLogout() {
   "use server"
   const cookieStore = await cookies()
+  await revokeSessionToken(cookieStore.get(SESSION_COOKIE)?.value)
   cookieStore.delete(SESSION_COOKIE)
   cookieStore.delete("user_id")
   cookieStore.delete("user_role")

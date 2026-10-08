@@ -14,7 +14,25 @@ export const PLANS: Record<PlanType, { name: string; price: number; jobLimit: nu
 export const PAID_PLAN_DAYS = 30
 
 export function isPlanType(value: unknown): value is PlanType {
-  return typeof value === "string" && value in PLANS
+  return typeof value === "string" && Object.hasOwn(PLANS, value)
+}
+
+// Төлбөр баталгаажсаны дараах дуусах хугацаа. Ижил багцаа хугацаа дуусахаас өмнө
+// сунгавал үлдсэн хоног алдагдахгүй — одоогийн дуусах хугацаан дээр нэмнэ.
+export function computePaidExpiry(
+  current: { plan_type: string | null; status: string | null; expires_at: string | null } | null,
+  planType: PlanType,
+  now: Date = new Date()
+): Date {
+  const currentExpiry = current?.expires_at ? new Date(current.expires_at) : null
+  const extendsCurrent =
+    current?.plan_type === planType &&
+    current.status === "active" &&
+    currentExpiry !== null &&
+    currentExpiry.getTime() > now.getTime()
+
+  const base = extendsCurrent ? currentExpiry : now
+  return new Date(base.getTime() + PAID_PLAN_DAYS * 24 * 60 * 60 * 1000)
 }
 
 export interface EffectiveSubscription {

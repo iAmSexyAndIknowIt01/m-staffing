@@ -4,10 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
 
-interface CompanyViewProps {
-  userId: string
-}
-
 interface TipData {
   id: number
   title: string
@@ -47,7 +43,7 @@ interface DashboardData {
   tips: TipData[]
 }
 
-export default function CompanyView({ userId }: CompanyViewProps) {
+export default function CompanyView() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

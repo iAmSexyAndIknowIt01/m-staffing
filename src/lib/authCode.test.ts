@@ -1,27 +1,29 @@
 import { describe, expect, it } from "vitest"
-import {
-  generateResetCode,
-  hashResetCode,
-  isResetCodeMatch,
-  normalizeEmail,
-  validateNewPassword,
-} from "./passwordReset"
+import { escapeLikePattern, generateCode, hashCode, isCodeMatch, normalizeEmail } from "./authCode"
+import { validateNewPassword } from "./password"
 
-describe("сэргээх код", () => {
+describe("escapeLikePattern", () => {
+  it("ilike-ийн wildcard тэмдэгтүүдийг escape хийнэ", () => {
+    expect(escapeLikePattern("a_b%c\\d@x.mn")).toBe("a\\_b\\%c\\\\d@x.mn")
+    expect(escapeLikePattern("user@mail.mn")).toBe("user@mail.mn")
+  })
+})
+
+describe("6 оронтой код", () => {
   it("6 оронтой тоо үүсгэнэ", () => {
-    for (let i = 0; i < 50; i++) expect(generateResetCode()).toMatch(/^\d{6}$/)
+    for (let i = 0; i < 50; i++) expect(generateCode()).toMatch(/^\d{6}$/)
   })
 
   it("hash нь кодыг ил агуулахгүй, тулгалт зөв ажиллана", () => {
-    const hash = hashResetCode("123456")
+    const hash = hashCode("123456")
     expect(hash).not.toContain("123456")
     expect(hash).toHaveLength(64)
-    expect(isResetCodeMatch("123456", hash)).toBe(true)
-    expect(isResetCodeMatch("123457", hash)).toBe(false)
+    expect(isCodeMatch("123456", hash)).toBe(true)
+    expect(isCodeMatch("123457", hash)).toBe(false)
   })
 
   it("гэмтсэн hash-д false буцаана", () => {
-    expect(isResetCodeMatch("123456", "abc")).toBe(false)
+    expect(isCodeMatch("123456", "abc")).toBe(false)
   })
 })
 

@@ -36,6 +36,8 @@ export async function GET(
       `)
       .eq("id", jobid)
       .eq("status", "active")
+      // Зөвхөн энэ хэрэглэгчийн анкет — эс бөгөөс өөр хүн илгээсэн ч "илгээсэн" гэж харагдана
+      .eq("tr_job_request.applicant_id", userId)
       .single()
 
     if (jobError || !jobData) {
@@ -69,8 +71,8 @@ export async function GET(
     }
 
     // 3. Өгөгдлийг жагсаалтын API-тай яг ижил загвараар форматлах
-    const isApplied = jobData.tr_job_request && jobData.tr_job_request.length > 0
-    const { tr_job_request, ...cleanedJob } = jobData
+    const { tr_job_request: applications, ...cleanedJob } = jobData
+    const isApplied = Array.isArray(applications) && applications.length > 0
 
     const formattedJob = {
       ...cleanedJob,

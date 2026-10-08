@@ -118,11 +118,12 @@ export default function PostJobPage() {
   }
 
   const handleResetFilters = () => {
-    searchQuery !== "" && setSearchQuery("")
-    statusFilter !== "all" && setStatusFilter("all")
-    salaryFilter !== "all" && setSalaryFilter("all")
-    applicantFilter !== "all" && setApplicantFilter("all")
-    dateSort !== "newest" && setDateSort("newest")
+    // Утга өөрчлөгдөөгүй бол React дахин render хийхгүй тул шууд онооно
+    setSearchQuery("")
+    setStatusFilter("all")
+    setSalaryFilter("all")
+    setApplicantFilter("all")
+    setDateSort("newest")
     setCurrentPage(1)
   }
 

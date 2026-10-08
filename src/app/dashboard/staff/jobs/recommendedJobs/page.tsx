@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
+import AlertModal from "@/components/staff/jobs/AlertModal"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal" // <-- Импортлох
 import { getErrorMessage } from "@/lib/errors"
 
@@ -135,7 +135,7 @@ export default function RecommendedJobsPage() {
       setPendingJobId(jobId)
       setSliderX(0)
       setShowConfirmModal(true)
-    } catch (err) {
+    } catch {
       showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
     } finally {
       setCheckingProfile(false)
@@ -201,22 +201,29 @@ export default function RecommendedJobsPage() {
     }
   }
 
+  // Сүүлийн render-ийн handler-уудыг ref-д хадгална — window listener-ийг чирэлт бүрт нэг л удаа бүртгэнэ
+  const dragHandlersRef = useRef({ move: handleDragMove, end: handleDragEnd })
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
-    const handleTouchMove = (e: TouchEvent) => { if (e.touches.length > 0) handleDragMove(e.touches[0].clientX) }
+    dragHandlersRef.current = { move: handleDragMove, end: handleDragEnd }
+  })
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => dragHandlersRef.current.move(e.clientX)
+    const handleTouchMove = (e: TouchEvent) => { if (e.touches.length > 0) dragHandlersRef.current.move(e.touches[0].clientX) }
+    const handleEnd = () => dragHandlersRef.current.end()
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("mouseup", handleDragEnd)
+      window.addEventListener("mouseup", handleEnd)
       window.addEventListener("touchmove", handleTouchMove, { passive: false })
-      window.addEventListener("touchend", handleDragEnd)
+      window.addEventListener("touchend", handleEnd)
     }
     return () => {
       window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("mouseup", handleDragEnd)
+      window.removeEventListener("mouseup", handleEnd)
       window.removeEventListener("touchmove", handleTouchMove)
-      window.removeEventListener("touchend", handleDragEnd)
+      window.removeEventListener("touchend", handleEnd)
     }
-  }, [isDragging, sliderX])
+  }, [isDragging])
 
   if (loading) {
     return (
@@ -409,6 +416,11 @@ export default function RecommendedJobsPage() {
         show={showProfileIncompleteModal}
         onClose={() => setShowProfileIncompleteModal(false)}
         message={profileIncompleteMessage}
+      />
+
+      <AlertModal
+        alertModal={alertModal}
+        onClose={() => setAlertModal((prev) => ({ ...prev, show: false }))}
       />
 
     </div>

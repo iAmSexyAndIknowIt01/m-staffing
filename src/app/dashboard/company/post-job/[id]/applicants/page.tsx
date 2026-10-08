@@ -1,5 +1,5 @@
-import { headers } from "next/headers"
 import { getSession } from "@/lib/session"
+import { type JobApplicant, getJobApplicants } from "@/lib/companyJobs"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import JobApplicantsList from "./JobApplicantsList"
@@ -20,28 +20,18 @@ export default async function JobApplicantsPage({ params }: PageProps) {
     redirect("/dashboard")
   }
 
-  let applicants = []
+  let applicants: JobApplicant[] = []
   let jobTitle = "Ажлын байр"
   let errorMsg = ""
 
   try {
-    // Дамжуулсан күүки толгойг (headers) ашиглан API Route-оо дуудна
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    const response = await fetch(`${baseUrl}/api/company/jobrequest/${jobId}`, {
-      headers: { cookie: (await headers()).get("cookie") || "" },
-      next: { revalidate: 0 }
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      applicants = result.data || []
-      jobTitle = result.jobTitle || "Ажлын байр"
-    } else {
-      errorMsg = "Анкетын мэдээллийг ачааллахад алдаа гарлаа."
-    }
+    // Өөрийн API-г HTTP-ээр дуудахгүй, DB-ээс шууд уншина
+    const result = await getJobApplicants(jobId, companyId)
+    applicants = result.data
+    jobTitle = result.jobTitle
   } catch (err) {
-    console.error("Fetch API error:", err)
-    errorMsg = "Сервертэй холбогдож чадсангүй."
+    console.error("Job applicants fetch error:", err)
+    errorMsg = "Анкетын мэдээллийг ачааллахад алдаа гарлаа."
   }
 
   return (

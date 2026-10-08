@@ -47,7 +47,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
       setApplicants(
         applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       )
-    } catch (err) {
+    } catch {
       alert("Алдаа гарлаа. Дахин оролдоно уу.")
     } finally {
       setUpdatingId(null)

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Reveal from "./Reveal"
 
 // Ажилтны замын өгөгдөл
 const staffSteps = [
@@ -70,7 +71,7 @@ export default function CTA() {
       <div className="absolute inset-0 opacity-[0.05] md:opacity-[0.09] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-size-[50px_50px] md:bg-size-[70px_70px]" />
 
       <div className="relative z-10 max-w-350 mx-auto px-4 md:px-6">
-        <div className="rounded-4xl md:rounded-[44px] bg-white md:bg-white/65 md:backdrop-blur-xl border border-gray-100 md:border-white px-6 py-12 md:px-14 md:py-20 shadow-[0_20px_50px_rgba(0,0,0,.04)] md:shadow-[0_40px_120px_rgba(0,0,0,.06)]">
+        <Reveal className="rounded-4xl md:rounded-[44px] bg-white md:bg-white/65 md:backdrop-blur-xl border border-gray-100 md:border-white px-6 py-12 md:px-14 md:py-20 shadow-[0_20px_50px_rgba(0,0,0,.04)] md:shadow-[0_40px_120px_rgba(0,0,0,.06)]">
           
           {/* HEADER */}
           <div className="text-center">
@@ -79,7 +80,7 @@ export default function CTA() {
             </div>
 
             <h2 className="mt-5 text-3xl md:text-6xl font-black leading-tight">
-              Платформ хэрхэн <span className="orange-text">ажилладаг вэ?</span>
+              Платформ хэрхэн <span className="text-shimmer">ажилладаг вэ?</span>
             </h2>
 
             {/* 🛠️ ROLE SWITCHER (ТАБ ЭЛЕМЕНТ) */}
@@ -122,9 +123,14 @@ export default function CTA() {
           </div>
 
           {/* ROADMAP - Динамик өгөгдөл */}
-          <div className="mt-12 md:mt-14 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-5 animate-fade-in">
+          {/* key солигдоход алхмууд дахин дараалан гарч ирнэ */}
+          <div key={activeRole} className="mt-12 md:mt-14 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-5">
             {currentSteps.map((step, index) => (
-              <div key={step.title} className="relative text-center px-4">
+              <div
+                key={step.title}
+                className="relative text-center px-4 animate-fade-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 {/* LINE */}
                 {index !== 3 && (
                   <div className="hidden md:block absolute top-8.5 left-[60%] w-full h-px bg-linear-to-r from-orange-300 to-transparent" />
@@ -149,7 +155,7 @@ export default function CTA() {
           {/* BUTTONS */}
           <div className="mt-10 md:mt-14 flex justify-center gap-4 flex-wrap">
             <Link href="/dashboard/staff/jobs" className="w-full sm:w-auto">
-              <button className="orange-btn w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base">
+              <button className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base">
                 Ажил Хайх
               </button>
             </Link>
@@ -160,7 +166,7 @@ export default function CTA() {
               </button>
             </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   )

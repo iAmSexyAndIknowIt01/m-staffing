@@ -3,6 +3,14 @@ import type { AvailabilityDay } from "@/types/profile"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { one } from "@/lib/relation"
+import { normalizeHttpUrl } from "@/lib/url"
+import {
+  type EducationRow,
+  type ExperienceRow,
+  parseEducation,
+  parseExperience,
+  parseSkillNames,
+} from "@/lib/staffProfile"
 
 // GET PROFILE
 export async function GET() {
@@ -179,44 +187,63 @@ export async function POST(request: Request) {
       availability,
     } = body
 
-    // VALIDATION
-    if (!fullName?.trim()) {
+    // VALIDATION — DB-д юу ч бичихээс өмнө бүх оролтыг шалгана
+    if (typeof fullName !== "string" || !fullName.trim()) {
       return NextResponse.json({ error: "Бүтэн нэр заавал бөглөнө." }, { status: 400 })
     }
     if (fullName.length > 100) {
       return NextResponse.json({ error: "Нэр хамгийн ихдээ 100 тэмдэгт байна." }, { status: 400 })
     }
-    if (!email?.trim()) {
+    if (typeof email !== "string" || !email.trim()) {
       return NextResponse.json({ error: "Имэйл заавал бөглөнө." }, { status: 400 })
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email) || email.length > 254) {
       return NextResponse.json({ error: "Имэйл формат буруу байна." }, { status: 400 })
     }
-    if (!phone?.trim()) {
+    if (typeof phone !== "string" || !phone.trim()) {
       return NextResponse.json({ error: "Утасны дугаар заавал бөглөнө." }, { status: 400 })
     }
-    if (!bio?.trim()) {
+    if (phone.length > 30) {
+      return NextResponse.json({ error: "Утасны дугаар хэт урт байна." }, { status: 400 })
+    }
+    if (typeof bio !== "string" || !bio.trim()) {
       return NextResponse.json({ error: "Bio бөглөнө үү." }, { status: 400 })
     }
     if (bio.length > 1000) {
       return NextResponse.json({ error: "Bio хамгийн ихдээ 1000 тэмдэгт байна." }, { status: 400 })
     }
-    if (!skills || ((skills.technical?.length || 0) === 0 && (skills.languages?.length || 0) === 0)) {
-      return NextResponse.json({ error: "Ур чадвараа оруулна уу." }, { status: 400 })
-    }
-    
-    // EXPERIENCE VALIDATION
-    if (!Array.isArray(experience) || experience.length === 0) {
-      return NextResponse.json({ error: "Ажлын туршлагаа оруулна уу." }, { status: 400 })
+    if (gender !== undefined && gender !== null && (typeof gender !== "string" || gender.length > 20)) {
+      return NextResponse.json({ error: "Хүйсийн утга буруу байна." }, { status: 400 })
     }
 
-    // EDUCATION VALIDATION
-    if (!Array.isArray(education) || education.length === 0) {
-      return NextResponse.json({ error: "Боловсролын мэдээллээ оруулна уу." }, { status: 400 })
+    const selectedSkills = parseSkillNames(skills)
+    if (!selectedSkills) {
+      return NextResponse.json({ error: "Ур чадварын мэдээлэл буруу байна." }, { status: 400 })
+    }
+    if (selectedSkills.length === 0) {
+      return NextResponse.json({ error: "Ур чадвараа оруулна уу." }, { status: 400 })
+    }
+
+    const photoUrl = normalizeHttpUrl(avatarUrl)
+    if (photoUrl === undefined) {
+      return NextResponse.json({ error: "Профайл зургийн холбоос буруу байна." }, { status: 400 })
+    }
+
+    // EXPERIENCE / EDUCATION VALIDATION
+    const experienceResult = parseExperience(experience)
+    if (!experienceResult.ok) {
+      return NextResponse.json({ error: experienceResult.error }, { status: 400 })
+    }
+    const educationResult = parseEducation(education)
+    if (!educationResult.ok) {
+      return NextResponse.json({ error: educationResult.error }, { status: 400 })
     }
 
     // AVAILABILITY VALIDATION
+    if (availability !== undefined && availability !== null && typeof availability !== "object") {
+      return NextResponse.json({ error: "Ажиллах цагийн мэдээлэл буруу байна." }, { status: 400 })
+    }
     const enabledDays = (Object.entries(availability || {}) as [string, AvailabilityDay | null][]).filter(
       ([, value]) => value?.enabled
     )
@@ -239,10 +266,10 @@ export async function POST(request: Request) {
     }
 
     // UPDATE STAFF NAME
-    const splittedName = fullName?.trim().split(" ") || []
+    const splittedName = fullName.trim().split(/\s+/)
     const first_name = splittedName.slice(1).join(" ")
     const last_name = splittedName[0] || ""
-    
+
     const { error: staffUpdateError } = await supabase
       .from("mt_staff")
       .update({
@@ -255,18 +282,18 @@ export async function POST(request: Request) {
       throw staffUpdateError
     }
 
-    // UPDATE PROFILE DATA (gender болон agreement-ийг жагсаалтад нэмж шинэчлэв)
+    // UPDATE PROFILE DATA
     const { data, error } = await supabase
       .from("mt_profile")
       .update({
-        email,
-        phone,
+        email: email.trim(),
+        phone: phone.trim(),
         bio,
         skills,
         availability,
-        gender,
-        agreement: agreement || false,
-        photo_url: avatarUrl ? avatarUrl.trim() : null,
+        gender: gender || null,
+        agreement: agreement === true,
+        photo_url: photoUrl,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
@@ -276,102 +303,11 @@ export async function POST(request: Request) {
       throw error
     }
 
-    // UPDATE SKILLS (DELETE & INSERT)
-    const selectedSkills = [
-      ...(skills.technical || []),
-      ...(skills.languages || []),
-    ]
-
-    const { data: skillMaster, error: skillError } = await supabase
-      .from("mt_skill")
-      .select("id, skill_name")
-      .in("skill_name", selectedSkills)
-
-    if (skillError) {
-      throw skillError
-    }
-
-    const { error: deleteSkillError } = await supabase
-      .from("tr_staff_skill")
-      .delete()
-      .eq("staff_id", userId)
-
-    if (deleteSkillError) {
-      throw deleteSkillError
-    }
-
-    if (skillMaster && skillMaster.length > 0) {
-      const insertSkillRows = skillMaster.map((skill) => ({
-        staff_id: userId,
-        skill_id: skill.id,
-      }))
-
-      const { error: insertSkillError } = await supabase
-        .from("tr_staff_skill")
-        .insert(insertSkillRows)
-
-      if (insertSkillError) {
-        throw insertSkillError
-      }
-    }
-
-    // UPDATE EXPERIENCE (DELETE & INSERT)
-    const { error: deleteExpError } = await supabase
-      .from("tr_staff_experience")
-      .delete()
-      .eq("staff_id", userId)
-
-    if (deleteExpError) {
-      throw deleteExpError
-    }
-
-    if (experience && experience.length > 0) {
-      const insertExpRows = experience.map((exp) => ({
-        staff_id: userId,
-        company: exp.company,
-        position: exp.position,
-        start_date: exp.startDate,
-        end_date: exp.endDate || null,
-        description: exp.description || "",
-      }))
-
-      const { error: insertExpError } = await supabase
-        .from("tr_staff_experience")
-        .insert(insertExpRows)
-
-      if (insertExpError) {
-        throw insertExpError
-      }
-    }
-
-    // UPDATE EDUCATION (DELETE & INSERT)
-    const { error: deleteEduError } = await supabase
-      .from("tr_staff_education")
-      .delete()
-      .eq("staff_id", userId)
-
-    if (deleteEduError) {
-      throw deleteEduError
-    }
-
-    if (education && education.length > 0) {
-      const insertEduRows = education.map((edu) => ({
-        staff_id: userId,
-        school: edu.school,
-        degree: edu.degree,
-        field: edu.field || "",
-        graduation_year: edu.graduationYear ? parseInt(edu.graduationYear) : null,
-        is_current: edu.isCurrent || false,
-      }))
-
-      const { error: insertEduError } = await supabase
-        .from("tr_staff_education")
-        .insert(insertEduRows)
-
-      if (insertEduError) {
-        throw insertEduError
-      }
-    }
+    // Жагсаалтуудыг "эхлээд шинийг нэмж, дараа нь хуучныг устгах" дарааллаар шинэчилнэ.
+    // Нэмэх үед алдаа гарвал хуучин мэдээлэл хэвээр үлдэнэ (өмнө нь устгаад нэмдэг байсан тул алга болдог байсан).
+    await replaceSkills(userId, selectedSkills)
+    await replaceRows("tr_staff_experience", userId, experienceResult.rows)
+    await replaceRows("tr_staff_education", userId, educationResult.rows)
 
     return NextResponse.json({
       success: true,
@@ -384,5 +320,55 @@ export async function POST(request: Request) {
       { error: "Серверийн алдаа" },
       { status: 500 }
     )
+  }
+}
+
+// Ур чадвар: зөвхөн нэмэгдсэнийг нэмж, хасагдсаныг устгана (staff_id, skill_id нь unique)
+async function replaceSkills(userId: string, skillNames: string[]) {
+  const [{ data: skillMaster, error: skillError }, { data: current, error: currentError }] = await Promise.all([
+    supabase.from("mt_skill").select("id").in("skill_name", skillNames),
+    supabase.from("tr_staff_skill").select("skill_id").eq("staff_id", userId),
+  ])
+  if (skillError) throw skillError
+  if (currentError) throw currentError
+
+  const desired = new Set((skillMaster || []).map((s) => s.id))
+  const existing = new Set((current || []).map((s) => s.skill_id))
+
+  const toInsert = [...desired].filter((id) => !existing.has(id))
+  if (toInsert.length > 0) {
+    const { error } = await supabase
+      .from("tr_staff_skill")
+      .insert(toInsert.map((skillId) => ({ staff_id: userId, skill_id: skillId })))
+    if (error) throw error
+  }
+
+  const toDelete = [...existing].filter((id) => !desired.has(id))
+  if (toDelete.length > 0) {
+    const { error } = await supabase
+      .from("tr_staff_skill")
+      .delete()
+      .eq("staff_id", userId)
+      .in("skill_id", toDelete)
+    if (error) throw error
+  }
+}
+
+// Туршлага / боловсрол: шинэ мөрүүдийг нэмсний дараа хуучин мөрүүдийг id-аар нь устгана
+async function replaceRows(
+  table: "tr_staff_experience" | "tr_staff_education",
+  userId: string,
+  rows: (ExperienceRow | EducationRow)[]
+) {
+  const { data: oldRows, error: oldError } = await supabase.from(table).select("id").eq("staff_id", userId)
+  if (oldError) throw oldError
+
+  const { error: insertError } = await supabase.from(table).insert(rows.map((row) => ({ ...row, staff_id: userId })))
+  if (insertError) throw insertError
+
+  const oldIds = (oldRows || []).map((row) => row.id)
+  if (oldIds.length > 0) {
+    const { error: deleteError } = await supabase.from(table).delete().eq("staff_id", userId).in("id", oldIds)
+    if (deleteError) throw deleteError
   }
 }

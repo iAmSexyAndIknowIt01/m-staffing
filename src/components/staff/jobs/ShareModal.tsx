@@ -48,10 +48,6 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, "_blank")
   }
 
-  const shareToTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`, "_blank")
-  }
-
   const shareToViber = () => {
     window.open(`viber://forward?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`, "_blank")
   }
