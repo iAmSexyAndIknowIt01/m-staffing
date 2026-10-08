@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import PasswordInput from "@/components/common/PasswordInput"
 
 export default function LoginPage() {
   const [role, setRole] = useState<"staff" | "company">("staff")
@@ -231,11 +232,11 @@ export default function LoginPage() {
 
           <div className="mt-6">
             <label>Нууц үг</label>
-            <input
-              type="password"
+            <PasswordInput
+              autoComplete="current-password"
               placeholder="••••••••"
+              wrapperClassName="mt-3"
               className="
-                mt-3
                 w-full
                 rounded-2xl
                 border
