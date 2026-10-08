@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest"
 import {
+  CONTRACT_ACTOR_LABELS,
+  CONTRACT_EVENT_LABELS,
+  EXPIRY_REMINDER_DAYS,
+  RECREATABLE_STATUSES,
+  addDaysISO,
   allowedActions,
+  daysUntil,
+  expiresSoonDays,
+  sendBlockers,
   contentHash,
   effectiveStatus,
   nextStatus,
@@ -154,5 +162,63 @@ describe("parseSalary", () => {
     expect(parseSalary("1,500,000₮")).toBe(1500000)
     expect(parseSalary(null)).toBe(0)
     expect(parseSalary("Тохиролцоно")).toBe(0)
+  })
+})
+
+describe("addDaysISO / daysUntil", () => {
+  it("сар, жил дамжин хоног нэмнэ", () => {
+    expect(addDaysISO("2026-01-31", 1)).toBe("2026-02-01")
+    expect(addDaysISO("2026-12-20", 30)).toBe("2027-01-19")
+    expect(addDaysISO("2026-03-01", -1)).toBe("2026-02-28")
+  })
+
+  it("хоорондох хоногийг тоолно (өнгөрсөн бол сөрөг)", () => {
+    expect(daysUntil("2026-10-18", "2026-10-08")).toBe(10)
+    expect(daysUntil("2026-10-08", "2026-10-08")).toBe(0)
+    expect(daysUntil("2026-10-01", "2026-10-08")).toBe(-7)
+  })
+})
+
+describe("expiresSoonDays", () => {
+  const today = "2026-10-08"
+
+  it("хүчинтэй гэрээ 30 хоногийн дотор дуусах бол үлдсэн хоногийг буцаана", () => {
+    expect(expiresSoonDays({ status: "active", end_date: "2026-10-18" }, today)).toBe(10)
+    expect(expiresSoonDays({ status: "active", end_date: today }, today)).toBe(0)
+    expect(expiresSoonDays({ status: "active", end_date: addDaysISO(today, EXPIRY_REMINDER_DAYS) }, today)).toBe(EXPIRY_REMINDER_DAYS)
+  })
+
+  it("хугацаа хол, хугацаагүй, хүчингүй эсвэл өнгөрсөн бол null", () => {
+    expect(expiresSoonDays({ status: "active", end_date: addDaysISO(today, EXPIRY_REMINDER_DAYS + 1) }, today)).toBeNull()
+    expect(expiresSoonDays({ status: "active", end_date: null }, today)).toBeNull()
+    expect(expiresSoonDays({ status: "sent", end_date: "2026-10-18" }, today)).toBeNull()
+    expect(expiresSoonDays({ status: "active", end_date: "2026-10-01" }, today)).toBeNull()
+  })
+})
+
+describe("sendBlockers", () => {
+  it("илгээхэд бэлэн бол хоосон", () => {
+    expect(sendBlockers(validInput)).toEqual([])
+  })
+
+  it("сервертэй ижил дүрмээр саадыг буцаана", () => {
+    expect(sendBlockers({ ...validInput, salary: 0 })).toEqual(["Цалингийн дүнг оруулна уу."])
+    expect(sendBlockers({ ...validInput, terms: "богино" })).toHaveLength(1)
+    expect(sendBlockers({ ...validInput, position: "" })).toHaveLength(1)
+  })
+})
+
+describe("шошго, төлөвийн жагсаалт", () => {
+  it("систем, админы үйлдлийг компани гэж харуулахгүй", () => {
+    expect(CONTRACT_ACTOR_LABELS.system).toBe("Систем")
+    expect(CONTRACT_ACTOR_LABELS.admin).toBe("Админ")
+    expect(CONTRACT_EVENT_LABELS.expire).toBeTruthy()
+    expect(CONTRACT_EVENT_LABELS.view).toBeTruthy()
+  })
+
+  it("зөвхөн дууссан гэрээнээс шинэ гэрээ үүсгэнэ", () => {
+    expect(RECREATABLE_STATUSES).toEqual(expect.arrayContaining(["declined", "cancelled", "expired"]))
+    expect(RECREATABLE_STATUSES).not.toContain("active")
+    expect(RECREATABLE_STATUSES).not.toContain("draft")
   })
 })

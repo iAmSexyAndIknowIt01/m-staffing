@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState, type SetStateAction } from "react"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import Pagination from "@/components/staff/jobs/Pagination"
 import { getErrorMessage } from "@/lib/errors"
-import ApplicantDetailModal from "./ApplicantDetailModal"
+import { CONTRACT_STATUS_LABELS } from "@/lib/contracts"
+import type { ContractStatus } from "@/types/contract"
 import { DateRange, LabeledSelect, ResultSummary, SearchInput, filterSelectClass } from "./FilterControls"
 import { JOB_TYPE_LABELS, formatDate } from "./format"
 import { useListParams, useRememberListQuery, visiblePageNumbers } from "./listState"
@@ -19,6 +20,7 @@ interface Candidate {
   email: string
   phone: string
   created_at: string
+  previous_status: ContractStatus | null // энэ анкетын өмнөх (дууссан) гэрээ
 }
 
 const PAGE_SIZE = 10
@@ -35,6 +37,16 @@ type SortKey = keyof typeof SORTS
 // URL-ийн түлхүүрүүд "Гэрээнүүд" табынхтай давхцахгүйн тулд "n_" угтвартай
 const PREFIX = "n_"
 
+// Өмнө нь энэ анкетаар гэрээ үүсгэж байгаад татгалзсан / цуцалсан / хугацаа дууссан бол тэмдэглэнэ
+function PreviousContract({ status }: { status: ContractStatus | null }) {
+  if (!status) return null
+  return (
+    <div className="mt-1 inline-block text-[11px] font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-2 py-0.5">
+      ↺ Өмнөх гэрээ: {CONTRACT_STATUS_LABELS[status].toLowerCase()}
+    </div>
+  )
+}
+
 async function fetchCandidates(): Promise<Candidate[]> {
   const res = await fetch("/api/company/contracts/candidates")
   const result = await res.json()
@@ -49,8 +61,8 @@ export default function ContractCandidates() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [creatingId, setCreatingId] = useState<string | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [clearCount, setClearCount] = useState(0)
 
   // Шүүлтүүр, эрэмбэ, хуудас URL-д хадгалагдана
@@ -113,6 +125,7 @@ export default function ContractCandidates() {
   const handleCreate = async (jobRequestId: string) => {
     try {
       setCreatingId(jobRequestId)
+      setCreateError(null)
       const res = await fetch("/api/company/contracts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +136,7 @@ export default function ContractCandidates() {
 
       router.push(`/dashboard/company/contracts/${result.data.id}`)
     } catch (err) {
-      alert(getErrorMessage(err))
+      setCreateError(getErrorMessage(err))
       setCreatingId(null)
     }
   }
@@ -147,7 +160,7 @@ export default function ContractCandidates() {
   const createButton = (c: Candidate, extraClass: string) => (
     <button
       onClick={(e) => {
-        e.stopPropagation() // мөрийн дэлгэрэнгүй цонх нээгдэхгүй
+        e.stopPropagation() // мөрийн профайл руу шилжихгүй
         handleCreate(c.id)
       }}
       disabled={creatingId !== null}
@@ -157,8 +170,26 @@ export default function ContractCandidates() {
     </button>
   )
 
+  // Мөр дээр дарахад (эсвэл Enter) анкетын бүтэн профайл нээгдэнэ — гэрээ үүсгэхээс өмнө ажилтныг харна
+  const openProfile = (c: Candidate) => router.push(`/dashboard/company/applicants/profile?id=${encodeURIComponent(c.id)}`)
+  const rowProps = (c: Candidate) => ({
+    role: "link" as const,
+    tabIndex: 0,
+    title: "Ажилтны профайлыг харах",
+    onClick: () => openProfile(c),
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.target !== e.currentTarget) return
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        openProfile(c)
+      }
+    },
+  })
+
   return (
     <div className="space-y-4 sm:space-y-6">
+      {createError && <div role="alert" className="p-4 bg-red-50 text-red-500 font-bold rounded-2xl text-sm">{createError}</div>}
+
       <div className="space-y-3 bg-gray-50/50 p-3 sm:p-4 border border-gray-100 rounded-2xl sm:rounded-3xl">
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
           <SearchInput
@@ -220,8 +251,11 @@ export default function ContractCandidates() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {paged.map((c) => (
-                  <tr key={c.id} onClick={() => setSelectedId(c.id)} className="hover:bg-gray-50/50 transition cursor-pointer">
-                    <td className="px-6 py-5 font-bold text-gray-900">{c.user_name}</td>
+                  <tr key={c.id} {...rowProps(c)} className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-indigo-50/50">
+                    <td className="px-6 py-5">
+                      <div className="font-bold text-gray-900">{c.user_name}</div>
+                      <PreviousContract status={c.previous_status} />
+                    </td>
                     <td className="px-5 py-5">
                       <span className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
                         💼 {c.job_title}
@@ -244,10 +278,11 @@ export default function ContractCandidates() {
           {/* 📱 УТАС */}
           <div className="block md:hidden space-y-3">
             {paged.map((c) => (
-              <div key={c.id} onClick={() => setSelectedId(c.id)} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer">
+              <div key={c.id} {...rowProps(c)} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40">
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.user_name}</div>
+                    <PreviousContract status={c.previous_status} />
                     <div className="text-[11px] text-gray-400" suppressHydrationWarning>📅 {formatDate(c.created_at)}</div>
                   </div>
                 </div>
@@ -270,22 +305,6 @@ export default function ContractCandidates() {
             setCurrentPage={setPage}
           />
         </>
-      )}
-
-      {selectedId && (
-        <ApplicantDetailModal
-          jobRequestId={selectedId}
-          onClose={() => setSelectedId(null)}
-          footer={
-            <button
-              onClick={() => handleCreate(selectedId)}
-              disabled={creatingId !== null}
-              className="text-sm font-bold px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition disabled:opacity-50"
-            >
-              {creatingId === selectedId ? "Үүсгэж байна..." : "📑 Гэрээ үүсгэх"}
-            </button>
-          }
-        />
       )}
     </div>
   )
