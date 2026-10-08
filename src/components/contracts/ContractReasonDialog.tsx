@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useDialogEscape } from "./ConfirmDialog"
 
 interface ContractReasonDialogProps {
   title: string
@@ -24,15 +25,17 @@ export default function ContractReasonDialog({
 }: ContractReasonDialogProps) {
   const [reason, setReason] = useState("")
   const invalid = required && reason.trim().length < 5
+  useDialogEscape(onClose, busy)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4" onClick={onClose}>
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4" onClick={() => !busy && onClose()}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
         <div>
           <h3 className="text-lg font-black text-gray-900">{title}</h3>
           <p className="text-sm text-gray-500 mt-1">{description}</p>
         </div>
         <textarea
+          autoFocus
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={4}

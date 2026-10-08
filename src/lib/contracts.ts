@@ -29,6 +29,36 @@ export const SALARY_TYPE_LABELS: Record<ContractSalaryType, string> = {
 // Ажилтанд харагдах төлөвүүд (ноорог болон илгээгдээгүй цуцалсан гэрээ харагдахгүй)
 export const STAFF_VISIBLE_STATUSES: ContractStatus[] = ["sent", "active", "declined", "terminated", "expired"]
 
+// Нэг анкетад нэг л "амьд" гэрээ байна (DB-ийн unique index-тэй ижил)
+export const LIVE_STATUSES: ContractStatus[] = ["draft", "sent", "active"]
+
+// Эдгээр төлөвтэй гэрээний анкетаас шинэ гэрээ байгуулж болно (татгалзсан, цуцалсан, хугацаа дууссан)
+export const RECREATABLE_STATUSES: ContractStatus[] = ["declined", "cancelled", "expired"]
+
+// Хугацаа дуусахаас хэдэн хоногийн өмнө сануулах
+export const EXPIRY_REMINDER_DAYS = 30
+
+export const CONTRACT_EVENT_LABELS: Record<string, string> = {
+  create: "Ноорог үүсгэсэн",
+  edit: "Нөхцөл зассан",
+  send: "Ажилтанд илгээсэн",
+  view: "Ажилтан нээж үзсэн",
+  revise: "Засварлахаар буцаасан",
+  cancel: "Цуцалсан",
+  sign: "Гарын үсэг зурсан",
+  decline: "Татгалзсан",
+  terminate: "Гэрээг цуцалсан",
+  expiry_reminder: "Хугацаа дуусах сануулга илгээсэн",
+  expire: "Хугацаа дууссан",
+}
+
+export const CONTRACT_ACTOR_LABELS: Record<string, string> = {
+  company: "Компани",
+  staff: "Ажилтан",
+  admin: "Админ",
+  system: "Систем",
+}
+
 const TRANSITIONS: Record<ContractAction, { from: ContractStatus[]; to: ContractStatus; parties: ContractParty[] }> = {
   send:      { from: ["draft"],         to: "sent",       parties: ["company"] },
   revise:    { from: ["sent"],          to: "draft",      parties: ["company"] },
@@ -57,6 +87,28 @@ export function allowedActions(status: ContractStatus, party: ContractParty): Co
 // Монголын цагаар өнөөдрийн огноо (YYYY-MM-DD)
 export function todayISO(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ulaanbaatar" }).format(now)
+}
+
+// YYYY-MM-DD огноон дээр хоног нэмнэ
+export function addDaysISO(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+// today-гаас date хүртэлх хоног (өнгөрсөн бол сөрөг)
+export function daysUntil(date: string, today: string = todayISO()): number {
+  return Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000)
+}
+
+// Хүчинтэй гэрээ дуусах дөхсөн бол үлдсэн хоног, үгүй бол null
+export function expiresSoonDays(
+  contract: { status: ContractStatus; end_date: string | null },
+  today: string = todayISO()
+): number | null {
+  if (contract.status !== "active" || !contract.end_date) return null
+  const days = daysUntil(contract.end_date, today)
+  return days >= 0 && days <= EXPIRY_REMINDER_DAYS ? days : null
 }
 
 // Хүчинтэй гэрээний дуусах огноо өнгөрсөн бол "expired" гэж тооцно
@@ -144,6 +196,14 @@ export function readyToSendError(terms: ContractTerms): string | null {
   if (terms.salary <= 0) return "Цалингийн дүнг оруулна уу."
   if (terms.terms.length < 20) return "Гэрээний нөхцлийг дэлгэрэнгүй бичнэ үү."
   return null
+}
+
+// Ноорог илгээхэд саад болох бүх алдаа (сервертэй ижил дүрэм) — формын доор шууд харуулна
+export function sendBlockers(input: unknown): string[] {
+  const validation = validateContractTerms(input)
+  if (!validation.ok) return [validation.error]
+  const notReady = readyToSendError(validation.data)
+  return notReady ? [notReady] : []
 }
 
 // Гэрээний нөхцөл + хувилбарын SHA-256. Ажилтан яг харсан хувилбартаа гарын үсэг зурсныг баталгаажуулна.

@@ -67,11 +67,12 @@ export default function StaffContractDetailPage() {
   async function handleDownload() {
     if (!contract || !documentRef.current) return
     setExporting(true)
+    setError(null)
     try {
       await downloadContractPdf(documentRef.current, contract.contract_number)
     } catch (err) {
       console.error("PDF үүсгэхэд алдаа гарлаа:", err)
-      alert("PDF татахад алдаа гарлаа.")
+      setError("PDF татахад алдаа гарлаа. Дахин оролдоно уу.")
     } finally {
       setExporting(false)
     }
