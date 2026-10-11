@@ -1,5 +1,6 @@
 import type { Ref } from "react"
 import { CONTRACT_STATUS_LABELS } from "@/lib/contracts"
+import { workHoursLines } from "@/lib/workSchedule"
 import type { Contract } from "@/types/contract"
 import { formatDate, formatDateTime, formatSalary } from "./format"
 
@@ -7,7 +8,7 @@ import { formatDate, formatDateTime, formatSalary } from "./format"
 // PDF болох хэсэгт зөвхөн inline hex өнгө ашиглана (CV хуудастай ижил).
 
 const label = { color: "#64748b", fontSize: "12px", width: "38%", padding: "6px 0", verticalAlign: "top" as const }
-const value = { color: "#0f172a", fontSize: "13px", fontWeight: 600, padding: "6px 0" }
+const value = { color: "#0f172a", fontSize: "13px", fontWeight: 600, padding: "6px 0", whiteSpace: "pre-line" as const }
 
 export default function ContractDocument({ contract, ref }: { contract: Contract; ref?: Ref<HTMLDivElement> }) {
   const rows: [string, string][] = [
@@ -17,7 +18,8 @@ export default function ContractDocument({ contract, ref }: { contract: Contract
     ["Цалин хөлс", formatSalary(contract.salary, contract.salary_type)],
     ["Эхлэх огноо", formatDate(contract.start_date)],
     ["Дуусах огноо", contract.end_date ? formatDate(contract.end_date) : "Хугацаагүй"],
-    ["Ажлын цаг", contract.work_hours || "—"],
+    // Хуваарийн бүлэг бүр шинэ мөрөнд ("Даваа 10:00-18:00" / "Лхагва 12:00-18:00")
+    ["Ажлын цаг", workHoursLines(contract.work_hours).join("\n") || "—"],
     ["Ажлын байршил", contract.location || "—"],
   ]
 
