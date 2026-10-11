@@ -46,6 +46,25 @@ export interface Contract extends ContractTerms {
   viewed_at?: string | null // зөвхөн компанийн дэлгэрэнгүй API буцаана
 }
 
+// Гэрээний загвар (mt_contract_template). null талбар хэрэглэх үед одоогийн утгыг өөрчлөхгүй.
+export interface ContractTemplateInput {
+  name: string
+  is_default: boolean
+  position: string | null
+  salary: number | null
+  salary_type: ContractSalaryType // salary null бол хэрэглэгдэхгүй
+  duration_months: number | null
+  work_hours: string | null
+  location: string | null
+  terms: string
+}
+
+export interface ContractTemplate extends ContractTemplateInput {
+  id: string
+  created_at: string
+  updated_at: string
+}
+
 export interface ContractEvent {
   id: string
   actor_role: ContractParty | "admin" | "system"

@@ -4,6 +4,9 @@ import { supabase } from "@/lib/supabase"
 import { one } from "@/lib/relation"
 import { DEFAULT_CONTRACT_TERMS, parseSalary, toContractSalaryType, todayISO } from "@/lib/contracts"
 import { CONTRACT_LIST_COLUMNS, logContractEvent, normalizeContract, refreshContractDeadlines } from "@/lib/contractServer"
+import { applyTemplate } from "@/lib/contractTemplates"
+import { getCompanyTemplate, getDefaultTemplate } from "@/lib/contractTemplateServer"
+import type { ContractTerms } from "@/types/contract"
 
 export const revalidate = 0
 
@@ -40,9 +43,13 @@ export async function POST(request: Request) {
     const companyId = session?.userId
     if (!companyId || session?.role !== "company") return unauthorized()
 
-    const { job_request_id: jobRequestId } = await request.json()
+    // template_id: тодорхой загвар, null: загваргүй, байхгүй (undefined): үндсэн загвар
+    const { job_request_id: jobRequestId, template_id: templateId } = await request.json()
     if (!jobRequestId || typeof jobRequestId !== "string") {
       return NextResponse.json({ error: "Мэдээлэл дутуу байна." }, { status: 400 })
+    }
+    if (templateId !== undefined && templateId !== null && typeof templateId !== "string") {
+      return NextResponse.json({ error: "Загвар буруу байна." }, { status: 400 })
     }
 
     // Зөвхөн өөрийн компанийн зарт ирсэн, тэнцсэн анкет
@@ -77,6 +84,29 @@ export async function POST(request: Request) {
     const job = one(jobRequest.mt_openjob)
     if (!job) return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
 
+    const template =
+      typeof templateId === "string"
+        ? await getCompanyTemplate(templateId, companyId)
+        : templateId === null
+          ? null
+          : await getDefaultTemplate(companyId)
+    if (typeof templateId === "string" && !template) {
+      return NextResponse.json({ error: "Сонгосон загвар олдсонгүй." }, { status: 404 })
+    }
+
+    // Ажлын зараас авсан нөхцөл дээр загварыг давхарлана (загварт хоосон талбар зарынхаараа үлдэнэ)
+    const jobTerms: ContractTerms = {
+      position: job.title || "Ажилтан",
+      salary: parseSalary(job.salary),
+      salary_type: toContractSalaryType(job.salary_type),
+      start_date: todayISO(),
+      end_date: null,
+      work_hours: null,
+      location: job.location || null,
+      terms: DEFAULT_CONTRACT_TERMS,
+    }
+    const terms = template ? applyTemplate(jobTerms, template) : jobTerms
+
     const { data: created, error } = await supabase
       .from("tr_contract")
       .insert({
@@ -87,12 +117,7 @@ export async function POST(request: Request) {
         company_name: one(job.mt_company)?.company_name || "Ажил олгогч",
         staff_name: jobRequest.applicant_name || "Ажилтан",
         staff_email: jobRequest.applicant_email,
-        position: job.title || "Ажилтан",
-        salary: parseSalary(job.salary),
-        salary_type: toContractSalaryType(job.salary_type),
-        start_date: todayISO(),
-        location: job.location || null,
-        terms: DEFAULT_CONTRACT_TERMS,
+        ...terms,
       })
       .select("id")
       .single()
@@ -105,7 +130,7 @@ export async function POST(request: Request) {
       throw error
     }
 
-    await logContractEvent(created.id, "company", companyId, "create")
+    await logContractEvent(created.id, "company", companyId, "create", template ? { template: template.name } : undefined)
 
     return NextResponse.json({ success: true, data: { id: created.id } }, { status: 201 })
   } catch (error) {

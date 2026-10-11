@@ -10,6 +10,7 @@ import type { ContractStatus } from "@/types/contract"
 import { DateRange, LabeledSelect, ResultSummary, SearchInput, filterSelectClass } from "./FilterControls"
 import { JOB_TYPE_LABELS, formatDate } from "./format"
 import { useListParams, useRememberListQuery, visiblePageNumbers } from "./listState"
+import { useContractTemplates } from "./templateApi"
 
 interface Candidate {
   id: string
@@ -65,9 +66,18 @@ export default function ContractCandidates() {
   const [creatingId, setCreatingId] = useState<string | null>(null)
   const [clearCount, setClearCount] = useState(0)
 
-  // Шүүлтүүр, эрэмбэ, хуудас URL-д хадгалагдана
+  // Гэрээнд хэрэглэх загвар: "" = үндсэн загвар (байвал), "none" = загваргүй, бусад = загварын id.
+  // Загвар татаж чадаагүй (migration ажиллаагүй г.м.) бол сонголт харагдахгүй, сервер үндсэнээр шийднэ.
+  // «Загварууд» табаас «Энэ загвараар гэрээ үүсгэх» дарж ирвэл URL-ийн n_tpl сонгогдсон байна.
+  // Устгагдсан г.м. олдохгүй загвар бол үндсэн рүү буцна.
+  const { templates } = useContractTemplates()
+
+  // Шүүлтүүр, эрэмбэ, хуудас, загвар URL-д хадгалагдана
   const { get, update } = useListParams(PREFIX)
   useRememberListQuery()
+  const choiceParam = get("tpl")
+  const templateChoice = choiceParam === "none" || templates.some((t) => t.id === choiceParam) ? choiceParam : ""
+  const defaultTemplate = templates.find((t) => t.is_default)
   const searchQuery = get("q")
   const jobFilter = get("job", "all")
   const jobTypeFilter = get("type", "all")
@@ -129,7 +139,10 @@ export default function ContractCandidates() {
       const res = await fetch("/api/company/contracts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_request_id: jobRequestId }),
+        body: JSON.stringify({
+          job_request_id: jobRequestId,
+          ...(templateChoice === "none" ? { template_id: null } : templateChoice ? { template_id: templateChoice } : {}),
+        }),
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || "Гэрээ үүсгэж чадсангүй")
@@ -189,6 +202,25 @@ export default function ContractCandidates() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {createError && <div role="alert" className="p-4 bg-red-50 text-red-500 font-bold rounded-2xl text-sm">{createError}</div>}
+
+      {templates.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
+          <label htmlFor="contract-template-choice" className="text-xs font-bold text-indigo-700 shrink-0">📋 Гэрээнд хэрэглэх загвар</label>
+          <select
+            id="contract-template-choice"
+            value={templateChoice}
+            onChange={(e) => update({ tpl: e.target.value || null, page })}
+            className={`${filterSelectClass} sm:w-80`}
+          >
+            <option value="">{defaultTemplate ? `⭐ ${defaultTemplate.name} (үндсэн)` : "Загваргүй (ажлын зараас)"}</option>
+            {defaultTemplate && <option value="none">Загваргүй (ажлын зараас)</option>}
+            {templates.filter((t) => !t.is_default).map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-indigo-500/80">Үүсгэсний дараа ноорог дээрээ засах боломжтой.</span>
+        </div>
+      )}
 
       <div className="space-y-3 bg-gray-50/50 p-3 sm:p-4 border border-gray-100 rounded-2xl sm:rounded-3xl">
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">

@@ -4,9 +4,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import ContractCandidates from "./ContractCandidates"
 import ContractList from "./ContractList"
+import ContractTemplates from "./ContractTemplates"
 import TabSwitch, { tabPanelProps } from "./TabSwitch"
 
-type Tab = "contracts" | "new"
+type Tab = "contracts" | "new" | "templates"
+
+function toTab(value: string | null): Tab {
+  return value === "new" || value === "templates" ? value : "contracts"
+}
 
 interface Summary {
   awaiting: number
@@ -14,14 +19,14 @@ interface Summary {
   candidates: number
 }
 
-// Компанийн "Гэрээ" хуудас: үүссэн гэрээнүүд / тэнцсэн анкетаас шинээр үүсгэх.
+// Компанийн "Гэрээ" хуудас: үүссэн гэрээнүүд / тэнцсэн анкетаас шинээр үүсгэх / гэрээний загварууд.
 // Сонгосон таб URL-д (?tab=new) хадгалагдана; табуудын шүүлтүүр бие биеэсээ тусдаа.
 // Таб дээр анхаарах зүйлийн тоог харуулна (ноорог + гарын үсэг хүлээж буй, гэрээ хүлээж буй анкет).
 export default function CompanyContractsTabs() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const tab: Tab = searchParams.get("tab") === "new" ? "new" : "contracts"
+  const tab = toTab(searchParams.get("tab"))
   const [summary, setSummary] = useState<Summary | null>(null)
 
   useEffect(() => {
@@ -48,6 +53,7 @@ export default function CompanyContractsTabs() {
   const tabs = [
     { key: "contracts" as const, label: "📑 Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
     { key: "new" as const, label: "➕ Шинээр үүсгэх", badge: summary?.candidates },
+    { key: "templates" as const, label: "🗂️ Загварууд" },
   ]
 
   return (
@@ -65,7 +71,7 @@ export default function CompanyContractsTabs() {
       </div>
 
       <div {...tabPanelProps("contracts", tab)}>
-        {tab === "contracts" ? <ContractList party="company" /> : <ContractCandidates />}
+        {tab === "contracts" ? <ContractList party="company" /> : tab === "new" ? <ContractCandidates /> : <ContractTemplates />}
       </div>
     </div>
   )
