@@ -17,6 +17,10 @@ import ContractReasonDialog from "@/components/contracts/ContractReasonDialog"
 import ContractStatusBadge from "@/components/contracts/ContractStatusBadge"
 import TabSwitch, { tabPanelProps } from "@/components/contracts/TabSwitch"
 import { useUnsavedChangesGuard } from "@/components/contracts/useUnsavedChangesGuard"
+import WorkScheduleInput from "@/components/contracts/WorkScheduleInput"
+import { SaveTemplateDialog, TemplatePickerDialog } from "@/components/contracts/ContractTemplateDialogs"
+import { createTemplate } from "@/components/contracts/templateApi"
+import { applyTemplate, templateFromTerms } from "@/lib/contractTemplates"
 import { downloadContractPdf, formatDate, formatDateTime } from "@/components/contracts/format"
 import {
   CONTRACT_ACTOR_LABELS,
@@ -29,7 +33,8 @@ import {
   todayISO,
 } from "@/lib/contracts"
 import { getErrorMessage } from "@/lib/errors"
-import type { Contract, ContractAction, ContractEvent, ContractSalaryType, ContractTerms } from "@/types/contract"
+import { toWorkHoursDraft, workHoursErrors, workHoursFromDraft, type WorkHoursDraft } from "@/lib/workSchedule"
+import type { Contract, ContractAction, ContractEvent, ContractSalaryType, ContractTemplate, ContractTerms } from "@/types/contract"
 
 interface TermsForm {
   position: string
@@ -37,10 +42,12 @@ interface TermsForm {
   salary_type: ContractSalaryType
   start_date: string
   end_date: string
-  work_hours: string
+  work_hours: WorkHoursDraft
   location: string
   terms: string
 }
+
+type TextField = Exclude<keyof TermsForm, "work_hours">
 
 type DetailTab = "contract" | "staff" | "job"
 type DraftView = "edit" | "preview"
@@ -59,14 +66,14 @@ function toDetailTab(value: string | null): DetailTab {
 const inputClass =
   "w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-gray-800"
 
-function toForm(c: Contract): TermsForm {
+function toForm(c: ContractTerms): TermsForm {
   return {
     position: c.position,
     salary: String(c.salary),
     salary_type: c.salary_type,
     start_date: c.start_date,
     end_date: c.end_date || "",
-    work_hours: c.work_hours || "",
+    work_hours: toWorkHoursDraft(c.work_hours),
     location: c.location || "",
     terms: c.terms,
   }
@@ -77,12 +84,13 @@ function toPayload(form: TermsForm): ContractTerms {
     ...form,
     salary: Number(form.salary),
     end_date: form.end_date || null,
-    work_hours: form.work_hours || null,
+    work_hours: workHoursFromDraft(form.work_hours),
     location: form.location || null,
   }
 }
 
-const sameForm = (a: TermsForm, b: TermsForm) => JSON.stringify(a) === JSON.stringify(b)
+// Хадгалагдах утгаар харьцуулна — өдрийг асаагаад унтраах, горим солих зэрэг нь өөрчлөлтөд тооцогдохгүй
+const sameForm = (a: TermsForm, b: TermsForm) => JSON.stringify(toPayload(a)) === JSON.stringify(toPayload(b))
 
 async function fetchContract(id: string): Promise<{ data: Contract; events: ContractEvent[] }> {
   const res = await fetch(`/api/company/contracts/${id}`)
@@ -104,6 +112,10 @@ export default function CompanyContractDetailPage() {
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
   const [draftView, setDraftView] = useState<DraftView>("edit")
   const [exporting, setExporting] = useState(false)
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false)
+  const [savingTemplate, setSavingTemplate] = useState(false)
+  const [saveTemplateError, setSaveTemplateError] = useState<string | null>(null)
   const documentRef = useRef<HTMLDivElement>(null)
 
   // Сонгосон таб URL-д (?tab=staff) хадгалагдана — хуудас сэргээхэд хэвээр үлдэнэ
@@ -236,6 +248,31 @@ export default function CompanyContractDetailPage() {
     }
   }
 
+  // Загварыг формд л хэрэглэнэ — хадгалах хүртэл DB өөрчлөгдөхгүй (хадгалаагүй өөрчлөлтийн хамгаалалт ажиллана)
+  function handleApplyTemplate(template: ContractTemplate) {
+    if (!form) return
+    setForm(toForm(applyTemplate(toPayload(form), template)))
+    setShowTemplatePicker(false)
+    setDraftView("edit")
+    setError(null)
+    setNotice(`«${template.name}» загварыг хэрэглэлээ. Шалгаад «Хадгалах» дарна уу.`)
+  }
+
+  async function handleSaveTemplate(name: string, isDefault: boolean) {
+    if (!form) return
+    setSavingTemplate(true)
+    setSaveTemplateError(null)
+    try {
+      await createTemplate({ ...templateFromTerms(name, toPayload(form)), is_default: isDefault })
+      setShowSaveTemplate(false)
+      setNotice(`«${name}» загвар хадгалагдлаа. Дараагийн гэрээнд «Загвар хэрэглэх»-ээр сонгоно.`)
+    } catch (err) {
+      setSaveTemplateError(getErrorMessage(err))
+    } finally {
+      setSavingTemplate(false)
+    }
+  }
+
   async function handleDownload() {
     if (!contract) return
     setExporting(true)
@@ -271,11 +308,13 @@ export default function CompanyContractDetailPage() {
 
   const actions = allowedActions(contract.status, "company")
   const canRecreate = RECREATABLE_STATUSES.includes(contract.status)
-  const blockers = isDraft ? sendBlockers(toPayload(form)) : []
+  // Дутуу оруулсан цаг хадгалагдах утгад орохгүй тул хадгалах, илгээхийг хоёуланг нь хаана
+  const hoursErrors = isDraft ? workHoursErrors(form.work_hours) : []
+  const blockers = isDraft ? [...hoursErrors, ...sendBlockers(toPayload(form))] : []
   const startInPast = isDraft && form.start_date !== "" && form.start_date < todayISO()
   const expiresIn = expiresSoonDays(contract)
   const previewContract: Contract = { ...contract, ...toPayload(form) }
-  const set = (key: keyof TermsForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+  const set = (key: TextField) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [key]: e.target.value })
 
   const buttonClass = "text-sm font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-50"
@@ -301,7 +340,12 @@ export default function CompanyContractDetailPage() {
         <div className="flex flex-wrap gap-2">
           {isDraft && (
             <>
-              <button onClick={handleSave} disabled={busy || !dirty} className={`${buttonClass} bg-gray-100 hover:bg-gray-200 text-gray-700`}>
+              <button
+                onClick={handleSave}
+                disabled={busy || !dirty || hoursErrors.length > 0}
+                title={hoursErrors[0]}
+                className={`${buttonClass} bg-gray-100 hover:bg-gray-200 text-gray-700`}
+              >
                 {dirty ? "Хадгалах" : "Хадгалсан"}
               </button>
               <button
@@ -386,20 +430,46 @@ export default function CompanyContractDetailPage() {
             </div>
           )}
 
-          {isDraft && (
-            <div className="inline-flex bg-gray-100/80 p-1 rounded-xl text-xs font-bold">
-              {(["edit", "preview"] as DraftView[]).map((view) => (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {isDraft ? (
+              <div className="inline-flex bg-gray-100/80 p-1 rounded-xl text-xs font-bold">
+                {(["edit", "preview"] as DraftView[]).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setDraftView(view)}
+                    aria-pressed={draftView === view}
+                    className={`px-4 py-2 rounded-lg transition ${draftView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+                  >
+                    {view === "edit" ? "✏️ Засах" : "👁 Ажилтанд харагдах байдал"}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span />
+            )}
+            <div className="flex flex-wrap gap-2">
+              {isDraft && (
                 <button
-                  key={view}
-                  onClick={() => setDraftView(view)}
-                  aria-pressed={draftView === view}
-                  className={`px-4 py-2 rounded-lg transition ${draftView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+                  onClick={() => setShowTemplatePicker(true)}
+                  disabled={busy}
+                  className="text-xs font-bold px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition disabled:opacity-50"
                 >
-                  {view === "edit" ? "✏️ Засах" : "👁 Ажилтанд харагдах байдал"}
+                  📋 Загвар хэрэглэх
                 </button>
-              ))}
+              )}
+              <button
+                onClick={() => {
+                  setSaveTemplateError(null)
+                  setShowSaveTemplate(true)
+                }}
+                disabled={busy}
+                title="Энэ гэрээний нөхцлийг дараагийн гэрээнд дахин ашиглах загвар болгоно"
+                className="text-xs font-bold px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-50"
+              >
+                🗂️ Загвар болгож хадгалах
+              </button>
             </div>
-          )}
+          </div>
 
           {isDraft && draftView === "edit" ? (
             <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-sm space-y-4">
@@ -433,14 +503,14 @@ export default function CompanyContractDetailPage() {
                   <span className="text-xs font-bold text-gray-500">Дуусах огноо (хоосон = хугацаагүй)</span>
                   <input type="date" value={form.end_date} min={form.start_date} onChange={set("end_date")} className={inputClass} />
                 </label>
-                <label className="space-y-1.5">
-                  <span className="text-xs font-bold text-gray-500">Ажлын цаг</span>
-                  <input value={form.work_hours} onChange={set("work_hours")} maxLength={200} placeholder="Даваа-Баасан 09:00-18:00" className={inputClass} />
-                </label>
-                <label className="space-y-1.5">
+                <label className="space-y-1.5 sm:col-span-2">
                   <span className="text-xs font-bold text-gray-500">Ажлын байршил</span>
                   <input value={form.location} onChange={set("location")} maxLength={200} className={inputClass} />
                 </label>
+                <fieldset className="space-y-1.5 sm:col-span-2 min-w-0">
+                  <legend className="text-xs font-bold text-gray-500 mb-1.5">Ажлын өдөр, цаг</legend>
+                  <WorkScheduleInput value={form.work_hours} onChange={(work_hours) => setForm({ ...form, work_hours })} />
+                </fieldset>
                 <label className="space-y-1.5 sm:col-span-2">
                   <span className="text-xs font-bold text-gray-500">Гэрээний нөхцөл *</span>
                   <textarea value={form.terms} onChange={set("terms")} rows={12} maxLength={20000} className={inputClass} />
@@ -478,6 +548,7 @@ export default function CompanyContractDetailPage() {
                     <span className="font-bold">{CONTRACT_ACTOR_LABELS[e.actor_role] || e.actor_role}</span>
                     <span>{CONTRACT_EVENT_LABELS[e.action] || e.action}</span>
                     {typeof e.meta?.reason === "string" && <span className="text-gray-400">— {e.meta.reason}</span>}
+                    {typeof e.meta?.template === "string" && <span className="text-gray-400">— «{e.meta.template}» загвараар</span>}
                   </li>
                 ))}
               </ul>
@@ -539,6 +610,18 @@ export default function CompanyContractDetailPage() {
           tone="danger"
           onConfirm={leaveGuard.proceed}
           onClose={leaveGuard.stay}
+        />
+      )}
+
+      {showTemplatePicker && <TemplatePickerDialog onApply={handleApplyTemplate} onClose={() => setShowTemplatePicker(false)} />}
+
+      {showSaveTemplate && (
+        <SaveTemplateDialog
+          defaultName={form.position}
+          busy={savingTemplate}
+          error={saveTemplateError}
+          onConfirm={handleSaveTemplate}
+          onClose={() => setShowSaveTemplate(false)}
         />
       )}
 
