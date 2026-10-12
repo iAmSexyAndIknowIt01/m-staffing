@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
+import { CONTRACTS_ENABLED } from "@/lib/features"
 
 interface Applicant {
   id: string
@@ -265,7 +266,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                                 <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "not-approved")} className="text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцээгүй</button>
                               </>
                             )}
-                            {isApproved && (
+                            {CONTRACTS_ENABLED && isApproved && (
                               <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">📑 Гэрээ</button>
                             )}
                           </div>
@@ -363,7 +364,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                       </>
                     )}
 
-                    {isApproved && (
+                    {CONTRACTS_ENABLED && isApproved && (
                       <button
                         disabled={showLoader}
                         onClick={() => handleCreateContract(app.id)}
