@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { usePathname } from "next/navigation"
 import LinkNext from "next/link"
+import { CONTRACTS_ENABLED } from "@/lib/features"
 
 interface DashboardShellProps {
   userId: string
@@ -95,13 +96,15 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   📨 Миний хүсэлт
                 </LinkNext>
-                <LinkNext
-                  href="/dashboard/staff/contracts"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block p-3 rounded-xl hover:bg-gray-50"
-                >
-                  📑 Миний гэрээ
-                </LinkNext>
+                {CONTRACTS_ENABLED && (
+                  <LinkNext
+                    href="/dashboard/staff/contracts"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block p-3 rounded-xl hover:bg-gray-50"
+                  >
+                    📑 Миний гэрээ
+                  </LinkNext>
+                )}
               </>
             ) : (
               <>
@@ -133,13 +136,15 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 >
                   🏢 Компани профайл
                 </LinkNext>
-                <LinkNext
-                  href="/dashboard/company/contracts"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block p-3 rounded-xl hover:bg-gray-50"
-                >
-                  📑 Гэрээ
-                </LinkNext>
+                {CONTRACTS_ENABLED && (
+                  <LinkNext
+                    href="/dashboard/company/contracts"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block p-3 rounded-xl hover:bg-gray-50"
+                  >
+                    📑 Гэрээ
+                  </LinkNext>
+                )}
               </>
             )}
 
@@ -245,7 +250,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                     </LinkNext>
                   )
                 })()}
-                {(() => {
+                {CONTRACTS_ENABLED && (() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/staff/contracts")
                   return (
                     <LinkNext href="/dashboard/staff/contracts" className={linkClass}>
@@ -293,7 +298,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                     </LinkNext>
                   )
                 })()}
-                {(() => {
+                {CONTRACTS_ENABLED && (() => {
                   const { linkClass, iconClass } = getLinkStyles("/dashboard/company/contracts")
                   return (
                     <LinkNext href="/dashboard/company/contracts" className={linkClass}>
