@@ -196,7 +196,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8 lg:py-0">
+    <main className="aurora-bg relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8 lg:py-0">
       {/* BG */}
       <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
 
@@ -204,7 +204,7 @@ export default function RegisterPage() {
       <div className="absolute top-[10%] left-[10%] w-175 h-175 rounded-full bg-orange-300/10 blur-[180px]" />
 
       {/* GRID */}
-      <div className="absolute inset-0 opacity-[0.5] bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)] bg-size-[70px_70px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,92,255,.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,92,255,.14)_1px,transparent_1px)] bg-size-[56px_56px] mask-[radial-gradient(ellipse_at_center,black_25%,transparent_75%)]" />
 
       <Link
         href="/login"
@@ -221,7 +221,7 @@ export default function RegisterPage() {
 
           <div className="relative z-10">
             <p className="orange-text font-bold tracking-[6px]">MSTAFFING</p>
-            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05]">
+            <h1 className="mt-4 lg:mt-6 font-display text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.15] tracking-tight">
               {role === "staff" ? "Шинэ боломж." : "Шинэ ажилтан."}
             </h1>
             <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl leading-7 sm:leading-9">
@@ -234,12 +234,12 @@ export default function RegisterPage() {
 
         {/* RIGHT */}
         <div className="glass rounded-[32px] sm:rounded-[40px] p-6 sm:p-10">
-          <div className="bg-orange-50 rounded-full p-2 flex">
+          <div className="bg-gray-900/5 rounded-full p-1.5 flex ring-1 ring-gray-900/5">
             <button
               type="button"
               onClick={() => setRole("staff")}
               className={`flex-1 rounded-full py-3 transition ${
-                role === "staff" ? "bg-orange-500 text-white" : ""
+                role === "staff" ? "bg-gray-950 text-white shadow-lg shadow-gray-950/20" : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Ажил Хайгч
@@ -249,14 +249,14 @@ export default function RegisterPage() {
               type="button"
               onClick={() => setRole("company")}
               className={`flex-1 rounded-full py-3 transition ${
-                role === "company" ? "bg-orange-500 text-white" : ""
+                role === "company" ? "bg-gray-950 text-white shadow-lg shadow-gray-950/20" : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Ажил Олгогч
             </button>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black mt-8 sm:mt-10">Бүртгүүлэх</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold mt-8 sm:mt-10">Бүртгүүлэх</h2>
 
           {role === "staff" ? (
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
                     lastNameError 
                       ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
-                      : "border-orange-100 focus:border-orange-500"
+                      : "border-gray-200 focus:border-orange-500"
                   }`}
                 />
                 {lastNameError && (
@@ -290,7 +290,7 @@ export default function RegisterPage() {
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
                     firstNameError 
                       ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
-                      : "border-orange-100 focus:border-orange-500"
+                      : "border-gray-200 focus:border-orange-500"
                   }`}
                 />
                 {firstNameError && (
@@ -306,7 +306,7 @@ export default function RegisterPage() {
               <input
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+                className="mt-3 w-full rounded-2xl border border-gray-200 px-5 py-4"
               />
             </div>
           )}
@@ -317,7 +317,7 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+              className="mt-3 w-full rounded-2xl border border-gray-200 px-5 py-4"
             />
           </div>
 
@@ -328,7 +328,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               wrapperClassName="mt-3"
-              className="w-full rounded-2xl border border-orange-100 px-5 py-4"
+              className="w-full rounded-2xl border border-gray-200 px-5 py-4"
             />
             <p className="mt-2 text-xs text-gray-400">Хамгийн багадаа 8 тэмдэгт, үсэг болон тоо агуулсан байна.</p>
           </div>

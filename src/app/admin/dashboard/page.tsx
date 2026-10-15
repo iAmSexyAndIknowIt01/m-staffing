@@ -140,7 +140,7 @@ export default function AdminDashboard() {
         {activeTab === "home" && (
           <div className="space-y-8">
             <div>
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight">Тавтай морил 👑</h1>
+              <h1 className="text-2xl font-display font-bold text-gray-900 tracking-tight">Тавтай морил 👑</h1>
               <p className="text-gray-500 text-xs">Системийн өнөөдрийн байдал болон ерөнхий аналитик.</p>
             </div>
 
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт 🧾</h1>
+                <h1 className="text-2xl font-display font-bold text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт 🧾</h1>
                 <p className="text-gray-500 text-xs">Компаниудаас ирүүлсэн багц идэвхжүүлэх хүсэлтүүдийн жагсаалт.</p>
               </div>
 

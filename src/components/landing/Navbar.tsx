@@ -30,20 +30,20 @@ export default function Navbar() {
             className="flex items-center gap-2 md:gap-3"
           >
             <div
-              className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-linear-to-br from-orange-500 to-orange-300 flex items-center justify-center text-white font-black text-sm md:text-xl"
+              className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-linear-to-br from-[#ff7a00] via-[#ff4f81] to-[#6c5cff] flex items-center justify-center text-white font-display font-extrabold text-sm md:text-lg shadow-[0_0_20px_-4px_rgba(255,106,0,0.6)]"
             >
               M
             </div>
 
             <div>
               <h1
-                className="text-lg md:text-xl font-black leading-none"
+                className="font-display text-base md:text-lg font-bold leading-none tracking-tight text-gray-900"
               >
-                <span className="text-orange-500">M</span>
-                <span className="text-orange-500">Staffing</span>
+                <span className="text-gradient">M</span>
+                <span>Staffing</span>
               </h1>
               <p
-                className="text-[10px] md:text-[11px] text-gray-400 mt-0.5"
+                className="font-mono text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-gray-400 mt-1"
               >
                 Future of Work
               </p>
@@ -72,7 +72,7 @@ export default function Navbar() {
                 key={item.label}
                 href={item.href}
                 scroll={true}
-                className="relative text-[15px] text-gray-700 hover:text-orange-500 transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-orange-500 hover:after:w-full after:transition-all"
+                className="relative text-[15px] text-gray-700 hover:text-orange-500 transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-linear-to-r after:from-[#ff7a00] after:to-[#6c5cff] hover:after:w-full after:transition-all"
               >
                 {item.label}
               </Link>

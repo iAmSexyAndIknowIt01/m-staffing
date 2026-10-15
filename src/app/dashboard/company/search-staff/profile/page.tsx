@@ -277,7 +277,7 @@ export default function StaffProfilePage() {
       {/* HEADER */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Ажилтны профайл</h1>
+          <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900">Ажилтны профайл</h1>
           <p className="text-sm text-gray-400 mt-1">Ажил олгогчийн харах горим</p>
         </div>
       </div>

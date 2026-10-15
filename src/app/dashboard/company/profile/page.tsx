@@ -200,7 +200,7 @@ export default function CompanyProfilePage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-[1.75rem] font-display font-bold text-gray-900 tracking-tight">
             {formData.company_name || "Компанийн нэр"}
           </h1>
           {formData.tagline && <p className="text-gray-500 mt-1 text-sm font-medium">{formData.tagline}</p>}

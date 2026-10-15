@@ -280,16 +280,17 @@ export default function StaffView({ userId }: StaffViewProps) {
     <div className="animate-fade-in space-y-8 relative">
       
       {/* МЭНДЧИЛГЭЭНИЙ ХЭСЭГ */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-indigo-950/10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hero-panel p-8 md:p-10 rounded-4xl">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">Сайн байна уу? 👋</h1>
-          <p className="text-indigo-200/90 text-sm md:text-base mt-2 font-medium">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-white/40 mb-3">Staff · Dashboard</p>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight">Сайн байна уу? 👋</h1>
+          <p className="text-white/60 text-sm md:text-base mt-2 font-medium">
             Өнөөдрийн байдлаар танд тохирох шинэ ажлын саналууд бэлэн байна.
           </p>
         </div>
         <Link 
           href="/dashboard/staff/jobs" 
-          className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-2xl border border-white/10 backdrop-blur-sm transition-all"
+          className="orange-btn btn-shine inline-flex items-center gap-2 px-6! py-3.5! text-sm"
         >
           Aжил хайх 🔍
         </Link>
@@ -300,7 +301,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Илгээсэн хүсэлт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.appliedCount}</h3>
+            <h3 className="font-display text-3xl font-bold text-gray-900 tracking-tight">{stats.appliedCount}</h3>
             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
               {stats.appliedThisWeek}
             </span>
@@ -311,7 +312,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
+            <h3 className="font-display text-3xl font-bold text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-lg ${
               stats.viewedCompaniesCount === 0 
                 ? "text-gray-500 bg-gray-50" 
@@ -328,7 +329,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">CV хандалт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
+            <h3 className="font-display text-3xl font-bold text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Маш сайн 🚀</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">📊</div>

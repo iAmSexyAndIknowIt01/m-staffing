@@ -1,95 +1,210 @@
 @import "tailwindcss";
 
+/* ============================================================
+   MSTAFFING — "Aurora" дизайн систем
+   Брэнд: улбар шар (ember) + цахилгаан ягаан-хөх (volt).
+   Бүх өнгө, сүүдэр, фонтыг энд төвлөрүүлж, хуудсууд нэг хэлээр ярина.
+   ============================================================ */
+
+@theme {
+  --font-sans: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  /* Гарчиг, лого, тоонд зориулсан футурист фонт (кирилл дэмжинэ) */
+  --font-display: var(--font-unbounded), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-ember-400: #ff9a3d;
+  --color-ember-500: #ff7a00;
+  --color-ember-600: #ea5f00;
+  --color-volt-400: #8b7bff;
+  --color-volt-500: #6c5cff;
+  --color-volt-600: #5646f0;
+  --color-ink-900: #0a0b14;
+  --color-ink-800: #11131f;
+  --color-ink-700: #1a1d2e;
+
+  /* Давхар, зөөлөн гэрэлтэлттэй сүүдэр — бүх карт автоматаар шинэчлэгдэнэ */
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.04), 0 6px 20px -8px rgb(76 70 220 / 0.10);
+  --shadow-md: 0 2px 4px rgb(15 23 42 / 0.04), 0 12px 32px -12px rgb(76 70 220 / 0.16);
+  --shadow-lg: 0 4px 8px rgb(15 23 42 / 0.04), 0 20px 48px -16px rgb(76 70 220 / 0.20);
+  --shadow-xl: 0 8px 16px rgb(15 23 42 / 0.05), 0 32px 64px -20px rgb(76 70 220 / 0.24);
+  --shadow-2xl: 0 12px 24px rgb(15 23 42 / 0.06), 0 48px 96px -24px rgb(76 70 220 / 0.30);
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 :root {
-  --bg: #ffffff;
-
+  --bg: #f6f7fb;
   --card: #ffffff;
-
   --orange: #ff7a00;
-
   --orange2: #ffb347;
-
-  --text: #111827;
-
+  --violet: #6c5cff;
+  --text: #0f1222;
   --muted: #6b7280;
+  --brand-gradient: linear-gradient(120deg, #ff7a00 0%, #ff4f81 52%, #6c5cff 100%);
 }
 
-html {
-  scroll-behavior: smooth;
+/* ===== Үндсэн (base) — utility класс давхардуулж болно ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Next.js хуудас хооронд шилжих үед smooth scroll-ийг түр идэвхгүй болгох */
+  html[data-nextjs-scroll-sandbox] {
+    scroll-behavior: auto !important;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tailwind v4 товчлуурын pointer курсорыг авдаггүй тул буцааж өгнө */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: rgb(108 92 255 / 0.85);
+    color: #fff;
+  }
+
+  /* Гараар удирдахад тод, футурист focus цагираг */
+  :focus-visible {
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select {
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.25s ease,
+      background-color 0.2s ease;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+  textarea:focus,
+  select:focus {
+    box-shadow:
+      0 0 0 4px rgb(108 92 255 / 0.12),
+      0 8px 24px -12px rgb(108 92 255 / 0.35);
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+  }
+
+  /* Нимгэн, орчин үеийн scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(108 92 255 / 0.28) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgb(108 92 255 / 0.25);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(108 92 255 / 0.45);
+  }
 }
 
-/* Next.js хуудас хооронд шилжих үед smooth scroll-ийг түр идэвхгүй болгох хэсэг */
-html[data-nextjs-scroll-sandbox] {
-  scroll-behavior: auto !important;
-}
+/* ===== Дизайн системийн компонент классууд ===== */
 
-body {
-  background: #ffffff;
-
-  color: var(--text);
-
-  min-height: 100vh;
-
-  overflow-x: hidden;
-}
-
+/* Шилэн гадаргуу */
 .glass {
-  backdrop-filter: blur(20px);
-
-  background: rgba(255, 255, 255, 0.75);
-
-  border: 1px solid rgba(255, 122, 0, 0.12);
-
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow:
-    0 10px 40px rgba(255, 122, 0, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 10px 40px -12px rgba(76, 70, 220, 0.18);
+}
+
+/* Хар шилэн гадаргуу (sidebar, overlay) */
+.glass-dark {
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  background: rgba(12, 13, 24, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .orange-text {
   color: var(--orange);
 }
 
+/* Брэнд gradient текст */
+.text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Үндсэн CTA товчлуур — ember→pink gradient, гэрэлтэлттэй */
 .orange-btn {
-  background:
-    linear-gradient(
-      135deg,
-      #ff7a00,
-      #ffb347
-    );
-
+  position: relative;
+  background: linear-gradient(120deg, #ff7a00 0%, #ff8f1f 45%, #ff4f81 100%);
+  background-size: 160% 100%;
+  background-position: 0% 50%;
   color: white;
-
   border-radius: 18px;
-
   padding: 14px 28px;
-
   font-weight: 700;
-
-  transition: 0.3s;
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 10px 30px -10px rgba(255, 106, 0, 0.55);
+  transition:
+    transform 0.3s var(--ease-out-expo),
+    box-shadow 0.3s ease,
+    background-position 0.6s ease;
 }
 
 .orange-btn:hover {
   transform: translateY(-2px);
-
+  background-position: 100% 50%;
   box-shadow:
-    0 18px 40px
-    rgba(255, 122, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 18px 44px -12px rgba(255, 79, 129, 0.55);
+}
+
+.orange-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .section {
   max-width: 1280px;
-
   margin: auto;
-
-  padding: 100px;
-
-  padding-left: 24px;
-
-  padding-right: 24px;
+  padding: 100px 24px;
 }
 
 .soft-card {
   background: #fff5eb;
-
   border-radius: 32px;
 }
 
@@ -97,62 +212,112 @@ body {
   color: var(--muted);
 }
 
+/* Aurora арын дэвсгэр — зөөлөн өнгөт туяа */
+.aurora-bg {
+  background:
+    radial-gradient(60rem 40rem at 0% -10%, rgba(255, 122, 0, 0.10), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, rgba(108, 92, 255, 0.12), transparent 60%),
+    radial-gradient(40rem 30rem at 50% 110%, rgba(255, 79, 129, 0.07), transparent 60%),
+    var(--bg);
+}
+
+/* Нарийн тор — "дижитал" мэдрэмж */
+.grid-overlay {
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(15, 18, 34, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 18, 34, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at top, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at top, black 20%, transparent 75%);
+}
+
+.grid-overlay-light {
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* Gradient хүрээ — элемент дээр нэмэхэд 1px гэрэлт хүрээ үүснэ */
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--brand-gradient);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Гэрэлтэх цэг (status) */
+.neon-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18), 0 0 12px rgba(52, 211, 153, 0.8);
+}
+
 @keyframes float {
-  0%{
-    transform:translateY(0px);
-  }
-
-  50%{
-    transform:translateY(-16px);
-  }
-
-  100%{
-    transform:translateY(0px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
 }
 
-.animate-float{
-  animation:float 6s ease-in-out infinite;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
-.animate-float-slow{
-  animation:float 10s ease-in-out infinite;
+.animate-float-slow {
+  animation: float 10s ease-in-out infinite;
 }
 
-@keyframes pulseGlow{
-  0%{
-    opacity:.5;
-  }
-
-  50%{
-    opacity:1;
-  }
-
-  100%{
-    opacity:.5;
-  }
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
-.animate-glow{
-  animation:pulseGlow 4s infinite;
+.animate-glow {
+  animation: pulseGlow 4s infinite;
 }
 
-/* ===== Landing animations ===== */
+/* ===== Animation-ууд ===== */
 
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Хуудас солигдох үед контент зөөлөн гарч ирэх */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  /* Төгсгөлд "none" байх ёстой — эс бөгөөс fixed modal-ууд main дотор хоригдоно */
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
 }
 
 /* Hero зургийг маш удаан томруулах (Ken Burns) */
@@ -163,11 +328,19 @@ body {
 
 .animate-fade-up {
   opacity: 0;
-  animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeUp 0.8s var(--ease-out-expo) forwards;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out both;
+}
+
+.animate-page-in {
+  animation: pageIn 0.6s var(--ease-out-expo) both;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.25s var(--ease-out-expo) both;
 }
 
 .animate-ken-burns {
@@ -179,8 +352,8 @@ body {
   opacity: 0;
   transform: translateY(32px);
   transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.8s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo);
 }
 
 .reveal.is-visible {
@@ -205,7 +378,7 @@ body {
 .animate-word-in {
   opacity: 0;
   transform-origin: 50% 100%;
-  animation: wordIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: wordIn 0.9s var(--ease-out-expo) forwards;
 }
 
 /* Hero-н gradient бөмбөлгүүд удаан тойрон хөвөх */
@@ -237,7 +410,7 @@ body {
 }
 
 .animate-nav-in {
-  animation: navIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: navIn 0.8s var(--ease-out-expo) both;
 }
 
 /* Гарчгийн өнгөт хэсэг дээгүүр гэрэл гүйх */
@@ -250,24 +423,25 @@ body {
   background: linear-gradient(
     110deg,
     #ff7a00 0%,
-    #ff7a00 40%,
+    #ff4f81 35%,
     #ffd29a 50%,
-    #ff7a00 60%,
+    #8b7bff 65%,
     #ff7a00 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: shimmer 5s linear infinite;
+  animation: shimmer 6s linear infinite;
 }
 
 /* Hero дээр хулганыг дагах гэрэл (--mx/--my-г JS тохируулна) */
 .hero-spotlight {
   background: radial-gradient(
     600px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(255, 140, 0, 0.18),
-    transparent 60%
+    rgba(255, 120, 60, 0.18),
+    rgba(108, 92, 255, 0.08) 40%,
+    transparent 65%
   );
 }
 
@@ -314,10 +488,39 @@ body {
   transform: translateX(120%) skewX(-20deg);
 }
 
+/* Sidebar-ын идэвхтэй цэсний гэрэлт заагч */
+.nav-active-glow {
+  background:
+    linear-gradient(90deg, rgba(255, 122, 0, 0.16), rgba(108, 92, 255, 0.10) 70%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.nav-active-glow::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 3px;
+  height: 60%;
+  transform: translateY(-50%);
+  border-radius: 0 4px 4px 0;
+  background: var(--brand-gradient);
+  box-shadow: 0 0 14px rgba(255, 122, 0, 0.8);
+}
+
+.hero-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 140, 0, 0.12), transparent 40%),
+    radial-gradient(circle at 80% 50%, rgba(108, 92, 255, 0.12), transparent 40%),
+    white;
+}
+
 /* Хөдөлгөөн багасгах тохиргоотой хэрэглэгчдэд animation унтраах */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-in,
+  .animate-page-in,
+  .animate-slide-down,
   .animate-word-in,
   .animate-orb,
   .animate-scroll-dot,
@@ -339,46 +542,58 @@ body {
   }
 }
 
-.hero-bg{
-
-background:
-radial-gradient(
-circle at 20% 20%,
-rgba(255,140,0,.12),
-transparent 40%
-),
-
-radial-gradient(
-circle at 80% 50%,
-rgba(255,170,0,.15),
-transparent 40%
-),
-
-white;
-
-}
-
-
 @media (max-width: 768px) {
   /* Dashboard-ийн үндсэн агуулга явдаг хэсгийг утас дээр скроллтой болгох */
-  main, 
+  main,
   .dashboard-content,
   #dashboard-main-container {
     overflow-y: auto !important;
-    padding-bottom: 0px !important; /* 112px буюу 7rem зайг тэглэх */
+    padding-bottom: 0px !important;
     -webkit-overflow-scrolling: touch;
   }
 }
 
-@theme {
-  /* Tailwind v4 ашиглаж байгаа бол */
-  --font-sans: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+/* Хянах самбарын толгой banner — хар "ink" дэвсгэр + aurora гэрэл + тор */
+.hero-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(36rem 18rem at 0% 0%, rgba(255, 122, 0, 0.35), transparent 60%),
+    radial-gradient(32rem 20rem at 100% 100%, rgba(108, 92, 255, 0.45), transparent 60%),
+    radial-gradient(20rem 14rem at 70% 0%, rgba(255, 79, 129, 0.18), transparent 60%),
+    #0a0b14;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 60px -30px rgba(10, 11, 20, 0.6);
 }
 
-/* Хэрэв та Tailwind v3 ашиглаж байгаа бол tailwind.config.js-ийн theme.extend.fontFamily.sans хэсэгт тохируулдаг. 
-   Гэхдээ хамгийн амархан арга нь css дээрээ ингэж зааж өгөхөд шууд ажиллана: */
-@layer base {
-  body {
-    font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif !important;
-  }
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(100deg, transparent 10%, black 60%, transparent 95%);
+  -webkit-mask-image: linear-gradient(100deg, transparent 10%, black 60%, transparent 95%);
+}
+
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(255, 154, 61, 0.6), rgba(255, 255, 255, 0.05) 40%, rgba(139, 123, 255, 0.6));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }

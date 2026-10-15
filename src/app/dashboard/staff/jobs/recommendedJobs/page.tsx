@@ -265,7 +265,7 @@ export default function RecommendedJobsPage() {
         >
           ← Буцах
         </button>
-        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Танд санал болгох ажлын байрууд</h1>
+        <h1 className="text-xl md:text-2xl font-display font-bold text-gray-900 tracking-tight">Танд санал болгох ажлын байрууд</h1>
       </div>
 
       {jobs.length > 0 && (

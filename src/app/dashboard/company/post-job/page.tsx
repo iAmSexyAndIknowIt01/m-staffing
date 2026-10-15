@@ -223,7 +223,7 @@ export default function PostJobPage() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага 💼</h1>
+          <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900 tracking-tight">Ажлын байрны удирдлага 💼</h1>
           <p className="text-gray-500 mt-1 text-xs md:text-base">
             Танай компанийн зарласан идэвхтэй болон хаагдсан ажлын байруудын жагсаалт.
           </p>

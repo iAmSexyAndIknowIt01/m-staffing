@@ -84,17 +84,18 @@ export default function Hero() {
         />
       </div>
 
-      {/* Overlay */}
+      {/* Overlay — гүн "ink" өнгө + нарийн дижитал тор */}
       <div
-        className="absolute inset-0 bg-black/55"
+        className="absolute inset-0 bg-linear-to-b from-[#0a0b14]/70 via-[#0a0b14]/55 to-[#0a0b14]/80"
       />
+      <div className="grid-overlay-light absolute inset-0" aria-hidden />
 
       {/* Доороос цагаан руу зөөлөн шилжих — дараагийн хэсэгтэй уялдана */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-black/40 to-transparent" />
 
       {/* Хөвөх gradient бөмбөлгүүд — зөвхөн компьютер дээр */}
       <div className="hidden md:block absolute -top-20 -left-20 w-130 h-130 rounded-full bg-orange-500/25 blur-[120px] mix-blend-screen animate-orb" />
-      <div className="hidden md:block absolute -bottom-30 -right-10 w-150 h-150 rounded-full bg-amber-400/15 blur-[140px] mix-blend-screen animate-orb [animation-delay:-7s]" />
+      <div className="hidden md:block absolute -bottom-30 -right-10 w-150 h-150 rounded-full bg-[#6c5cff]/25 blur-[140px] mix-blend-screen animate-orb [animation-delay:-7s]" />
 
       {/* Хулганыг дагах spotlight */}
       <div className="hero-spotlight pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-700 group-hover/hero:opacity-100" />
@@ -108,7 +109,7 @@ export default function Hero() {
           className="max-w-225 mx-auto text-center"
         >
           <p
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-orange-400 tracking-[4px] font-bold text-xs animate-fade-up"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 backdrop-blur-md px-4 py-1.5 text-orange-300 tracking-[4px] font-mono font-semibold text-[11px] animate-fade-up"
           >
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
@@ -118,17 +119,18 @@ export default function Hero() {
           </p>
 
           <h1
-            className="mt-6 text-4xl md:text-6xl font-black leading-tight text-white"
+            className="mt-6 font-display text-[2.1rem] sm:text-5xl md:text-6xl font-bold leading-[1.15] tracking-tight text-white"
           >
             {headline.map((line, i) => (
               <span key={i} className="block">
                 {line.words.map((word) => (
                   <span
                     key={word.text}
-                    className={`inline-block mx-[0.12em] animate-word-in ${line.accent ? "text-orange-400" : ""}`}
+                    className="inline-block mx-[0.12em] animate-word-in"
                     style={{ animationDelay: `${word.delay}ms` }}
                   >
-                    {word.text}
+                    {/* shimmer нь өөрийн animation-тай тул дотор span-д тусад нь өгнө */}
+                    <span className={line.accent ? "text-shimmer" : undefined}>{word.text}</span>
                   </span>
                 ))}
               </span>
@@ -159,7 +161,7 @@ export default function Hero() {
             <Magnetic className="w-full sm:w-auto">
               <Link href="/dashboard/company/applicants" className="block">
                 <button
-                  className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/30 border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
+                  className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
                 >
                   Staff Хайх
                 </button>

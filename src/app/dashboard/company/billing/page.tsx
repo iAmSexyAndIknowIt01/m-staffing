@@ -226,7 +226,7 @@ export default function BillingPage() {
         <Link href="/dashboard" className="text-xs font-bold text-gray-400 hover:text-indigo-600 transition flex items-center gap-1">
           ← Удирдах самбар руу буцах
         </Link>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо 💳</h1>
+        <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо 💳</h1>
         <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
       </div>
 

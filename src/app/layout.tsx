@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Unbounded } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "cyrillic"],
+});
+
+// Гарчиг, лого, тоонд ашиглах футурист display фонт (кирилл дэмжинэ)
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
+  subsets: ["latin", "cyrillic"],
+  weight: ["500", "700", "800"],
 });
 
 const geistSans = Geist({
@@ -18,7 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: "#0a0b14",
   width: "device-width",
   initialScale: 1,
 };
@@ -67,11 +74,11 @@ export default function RootLayout({
     <html
       lang="mn"
       data-scroll-behavior="smooth"
-      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${inter.variable} ${unbounded.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       style={{ scrollBehavior: "smooth" }}
     >
       {/* body дээр min-h-screen болон flex-col өгч мобайл үеийн илүүдэл цагаан зайг арилгасан */}
-      <body className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0 overflow-x-hidden">
+      <body className="min-h-screen flex flex-col font-sans bg-[#f6f7fb] text-gray-900 m-0 p-0 overflow-x-hidden">
         
         <main className="flex-1 w-full flex flex-col">
           {children}

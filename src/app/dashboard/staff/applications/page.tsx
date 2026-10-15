@@ -164,7 +164,7 @@ export default function ApplicationsHistoryPage() {
         >
           ← Буцах
         </button>
-        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
+        <h1 className="text-xl md:text-2xl font-display font-bold text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
       </div>
 
       {/* 🌟 НӨХЦӨЛӨӨР ХАЙХ, ШҮҮХ ХЭСЭГ (SEARCH & FILTER BAR) */}

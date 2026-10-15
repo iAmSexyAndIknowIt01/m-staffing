@@ -117,10 +117,11 @@ export default function CompanyView() {
     <div className="animate-fade-in space-y-8">
       
       {/* ТОЛГОЙ ХЭСЭГ */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-indigo-950 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/15">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hero-panel p-8 md:p-10 rounded-4xl">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">Компанийн удирдлага 🏢</h1>
-          <p className="text-slate-300 text-sm md:text-base mt-2 font-medium">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-white/40 mb-3">Company · Dashboard</p>
+          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight">Компанийн удирдлага 🏢</h1>
+          <p className="text-white/60 text-sm md:text-base mt-2 font-medium">
             Шинэ шилдэг боловсон хүчнүүдийг эндээс хялбархан удирдаарай.
           </p>
         </div>
@@ -134,7 +135,7 @@ export default function CompanyView() {
         ) : (
           <Link
             href="/dashboard/company/post-job"
-            className="px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-orange-500/25 flex items-center gap-2"
+            className="orange-btn btn-shine px-6! py-3.5! text-sm flex items-center gap-2"
           >
             <span>+</span> Ажлын байр нэмэх
           </Link>
@@ -146,7 +147,7 @@ export default function CompanyView() {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Нээлттэй ажлын байр</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.openJobsCount}</h3>
+            <h3 className="font-display text-3xl font-bold text-gray-900 tracking-tight">{stats.openJobsCount}</h3>
             <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg">Зарлагдсан</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl font-bold">💼</div>
@@ -155,7 +156,7 @@ export default function CompanyView() {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-emerald-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ирсэн нийт анкет</p>
-            <h3 className="text-3xl font-black text-emerald-600 tracking-tight">{stats.totalApplicantsCount}</h3>
+            <h3 className="font-display text-3xl font-bold text-emerald-600 tracking-tight">{stats.totalApplicantsCount}</h3>
             <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Идэвхтэй</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">📥</div>
@@ -164,7 +165,7 @@ export default function CompanyView() {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-blue-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ярилцлагад урьсан</p>
-            <h3 className="text-3xl font-black text-blue-600 tracking-tight">{stats.interviewCount}</h3>
+            <h3 className="font-display text-3xl font-bold text-blue-600 tracking-tight">{stats.interviewCount}</h3>
             <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">Шүүгдсэн</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">🗓️</div>
@@ -318,7 +319,7 @@ export default function CompanyView() {
               </div>
               <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? 'bg-red-500' : 'bg-slate-800'}`} 
+                  className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? 'bg-red-500' : 'bg-linear-to-r from-[#ff7a00] via-[#ff4f81] to-[#6c5cff]'}`} 
                   style={{ width: `${Math.min((stats.openJobsCount / subscription.jobLimit) * 100, 100)}%` }} 
                 />
               </div>

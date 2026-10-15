@@ -44,7 +44,7 @@ export default async function JobApplicantsPage({ params }: PageProps) {
             <span>/</span>
             <span className="text-gray-400">Ирсэн хүсэлтүүд</span>
           </div>
-          <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-xl md:text-2xl font-display font-bold text-gray-900 tracking-tight">
             {jobTitle}-д ирсэн анкетууд 👥
           </h1>
         </div>

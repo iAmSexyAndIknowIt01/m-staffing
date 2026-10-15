@@ -182,7 +182,7 @@ function ApplicantProfileContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div>
-        <h1 className="text-3xl font-black text-gray-900">Ажил горилогчийн профайл</h1>
+        <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900">Ажил горилогчийн профайл</h1>
         <p className="text-sm text-gray-400 mt-1">Ирүүлсэн анкетын дэлгэрэнгүй мэдээлэл</p>
       </div>
 

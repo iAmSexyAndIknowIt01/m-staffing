@@ -159,7 +159,7 @@ export default function StaffRequestsPage() {
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-900">Миний хүсэлтүүд</h1>
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900">Миний хүсэлтүүд</h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Илгээсэн анкет болон компаниудаас ирсэн хүсэлт, урилгын түүх</p>
         </div>
         <div>

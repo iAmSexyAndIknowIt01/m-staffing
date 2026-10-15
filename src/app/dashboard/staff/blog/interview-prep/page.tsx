@@ -52,7 +52,7 @@ export default function InterviewPrepPage() {
         <Link href="/dashboard" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition">
           ← Буцах
         </Link>
-        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын бэлтгэл 🤝</h1>
+        <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900 tracking-tight">Ажлын бэлтгэл 🤝</h1>
       </div>
 
       <div className="space-y-6">

@@ -48,6 +48,7 @@ export default function LoginPage() {
   return (
     <main
       className="
+        aurora-bg
         relative
         min-h-screen
         flex
@@ -121,7 +122,7 @@ export default function LoginPage() {
               absolute
               inset-0
               opacity-[0.5]
-              bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)]
+              bg-[linear-gradient(to_right,rgba(108,92,255,.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,92,255,.18)_1px,transparent_1px)] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]
               bg-size-[70px_70px]
             "
           />
@@ -149,17 +150,17 @@ export default function LoginPage() {
               w-125
               h-125
               rounded-full
-              bg-orange-200/20
+              bg-[#6c5cff]/20
               blur-[180px]
             "
           />
 
           {/* CONTENT */}
           <div className="relative z-10">
-            <p className="orange-text font-bold tracking-[6px]">
+            <p className="text-gradient font-mono font-bold tracking-[6px]">
               MSTAFFING
             </p>
-            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black">
+            <h1 className="mt-4 lg:mt-6 font-display text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.15] tracking-tight">
               {role === "staff" ? "Ажлаа ол." : "Багаа бүрдүүл."}
               <br />
               Тавтай морил.
@@ -183,12 +184,12 @@ export default function LoginPage() {
             shadow-[0_40px_100px_rgba(255,122,0,.08)]
           "
         >
-          <div className="bg-orange-50 rounded-full p-2 flex">
+          <div className="bg-gray-900/5 rounded-full p-1.5 flex ring-1 ring-gray-900/5">
             <button
               type="button"
               onClick={() => setRole("staff")}
-              className={`flex-1 rounded-full py-3 transition ${
-                role === "staff" ? "bg-orange-500 text-white" : ""
+              className={`flex-1 rounded-full py-3 text-sm font-semibold transition-all duration-300 ${
+                role === "staff" ? "bg-gray-950 text-white shadow-lg shadow-gray-950/20" : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Ажил Хайгч
@@ -197,20 +198,20 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setRole("company")}
-              className={`flex-1 rounded-full py-3 transition ${
-                role === "company" ? "bg-orange-500 text-white" : ""
+              className={`flex-1 rounded-full py-3 text-sm font-semibold transition-all duration-300 ${
+                role === "company" ? "bg-gray-950 text-white shadow-lg shadow-gray-950/20" : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Ажил Олгогч
             </button>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black mt-8 sm:mt-10">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold mt-8 sm:mt-10">
             Нэвтрэх
           </h2>
 
           <div className="mt-8">
-            <label>Имэйл</label>
+            <label className="text-sm font-semibold text-gray-600">Имэйл</label>
             <input
               type="email"
               placeholder="name@email.com"
@@ -219,11 +220,12 @@ export default function LoginPage() {
                 w-full
                 rounded-2xl
                 border
-                border-orange-100
+                border-gray-200
+                bg-white/80
                 px-5
                 py-4
                 outline-none
-                focus:border-orange-400
+                focus:border-[#6c5cff]
               "
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -231,7 +233,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6">
-            <label>Нууц үг</label>
+            <label className="text-sm font-semibold text-gray-600">Нууц үг</label>
             <PasswordInput
               autoComplete="current-password"
               placeholder="••••••••"
@@ -240,11 +242,12 @@ export default function LoginPage() {
                 w-full
                 rounded-2xl
                 border
-                border-orange-100
+                border-gray-200
+                bg-white/80
                 px-5
                 py-4
                 outline-none
-                focus:border-orange-400
+                focus:border-[#6c5cff]
               "
               value={password}
               onChange={(e) => setPassword(e.target.value)}

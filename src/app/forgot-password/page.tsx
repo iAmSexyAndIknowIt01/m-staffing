@@ -7,7 +7,7 @@ import { validateNewPassword } from "@/lib/password"
 type Step = "email" | "reset" | "done"
 
 const inputClass =
-  "mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4 outline-none focus:border-orange-400"
+  "mt-3 w-full rounded-2xl border border-gray-200 px-5 py-4 outline-none focus:border-[#6c5cff]"
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>("email")
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8">
+    <main className="aurora-bg relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8">
       <Link
         href="/login"
         className="fixed top-4 left-4 sm:top-8 sm:left-8 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base flex items-center gap-3 transition hover:-translate-y-1 z-30"
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
 
       <div className="glass w-full max-w-lg rounded-[32px] sm:rounded-[40px] p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
         <p className="orange-text font-bold tracking-[6px] text-sm">MSTAFFING</p>
-        <h1 className="text-2xl sm:text-3xl font-black mt-4">Нууц үг сэргээх</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight mt-4">Нууц үг сэргээх</h1>
 
         {step === "email" && (
           <form

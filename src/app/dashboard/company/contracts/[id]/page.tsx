@@ -324,7 +324,7 @@ export default function CompanyContractDetailPage() {
       <div className="pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <BackToListLink href="/dashboard/company/contracts" className="text-xs font-bold text-gray-400 hover:text-indigo-600">← Гэрээ</BackToListLink>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1">{contract.position}</h1>
+          <h1 className="text-2xl md:text-[1.75rem] font-display font-bold text-gray-900 tracking-tight mt-1">{contract.position}</h1>
           <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-500">
             <span className="font-mono">{contract.contract_number}</span>
             <span>·</span>
