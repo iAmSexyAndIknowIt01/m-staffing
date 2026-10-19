@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
 import { getErrorMessage } from "@/lib/errors"
+import { Pencil } from "lucide-react"
+import CompanyProfileView from "@/components/company/CompanyProfileView"
+import type { CompanyPublicJob } from "@/lib/companyJobs"
 
 interface CompanyProfileData {
   id?: string
@@ -27,6 +30,8 @@ export default function CompanyProfilePage() {
 
   const [isEditMode, setIsEditMode] = useState(false)
   const [isOwner, setIsOwner] = useState(false) 
+  const [viewerRole, setViewerRole] = useState<string | null>(null)
+  const [jobs, setJobs] = useState<CompanyPublicJob[]>([])
   
   const [formData, setFormData] = useState<CompanyProfileData>({
     company_name: "",
@@ -81,6 +86,8 @@ export default function CompanyProfilePage() {
           if (result.isOwner) {
             setIsOwner(true)
           }
+          setViewerRole(result.viewerRole ?? null)
+          setJobs(result.jobs ?? [])
         }
       } catch (err) {
         setMessage({ type: "error", text: getErrorMessage(err) })
@@ -151,6 +158,52 @@ export default function CompanyProfilePage() {
           <div className="h-8 bg-gray-100 rounded-xl w-1/3"></div>
           <div className="h-48 bg-gray-100 rounded-3xl w-full"></div>
         </div>
+      </div>
+    )
+  }
+
+  // Харах горим: ажил хайгчид харагдах албан ёсны профайл
+  if (!isEditMode) {
+    // Ажил хайгч зар дээр дарвал зарын дэлгэрэнгүй, эзэмшигч бол тухайн зарын анкетууд руу
+    const jobHref = isOwner
+      ? (jobId: string) => `/dashboard/company/post-job/${jobId}/applicants`
+      : viewerRole === "staff"
+        ? (jobId: string) => `/dashboard/staff/jobs/${jobId}`
+        : null
+
+    return (
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pb-16 space-y-6">
+        <div className="pt-4">
+          <button
+            onClick={handleBack}
+            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition shadow-xs"
+          >
+            ← Буцах
+          </button>
+        </div>
+
+        {message && (
+          <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
+            message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <CompanyProfileView
+          profile={formData}
+          jobs={jobs}
+          jobHref={jobHref}
+          actions={isOwner ? (
+            <button
+              type="button"
+              onClick={() => setIsEditMode(true)}
+              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition shadow-sm inline-flex items-center gap-2"
+            >
+              <Pencil className="w-4 h-4" /> Мэдээлэл засах
+            </button>
+          ) : undefined}
+        />
       </div>
     )
   }
