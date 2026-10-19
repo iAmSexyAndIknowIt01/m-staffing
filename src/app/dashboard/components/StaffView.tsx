@@ -52,6 +52,17 @@ interface DashboardData {
   }[]
 }
 
+const WEEKDAYS = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"]
+
+// Өнөөдрийн огноо: "2026 оны 10 сарын 19", "Даваа гараг"
+// (браузер бүр mn-MN locale-ыг ижил дэмждэггүй тул гараар форматлав)
+function formatToday(now: Date) {
+  return {
+    date: `${now.getFullYear()} оны ${now.getMonth() + 1} сарын ${now.getDate()}`,
+    weekday: `${WEEKDAYS[now.getDay()]} гараг`,
+  }
+}
+
 export default function StaffView({ userId }: StaffViewProps) {
   const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
@@ -273,6 +284,9 @@ export default function StaffView({ userId }: StaffViewProps) {
   if (error) return <div className="text-center py-12 text-red-500 font-medium">{error}</div>
   if (!data) return null
 
+  // Энэ хэсэг өгөгдөл ачаалсны дараа зөвхөн browser дээр зурагдах тул hydration-д нөлөөгүй
+  const { date: todayDate, weekday: todayWeekday } = formatToday(new Date())
+
   const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
   const cleanCvViewRate = stats.cvViewRate.replace(/[^0-9]/g, "") || "0"
 
@@ -282,7 +296,8 @@ export default function StaffView({ userId }: StaffViewProps) {
       {/* МЭНДЧИЛГЭЭНИЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-indigo-950/10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">Сайн байна уу? 👋</h1>
+          <p className="text-indigo-200/90 text-sm md:text-base font-semibold">{todayWeekday}</p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-1">{todayDate}</h1>
           <p className="text-indigo-200/90 text-sm md:text-base mt-2 font-medium">
             Өнөөдрийн байдлаар танд тохирох шинэ ажлын саналууд бэлэн байна.
           </p>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/session"
+import AmbientBackground from "@/components/motion/AmbientBackground"
 
 export default async function AdminLayout({
   children,
@@ -12,5 +13,10 @@ export default async function AdminLayout({
   if (!session) redirect("/login")
   if (!session.isAdmin) redirect("/dashboard")
 
-  return <>{children}</>
+  return (
+    <>
+      <AmbientBackground />
+      {children}
+    </>
+  )
 }
