@@ -67,7 +67,9 @@ export default function MotionLayer() {
           }, 1000)
         })
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      // threshold 0: нэг пиксел ч дэлгэцэнд орвол харуулна. Хувиар (жишээ нь 0.12) өгвөл
+      // дэлгэцээс хэд дахин өндөр карт (олон мөртэй хүснэгт) хэзээ ч тэр хувьд хүрэхгүй нуугдана
+      { threshold: 0, rootMargin: "0px 0px -40px 0px" }
     )
 
     const scan = () => {
