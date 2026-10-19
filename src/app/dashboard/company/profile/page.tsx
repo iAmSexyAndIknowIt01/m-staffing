@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react"
 import { uploadImage } from "@/lib/uploadImage"
 import { getErrorMessage } from "@/lib/errors"
+import { Pencil } from "lucide-react"
+import CompanyProfileView from "@/components/company/CompanyProfileView"
+import type { CompanyPublicJob } from "@/lib/companyJobs"
 
 interface CompanyProfileData {
   company_name: string
@@ -23,6 +26,7 @@ export default function CompanyProfilePage() {
   const isFetched = useRef(false)
 
   const [isEditMode, setIsEditMode] = useState(false)
+  const [jobs, setJobs] = useState<CompanyPublicJob[]>([])
   const [formData, setFormData] = useState<CompanyProfileData>({
     company_name: "",
     email: "",
@@ -69,6 +73,7 @@ export default function CompanyProfilePage() {
           }
           setFormData(profile)
           setInitialData(profile)
+          setJobs(result.jobs ?? [])
         }
       } catch (err) {
         setMessage({ type: "error", text: getErrorMessage(err) })
@@ -134,6 +139,40 @@ export default function CompanyProfilePage() {
   }
 
   const showLoader = pageLoading || actionLoading || uploadingLogo
+
+  // Харах горим: ажил хайгчид харагдах албан ёсны профайл (ачаалж байх үед доорх loader-тай хэсэг)
+  if (!isEditMode && !pageLoading) {
+    return (
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
+        <p className="pt-2 text-sm text-slate-500">
+          Ажил хайгчид таны профайлыг яг ийм байдлаар харна.
+        </p>
+
+        {message && (
+          <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
+            message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <CompanyProfileView
+          profile={formData}
+          jobs={jobs}
+          jobHref={(jobId) => `/dashboard/company/post-job/${jobId}/applicants`}
+          actions={
+            <button
+              type="button"
+              onClick={() => setIsEditMode(true)}
+              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition shadow-sm inline-flex items-center gap-2"
+            >
+              <Pencil className="w-4 h-4" /> Мэдээлэл засах
+            </button>
+          }
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in px-4 sm:px-6 lg:px-8 pb-16 relative">
