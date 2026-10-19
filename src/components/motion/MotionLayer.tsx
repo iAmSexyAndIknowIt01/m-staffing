@@ -2,17 +2,16 @@
 
 import { useLayoutEffect } from "react"
 import { usePathname } from "next/navigation"
-import ScrollProgress from "@/components/landing/ScrollProgress"
-import { hasFinePointer, prefersReducedMotion } from "@/components/landing/motion"
+import { prefersReducedMotion } from "@/components/landing/motion"
 
-// Landing хуудасны motion (скроллоор гарч ирэх, хулгана дагах гэрэл, 3D хазайлт,
-// тоо тоолж өсөх, scroll progress)-ийг бусад бүх хуудсанд автоматаар нэмнэ.
-// Хуудас бүрийг засах шаардлагагүй: DOM-оос карт, гарчиг, тоог олж motion өгнө.
+// Landing хуудасны хөнгөн Reveal (скроллоор доороос зөөлөн гарч ирэх)-ийг бусад
+// бүх хуудсанд автоматаар нэмнэ. Хуудас бүрийг засах шаардлагагүй: DOM-оос карт,
+// гарчгийг олж motion өгнө.
 // Аль нэг элементэд motion хэрэггүй бол түүнд эсвэл эцэгт нь `data-no-motion` нэмнэ.
 
-const CARD_TAGS = new Set(["DIV", "SECTION", "ARTICLE", "LI", "FORM", "A", "ASIDE"])
-const STAGGER_MS = 70
-const MAX_STAGGER_MS = 420
+const CARD_TAGS = new Set(["DIV", "SECTION", "ARTICLE", "LI", "FORM", "A"])
+const STAGGER_MS = 50
+const MAX_STAGGER_MS = 300
 
 function classOf(el: Element) {
   return el.getAttribute("class") ?? ""
@@ -50,7 +49,7 @@ export default function MotionLayer() {
 
     const seen = new WeakSet<Element>()
 
-    // --- 1. Скроллоор гарч ирэх (Reveal) ---
+    // Скроллоор гарч ирэх (Reveal) — дэлгэцэнд орсон дарааллаар ар араасаа
     const revealObserver = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -65,45 +64,10 @@ export default function MotionLayer() {
           // Animation дууссаны дараа delay-г цэвэрлэж hover transition-д саад болохгүй
           window.setTimeout(() => {
             el.style.transitionDelay = ""
-          }, 1300)
+          }, 1000)
         })
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
-    )
-
-    // --- 2. Тоо тоолж өсөх (CountUp) ---
-    const ease = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t))
-    const countObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          countObserver.unobserve(entry.target)
-          const node = entry.target.firstChild
-          if (!node || node.nodeType !== Node.TEXT_NODE) continue
-
-          const original = node.nodeValue ?? ""
-          const match = original.match(/^(\d[\d,]*)(.*)$/)
-          if (!match) continue
-          const target = Number(match[1].replace(/,/g, ""))
-          const useComma = match[1].includes(",")
-          const suffix = match[2]
-          const format = (n: number) => (useComma ? n.toLocaleString("en-US") : String(n)) + suffix
-
-          // Тухайн text node-ийг шууд өөрчилнө — React дараа нь шинэчилбэл бид зогсоно
-          let last = format(0)
-          node.nodeValue = last
-          const start = performance.now()
-          const tick = (now: number) => {
-            if (node.nodeValue !== last) return
-            const t = Math.min((now - start) / 1400, 1)
-            last = t === 1 ? original : format(Math.round(target * ease(t)))
-            node.nodeValue = last
-            if (t < 1) requestAnimationFrame(tick)
-          }
-          requestAnimationFrame(tick)
-        }
-      },
-      { threshold: 0.5 }
     )
 
     const scan = () => {
@@ -131,27 +95,6 @@ export default function MotionLayer() {
 
         el.classList.add("m-reveal")
         revealObserver.observe(el)
-
-        if (isHeading) return
-
-        // Хулгана дагах гэрэл — position нь static биш, өөрийн ::after-гүй картад
-        const position = getComputedStyle(el).position
-        if (position !== "static" && !/\bafter:/.test(classOf(el))) {
-          el.classList.add("m-spot")
-        }
-        // Холбоос карт дээр 3D хазайлт
-        if (el.tagName === "A") el.classList.add("m-tilt")
-      })
-
-      // Том тоонууд (статистик)
-      main.querySelectorAll("[class*='text-2xl'], [class*='text-3xl'], [class*='text-4xl'], [class*='text-5xl']").forEach((el) => {
-        if (seen.has(el)) return
-        seen.add(el)
-        if (el.childNodes.length !== 1 || el.firstChild?.nodeType !== Node.TEXT_NODE) return
-        const text = el.textContent?.trim() ?? ""
-        const match = text.match(/^(\d[\d,]*)/)
-        if (!match || Number(match[1].replace(/,/g, "")) < 2) return
-        countObserver.observe(el)
       })
     }
 
@@ -160,61 +103,13 @@ export default function MotionLayer() {
     const mutationObserver = new MutationObserver(scan)
     scan()
     root.classList.remove("m-pending")
-    root.classList.add("m-ready")
     mutationObserver.observe(document.body, { childList: true, subtree: true })
 
-    // --- 3. Хулгана дагах гэрэл ба 3D хазайлт ---
-    let tilted: HTMLElement | null = null
-    const resetTilt = () => {
-      if (!tilted) return
-      const el = tilted
-      tilted = null
-      el.style.transition = "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)"
-      el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)"
-      // Дууссаны дараа transform-ыг бүрэн арилгана (fixed modal-д нөлөөлөхгүй байх)
-      window.setTimeout(() => {
-        if (tilted !== el) {
-          el.style.transform = ""
-          el.style.transition = ""
-        }
-      }, 720)
-    }
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse" || !hasFinePointer()) return
-      const target = e.target as Element | null
-
-      const spot = target?.closest?.(".m-spot") as HTMLElement | null
-      if (spot) {
-        const rect = spot.getBoundingClientRect()
-        spot.style.setProperty("--mx", `${e.clientX - rect.left}px`)
-        spot.style.setProperty("--my", `${e.clientY - rect.top}px`)
-      }
-
-      const tilt = target?.closest?.(".m-tilt") as HTMLElement | null
-      if (tilted && tilted !== tilt) resetTilt()
-      if (!tilt) return
-      tilted = tilt
-      const rect = tilt.getBoundingClientRect()
-      const px = (e.clientX - rect.left) / rect.width - 0.5
-      const py = (e.clientY - rect.top) / rect.height - 0.5
-      tilt.style.transition = "transform 120ms ease-out"
-      tilt.style.transform = `perspective(1000px) rotateX(${-py * 4}deg) rotateY(${px * 4}deg)`
-    }
-
-    document.addEventListener("pointermove", onPointerMove, { passive: true })
-    document.addEventListener("pointerleave", resetTilt)
-
     return () => {
-      root.classList.remove("m-ready")
       mutationObserver.disconnect()
       revealObserver.disconnect()
-      countObserver.disconnect()
-      document.removeEventListener("pointermove", onPointerMove)
-      document.removeEventListener("pointerleave", resetTilt)
     }
   }, [isLanding])
 
-  if (isLanding) return null
-  return <ScrollProgress />
+  return null
 }
