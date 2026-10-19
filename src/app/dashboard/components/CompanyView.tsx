@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
+import { formatToday } from "@/lib/today"
 
 interface TipData {
   id: number
@@ -108,6 +109,9 @@ export default function CompanyView() {
 
   if (!data) return null
 
+  // Энэ хэсэг өгөгдөл ачаалсны дараа зөвхөн browser дээр зурагдах тул hydration-д нөлөөгүй
+  const { date: todayDate, weekday: todayWeekday } = formatToday(new Date())
+
   const { stats, activeJobs, recentApplicants, subscription, tips = [] } = data
   const displayedJobs = activeJobs.slice(0, 2)
   const isLimitReached = stats.openJobsCount >= subscription.jobLimit
@@ -119,7 +123,8 @@ export default function CompanyView() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-indigo-950 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/15">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">Компанийн удирдлага 🏢</h1>
+          <p className="text-slate-300 text-sm md:text-base font-semibold">{todayWeekday}</p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-1">{todayDate}</h1>
           <p className="text-slate-300 text-sm md:text-base mt-2 font-medium">
             Шинэ шилдэг боловсон хүчнүүдийг эндээс хялбархан удирдаарай.
           </p>

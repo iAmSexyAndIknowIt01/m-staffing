@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal"
 import { getErrorMessage } from "@/lib/errors"
+import { formatToday } from "@/lib/today"
 
 interface StaffViewProps {
   userId: string
@@ -50,17 +51,6 @@ interface DashboardData {
     content: string
     detail_url: string
   }[]
-}
-
-const WEEKDAYS = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"]
-
-// Өнөөдрийн огноо: "2026 оны 10 сарын 19", "Даваа гараг"
-// (браузер бүр mn-MN locale-ыг ижил дэмждэггүй тул гараар форматлав)
-function formatToday(now: Date) {
-  return {
-    date: `${now.getFullYear()} оны ${now.getMonth() + 1} сарын ${now.getDate()}`,
-    weekday: `${WEEKDAYS[now.getDay()]} гараг`,
-  }
 }
 
 export default function StaffView({ userId }: StaffViewProps) {
