@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import MotionLayer from "@/components/motion/MotionLayer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -70,25 +69,13 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       style={{ scrollBehavior: "smooth" }}
-      // Доорх script <html>-д m-pending class нэмдэг тул hydration анхааруулгыг хаана
-      suppressHydrationWarning
     >
-      <head>
-        {/* Landing-аас бусад хуудсанд MotionLayer ажиллатал контентыг нууж анивчихаас сэргийлнэ */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if(location.pathname!=="/"&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("m-pending")`,
-          }}
-        />
-      </head>
       {/* body дээр min-h-screen болон flex-col өгч мобайл үеийн илүүдэл цагаан зайг арилгасан */}
       <body className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0 overflow-x-hidden">
         
         <main className="flex-1 w-full flex flex-col">
           {children}
         </main>
-
-        <MotionLayer />
         
       </body>
     </html>
