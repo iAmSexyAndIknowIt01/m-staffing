@@ -4,7 +4,6 @@ import { useState } from "react"
 import { usePathname } from "next/navigation"
 import LinkNext from "next/link"
 import { CONTRACTS_ENABLED } from "@/lib/features"
-import AmbientBackground from "@/components/motion/AmbientBackground"
 
 interface DashboardShellProps {
   userId: string
@@ -33,9 +32,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row w-full relative">
-      {/* Арын дэвсгэр: login хуудасны тор + анивчих гэрэл */}
-      <AmbientBackground className="bg-[#f8faff]" />
+    <div className="min-h-screen bg-[#f8faff] flex flex-col lg:flex-row w-full relative">
       
       {/* 1. MOBILE NAVBAR */}
       <div className="lg:hidden sticky top-0 w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">

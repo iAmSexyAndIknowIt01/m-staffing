@@ -2,7 +2,6 @@ import { NextResponse, NextRequest } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { parseCompanyProfile } from "@/lib/companyProfile"
-import { getCompanyActiveJobs } from "@/lib/companyJobs"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -32,13 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Хэрэв үзэж буй хэрэглэгч нь энэ компанийн эзэн мөн бол фронтод засах эрхийг (isOwner) олгоно
     const isOwner = currentUserId === id && userRole === "company"
 
-    // Нээлттэй зарууд — татаж чадаагүй ч профайлыг харуулна
-    const jobs = data ? await getCompanyActiveJobs(id).catch((err) => {
-      console.error("Company jobs error:", err)
-      return []
-    }) : []
-
-    return NextResponse.json({ data, isOwner, jobs, viewerRole: userRole ?? null })
+    return NextResponse.json({ data, isOwner })
   } catch (error) {
     console.error("GET Company Profile Error:", error)
     return NextResponse.json({ error: "Датаг ачааллахад алдаа гарлаа." }, { status: 500 })

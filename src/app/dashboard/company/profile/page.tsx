@@ -3,10 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { uploadImage } from "@/lib/uploadImage"
 import { getErrorMessage } from "@/lib/errors"
-import { Pencil } from "lucide-react"
-import CompanyProfileView from "@/components/company/CompanyProfileView"
-import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
-import type { CompanyPublicJob } from "@/lib/companyJobs"
 
 interface CompanyProfileData {
   company_name: string
@@ -23,10 +19,10 @@ interface CompanyProfileData {
 }
 
 export default function CompanyProfilePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const isFetched = useRef(false)
 
   const [isEditMode, setIsEditMode] = useState(false)
-  const [jobs, setJobs] = useState<CompanyPublicJob[]>([])
   const [formData, setFormData] = useState<CompanyProfileData>({
     company_name: "",
     email: "",
@@ -73,7 +69,6 @@ export default function CompanyProfilePage() {
           }
           setFormData(profile)
           setInitialData(profile)
-          setJobs(result.jobs ?? [])
         }
       } catch (err) {
         setMessage({ type: "error", text: getErrorMessage(err) })
@@ -85,7 +80,10 @@ export default function CompanyProfilePage() {
     fetchProfile()
   }, [])
 
-  const handleLogoUpload = async (file: File) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+    
+    const file = e.target.files[0]
     setUploadingLogo(true)
     setMessage(null)
 
@@ -137,43 +135,9 @@ export default function CompanyProfilePage() {
 
   const showLoader = pageLoading || actionLoading || uploadingLogo
 
-  // Харах горим: ажил хайгчид харагдах албан ёсны профайл (ачаалж байх үед доорх loader-тай хэсэг)
-  if (!isEditMode && !pageLoading) {
-    return (
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
-        <p className="pt-2 text-sm text-slate-500">
-          Ажил хайгчид таны профайлыг яг ийм байдлаар харна.
-        </p>
-
-        {message && (
-          <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        <CompanyProfileView
-          profile={formData}
-          jobs={jobs}
-          jobHref={(jobId) => `/dashboard/company/post-job/${jobId}/applicants`}
-          actions={
-            <button
-              type="button"
-              onClick={() => setIsEditMode(true)}
-              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition shadow-sm inline-flex items-center gap-2"
-            >
-              <Pencil className="w-4 h-4" /> Мэдээлэл засах
-            </button>
-          }
-        />
-      </div>
-    )
-  }
-
-  // Засах горим (эсвэл анх ачаалж байх үе)
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6 relative">
+    <div className="w-full max-w-4xl mx-auto animate-fade-in px-4 sm:px-6 lg:px-8 pb-16 relative">
+      
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
@@ -195,27 +159,265 @@ export default function CompanyProfilePage() {
         </div>
       )}
 
-      {!pageLoading && (
-        <>
-          {message && (
-            <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
-              message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-            }`}>
-              {message.text}
+      {/* Header & Cover section */}
+      <div className="relative mb-20 sm:mb-24">
+        <div className="h-32 sm:h-40 md:h-48 bg-linear-to-r from-indigo-500 to-purple-600 rounded-3xl relative overflow-hidden shadow-sm">
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px]"></div>
+          {isEditMode && (
+            <button type="button" className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 backdrop-blur-md rounded-xl transition">
+              📸 Ковер солих
+            </button>
+          )}
+        </div>
+
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleLogoUpload} 
+          accept="image/*" 
+          className="hidden" 
+        />
+
+        <div className="absolute -bottom-12 sm:-bottom-16 left-4 sm:left-6 md:left-10 p-1 bg-[#f8faff] rounded-3xl">
+          <div 
+            onClick={() => isEditMode && !showLoader && fileInputRef.current?.click()}
+            className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-white border-4 border-white rounded-3xl shadow-md flex flex-col items-center justify-center relative group overflow-hidden ${isEditMode ? 'cursor-pointer' : 'cursor-default'}`}
+          >
+            {formData.logo_url ? (
+              <img src={formData.logo_url} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+            ) : (
+              <span className="text-3xl sm:text-4xl">🏢</span>
+            )}
+            
+            {isEditMode && (
+              <div className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs font-bold">
+                Лого засах
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+            {formData.company_name || "Компанийн нэр"}
+          </h1>
+          {formData.tagline && <p className="text-gray-500 mt-1 text-sm font-medium">{formData.tagline}</p>}
+        </div>
+        <div>
+          {!isEditMode ? (
+            <button
+              type="button"
+              disabled={showLoader}
+              onClick={() => setIsEditMode(true)}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition shadow-sm flex items-center gap-2 disabled:opacity-50"
+            >
+              <span>✏️</span> Мэдээлэл засах
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={showLoader}
+                onClick={handleCancel}
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition disabled:opacity-50"
+              >
+                Цуцлах
+              </button>
             </div>
           )}
+        </div>
+      </div>
 
-          <CompanyProfileEditForm
-            value={formData}
-            onChange={(next) => setFormData((prev) => ({ ...prev, ...next }))}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            onLogoSelect={handleLogoUpload}
-            uploadingLogo={uploadingLogo}
-            saving={actionLoading}
-          />
-        </>
+      {message && (
+        <div className={`p-4 mb-6 rounded-2xl font-bold text-sm shadow-sm ${
+          message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+        }`}>
+          {message.text}
+        </div>
       )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 md:p-8 shadow-sm space-y-6">
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
+            <span>📝</span> Ерөнхий мэдээлэл
+          </h3>
+          
+          {isEditMode ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Компанийн нэр *</label>
+                  <input
+                    type="text" required value={formData.company_name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Товч уриа (Tagline)</label>
+                  <input
+                    type="text" value={formData.tagline}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Компанийн тухай</label>
+                <textarea
+                  rows={4} value={formData.description}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Үйл ажиллагааны чиглэл</label>
+                  <select
+                    value={formData.industry}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 bg-white transition"
+                  >
+                    <option>Технологи, Мэдээллийн технологи</option>
+                    <option>Банк, Санхүү, Даатгал</option>
+                    <option>Барилга, Үл хөдлөх хөрөнгө</option>
+                    <option>Боловсрол, Сургалт</option>
+                    <option>Худалдаа, Үйлчилгээ</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Ажилтны тоо</label>
+                  <select
+                    value={formData.company_size}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, company_size: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 bg-white transition"
+                  >
+                    <option>1-10 ажилтан</option>
+                    <option>11-50 ажилтан</option>
+                    <option>51-200 ажилтан</option>
+                    <option>201+ ажилтан</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full">{formData.industry}</span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">👥 {formData.company_size}</span>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Компанийн тухай</h4>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
+                  {formData.description || "Танилцуулга мэдээлэл оруулаагүй байна."}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 md:p-8 shadow-sm space-y-6">
+          <h3 className="text-sm sm:text-base font-bold text-gray-900 border-b border-gray-50 pb-3 flex items-center gap-2">
+            <span>📞</span> Холбоо барих & Холбоосууд
+          </h3>
+
+          {isEditMode ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Утасны дугаар</label>
+                  <input
+                    type="text" value={formData.phone}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Вэбсайт линк</label>
+                  <input
+                    type="url" value={formData.website}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Facebook хуудас</label>
+                  <input
+                    type="url" value={formData.facebook_url}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, facebook_url: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">LinkedIn хуудас</label>
+                  <input
+                    type="url" value={formData.linkedin_url}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, linkedin_url: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Нэвтрэх имэйл</label>
+                <input type="email" disabled value={formData.email} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-sm font-medium cursor-not-allowed" />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div>
+                  <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл хаяг</span>
+                  <span className="text-sm font-semibold text-gray-800 block truncate max-w-full">{formData.email}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Утас</span>
+                  <span className="text-sm font-semibold text-gray-800 block truncate max-w-full">{formData.phone || "—"}</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Цахим хуудас</span>
+                  {formData.website ? (
+                    <a href={formData.website} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline block truncate max-w-full">{formData.website}</a>
+                  ) : <span className="text-sm text-gray-400">—</span>}
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-gray-400 uppercase block mb-1">Сошиал холбоос</span>
+                  <div className="flex flex-wrap gap-3 mt-1">
+                    {formData.facebook_url ? (
+                      <a href={formData.facebook_url} target="_blank" rel="noreferrer" className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">Facebook</a>
+                    ) : null}
+                    {formData.linkedin_url ? (
+                      <a href={formData.linkedin_url} target="_blank" rel="noreferrer" className="text-xs font-bold px-3 py-1.5 bg-sky-50 text-sky-600 rounded-lg hover:bg-sky-100 transition">LinkedIn</a>
+                    ) : null}
+                    {!formData.facebook_url && !formData.linkedin_url && <span className="text-sm text-gray-400">—</span>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {isEditMode && (
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={showLoader}
+              className="w-full sm:w-auto px-8 py-3.5 bg-gray-950 hover:bg-gray-900 text-white font-bold text-sm rounded-2xl transition shadow-md disabled:opacity-50 active:scale-[0.98]"
+            >
+              Өөрчлөлтийг хадгалах 💾
+            </button>
+          </div>
+        )}
+      </form>
     </div>
   )
 }
