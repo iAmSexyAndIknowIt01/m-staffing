@@ -7,6 +7,7 @@ import { Pencil } from "lucide-react"
 import CompanyProfileView from "@/components/company/CompanyProfileView"
 import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
+import { getProfileCompleteness } from "@/lib/companyProfileCompleteness"
 
 interface CompanyProfileData {
   company_name: string
@@ -139,11 +140,40 @@ export default function CompanyProfilePage() {
 
   // Харах горим: ажил хайгчид харагдах албан ёсны профайл (ачаалж байх үед доорх loader-тай хэсэг)
   if (!isEditMode && !pageLoading) {
+    const completeness = getProfileCompleteness(formData)
     return (
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
         <p className="pt-2 text-sm text-slate-500">
           Ажил хайгчид таны профайлыг яг ийм байдлаар харна.
         </p>
+
+        {/* Профайлын бүрдэл — дутуу мэдээллийг зөвхөн эзэмшигчид сануулна */}
+        {completeness.missing.length > 0 && (
+          <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-slate-900">Профайлын бүрдэл</h2>
+                  <span className="text-sm font-semibold text-slate-900">{completeness.percent}%</span>
+                </div>
+                <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full rounded-full bg-orange-500 transition-all" style={{ width: `${completeness.percent}%` }} />
+                </div>
+                <p className="mt-3 text-sm text-slate-500">
+                  Бүрэн профайл ажил хайгчдад илүү итгэл төрүүлнэ. Дутуу: {" "}
+                  <span className="text-slate-700">{completeness.missing.join(", ")}</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditMode(true)}
+                className="shrink-0 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+              >
+                Нөхөж бөглөх
+              </button>
+            </div>
+          </section>
+        )}
 
         {message && (
           <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
