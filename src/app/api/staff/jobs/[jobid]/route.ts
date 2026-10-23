@@ -48,7 +48,13 @@ export async function GET(
     }
 
     // 2. Компанийн мэдээллийг татах (Хэрэв jobData дээр user_id байгаа бол)
-    let companyInfo = {
+    let companyInfo: {
+      id: string | null
+      name: string
+      logo_url: string | null
+      industry?: string | null
+      company_size?: string | null
+    } = {
       id: null,
       name: "Байгууллагын нэр нууцалсан",
       logo_url: null,
@@ -57,7 +63,7 @@ export async function GET(
     if (jobData.user_id) {
       const { data: companyData, error: companyError } = await supabase
         .from("mt_company")
-        .select("id, company_name, logo_url")
+        .select("id, company_name, logo_url, industry, company_size")
         .eq("id", jobData.user_id)
         .single()
 
@@ -66,6 +72,8 @@ export async function GET(
           id: companyData.id,
           name: companyData.company_name,
           logo_url: companyData.logo_url,
+          industry: companyData.industry,
+          company_size: companyData.company_size,
         }
       }
     }
