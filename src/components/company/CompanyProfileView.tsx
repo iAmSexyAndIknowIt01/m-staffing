@@ -1,8 +1,11 @@
+"use client"
+
 import Link from "next/link"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import {
   Briefcase,
   Building2,
+  ChevronLeft,
   ChevronRight,
   Globe,
   Mail,
@@ -72,11 +75,69 @@ function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; ch
   )
 }
 
+const JOBS_PER_PAGE = 10
+
+// Нээлттэй ажлын байрны жагсаалтын хуудаслалт: "1–10 / 23" + өмнөх/дараах + хуудасны дугаар
+function JobsPagination({ page, total, onChange }: { page: number; total: number; onChange: (page: number) => void }) {
+  const totalPages = Math.ceil(total / JOBS_PER_PAGE)
+  if (totalPages <= 1) return null
+
+  const from = (page - 1) * JOBS_PER_PAGE + 1
+  const to = Math.min(page * JOBS_PER_PAGE, total)
+  const btn = "h-8 min-w-8 px-2 inline-flex items-center justify-center rounded-lg border text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
+
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p className="text-xs text-slate-500">
+        {from}–{to} / нийт {total}
+      </p>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onChange(page - 1)}
+          disabled={page === 1}
+          aria-label="Өмнөх хуудас"
+          className={`${btn} border-slate-200 bg-white text-slate-600 hover:bg-slate-50`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-current={n === page ? "page" : undefined}
+            className={`${btn} ${
+              n === page ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange(page + 1)}
+          disabled={page === totalPages}
+          aria-label="Дараах хуудас"
+          className={`${btn} border-slate-200 bg-white text-slate-600 hover:bg-slate-50`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const Empty = () => <span className="text-slate-400 font-normal">Мэдээлэл оруулаагүй</span>
 
 // Ажил хайгчид харагдах компанийн албан ёсны профайл (зөвхөн харах)
 export default function CompanyProfileView({ profile, jobs, jobHref, actions }: Props) {
   const name = profile.company_name || "Компанийн нэр"
+  const [jobsPage, setJobsPage] = useState(1)
+  const totalJobPages = Math.max(1, Math.ceil(jobs.length / JOBS_PER_PAGE))
+  // Жагсаалт өөрчлөгдөж хуудасны тоо багассан ч хоосон хуудас харуулахгүй
+  const currentJobsPage = Math.min(jobsPage, totalJobPages)
+  const visibleJobs = jobs.slice((currentJobsPage - 1) * JOBS_PER_PAGE, currentJobsPage * JOBS_PER_PAGE)
 
   return (
     <div className="space-y-6">
@@ -144,7 +205,7 @@ export default function CompanyProfileView({ profile, jobs, jobHref, actions }: 
             )}
           </section>
 
-          <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-8">
+          <section id="company-jobs" className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-8 scroll-mt-6">
             <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
               <h2 className="text-base font-semibold text-slate-900">Нээлттэй ажлын байр</h2>
               <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">{jobs.length}</span>
@@ -154,7 +215,7 @@ export default function CompanyProfileView({ profile, jobs, jobHref, actions }: 
               <p className="py-6 text-sm text-slate-400">Одоогоор нээлттэй ажлын байр байхгүй байна.</p>
             ) : (
               <ul className="divide-y divide-slate-100">
-                {jobs.map((job) => {
+                {visibleJobs.map((job) => {
                   const body = (
                     <>
                       <div className="min-w-0 flex-1">
@@ -192,6 +253,19 @@ export default function CompanyProfileView({ profile, jobs, jobHref, actions }: 
                 })}
               </ul>
             )}
+
+            <JobsPagination
+              page={currentJobsPage}
+              total={jobs.length}
+              onChange={(next) => {
+                setJobsPage(next)
+                // Жагсаалтын эхлэл дэлгэцээс дээш гарсан бол түүн рүү буцааж гүйлгэнэ
+                const section = document.getElementById("company-jobs")
+                if (section && section.getBoundingClientRect().top < 0) {
+                  section.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+              }}
+            />
           </section>
         </div>
 

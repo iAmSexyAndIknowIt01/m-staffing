@@ -83,7 +83,8 @@ export interface CompanyPublicJob {
 }
 
 // Компанийн профайл дээр ажил хайгчдад харуулах идэвхтэй зарууд
-export async function getCompanyActiveJobs(companyId: string, limit = 20): Promise<CompanyPublicJob[]> {
+// Профайл дээр 10-аар хуудаслан харуулна; хэт их зар татахаас сэргийлж 100-аар хязгаарлав
+export async function getCompanyActiveJobs(companyId: string, limit = 100): Promise<CompanyPublicJob[]> {
   const { data, error } = await supabase
     .from("mt_openjob")
     .select("id, title, job_type, location, salary, created_at")
