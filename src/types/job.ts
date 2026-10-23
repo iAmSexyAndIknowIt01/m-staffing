@@ -5,6 +5,8 @@ export interface JobCompany {
   company_id?: string
   name: string
   logo_url: string | null
+  industry?: string | null
+  company_size?: string | null
 }
 
 export interface JobDetail {
