@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface JobItem {
   id: string
@@ -199,28 +200,13 @@ export default function PostJobPage() {
     return Number(amount).toLocaleString("mn-MN");
   }
 
+  // Бусад хуудастай ижил: контентын оронд loader (цэс харагдсаар)
+  if (loading || checkingApproval) {
+    return <LoadingLayout loading />
+  }
+
   return (
     <div className="max-w-5xl mx-auto animate-fade-in space-y-6 md:space-y-8 px-4 sm:px-0 pb-6">
-      
-      {/* LOADER */}
-      {(loading || checkingApproval) && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
-          <div className="relative flex items-center justify-center h-32 w-32">
-            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
-            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-                mstaffing
-              </span>
-            </div>
-          </div>
-          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            Түр хүлээнэ үү...
-          </p>
-        </div>
-      )}
-
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>

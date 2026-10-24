@@ -8,6 +8,7 @@ import CompanyProfileView from "@/components/company/CompanyProfileView"
 import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
 import { getProfileCompleteness } from "@/lib/companyProfileCompleteness"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface CompanyProfileData {
   company_name: string
@@ -136,10 +137,16 @@ export default function CompanyProfilePage() {
     setMessage(null)
   }
 
-  const showLoader = pageLoading || actionLoading || uploadingLogo
+  // Хадгалах, лого солих үед контентын дээгүүр гарах loader
+  const showLoader = actionLoading || uploadingLogo
+
+  // Анх ачаалж байхад бусад хуудастай ижил: контентын оронд loader (цэс харагдсаар)
+  if (pageLoading) {
+    return <LoadingLayout loading />
+  }
 
   // Харах горим: ажил хайгчид харагдах албан ёсны профайл (ачаалж байх үед доорх loader-тай хэсэг)
-  if (!isEditMode && !pageLoading) {
+  if (!isEditMode) {
     const completeness = getProfileCompleteness(formData)
     return (
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
@@ -201,7 +208,7 @@ export default function CompanyProfilePage() {
     )
   }
 
-  // Засах горим (эсвэл анх ачаалж байх үе)
+  // Засах горим
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6 relative">
       {showLoader && (
@@ -218,34 +225,29 @@ export default function CompanyProfilePage() {
           </div>
           
           <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            {pageLoading && "Профайл мэдээллийг ачаалж байна..."}
             {uploadingLogo && "Лого зургийг шинэчилж байна..."}
             {actionLoading && "Өөрчлөлтийг хадгалж байна..."}
           </p>
         </div>
       )}
 
-      {!pageLoading && (
-        <>
-          {message && (
-            <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
-              message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-            }`}>
-              {message.text}
-            </div>
-          )}
-
-          <CompanyProfileEditForm
-            value={formData}
-            onChange={(next) => setFormData((prev) => ({ ...prev, ...next }))}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            onLogoSelect={handleLogoUpload}
-            uploadingLogo={uploadingLogo}
-            saving={actionLoading}
-          />
-        </>
+      {message && (
+        <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
+          message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+        }`}>
+          {message.text}
+        </div>
       )}
+
+      <CompanyProfileEditForm
+        value={formData}
+        onChange={(next) => setFormData((prev) => ({ ...prev, ...next }))}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        onLogoSelect={handleLogoUpload}
+        uploadingLogo={uploadingLogo}
+        saving={actionLoading}
+      />
     </div>
   )
 }
