@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   async function login() {
+    if (loading) return
+
     try {
       setLoading(true)
 
@@ -209,69 +211,77 @@ export default function LoginPage() {
             Нэвтрэх
           </h2>
 
-          <div className="mt-8">
-            <label>Имэйл</label>
-            <input
-              type="email"
-              placeholder="name@email.com"
-              className="
-                mt-3
-                w-full
-                rounded-2xl
-                border
-                border-orange-100
-                px-5
-                py-4
-                outline-none
-                focus:border-orange-400
-              "
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="mt-6">
-            <label>Нууц үг</label>
-            <PasswordInput
-              autoComplete="current-password"
-              placeholder="••••••••"
-              wrapperClassName="mt-3"
-              className="
-                w-full
-                rounded-2xl
-                border
-                border-orange-100
-                px-5
-                py-4
-                outline-none
-                focus:border-orange-400
-              "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="mt-3 text-right">
-              <Link href="/forgot-password" className="orange-text text-sm hover:underline">
-                Нууц үгээ мартсан уу?
-              </Link>
-            </div>
-          </div>
-
-          <button
-            className="
-              orange-btn
-              w-full
-              mt-10
-              disabled:opacity-50
-            "
-            onClick={login}
-            disabled={loading}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              login()
+            }}
           >
-            {loading
-              ? "Түр хүлээнэ үү..."
-              : role === "staff"
-              ? "Ажил Хайгчаар Нэвтрэх"
-              : "Ажил Олгогчоор Нэвтрэх"}
-          </button>
+            <div className="mt-8">
+              <label>Имэйл</label>
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="name@email.com"
+                className="
+                  mt-3
+                  w-full
+                  rounded-2xl
+                  border
+                  border-orange-100
+                  px-5
+                  py-4
+                  outline-none
+                  focus:border-orange-400
+                "
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-6">
+              <label>Нууц үг</label>
+              <PasswordInput
+                autoComplete="current-password"
+                placeholder="••••••••"
+                wrapperClassName="mt-3"
+                className="
+                  w-full
+                  rounded-2xl
+                  border
+                  border-orange-100
+                  px-5
+                  py-4
+                  outline-none
+                  focus:border-orange-400
+                "
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div className="mt-3 text-right">
+                <Link href="/forgot-password" className="orange-text text-sm hover:underline">
+                  Нууц үгээ мартсан уу?
+                </Link>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="
+                orange-btn
+                w-full
+                mt-10
+                disabled:opacity-50
+              "
+              disabled={loading}
+            >
+              {loading
+                ? "Түр хүлээнэ үү..."
+                : role === "staff"
+                ? "Ажил Хайгчаар Нэвтрэх"
+                : "Ажил Олгогчоор Нэвтрэх"}
+            </button>
+          </form>
 
           <p className="mt-8 text-center text-gray-500">
             Бүртгэлгүй юу?
