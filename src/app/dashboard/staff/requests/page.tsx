@@ -4,6 +4,7 @@ import { Briefcase, FolderOpen, Search } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 // /api/staff/requests-ийн буцаах мөр
 interface ApiRequestRow {
@@ -156,6 +157,11 @@ export default function StaffRequestsPage() {
     return [1, '...', current - 1, current, current + 1, '...', total]
   }
 
+  // Бусад хуудастай ижил: контентын оронд loader (цэс харагдсаар)
+  if (loading) {
+    return <LoadingLayout loading />
+  }
+
   return (
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
@@ -173,12 +179,7 @@ export default function StaffRequestsPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-20 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 text-sm font-medium animate-pulse">Мэдээллийг ачаалж байна...</p>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="text-center py-16 bg-white rounded-2xl sm:rounded-3xl border border-rose-100 shadow-sm px-4">
           <p className="text-rose-500 text-sm font-medium">{error}</p>
         </div>

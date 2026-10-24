@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, Clock, CheckCircle, XCircle, Users, Copy, Check, CheckCheck } from "lucide-react"
 import { getErrorMessage } from "@/lib/errors"
 import { showAlert } from "@/components/common/AppDialog"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface Company {
   id?: string
@@ -167,12 +168,7 @@ ${job.requirements}
   }
 
   if (loading) {
-    return (
-      <div className="max-w-3xl mx-auto py-24 text-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
-        <p className="text-slate-400 text-sm font-medium">Мэдээллийг ачаалж байна...</p>
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   if (error || !job) {
