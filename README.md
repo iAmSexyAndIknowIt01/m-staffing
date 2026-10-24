@@ -20,6 +20,7 @@ npm run dev                  # http://localhost:3000
 | `npm run typecheck` | TypeScript шалгалт |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest unit тест |
+| `npm run theme:dark` | Dark mode CSS-ийг (`src/app/theme-dark.css`) дахин үүсгэнэ. Шинэ өнгөний класс нэмсний дараа ажиллуулна |
 
 Pull request бүр дээр GitHub Actions (`.github/workflows/ci.yml`) дээрх 4 шалгалт болон build-ийг ажиллуулна.
 
@@ -42,6 +43,13 @@ Pull request бүр дээр GitHub Actions (`.github/workflows/ci.yml`) дээ�
 - **DB хандалт**: Бүх хүснэгт RLS асаалттай, anon/authenticated эрхгүй. Зөвхөн API route-ууд `service_role` клиентээр (`src/lib/supabase.ts`) хандана.
 - **Багц**: Үнэ, лимит `src/lib/plans.ts`-д (Free 10 / Standard 50 / Premium 100 идэвхтэй зар). Хугацаа дууссан төлбөртэй багц Free лимиттэй болно.
 - **Зураг хуулах**: Зөвхөн `/api/upload` (төрөл, хэмжээ, magic byte шалгана).
+
+## Dark / Light горим
+
+- Хэрэглэгч хажуугийн цэс, landing navbar, нэвтрэх хуудасны товчоор солино. Сонголт `localStorage`-д хадгалагдана, сонгоогүй бол төхөөрөмжийн тохиргоог дагана.
+- `<html>` дээр `dark` class тавигдана (`src/lib/theme.ts`, `src/components/theme/ThemeToggle.tsx`).
+- Компонентууд Tailwind өнгөний классыг шууд ашигладаг тул `scripts/generate-dark-theme.py` нь ашиглагдсан цайвар өнгөний классуудыг (`bg-white`, `text-gray-900`, `bg-indigo-50` г.м.) олж харанхуй хувилбарыг `src/app/theme-dark.css`-д бичнэ. Шинэ өнгөний класс нэмсэн бол `npm run theme:dark` ажиллуулна.
+- Шинэ кодонд Tailwind-ийн `dark:` variant-ыг шууд хэрэглэж болно (html.dark-аар ажиллана).
 
 ## Migration
 

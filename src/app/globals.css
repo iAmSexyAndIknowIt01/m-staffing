@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Dark mode: цайвар өнгөний классуудыг html.dark үед орлуулна (scripts/generate-dark-theme.py) */
+@import "./theme-dark.css";
+
+/* `dark:` variant-ыг системийн тохиргоо биш, html.dark классаар (горим солих товчоор) ажиллуулна */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --bg: #ffffff;
@@ -381,4 +386,70 @@ white;
   body {
     font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif !important;
   }
+}
+
+/* ===== Dark mode ===== */
+/* Харанхуй горимын өнгөний токенууд — theme-dark.css эдгээрийг ашиглана */
+:root {
+  --dk-bg: #0e1116;
+  --dk-surface: #161a21;
+  --dk-surface-2: #1b2028;
+  --dk-surface-3: #222833;
+  --dk-surface-4: #2a313d;
+  --dk-surface-5: #353d4a;
+  --dk-raised: #2c3442;
+  --dk-raised-hover: #364051;
+  --dk-border: #262d38;
+  --dk-border-strong: #333b48;
+  --dk-border-heavy: #46505f;
+  --dk-fg: #eceef2;
+  --dk-fg-2: #d2d6dd;
+  --dk-fg-3: #afb5c0;
+  --dk-fg-4: #8d95a3;
+  --dk-fg-5: #6f7886;
+}
+
+html.dark {
+  color-scheme: dark;
+  --bg: var(--dk-bg);
+  --card: var(--dk-surface);
+  --text: var(--dk-fg);
+  --muted: var(--dk-fg-4);
+}
+
+html.dark body {
+  background: var(--dk-bg);
+  color: var(--dk-fg);
+}
+
+html.dark ::placeholder {
+  color: var(--dk-fg-5);
+}
+
+html.dark .glass {
+  background: rgba(22, 26, 33, 0.78);
+  border-color: rgba(255, 122, 0, 0.18);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .soft-card {
+  background: color-mix(in srgb, #ff7a00 12%, var(--dk-surface));
+}
+
+html.dark .hero-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 140, 0, 0.14), transparent 40%),
+    radial-gradient(circle at 80% 50%, rgba(255, 170, 0, 0.12), transparent 40%),
+    var(--dk-bg);
+}
+
+/* Горим солигдох үед өнгө зөөлөн шилжинэ (зөвхөн товч дарсан үед class нэмэгдэнэ) */
+html.theme-transition,
+html.theme-transition * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
+}
+
+/* Нэвтрэх/бүртгүүлэх хуудасны улбар шар тор харанхуй дэвсгэр дээр хэт тод тул бүдгэрүүлнэ */
+html.dark [class*="rgba(255,140,0,.35)"] {
+  opacity: 0.16;
 }

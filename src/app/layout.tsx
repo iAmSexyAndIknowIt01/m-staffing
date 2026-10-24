@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -18,7 +20,10 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f97316" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1116" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -69,13 +74,21 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       style={{ scrollBehavior: "smooth" }}
+      // THEME_INIT_SCRIPT нь hydration-аас өмнө html-д "dark" class нэмж болзошгүй
+      suppressHydrationWarning
     >
+      <head>
+        {/* Хуудас зурагдахаас өмнө горимыг тавьж цагаан анивчилтаас сэргийлнэ */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       {/* body дээр min-h-screen болон flex-col өгч мобайл үеийн илүүдэл цагаан зайг арилгасан */}
       <body className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 selection:bg-orange-500 selection:text-white m-0 p-0 overflow-x-hidden">
         
         <main className="flex-1 w-full flex flex-col">
           {children}
         </main>
+
+        <FloatingThemeToggle />
         
       </body>
     </html>
