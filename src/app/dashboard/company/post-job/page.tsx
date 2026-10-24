@@ -30,6 +30,45 @@ const getJobTypeLabel = (type?: string) => {
   }
 }
 
+// Шүүлтүүрийг tab-ын session-д хадгалж, хуудас руу буцаж ирэхэд сэргээнэ
+const FILTERS_KEY = "mstaffing:company-post-job-filters"
+
+interface JobFilters {
+  searchQuery: string
+  statusFilter: string
+  salaryFilter: string
+  applicantFilter: string
+  dateSort: string
+  currentPage: number
+  itemsPerPage: number
+}
+
+const DEFAULT_FILTERS: JobFilters = {
+  searchQuery: "",
+  statusFilter: "all",
+  salaryFilter: "all",
+  applicantFilter: "all",
+  dateSort: "newest",
+  currentPage: 1,
+  itemsPerPage: 10,
+}
+
+function readStoredFilters(): JobFilters {
+  if (typeof window === "undefined") return DEFAULT_FILTERS
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(FILTERS_KEY) || "{}") as Partial<JobFilters>
+    const merged = { ...DEFAULT_FILTERS }
+    for (const key of Object.keys(DEFAULT_FILTERS) as (keyof JobFilters)[]) {
+      if (typeof stored[key] === typeof DEFAULT_FILTERS[key]) {
+        ;(merged as Record<string, unknown>)[key] = stored[key]
+      }
+    }
+    return merged
+  } catch {
+    return DEFAULT_FILTERS
+  }
+}
+
 export default function PostJobPage() {
   const router = useRouter()
   const [jobs, setJobs] = useState<JobItem[]>([])
@@ -44,14 +83,25 @@ export default function PostJobPage() {
     title: "Анхааруулга"
   })
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [salaryFilter, setSalaryFilter] = useState("all")
-  const [applicantFilter, setApplicantFilter] = useState("all")
-  const [dateSort, setDateSort] = useState("newest")
-  
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  // Анх ачаалахад loader харагддаг тул session-оос уншсан утга hydration-д нөлөөлөхгүй
+  const [initialFilters] = useState(readStoredFilters)
+  const [searchQuery, setSearchQuery] = useState(initialFilters.searchQuery)
+  const [statusFilter, setStatusFilter] = useState(initialFilters.statusFilter)
+  const [salaryFilter, setSalaryFilter] = useState(initialFilters.salaryFilter)
+  const [applicantFilter, setApplicantFilter] = useState(initialFilters.applicantFilter)
+  const [dateSort, setDateSort] = useState(initialFilters.dateSort)
+
+  const [currentPage, setCurrentPage] = useState(initialFilters.currentPage)
+  const [itemsPerPage, setItemsPerPage] = useState(initialFilters.itemsPerPage)
+
+  useEffect(() => {
+    const filters: JobFilters = { searchQuery, statusFilter, salaryFilter, applicantFilter, dateSort, currentPage, itemsPerPage }
+    try {
+      sessionStorage.setItem(FILTERS_KEY, JSON.stringify(filters))
+    } catch {
+      // Хадгалах боломжгүй (private горим г.м.) үед шүүлтүүр зөвхөн сэргээгдэхгүй
+    }
+  }, [searchQuery, statusFilter, salaryFilter, applicantFilter, dateSort, currentPage, itemsPerPage])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -170,6 +220,8 @@ export default function PostJobPage() {
     dateSort !== "newest"
 
   const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage)
+  // Сэргээсэн хуудасны дугаар (зар устсан г.м.) хэтэрсэн бол сүүлийн хуудсыг харуулна
+  if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const currentJobs = filteredAndSortedJobs.slice(indexOfFirstItem, indexOfLastItem)

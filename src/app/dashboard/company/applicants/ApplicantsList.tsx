@@ -1,11 +1,12 @@
 "use client"
 
-import { Briefcase, Calendar, CalendarCheck, FileText, Folder, Mail, Phone, Search, X } from "lucide-react"
+import { Briefcase, Calendar, FileText, Folder, Mail, Phone, Search, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
-import { showAlert, showConfirm } from "@/components/common/AppDialog"
+import { showAlert } from "@/components/common/AppDialog"
+import { confirmCreateContract, confirmStatusChange } from "@/components/company/confirmApplicantAction"
 
 interface Applicant {
   id: string
@@ -74,21 +75,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   }, [applicants, statusFilter, selectedJobFilter, searchQuery])
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    if (newStatus === "interview") {
-      const app = applicants.find((a) => a.id === id)
-      const ok = await showConfirm(
-        "Ажил горилогчийн төлөв «Ярилцлага» болж өөрчлөгдөнө. Үргэлжлүүлэх үү?",
-        {
-          title: "Ярилцлагад урих",
-          confirmLabel: "Урих",
-          icon: CalendarCheck,
-          subject: app
-            ? { name: app.user_name, details: [app.job_title, app.phone].filter((v) => v && v !== "Хоосон") }
-            : undefined,
-        }
-      )
-      if (!ok) return
-    }
+    if (!(await confirmStatusChange(newStatus, applicants.find((a) => a.id === id)))) return
 
     try {
       setUpdatingId(id)
@@ -112,6 +99,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
   // Тэнцсэн анкетаас гэрээний ноорог үүсгэж (эсвэл байгааг нь) нээнэ
   const handleCreateContract = async (id: string) => {
+    if (!(await confirmCreateContract(applicants.find((a) => a.id === id)))) return
+
     try {
       setUpdatingId(id)
       const response = await fetch("/api/company/contracts", {
