@@ -1,6 +1,8 @@
 "use client"
 
+import { GraduationCap, X } from "lucide-react"
 import { useState } from "react"
+import { showAlert } from "@/components/common/AppDialog"
 
 export type Education = {
   school: string
@@ -32,9 +34,9 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
 
 
   const handleAddOrUpdate = () => {
-    if (!form.school.trim()) return alert("Сургуулийн нэрийг оруулна уу")
+    if (!form.school.trim()) return void showAlert("Сургуулийн нэрийг оруулна уу.", { tone: "warning", title: "Мэдээлэл дутуу" })
     if (!form.isCurrent && !form.graduationYear.trim()) {
-      return alert("Төгссөн оноо оруулна уу эсвэл 'Одоо суралцаж буй' сонголтыг сонгоно уу")
+      return void showAlert("Төгссөн оноо оруулна уу эсвэл «Одоо суралцаж буй» сонголтыг сонгоно уу.", { tone: "warning", title: "Мэдээлэл дутуу" })
     }
 
     let updated: Education[]
@@ -79,9 +81,9 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
         {/* HEADER */}
         <div className="p-6 border-b flex justify-between items-center bg-white shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-            🎓 Боловсролын мэдээлэл удирдах
+            <GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсролын мэдээлэл удирдах
           </h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200">✕</button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
         </div>
 
         {/* BODY */}
@@ -97,13 +99,13 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                       <h4 className="font-bold text-sm text-gray-800">{item.school}</h4>
                       <p className="text-xs text-gray-500">
                         {item.degree} {item.field && `— ${item.field}`} 
-                        <span className="ml-1.5 font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[10px]">
+                        <span className="ml-1.5 font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-xs">
                           {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                         </span>
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <button type="button" onClick={() => handleEdit(idx)} className="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-indigo-100">Засах</button>
+                      <button type="button" onClick={() => handleEdit(idx)} className="text-xs bg-orange-50 text-orange-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-orange-100">Засах</button>
                       <button type="button" onClick={() => handleDelete(idx)} className="text-xs bg-red-50 text-red-500 px-2.5 py-1.5 rounded-lg font-medium hover:bg-red-100">Устгах</button>
                     </div>
                   </div>
@@ -115,7 +117,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
           {/* ФОРМ ОРУУЛАХ ХЭСЭГ */}
           <div className="border border-dashed p-5 rounded-2xl bg-gray-50/50 space-y-4">
             <h3 className="text-sm font-bold text-gray-700">
-              {editingIndex !== null ? "📝 Мэдээлэл засах" : "➕ Шинээр боловсрол нэмэх"}
+              {editingIndex !== null ? "Мэдээлэл засах" : "Шинээр боловсрол нэмэх"}
             </h3>
             
             <div>
@@ -125,7 +127,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                 placeholder="Жишээ нь: Монгол Улсын Их Сургууль"
                 value={form.school}
                 onChange={(e) => setForm({ ...form, school: e.target.value })}
-                className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
               />
             </div>
 
@@ -137,7 +139,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   placeholder="Жишээ нь: Бакалавр, Магистр"
                   value={form.degree}
                   onChange={(e) => setForm({ ...form, degree: e.target.value })}
-                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                 />
               </div>
               <div>
@@ -147,7 +149,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   placeholder="Жишээ нь: Программын хангамж"
                   value={form.field}
                   onChange={(e) => setForm({ ...form, field: e.target.value })}
-                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                 />
               </div>
             </div>
@@ -158,7 +160,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   type="checkbox"
                   checked={form.isCurrent || false}
                   onChange={(e) => setForm({ ...form, isCurrent: e.target.checked, graduationYear: e.target.checked ? "" : form.graduationYear })}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                  className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
                 />
                 <span className="text-xs font-bold text-gray-600">Би одоо энэ сургуульд суралцаж байгаа</span>
               </label>
@@ -171,7 +173,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                     placeholder="Жишээ нь: 2024"
                     value={form.graduationYear}
                     onChange={(e) => setForm({ ...form, graduationYear: e.target.value })}
-                    className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                    className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                   />
                 </div>
               )}
@@ -194,9 +196,9 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
             type="button"
             onClick={handleFinalSave}
             disabled={list.length === 0} // 👈 Хэрэв жагсаалт хоосон бол идэвхгүй болгоно
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
+            className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
-            Батлах & Хадгалах ✨
+            Батлах & Хадгалах
           </button>
         </div>
       </div>

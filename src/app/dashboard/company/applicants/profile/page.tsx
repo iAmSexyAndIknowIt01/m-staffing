@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Briefcase, Clock, GraduationCap, Wrench, User, UserRound } from "lucide-react"
 import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
@@ -74,7 +75,7 @@ export default function ApplicantProfilePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-100">
-        <div className="h-10 w-10 border-b-2 border-indigo-600 rounded-full animate-spin" />
+        <div className="h-10 w-10 border-b-2 border-orange-600 rounded-full animate-spin" />
       </div>
     }>
       <ApplicantProfileContent />
@@ -155,16 +156,16 @@ function ApplicantProfileContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
       </div>
@@ -174,7 +175,7 @@ function ApplicantProfileContent() {
   if (error) {
     return (
       <div className="max-w-5xl mx-auto mt-8 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
-        ⚠️ Алдаа гарлаа: {error}
+        <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
       </div>
     )
   }
@@ -182,7 +183,7 @@ function ApplicantProfileContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div>
-        <h1 className="text-3xl font-black text-gray-900">Ажил горилогчийн профайл</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900">Ажил горилогчийн профайл</h1>
         <p className="text-sm text-gray-400 mt-1">Ирүүлсэн анкетын дэлгэрэнгүй мэдээлэл</p>
       </div>
 
@@ -190,12 +191,12 @@ function ApplicantProfileContent() {
         {/* LEFT PANEL */}
         <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6 self-start">
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
-            <div className="w-32 h-32 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden border border-gray-100 shadow-inner">
+            <div className="w-32 h-32 bg-orange-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden border border-gray-100 shadow-inner">
               {profile.avatarUrl ? (
                 <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-4xl font-black text-indigo-600">
-                  {profile.fullName ? profile.fullName.charAt(0) : "👤"}
+                <span className="text-4xl font-extrabold text-orange-600">
+                  {profile.fullName ? profile.fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}
             </div>
@@ -228,14 +229,14 @@ function ApplicantProfileContent() {
         {/* RIGHT PANEL */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           <div>
-            <label className="text-sm font-bold block mb-2">🚀 Товч танилцуулга (Bio)</label>
+            <label className="text-sm font-bold block mb-2"><UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Товч танилцуулга (Bio)</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-700 min-h-20 whitespace-pre-wrap">
               {profile.bio || "Танилцуулга бичээгүй байна."}
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">🛠️ Ур чадвар</label>
+            <label className="text-sm font-bold block mb-2"><Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар</label>
             <div className="border border-gray-100 rounded-2xl p-5 bg-gray-50/50">
               <div className="mb-5">
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Техникийн ур чадвар</h4>
@@ -261,7 +262,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">💼 Ажлын туршлага</label>
+            <label className="text-sm font-bold block mb-2"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын туршлага</label>
             {profile.experience.length > 0 ? (
               <div className="space-y-3">
                 {profile.experience.map((item, idx) => (
@@ -269,7 +270,7 @@ function ApplicantProfileContent() {
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <h4 className="text-base font-bold text-gray-900">{item.position}</h4>
-                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">{item.company}</p>
+                        <p className="text-sm font-semibold text-orange-600 mt-0.5">{item.company}</p>
                       </div>
                       <span className="text-xs text-gray-500 font-bold bg-gray-100 px-2.5 py-1 rounded-lg shrink-0">
                         {item.startDate} — {item.endDate || "Одоог хүртэл"}
@@ -291,7 +292,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">🎓 Боловсрол</label>
+            <label className="text-sm font-bold block mb-2"><GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсрол</label>
             {profile.education.length > 0 ? (
               <div className="space-y-3">
                 {profile.education.map((item, idx) => (
@@ -299,11 +300,11 @@ function ApplicantProfileContent() {
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <h4 className="text-base font-bold text-gray-900">{item.school}</h4>
-                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">
+                        <p className="text-sm font-semibold text-orange-600 mt-0.5">
                           {item.degree} {item.field ? `— ${item.field}` : ""}
                         </p>
                       </div>
-                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 bg-gray-100'}`}>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-orange-600 bg-orange-50' : 'text-gray-500 bg-gray-100'}`}>
                         {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                       </span>
                     </div>
@@ -318,7 +319,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-1">🕒 Ажиллах боломжтой цаг</label>
+            <label className="text-sm font-bold block mb-1"><Clock size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажиллах боломжтой цаг</label>
             <div className="space-y-2.5 mt-2">
               {[
                 ["monday", "Даваа"],
@@ -333,10 +334,10 @@ function ApplicantProfileContent() {
                 const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
                 
                 return (
-                  <div key={key} className={`border rounded-xl px-4 py-3 flex items-center justify-between text-sm ${day?.enabled ? "border-indigo-100 bg-indigo-50/30" : "border-gray-50 bg-gray-50/50"}`}>
+                  <div key={key} className={`border rounded-xl px-4 py-3 flex items-center justify-between text-sm ${day?.enabled ? "border-orange-100 bg-orange-50/30" : "border-gray-50 bg-gray-50/50"}`}>
                     <span className="font-semibold text-gray-700">{label}</span>
                     {day?.enabled ? (
-                      <div className="flex items-center gap-2 font-bold text-indigo-600">
+                      <div className="flex items-center gap-2 font-bold text-orange-600">
                         <span>{day?.from}</span>
                         <span className="text-gray-400">→</span>
                         <span>{day?.to}</span>

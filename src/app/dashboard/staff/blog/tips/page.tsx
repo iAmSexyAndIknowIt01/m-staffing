@@ -1,5 +1,6 @@
 "use client"
 
+import { Lightbulb } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
@@ -37,7 +38,7 @@ export default function TipsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
       </div>
     )
   }
@@ -52,17 +53,17 @@ export default function TipsPage() {
         <Link href="/dashboard" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition">
           ← Буцах
         </Link>
-        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Зөвлөгөө 💡</h1>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Зөвлөгөө</h1>
       </div>
 
       <div className="space-y-6">
         {tips.map((tip) => (
-          <div key={tip.id} className="bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-indigo-100 transition-all">
+          <div key={tip.id} className="bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-orange-100 transition-all">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{tip.icon}</span>
+              <span className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0"><Lightbulb className="w-6 h-6" /></span>
               <div>
-                <h3 className="font-black text-lg text-gray-900">{tip.title}</h3>
-                <p className="text-[10px] text-gray-400 font-medium">{tip.created_at}</p>
+                <h3 className="font-bold text-lg text-gray-900">{tip.title}</h3>
+                <p className="text-xs text-gray-400 font-medium">{tip.created_at}</p>
               </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed font-medium whitespace-pre-line">

@@ -61,7 +61,7 @@ ${selectedJob.requirements}
   // createPortal ашиглан DOM-ын хамгийн гадна талд (body рүү шууд) render хийнэ
   return createPortal(
     <div className="fixed inset-0 h-dvh bg-slate-900/60 backdrop-blur-md z-99999 flex items-center justify-center p-3 sm:p-4 transition-all duration-300">
-      <div className="bg-white rounded-[28px] max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-start gap-4 bg-white shrink-0">
@@ -72,9 +72,9 @@ ${selectedJob.requirements}
               className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 hover:scale-105 transition duration-200 cursor-pointer shadow-sm"
             >
               {modalLogoUrl ? (
-                <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
+                <img src={modalLogoUrl} alt="Байгууллагын лого" className="w-full h-full object-contain p-1" />
               ) : (
-                <span className="text-base font-black text-indigo-500 uppercase">
+                <span className="text-base font-bold text-orange-500 uppercase">
                   {selectedJob.mt_company?.name?.substring(0, 2) || "CO"}
                 </span>
               )}
@@ -84,11 +84,11 @@ ${selectedJob.requirements}
             <div className="space-y-1">
               <div className="flex flex-wrap gap-1.5">
                 {isModalJobApplied && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
                     Хүсэлт илгээсэн ✓
                   </span>
                 )}
-                <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50/70 px-2.5 py-0.5 rounded-full border border-indigo-100/50 uppercase tracking-wide">
+                <span className="text-xs font-bold text-orange-600 bg-orange-50/70 px-2.5 py-0.5 rounded-full border border-orange-100/50 uppercase tracking-wide">
                   {selectedJob.category}
                 </span>
               </div>
@@ -122,7 +122,7 @@ ${selectedJob.requirements}
             <button
               onClick={handleCopyDetails}
               title="Мэдээллийг хуулах"
-              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition flex items-center gap-1 text-xs font-semibold"
+              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-orange-600 transition flex items-center gap-1 text-xs font-semibold"
             >
               {copied ? (
                 <>
@@ -156,17 +156,17 @@ ${selectedJob.requirements}
                 <MapPin className="w-4 h-4 text-slate-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Байршил</span>
+                <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Байршил</span>
                 <span className="text-xs font-bold text-slate-800">{selectedJob.location || "Улаанбаатар"}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5 text-slate-600">
               <div className="p-2 bg-white rounded-xl border border-slate-100 text-slate-400 shadow-xs">
-                <Briefcase className="w-4 h-4 text-indigo-500" />
+                <Briefcase className="w-4 h-4 text-orange-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Төрөл</span>
+                <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Төрөл</span>
                 <span className="text-xs font-bold text-slate-800">{getJobTypeText(selectedJob.job_type)}</span>
               </div>
             </div>
@@ -176,10 +176,10 @@ ${selectedJob.requirements}
                 <DollarSign className="w-4 h-4 text-emerald-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
                   Цалингийн нөхцөл ({getSalaryTypeText(selectedJob.salary_type)})
                 </span>
-                <span className="text-sm font-black text-emerald-600">
+                <span className="text-sm font-bold text-emerald-600">
                   ₮ {formatSalary(selectedJob.salary)}
                 </span>
               </div>
@@ -189,10 +189,10 @@ ${selectedJob.requirements}
           {/* Үүрэг хариуцлага */}
           <div className="space-y-2.5">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1 h-3.5 bg-indigo-500 rounded-full" />
+              <span className="w-1 h-3.5 bg-orange-500 rounded-full" />
               Ажлын үүрэг, тодорхойлолт
             </h4>
-            <div className="text-[14px] text-slate-600 leading-relaxed whitespace-pre-line bg-white rounded-xl p-1">
+            <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-line bg-white rounded-xl p-1">
               {selectedJob.description}
             </div>
           </div>
@@ -203,7 +203,7 @@ ${selectedJob.requirements}
               <span className="w-1 h-3.5 bg-amber-500 rounded-full" />
               Тавигдах шаардлага
             </h4>
-            <div className="text-[14px] text-slate-600 leading-relaxed whitespace-pre-line bg-white rounded-xl p-1">
+            <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-line bg-white rounded-xl p-1">
               {selectedJob.requirements}
             </div>
           </div>
@@ -236,7 +236,7 @@ ${selectedJob.requirements}
               <button
                 onClick={() => triggerApplyConfirmation(selectedJob.id)}
                 disabled={submitting || checkingProfile}
-                className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/10 active:scale-98 disabled:opacity-50 min-w-35 flex items-center justify-center gap-2"
+                className="px-6 py-2.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-xl transition shadow-md shadow-orange-600/10 active:scale-98 disabled:opacity-50 min-w-35 flex items-center justify-center gap-2"
               >
                 {checkingProfile ? (
                   <>
@@ -244,7 +244,7 @@ ${selectedJob.requirements}
                     <span>Шалгаж байна...</span>
                   </>
                 ) : (
-                  "Анкет илгээх 🚀"
+                  "Анкет илгээх"
                 )}
               </button>
             )}

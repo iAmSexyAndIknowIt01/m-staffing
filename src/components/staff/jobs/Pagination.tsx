@@ -40,7 +40,7 @@ export default function Pagination({
       <button
         onClick={() => handlePageChange((prev) => Math.max(prev - 1, 1))}
         disabled={currentPage === 1}
-        className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 inline-flex items-center justify-center rounded-xl border border-slate-200/70 bg-white text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all duration-200"
+        className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 inline-flex items-center justify-center rounded-xl border border-slate-200/70 bg-white text-slate-600 hover:text-orange-600 hover:border-orange-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all duration-200"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -52,8 +52,8 @@ export default function Pagination({
             onClick={() => handlePageChange(1)} 
             className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
               currentPage === 1 
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
-                : "bg-white border border-slate-200/70 text-slate-600 hover:border-indigo-200"
+                ? "bg-orange-600 text-white shadow-md shadow-orange-600/10" 
+                : "bg-white border border-slate-200/70 text-slate-600 hover:border-orange-200"
             }`}
           >
             1
@@ -73,8 +73,8 @@ export default function Pagination({
           onClick={() => handlePageChange(page)}
           className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
             currentPage === page 
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
-              : "bg-white border border-slate-200/70 text-slate-600 hover:border-indigo-200"
+              ? "bg-orange-600 text-white shadow-md shadow-orange-600/10" 
+              : "bg-white border border-slate-200/70 text-slate-600 hover:border-orange-200"
           }`}
         >
           {page}
@@ -93,8 +93,8 @@ export default function Pagination({
             onClick={() => handlePageChange(totalPages)} 
             className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
               currentPage === totalPages 
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
-                : "bg-white border border-slate-200/70 text-slate-600 hover:border-indigo-200"
+                ? "bg-orange-600 text-white shadow-md shadow-orange-600/10" 
+                : "bg-white border border-slate-200/70 text-slate-600 hover:border-orange-200"
             }`}
           >
             {totalPages}
@@ -106,7 +106,7 @@ export default function Pagination({
       <button
         onClick={() => handlePageChange((prev) => Math.min(prev + 1, totalPages))}
         disabled={currentPage === totalPages}
-        className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 inline-flex items-center justify-center rounded-xl border border-slate-200/70 bg-white text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all duration-200"
+        className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 inline-flex items-center justify-center rounded-xl border border-slate-200/70 bg-white text-slate-600 hover:text-orange-600 hover:border-orange-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all duration-200"
       >
         <ChevronRight className="w-4 h-4" />
       </button>

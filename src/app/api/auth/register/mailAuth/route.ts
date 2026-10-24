@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     await transporter.sendMail({
       from: MAIL_FROM,
       to: email,
-      subject: "MSTAFFING - Бүртгэл баталгаажуулах код",
+      subject: "MStaffing - Бүртгэл баталгаажуулах код",
       html: codeEmailHtml(
         "МSTAFFING системд бүртгүүлсэнд баярлалаа. Таны бүртгэлийг баталгаажуулах 6 оронтой код:",
         generatedCode

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
+import AppDialogHost from "@/components/common/AppDialog";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const inter = Inter({
@@ -35,12 +36,12 @@ const baseUrl = process.env.NODE_ENV === "production"
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "M-Staffing | Ажлын байрны нэгдсэн систем",
-    template: "%s | M-Staffing",
+    default: "MStaffing | Ажлын байрны нэгдсэн систем",
+    template: "%s | MStaffing",
   },
   description: "Монголын шилдэг компаниудад ажилд зуучлах нэгдсэн платформ.",
-  keywords: ["ажил", "ажлын байр", "CV илгээх", "Японд ажиллах", "M-Staffing", "ажилд орох"],
-  authors: [{ name: "M-Staffing Team" }],
+  keywords: ["ажил", "ажлын байр", "CV илгээх", "Японд ажиллах", "MStaffing", "ажилд орох"],
+  authors: [{ name: "MStaffing Team" }],
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -49,15 +50,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "mn_MN",
     url: "https://m-staffing.mn",
-    title: "M-Staffing | Ажлын байрны нэгдсэн систем",
+    title: "MStaffing | Ажлын байрны нэгдсэн систем",
     description: "Танд тохирох нээлттэй ажлын байрууд.",
-    siteName: "M-Staffing",
+    siteName: "MStaffing",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "M-Staffing Platform",
+        alt: "MStaffing Platform",
       },
     ],
   },
@@ -89,6 +90,7 @@ export default function RootLayout({
         </main>
 
         <FloatingThemeToggle />
+        <AppDialogHost />
         
       </body>
     </html>

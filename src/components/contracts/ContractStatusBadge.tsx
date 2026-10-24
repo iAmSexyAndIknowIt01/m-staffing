@@ -13,7 +13,7 @@ const STYLES: Record<ContractStatus, string> = {
 
 export default function ContractStatusBadge({ status }: { status: ContractStatus }) {
   return (
-    <span className={`inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold border ${STYLES[status]}`}>
+    <span className={`inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold border ${STYLES[status]}`}>
       {CONTRACT_STATUS_LABELS[status]}
     </span>
   )

@@ -44,7 +44,7 @@ export default function Navbar() {
                 <span className="text-orange-500">Staffing</span>
               </h1>
               <p
-                className="text-[10px] md:text-[11px] text-gray-400 mt-0.5"
+                className="text-xs md:text-xs text-gray-400 mt-0.5"
               >
                 Future of Work
               </p>
@@ -57,16 +57,20 @@ export default function Navbar() {
           >
             {[
               {
-                label: "Ажил Хайх",
+                label: "Ажил хайх",
                 href: "/dashboard/staff/jobs",
               },
               {
-                label: "Staff Хайх",
-                href: "/dashboard/company/applicants",
+                label: "Ажилтан хайх",
+                href: "/dashboard/company/search-staff",
               },
               {
                 label: "Яагаад MStaffing",
-                href: "#features",
+                href: "/#features",
+              },
+              {
+                label: "Бидний тухай",
+                href: "/about",
               },
             ].map((item) => (
               <Link

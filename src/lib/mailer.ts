@@ -9,7 +9,7 @@ export const transporter = nodemailer.createTransport({
   },
 })
 
-export const MAIL_FROM = `"MSTAFFING" <${process.env.GMAIL_USER}>`
+export const MAIL_FROM = `"MStaffing" <${process.env.GMAIL_USER}>`
 
 export function escapeHtml(value: string): string {
   return value

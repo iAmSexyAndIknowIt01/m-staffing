@@ -1,5 +1,6 @@
 "use client"
 
+import { Briefcase, Mail, MapPin, Phone, Wallet, User } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getErrorMessage } from "@/lib/errors"
 import { JOB_TYPE_LABELS, formatDate } from "./format"
@@ -86,7 +87,7 @@ export function useApplicantDetail(jobRequestId: string | null | undefined, enab
 export function ApplicantLoading() {
   return (
     <div className="py-16 flex justify-center">
-      <div className="h-10 w-10 border-b-2 border-indigo-600 rounded-full animate-spin" />
+      <div className="h-10 w-10 border-b-2 border-orange-600 rounded-full animate-spin" />
     </div>
   )
 }
@@ -102,18 +103,18 @@ export function ApplicantProfileSection({ profile }: { profile: ApplicantProfile
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 shrink-0 bg-indigo-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
+        <div className="w-16 h-16 shrink-0 bg-orange-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl font-black text-indigo-600">{profile.full_name.charAt(0) || "👤"}</span>
+            <span className="text-2xl font-extrabold text-orange-600">{profile.full_name.charAt(0) || <User className="w-6 h-6" />}</span>
           )}
         </div>
         <div className="min-w-0">
-          <div className="font-black text-gray-900 text-lg truncate">{profile.full_name}</div>
+          <div className="font-bold text-gray-900 text-lg truncate">{profile.full_name}</div>
           <div className="text-xs text-gray-500 space-x-3">
-            {profile.phone && <span>📞 {profile.phone}</span>}
-            {profile.email && <span>✉️ {profile.email}</span>}
+            {profile.phone && <span><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.phone}</span>}
+            {profile.email && <span><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.email}</span>}
           </div>
         </div>
       </div>
@@ -130,7 +131,7 @@ export function ApplicantProfileSection({ profile }: { profile: ApplicantProfile
           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Ур чадвар</h4>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s) => (
-              <span key={s} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-semibold">{s}</span>
+              <span key={s} className="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 text-xs font-semibold">{s}</span>
             ))}
           </div>
         </section>
@@ -180,11 +181,11 @@ export function ApplicantJobSection({ application, full = false }: { application
     <div className="bg-violet-50/60 border border-violet-100 rounded-2xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-[11px] font-bold text-violet-500 uppercase tracking-wider">Горилж буй ажлын байр</div>
-          <div className="font-black text-gray-900 text-base mt-0.5">💼 {job.title}</div>
+          <div className="text-xs font-bold text-violet-500 uppercase tracking-wider">Горилж буй ажлын байр</div>
+          <div className="font-bold text-gray-900 text-base mt-0.5"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.title}</div>
         </div>
         {application?.created_at && (
-          <div className="text-[11px] text-gray-400 whitespace-nowrap" suppressHydrationWarning>
+          <div className="text-xs text-gray-400 whitespace-nowrap" suppressHydrationWarning>
             Анкет: {formatDate(application.created_at)}
           </div>
         )}
@@ -192,17 +193,17 @@ export function ApplicantJobSection({ application, full = false }: { application
       <div className="flex flex-wrap gap-1.5 text-xs font-semibold">
         {job.category && <span className="px-2.5 py-1 rounded-lg bg-white border border-violet-100 text-gray-600">{CATEGORY_LABELS[job.category] || job.category}</span>}
         {job.job_type && <span className="px-2.5 py-1 rounded-lg bg-white border border-violet-100 text-gray-600">{JOB_TYPE_LABELS[job.job_type] || job.job_type}</span>}
-        {job.location && <span className="px-2.5 py-1 rounded-lg bg-white border border-violet-100 text-gray-600">📍 {job.location}</span>}
+        {job.location && <span className="px-2.5 py-1 rounded-lg bg-white border border-violet-100 text-gray-600"><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.location}</span>}
         {(job.salary || job.salary_type) && (
           <span className="px-2.5 py-1 rounded-lg bg-white border border-violet-100 text-gray-600">
-            💰 {[job.salary, job.salary_type ? JOB_SALARY_TYPE_LABELS[job.salary_type] || job.salary_type : null].filter(Boolean).join(" / ")}
+            <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {[job.salary, job.salary_type ? JOB_SALARY_TYPE_LABELS[job.salary_type] || job.salary_type : null].filter(Boolean).join(" / ")}
           </span>
         )}
       </div>
       {job.description && <p className={`text-xs text-gray-600 whitespace-pre-wrap ${clamp}`}>{job.description}</p>}
       {job.requirements && (
         <div>
-          <div className="text-[11px] font-bold text-gray-500 mb-0.5">Шаардлага</div>
+          <div className="text-xs font-bold text-gray-500 mb-0.5">Шаардлага</div>
           <p className={`text-xs text-gray-600 whitespace-pre-wrap ${clamp}`}>{job.requirements}</p>
         </div>
       )}

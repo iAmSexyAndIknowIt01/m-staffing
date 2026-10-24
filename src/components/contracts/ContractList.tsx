@@ -1,5 +1,6 @@
 "use client"
 
+import { Calendar, FileText, Hourglass, Wallet, Building2, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState, type SetStateAction } from "react"
@@ -51,8 +52,8 @@ function ExpiresSoon({ contract }: { contract: ContractListItem }) {
   const days = expiresSoonDays(contract)
   if (days === null) return null
   return (
-    <div className="mt-1 text-[11px] font-bold text-amber-600" suppressHydrationWarning>
-      ⏳ {days === 0 ? "Өнөөдөр дуусна" : `${days} хоногийн дараа дуусна`}
+    <div className="mt-1 text-xs font-bold text-amber-600" suppressHydrationWarning>
+      <Hourglass size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {days === 0 ? "Өнөөдөр дуусна" : `${days} хоногийн дараа дуусна`}
     </div>
   )
 }
@@ -162,7 +163,7 @@ export default function ContractList({ party }: ContractListProps) {
   if (contracts.length === 0) {
     return (
       <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-        <span className="text-3xl sm:text-4xl block mb-3">📑</span>
+        <span className="text-3xl sm:text-4xl block mb-3"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
         <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Гэрээ байхгүй байна</div>
         <p className="text-xs sm:text-sm text-gray-400">
           {party === "company"
@@ -240,7 +241,7 @@ export default function ContractList({ party }: ContractListProps) {
                   <tr
                     key={c.id}
                     {...rowProps(c)}
-                    className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-indigo-50/50"
+                    className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-orange-50/50"
                   >
                     <td className="px-6 py-5">
                       <div className="font-bold text-gray-900">{c.position}</div>
@@ -278,21 +279,21 @@ export default function ContractList({ party }: ContractListProps) {
               <div
                 key={c.id}
                 {...rowProps(c)}
-                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.position}</div>
-                    <div className="text-[11px] text-gray-400 font-mono">{c.contract_number}</div>
+                    <div className="text-xs text-gray-400 font-mono">{c.contract_number}</div>
                   </div>
                   <ContractStatusBadge status={c.status} />
                 </div>
                 <div className="text-xs text-gray-600 font-medium">
-                  {party === "company" ? "👤" : "🏢"} {counterparty(c)}
+                  <span className="inline-flex items-center gap-1">{party === "company" ? <User className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />} {counterparty(c)}</span>
                 </div>
                 <div className="text-xs text-gray-500 flex justify-between gap-2 pt-2 border-t border-gray-50" suppressHydrationWarning>
-                  <span>💰 {formatSalary(c.salary, c.salary_type)}</span>
-                  <span>📅 {formatDate(c.start_date)}</span>
+                  <span><Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatSalary(c.salary, c.salary_type)}</span>
+                  <span><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatDate(c.start_date)}</span>
                 </div>
                 <ExpiresSoon contract={c} />
               </div>

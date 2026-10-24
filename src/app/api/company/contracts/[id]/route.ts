@@ -180,7 +180,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       await sendContractMail(contract.staff_email, "Танд гэрээ ирлээ", [
         `${contract.company_name} танд "${contract.position}" албан тушаалын хөдөлмөрийн гэрээ илгээлээ.`,
         `Гэрээний дугаар: ${contract.contract_number}`,
-        "MSTAFFING-д нэвтэрч гэрээг уншаад гарын үсэг зурна уу.",
+        "MStaffing-д нэвтэрч гэрээг уншаад гарын үсэг зурна уу.",
       ], link)
     } else if (action === "terminate") {
       await sendContractMail(contract.staff_email, "Гэрээ цуцлагдлаа", [

@@ -85,12 +85,12 @@ export async function POST(req: Request) {
     await transporter.sendMail({
       from: MAIL_FROM,
       to: companyEmail,
-      subject: `[MSTAFFING] Шинэ анкет ирлээ - ${String(jobData.title ?? "").replace(/[\r\n]+/g, " ")}`,
+      subject: `[MStaffing] Шинэ анкет ирлээ - ${String(jobData.title ?? "").replace(/[\r\n]+/g, " ")}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px;">
-          <h2 style="color: #4f46e5; text-align: center;">MSTAFFING</h2>
+          <h2 style="color: #f97316; text-align: center;">MStaffing</h2>
           <p>Сайн байна уу, <strong>${companyName}</strong>?</p>
-          <p>Танай системд зарласан <span style="color: #4f46e5; font-weight: bold;">"${jobTitle}"</span> ажлын байранд шинэ ажил хайгч анкет илгээлээ.</p>
+          <p>Танай системд зарласан <span style="color: #ea580c; font-weight: bold;">"${jobTitle}"</span> ажлын байранд шинэ ажил хайгч анкет илгээлээ.</p>
           
           <div style="background-color: #f5f3ff; border: 1px solid #ddd6fe; padding: 15px; margin: 20px 0; border-radius: 8px;">
             <p style="margin: 0; font-size: 14px; color: #4c1d95; line-height: 1.6;">

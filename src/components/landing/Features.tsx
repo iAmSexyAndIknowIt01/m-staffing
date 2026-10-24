@@ -112,7 +112,7 @@ export default function Features() {
               shadow-md
             "
           >
-            WHY MSTAFFING
+            Яагаад MStaffing
           </div>
 
           <h2

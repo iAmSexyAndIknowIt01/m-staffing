@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       await transporter.sendMail({
         from: MAIL_FROM,
         to: email,
-        subject: "MSTAFFING - Нууц үг сэргээх код",
+        subject: "MStaffing - Нууц үг сэргээх код",
         html: codeEmailHtml(
           "Таны МSTAFFING бүртгэлийн нууц үг сэргээх 6 оронтой код (10 минут хүчинтэй):",
           code

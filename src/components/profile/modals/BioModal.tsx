@@ -1,5 +1,6 @@
 "use client"
 
+import { X, UserRound } from "lucide-react"
 import { useState } from "react"
 
 type Props = {
@@ -28,13 +29,13 @@ function BioModalContent({
 
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-            🚀 Bio засах
+            <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Bio засах
           </h2>
           <button 
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition"
           >
-            ✕
+            <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </button>
         </div>
 
@@ -53,7 +54,7 @@ function BioModalContent({
               text-sm
               text-gray-800
               outline-none
-              focus:border-indigo-500
+              focus:border-orange-500
               resize-none
             "
           />
@@ -75,9 +76,9 @@ function BioModalContent({
             className="
               px-5
               py-2.5
-              bg-indigo-600
-              hover:bg-indigo-700
-              disabled:bg-indigo-400
+              bg-orange-600
+              hover:bg-orange-700
+              disabled:bg-orange-400
               disabled:opacity-50
               disabled:cursor-not-allowed
               text-white
@@ -87,7 +88,7 @@ function BioModalContent({
               transition-all
             "
           >
-            Хадгалах ✨
+            Хадгалах
           </button>
         </div>
 

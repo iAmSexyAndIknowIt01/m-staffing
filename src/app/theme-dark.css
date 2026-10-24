@@ -2,7 +2,6 @@
    scripts/generate-dark-theme.py ажиллуулж шинэчилнэ.
    html.dark үед цайвар өнгөний Tailwind классуудыг харанхуй хувилбараар орлуулна. */
 @layer utilities {
-  :where(html.dark) .bg-\[\#f8faff\] { background-color: var(--dk-bg); }
   :where(html.dark) .via-\[\#fffaf6\] { --tw-gradient-via: var(--dk-surface); }
   :where(html.dark) .bg-amber-50 { background-color: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-amber-50\/20 { background-color: color-mix(in srgb, var(--color-amber-500) 4%, var(--dk-surface)); }
@@ -25,19 +24,17 @@
   :where(html.dark) .bg-gray-900\/60 { background-color: color-mix(in srgb, var(--dk-raised) 60%, transparent); }
   :where(html.dark) .bg-gray-950 { background-color: var(--dk-raised); }
   :where(html.dark) .bg-green-50 { background-color: color-mix(in srgb, var(--color-green-500) 14%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-100 { background-color: color-mix(in srgb, var(--color-indigo-500) 20%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-100\/60 { background-color: color-mix(in srgb, var(--color-indigo-500) 12%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-100\/80 { background-color: color-mix(in srgb, var(--color-indigo-500) 16%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50 { background-color: color-mix(in srgb, var(--color-indigo-500) 14%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50\/30 { background-color: color-mix(in srgb, var(--color-indigo-500) 4%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50\/50 { background-color: color-mix(in srgb, var(--color-indigo-500) 7%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50\/60 { background-color: color-mix(in srgb, var(--color-indigo-500) 8%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50\/70 { background-color: color-mix(in srgb, var(--color-indigo-500) 10%, var(--dk-surface)); }
-  :where(html.dark) .bg-indigo-50\/80 { background-color: color-mix(in srgb, var(--color-indigo-500) 11%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-100 { background-color: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-100\/40 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-100\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 12%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-100\/80 { background-color: color-mix(in srgb, var(--color-orange-500) 16%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-200\/20 { background-color: color-mix(in srgb, var(--color-orange-500) 6%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50 { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/30 { background-color: color-mix(in srgb, var(--color-orange-500) 4%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-50\/50 { background-color: color-mix(in srgb, var(--color-orange-500) 7%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-50\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-50\/70 { background-color: color-mix(in srgb, var(--color-orange-500) 10%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-50\/80 { background-color: color-mix(in srgb, var(--color-orange-500) 11%, var(--dk-surface)); }
   :where(html.dark) .bg-pink-100 { background-color: color-mix(in srgb, var(--color-pink-500) 20%, var(--dk-surface)); }
   :where(html.dark) .bg-pink-50\/50 { background-color: color-mix(in srgb, var(--color-pink-500) 7%, var(--dk-surface)); }
   :where(html.dark) .bg-purple-50 { background-color: color-mix(in srgb, var(--color-purple-500) 14%, var(--dk-surface)); }
@@ -87,16 +84,12 @@
   :where(html.dark) .border-gray-300 { border-color: var(--dk-border-strong); }
   :where(html.dark) .border-gray-400 { border-color: var(--dk-border-heavy); }
   :where(html.dark) .border-gray-50 { border-color: var(--dk-border); }
-  :where(html.dark) .border-indigo-100 { border-color: color-mix(in srgb, var(--color-indigo-500) 28%, var(--dk-surface)); }
-  :where(html.dark) .border-indigo-100\/50 { border-color: color-mix(in srgb, var(--color-indigo-500) 28%, var(--dk-surface)); }
-  :where(html.dark) .border-indigo-100\/60 { border-color: color-mix(in srgb, var(--color-indigo-500) 28%, var(--dk-surface)); }
-  :where(html.dark) .border-indigo-200 { border-color: color-mix(in srgb, var(--color-indigo-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-indigo-200\/50 { border-color: color-mix(in srgb, var(--color-indigo-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-indigo-200\/60 { border-color: color-mix(in srgb, var(--color-indigo-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-orange-100 { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .border-orange-100\/50 { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-orange-100\/60 { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-orange-200 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-orange-200\/50 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
+  :where(html.dark) .border-orange-200\/60 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-orange-50 { border-color: color-mix(in srgb, var(--color-orange-500) 22%, var(--dk-surface)); }
   :where(html.dark) .border-pink-200 { border-color: color-mix(in srgb, var(--color-pink-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-red-100 { border-color: color-mix(in srgb, var(--color-red-500) 28%, var(--dk-surface)); }
@@ -120,14 +113,14 @@
   :where(html.dark) .divide-gray-100 > :not(:last-child) { border-color: var(--dk-border); }
   :where(html.dark) .divide-gray-50 > :not(:last-child) { border-color: var(--dk-border); }
   :where(html.dark) .divide-slate-100 > :not(:last-child) { border-color: var(--dk-border); }
-  :where(html.dark) .focus-visible\:bg-indigo-50\/50:focus-visible { background-color: color-mix(in srgb, var(--color-indigo-500) 7%, var(--dk-surface)); }
+  :where(html.dark) .focus-visible\:bg-orange-50\/50:focus-visible { background-color: color-mix(in srgb, var(--color-orange-500) 7%, var(--dk-surface)); }
   :where(html.dark) .focus\:bg-white:focus { background-color: var(--dk-surface); }
-  :where(html.dark) .focus\:border-indigo-50:focus { border-color: color-mix(in srgb, var(--color-indigo-500) 22%, var(--dk-surface)); }
+  :where(html.dark) .focus\:border-orange-50:focus { border-color: color-mix(in srgb, var(--color-orange-500) 22%, var(--dk-surface)); }
   :where(html.dark) .focus\:border-slate-400:focus { border-color: var(--dk-border-heavy); }
   :where(html.dark) .from-amber-50 { --tw-gradient-from: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
   :where(html.dark) .from-orange-100 { --tw-gradient-from: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
   :where(html.dark) .from-white { --tw-gradient-from: var(--dk-surface); }
-  :where(html.dark) .group:hover .group-hover\:text-indigo-600 { color: var(--color-indigo-400); }
+  :where(html.dark) .group:hover .group-hover\:text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .hover\:bg-amber-100\/50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 10%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-amber-50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-blue-100:hover { background-color: color-mix(in srgb, var(--color-blue-500) 20%, var(--dk-surface)); }
@@ -138,14 +131,12 @@
   :where(html.dark) .hover\:bg-gray-800:hover { background-color: var(--dk-raised-hover); }
   :where(html.dark) .hover\:bg-gray-900:hover { background-color: var(--dk-raised); }
   :where(html.dark) .hover\:bg-green-50:hover { background-color: color-mix(in srgb, var(--color-green-500) 14%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-indigo-100:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 20%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-indigo-100\/70:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 14%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-indigo-100\/80:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 16%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-indigo-50:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 14%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-indigo-50\!:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 14%, var(--dk-surface)) !important; }
-  :where(html.dark) .hover\:bg-indigo-50\/40:hover { background-color: color-mix(in srgb, var(--color-indigo-500) 6%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-orange-100:hover { background-color: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
+  :where(html.dark) .hover\:bg-orange-100\/70:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
+  :where(html.dark) .hover\:bg-orange-100\/80:hover { background-color: color-mix(in srgb, var(--color-orange-500) 16%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-orange-50:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
+  :where(html.dark) .hover\:bg-orange-50\!:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)) !important; }
+  :where(html.dark) .hover\:bg-orange-50\/40:hover { background-color: color-mix(in srgb, var(--color-orange-500) 6%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-purple-100:hover { background-color: color-mix(in srgb, var(--color-purple-500) 20%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-red-100:hover { background-color: color-mix(in srgb, var(--color-red-500) 20%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-red-50:hover { background-color: color-mix(in srgb, var(--color-red-500) 14%, var(--dk-surface)); }
@@ -165,9 +156,8 @@
   :where(html.dark) .hover\:border-emerald-100:hover { border-color: color-mix(in srgb, var(--color-emerald-500) 28%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-gray-200:hover { border-color: var(--dk-border-strong); }
   :where(html.dark) .hover\:border-gray-300:hover { border-color: var(--dk-border-strong); }
-  :where(html.dark) .hover\:border-indigo-100:hover { border-color: color-mix(in srgb, var(--color-indigo-500) 28%, var(--dk-surface)); }
-  :where(html.dark) .hover\:border-indigo-200:hover { border-color: color-mix(in srgb, var(--color-indigo-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-orange-100:hover { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .hover\:border-orange-200:hover { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-rose-200:hover { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-slate-100:hover { border-color: var(--dk-border); }
   :where(html.dark) .hover\:border-slate-300:hover { border-color: var(--dk-border-strong); }
@@ -178,10 +168,9 @@
   :where(html.dark) .hover\:text-gray-700:hover { color: var(--dk-fg-2); }
   :where(html.dark) .hover\:text-gray-800:hover { color: var(--dk-fg-2); }
   :where(html.dark) .hover\:text-gray-900:hover { color: var(--dk-fg); }
-  :where(html.dark) .hover\:text-indigo-600:hover { color: var(--color-indigo-400); }
-  :where(html.dark) .hover\:text-indigo-700:hover { color: var(--color-indigo-300); }
-  :where(html.dark) .hover\:text-indigo-800:hover { color: var(--color-indigo-300); }
   :where(html.dark) .hover\:text-orange-600:hover { color: var(--color-orange-400); }
+  :where(html.dark) .hover\:text-orange-700:hover { color: var(--color-orange-300); }
+  :where(html.dark) .hover\:text-orange-800:hover { color: var(--color-orange-300); }
   :where(html.dark) .hover\:text-red-600:hover { color: var(--color-red-400); }
   :where(html.dark) .hover\:text-red-700:hover { color: var(--color-red-300); }
   :where(html.dark) .hover\:text-rose-600:hover { color: var(--color-rose-400); }
@@ -220,24 +209,23 @@
   :where(html.dark) .text-gray-900 { color: var(--dk-fg); }
   :where(html.dark) .text-gray-950 { color: var(--dk-fg); }
   :where(html.dark) .text-green-700 { color: var(--color-green-300); }
-  :where(html.dark) .text-indigo-600 { color: var(--color-indigo-400); }
-  :where(html.dark) .text-indigo-700 { color: var(--color-indigo-300); }
-  :where(html.dark) .text-indigo-700\! { color: var(--color-indigo-300) !important; }
-  :where(html.dark) .text-indigo-900 { color: var(--color-indigo-200); }
-  :where(html.dark) .text-indigo-950 { color: var(--color-indigo-200); }
   :where(html.dark) .text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .text-orange-700 { color: var(--color-orange-300); }
+  :where(html.dark) .text-orange-700\! { color: var(--color-orange-300) !important; }
   :where(html.dark) .text-orange-800 { color: var(--color-orange-300); }
   :where(html.dark) .text-orange-950 { color: var(--color-orange-200); }
   :where(html.dark) .text-pink-600 { color: var(--color-pink-400); }
   :where(html.dark) .text-pink-700 { color: var(--color-pink-300); }
   :where(html.dark) .text-purple-600 { color: var(--color-purple-400); }
+  :where(html.dark) .text-purple-800 { color: var(--color-purple-300); }
   :where(html.dark) .text-red-600 { color: var(--color-red-400); }
   :where(html.dark) .text-red-700 { color: var(--color-red-300); }
   :where(html.dark) .text-red-900 { color: var(--color-red-200); }
   :where(html.dark) .text-rose-600 { color: var(--color-rose-400); }
   :where(html.dark) .text-rose-700 { color: var(--color-rose-300); }
   :where(html.dark) .text-slate-300 { color: var(--dk-fg-5); }
+  :where(html.dark) .text-slate-300\/80 { color: color-mix(in srgb, var(--dk-fg-5) 80%, transparent); }
+  :where(html.dark) .text-slate-300\/90 { color: color-mix(in srgb, var(--dk-fg-5) 90%, transparent); }
   :where(html.dark) .text-slate-400 { color: var(--dk-fg-5); }
   :where(html.dark) .text-slate-500 { color: var(--dk-fg-4); }
   :where(html.dark) .text-slate-600 { color: var(--dk-fg-3); }

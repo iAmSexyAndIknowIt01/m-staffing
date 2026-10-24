@@ -1,5 +1,6 @@
 "use client"
 
+import { Wrench, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
 type Props = {
@@ -93,14 +94,14 @@ function SkillsModalContent({
         
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
-            🛠️ Ур чадвар засах
+            <Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар засах
           </h2>
           <button 
             type="button"
             onClick={onClose} 
             className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition"
           >
-            ✕
+            <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </button>
         </div>
 
@@ -115,7 +116,7 @@ function SkillsModalContent({
                 value={techInput}
                 onChange={(e) => setTechInput(e.target.value)}
                 placeholder="Java, React, Figma ..."
-                className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+                className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-orange-500"
               />
             </div>
 
@@ -130,7 +131,7 @@ function SkillsModalContent({
                       setTechInput("")
                       setTechSuggestions([])
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-indigo-50 border-b text-sm last:border-b-0"
+                    className="w-full text-left px-4 py-2 hover:bg-orange-50 border-b text-sm last:border-b-0"
                   >
                     {skill}
                   </button>
@@ -142,7 +143,7 @@ function SkillsModalContent({
               {technical.map((skill) => (
                 <div
                   key={skill}
-                  className="flex items-center gap-2 px-3 py-1.5 border rounded-lg bg-indigo-50 text-indigo-700 text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-1.5 border rounded-lg bg-orange-50 text-orange-700 text-sm font-medium"
                 >
                   <span>{skill}</span>
                   <button
@@ -169,7 +170,7 @@ function SkillsModalContent({
                 value={langInput}
                 onChange={(e) => setLangInput(e.target.value)}
                 placeholder="English, 日本語, Монгол хэл ..."
-                className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+                className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-orange-500"
               />
             </div>
 
@@ -232,9 +233,9 @@ function SkillsModalContent({
               })
               onClose()
             }}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
+            className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
-            Хадгалах ✨
+            Хадгалах
           </button>
         </div>
 

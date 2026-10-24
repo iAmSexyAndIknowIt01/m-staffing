@@ -1,5 +1,6 @@
 "use client"
 
+import { Briefcase, FolderOpen, Search } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
@@ -101,7 +102,7 @@ export default function StaffRequestsPage() {
       case "pending":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
       case "interview":
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200/50">Ярилцлагад урьж байна</span>
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлагад урьж байна</span>
       case "accepted":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
@@ -159,7 +160,7 @@ export default function StaffRequestsPage() {
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-900">Миний хүсэлтүүд</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Миний хүсэлтүүд</h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Илгээсэн анкет болон компаниудаас ирсэн хүсэлт, урилгын түүх</p>
         </div>
         <div>
@@ -167,14 +168,14 @@ export default function StaffRequestsPage() {
             href="/dashboard/staff/jobs"
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl sm:rounded-2xl bg-orange-500 text-white font-semibold text-xs sm:text-sm hover:bg-orange-600 transition shadow-sm shadow-orange-500/20 w-full sm:w-auto"
           >
-            <span>💼</span> Ажил хайх
+            <span><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> Ажил хайх
           </Link>
         </div>
       </div>
 
       {loading ? (
         <div className="text-center py-20 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-gray-500 text-sm font-medium animate-pulse">Мэдээллийг ачаалж байна...</p>
         </div>
       ) : error ? (
@@ -183,8 +184,8 @@ export default function StaffRequestsPage() {
         </div>
       ) : requests.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm space-y-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl mx-auto shadow-inner">
-            📂
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl mx-auto shadow-inner">
+            <FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
             <h2 className="text-base sm:text-lg font-bold text-gray-900">Та одоогоор ямар нэгэн хүсэлт илгээгээгүй байна</h2>
@@ -195,9 +196,9 @@ export default function StaffRequestsPage() {
           <div className="pt-2">
             <Link
               href="/dashboard/staff/jobs"
-              className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-indigo-600 text-white font-semibold text-xs sm:text-sm hover:bg-indigo-700 transition shadow-md shadow-indigo-600/20"
+              className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-600 text-white font-semibold text-xs sm:text-sm hover:bg-orange-700 transition shadow-md shadow-orange-600/20"
             >
-              🚀 Ажлын байр үзэх
+              <Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын байр үзэх
             </Link>
           </div>
         </div>
@@ -207,7 +208,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("all"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "all" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "all" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Бүгд ({requests.length})
@@ -215,7 +216,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("applied"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "applied" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "applied" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Миний явуулсан анкетууд
@@ -223,7 +224,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("invitations"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "invitations" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "invitations" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Компанийн урилгууд
@@ -233,14 +234,14 @@ export default function StaffRequestsPage() {
           <div className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <div className="relative w-full sm:w-72">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400 text-sm">
-                🔍
+                <Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
               </span>
               <input
                 type="text"
                 placeholder="Ажлын нэр эсвэл компаниар хайх..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-indigo-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-orange-500 transition"
               />
             </div>
 
@@ -251,7 +252,7 @@ export default function StaffRequestsPage() {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:border-indigo-300 focus:outline-none focus:border-indigo-500 transition"
+                  className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:border-orange-300 focus:outline-none focus:border-orange-500 transition"
                 >
                   <span className="truncate">{statusLabels[statusFilter] || "Бүгд"}</span>
                   <svg
@@ -277,12 +278,12 @@ export default function StaffRequestsPage() {
                         }}
                         className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-medium transition flex items-center justify-between ${
                           statusFilter === key
-                            ? "bg-indigo-50/80 text-indigo-600 font-semibold"
+                            ? "bg-orange-50/80 text-orange-600 font-semibold"
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
                         <span>{label}</span>
-                        {statusFilter === key && <span className="text-indigo-600 text-xs">✓</span>}
+                        {statusFilter === key && <span className="text-orange-600 text-xs">✓</span>}
                       </button>
                     ))}
                   </div>
@@ -307,11 +308,13 @@ export default function StaffRequestsPage() {
                           {logoSrc ? (
                             <img
                               src={logoSrc}
-                              alt={req.companyName}
-                              className="w-full h-full object-cover"
+                              alt={`${req.companyName} лого`}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-contain p-1"
                             />
                           ) : (
-                            <span className="text-sm sm:text-base font-bold text-indigo-600">
+                            <span className="text-sm sm:text-base font-bold text-orange-600">
                               {req.companyName ? req.companyName.charAt(0).toUpperCase() : "C"}
                             </span>
                           )}
@@ -320,12 +323,12 @@ export default function StaffRequestsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                             <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{req.jobTitle}</h3>
-                            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
+                            <span className="text-xs sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
                               {req.type === "applied" ? "Анкет илгээсэн" : "Урилга"}
                             </span>
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600 font-medium mt-0.5 truncate">{req.companyName}</p>
-                          <p className="text-[11px] sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
+                          <p className="text-xs sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
                         </div>
                       </div>
 
@@ -343,7 +346,7 @@ export default function StaffRequestsPage() {
                 })
               ) : (
                 <div className="text-center py-14 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm px-4">
-                  <div className="text-3xl sm:text-4xl mb-2">🔍</div>
+                  <div className="text-3xl sm:text-4xl mb-2"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
                   <p className="text-gray-700 font-bold text-sm sm:text-base">Хайлтанд тохирох хүсэлт олдсонгүй</p>
                   <p className="text-xs sm:text-sm text-gray-400 mt-1">Та хайлтын үг эсвэл шүүлтүүрээ өөрчлөөд үзнэ үү.</p>
                 </div>
@@ -380,7 +383,7 @@ export default function StaffRequestsPage() {
                           onClick={() => setCurrentPage(page as number)}
                           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-xs sm:text-sm font-semibold transition ${
                             currentPage === page
-                              ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
+                              ? "bg-orange-600 text-white shadow-sm shadow-orange-500/20"
                               : "text-gray-600 hover:bg-gray-50"
                           }`}
                         >

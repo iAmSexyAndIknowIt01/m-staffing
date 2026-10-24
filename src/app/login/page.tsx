@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import PasswordInput from "@/components/common/PasswordInput"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -42,8 +42,27 @@ export default function LoginPage() {
     return !errors.email && !errors.password
   }
 
+  function closeErrorModal() {
+    setErrorMessage(null)
+    // Дахин оролдоход бэлэн болгож нууц үгийн талбар руу буцаана
+    const passwordInput = document.getElementById("login-password") as HTMLInputElement | null
+    passwordInput?.focus()
+    passwordInput?.select()
+  }
+
+  // Алдааны цонх нээлттэй үед Esc-ээр хаана
+  useEffect(() => {
+    if (!errorMessage) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeErrorModal()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [errorMessage])
+
   async function login() {
-    if (loading) return
+    // Алдааны цонх харагдаж байхад Enter дарахад дахин илгээхгүй
+    if (loading || errorMessage) return
     if (!validate()) return
 
     try {
@@ -136,8 +155,8 @@ export default function LoginPage() {
           className="
             relative
             overflow-hidden
-            rounded-[32px]
-            lg:rounded-[44px]
+            rounded-4xl
+            lg:rounded-4xl
             lg:min-h-180
             flex
             items-center
@@ -208,8 +227,8 @@ export default function LoginPage() {
         <div
           className="
             glass
-            rounded-[32px]
-            sm:rounded-[40px]
+            rounded-4xl
+            sm:rounded-4xl
             p-6
             sm:p-10
             shadow-[0_40px_100px_rgba(255,122,0,.08)]
@@ -336,7 +355,13 @@ export default function LoginPage() {
       {/* 🛠️ ERROR MODAL БҮТЭЦ */}
       {errorMessage && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all scale-100">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="login-error-title"
+            aria-describedby="login-error-message"
+            className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all scale-100"
+          >
             
             {/* Алдааны анхааруулах дүрс (Icon) */}
             <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 mb-4">
@@ -345,17 +370,17 @@ export default function LoginPage() {
               </svg>
             </div>
 
-            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+            <h3 id="login-error-title" className="text-xl font-bold text-center text-gray-900 mb-2">
               Алдаа гарлаа
             </h3>
             
-            <p className="text-gray-500 text-center text-sm leading-relaxed mb-6">
+            <p id="login-error-message" className="text-gray-500 text-center text-sm leading-relaxed mb-6">
               {errorMessage}
             </p>
 
             <button
               type="button"
-              onClick={() => setErrorMessage(null)}
+              onClick={closeErrorModal}
               className="w-full bg-gray-900 text-white font-medium py-3 px-4 rounded-2xl hover:bg-gray-800 transition active:scale-[0.98]"
             >
               Хаах
