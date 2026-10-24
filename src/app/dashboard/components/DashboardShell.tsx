@@ -46,7 +46,9 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
     ...(userRole === "staff" ? STAFF_NAV : COMPANY_NAV),
   ]
 
-  const isActive = (href: string) => pathname === href
+  // Дэд хуудсууд (жишээ нь /post-job/[id]/applicants) дээр ч эх цэс нь идэвхтэй харагдана
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row w-full relative">

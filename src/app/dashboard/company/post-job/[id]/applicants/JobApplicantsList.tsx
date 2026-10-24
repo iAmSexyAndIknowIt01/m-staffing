@@ -3,7 +3,7 @@
 import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
-import { showAlert } from "@/components/common/AppDialog"
+import { showAlert, showConfirm } from "@/components/common/AppDialog"
 
 interface Applicant {
   id: string
@@ -36,6 +36,17 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
 
   // Анкетын төлөв өөрчлөх (Урих / Татгалзах)
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (newStatus === "interview") {
+      const name = applicants.find((app) => app.id === id)?.user_name
+      const ok = await showConfirm(
+        name
+          ? `Дараах ажил горилогчийг ярилцлагад урих гэж байна:\n${name}\n\nИтгэлтэй байна уу?`
+          : "Энэ ажил горилогчийг ярилцлагад урихдаа итгэлтэй байна уу?",
+        { title: "Ярилцлагад урих", confirmLabel: "Урих" }
+      )
+      if (!ok) return
+    }
+
     try {
       setUpdatingId(id)
       const response = await fetch("/api/company/jobrequest", {
