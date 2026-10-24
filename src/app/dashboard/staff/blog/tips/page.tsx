@@ -4,6 +4,7 @@ import { Lightbulb } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface Tip {
   id: string
@@ -36,11 +37,7 @@ export default function TipsPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   if (error) {
