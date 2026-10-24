@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { parseCompanyProfile } from "@/lib/companyProfile"
+import { getCompanyActiveJobs } from "@/lib/companyJobs"
 
 // 1. Компанийн профайл мэдээллийг авах (GET)
 export async function GET() {
@@ -23,7 +24,13 @@ export async function GET() {
 
     if (error) throw new Error(error.message)
 
-    return NextResponse.json({ data })
+    // Нээлттэй зарууд — татаж чадаагүй ч профайлыг харуулна
+    const jobs = await getCompanyActiveJobs(companyId).catch((err) => {
+      console.error("Company jobs error:", err)
+      return []
+    })
+
+    return NextResponse.json({ data, jobs })
   } catch (error) {
     console.error("GET Company Profile Error:", error)
     return NextResponse.json({ error: "Датаг ачааллахад алдаа гарлаа." }, { status: 500 })

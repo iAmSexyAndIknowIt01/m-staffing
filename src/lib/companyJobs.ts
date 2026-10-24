@@ -72,3 +72,27 @@ export async function getJobApplicants(jobId: string, companyId: string): Promis
 
   return { data, jobTitle }
 }
+
+export interface CompanyPublicJob {
+  id: string
+  title: string
+  job_type: string | null
+  location: string | null
+  salary: string | null
+  created_at: string
+}
+
+// Компанийн профайл дээр ажил хайгчдад харуулах идэвхтэй зарууд
+// Профайл дээр 10-аар хуудаслан харуулна; хэт их зар татахаас сэргийлж 100-аар хязгаарлав
+export async function getCompanyActiveJobs(companyId: string, limit = 100): Promise<CompanyPublicJob[]> {
+  const { data, error } = await supabase
+    .from("mt_openjob")
+    .select("id, title, job_type, location, salary, created_at")
+    .eq("user_id", companyId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return (data || []) as CompanyPublicJob[]
+}
