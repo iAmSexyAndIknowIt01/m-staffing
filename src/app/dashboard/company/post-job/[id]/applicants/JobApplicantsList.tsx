@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
+import { Calendar, CalendarCheck, Folder, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
@@ -37,12 +37,17 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
   // Анкетын төлөв өөрчлөх (Урих / Татгалзах)
   const handleStatusChange = async (id: string, newStatus: string) => {
     if (newStatus === "interview") {
-      const name = applicants.find((app) => app.id === id)?.user_name
+      const app = applicants.find((a) => a.id === id)
       const ok = await showConfirm(
-        name
-          ? `Дараах ажил горилогчийг ярилцлагад урих гэж байна:\n${name}\n\nИтгэлтэй байна уу?`
-          : "Энэ ажил горилогчийг ярилцлагад урихдаа итгэлтэй байна уу?",
-        { title: "Ярилцлагад урих", confirmLabel: "Урих" }
+        "Ажил горилогчийн төлөв «Ярилцлага» болж өөрчлөгдөнө. Үргэлжлүүлэх үү?",
+        {
+          title: "Ярилцлагад урих",
+          confirmLabel: "Урих",
+          icon: CalendarCheck,
+          subject: app
+            ? { name: app.user_name, details: [app.job_title, app.phone].filter((v) => v && v !== "Хоосон") }
+            : undefined,
+        }
       )
       if (!ok) return
     }
