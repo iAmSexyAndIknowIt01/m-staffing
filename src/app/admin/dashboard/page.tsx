@@ -93,8 +93,8 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
-              <span className="text-lg font-black tracking-tight text-gray-900">MStaffing</span>
-              <span className="bg-slate-900 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Admin</span>
+              <span className="text-lg font-bold tracking-tight text-gray-900">MStaffing</span>
+              <span className="bg-slate-900 text-white text-xs font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Admin</span>
             </div>
             
             <div className="flex items-center space-x-1">
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
               >
                 <Receipt size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Нэхэмжлэл
                 {pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
                     {pendingCount}
                   </span>
                 )}
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div className="text-gray-400 text-[11px] font-medium">
+          <div className="text-gray-400 text-xs font-medium">
             Админ систем идэвхтэй
           </div>
         </div>
@@ -142,22 +142,22 @@ export default function AdminDashboard() {
         {activeTab === "home" && (
           <div className="space-y-8">
             <div>
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight">Тавтай морил</h1>
+              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Тавтай морил</h1>
               <p className="text-gray-500 text-xs">Системийн өнөөдрийн байдал болон ерөнхий аналитик.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="bg-white border border-gray-100 p-5 rounded-3xl shadow-xs">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Хүлээгдэж буй гүйлгээ</p>
-                <p className="text-2xl font-black text-amber-500 mt-1">{pendingCount} нэхэмжлэх</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Хүлээгдэж буй гүйлгээ</p>
+                <p className="text-2xl font-extrabold text-amber-500 mt-1">{pendingCount} нэхэмжлэх</p>
               </div>
               <div className="bg-white border border-gray-100 p-5 rounded-3xl shadow-xs">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Нийт батлагдсан орлого</p>
-                <p className="text-2xl font-black text-emerald-600 mt-1">{totalRevenue.toLocaleString()} ₮</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Нийт батлагдсан орлого</p>
+                <p className="text-2xl font-extrabold text-emerald-600 mt-1">{totalRevenue.toLocaleString()} ₮</p>
               </div>
               <div className="bg-white border border-gray-100 p-5 rounded-3xl shadow-xs">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Нийт үүссэн нэхэмжлэх</p>
-                <p className="text-2xl font-black text-slate-900 mt-1">{invoices.length} ширхэг</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Нийт үүссэн нэхэмжлэх</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-1">{invoices.length} ширхэг</p>
               </div>
             </div>
 
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт</h1>
+                <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт</h1>
                 <p className="text-gray-500 text-xs">Компаниудаас ирүүлсэн багц идэвхжүүлэх хүсэлтүүдийн жагсаалт.</p>
               </div>
 
@@ -251,9 +251,9 @@ export default function AdminDashboard() {
                         <td className="p-4 font-mono text-gray-400 truncate max-w-30">{inv.user_id}</td>
                         <td className="p-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
                         <td className="p-4 uppercase font-bold text-orange-600">{inv.plan_type}</td>
-                        <td className="p-4 font-black text-gray-900">{inv.amount.toLocaleString()} ₮</td>
+                        <td className="p-4 font-bold text-gray-900">{inv.amount.toLocaleString()} ₮</td>
                         <td className="p-4 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                             inv.status === "paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600 animate-pulse"
                           }`}>
                             {inv.status === "paid" ? "Төлөгдсөн" : "Хүлээгдэж буй"}
@@ -264,12 +264,12 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleApproveStatus(inv.id)}
                               disabled={actionLoading !== null}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl transition shadow-xs text-[11px]"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl transition shadow-xs text-xs"
                             >
                               {actionLoading === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin inline-block" aria-label="Түр хүлээнэ үү" /> : "Баталгаажуулах ✓"}
                             </button>
                           ) : (
-                            <span className="text-gray-300 text-[11px] font-bold pr-2">Шийдвэрлэсэн</span>
+                            <span className="text-gray-300 text-xs font-bold pr-2">Шийдвэрлэсэн</span>
                           )}
                         </td>
                       </tr>

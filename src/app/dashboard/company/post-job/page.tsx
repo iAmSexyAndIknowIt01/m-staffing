@@ -210,12 +210,12 @@ export default function PostJobPage() {
             <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
             <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Түр хүлээнэ үү...
           </p>
         </div>
@@ -224,7 +224,7 @@ export default function PostJobPage() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Ажлын байрны удирдлага</h1>
           <p className="text-gray-500 mt-1 text-xs md:text-base">
             Танай компанийн зарласан идэвхтэй болон хаагдсан ажлын байруудын жагсаалт.
           </p>
@@ -324,7 +324,7 @@ export default function PostJobPage() {
               {isFilterActive ? "Шүүгдсэн үр дүн" : "Нийт зарласан ажлууд"} ({filteredAndSortedJobs.length})
             </h2>
             {isFilterActive && (
-              <span className="text-[10px] md:text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-xl">
+              <span className="text-xs md:text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-xl">
                 Шүүлтүүр идэвхтэй
               </span>
             )}
@@ -337,7 +337,7 @@ export default function PostJobPage() {
           </div>
         ) : filteredAndSortedJobs.length > 0 ? (
           <>
-            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] shadow-sm overflow-hidden divide-y divide-gray-50">
+            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-4xl shadow-sm overflow-hidden divide-y divide-gray-50">
               {currentJobs.map((job) => (
                 <div 
                   key={job.id} 
@@ -346,20 +346,20 @@ export default function PostJobPage() {
                   <div className="space-y-2 w-full md:w-auto">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base md:text-lg font-bold text-gray-950 wrap-break-word">{job.title}</h3>
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">
+                      <span className="px-2 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">
                         {getJobTypeLabel(job.job_type)}
                       </span>
 
                       {job.status === "active" ? (
-                        <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg">Идэвхтэй</span>
+                        <span className="px-2 py-0.5 text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg">Идэвхтэй</span>
                       ) : job.status === "draft" ? (
-                        <span className="px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-600 rounded-lg">Ноорог</span>
+                        <span className="px-2 py-0.5 text-xs font-bold bg-gray-100 text-gray-600 rounded-lg">Ноорог</span>
                       ) : (
-                        <span className="px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-500 border border-red-100 rounded-lg">Хаагдсан</span>
+                        <span className="px-2 py-0.5 text-xs font-bold bg-red-50 text-red-500 border border-red-100 rounded-lg">Хаагдсан</span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] md:text-xs text-gray-400 font-medium">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs md:text-xs text-gray-400 font-medium">
                       <span><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.category || "Ерөнхий"}</span>
                       <span className="text-slate-800 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">
                         <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
@@ -370,8 +370,8 @@ export default function PostJobPage() {
 
                   <div className="flex flex-row md:flex-row items-center justify-between md:justify-end gap-4 md:gap-6 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-50">
                     <div className="text-left md:text-right min-w-17.5">
-                      <p className="text-[10px] md:text-xs text-gray-400 font-medium">Ирсэн анкет</p>
-                      <p className="text-lg md:text-xl font-black text-gray-800 mt-0.5">{job.applicants_count}</p>
+                      <p className="text-xs md:text-xs text-gray-400 font-medium">Ирсэн анкет</p>
+                      <p className="text-lg md:text-xl font-bold text-gray-800 mt-0.5">{job.applicants_count}</p>
                     </div>
                     
                     <div className="flex items-center gap-2 w-full md:w-auto justify-end">
@@ -461,7 +461,7 @@ export default function PostJobPage() {
           </>
         ) : (
           !loading && (
-            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
+            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-4xl p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
               <div className="text-3xl md:text-4xl"><Inbox size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
               <div className="max-w-sm mx-auto space-y-1">
                 <h3 className="font-bold text-gray-800 text-base md:text-lg">

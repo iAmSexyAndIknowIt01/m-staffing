@@ -43,7 +43,7 @@ const PREFIX = "n_"
 function PreviousContract({ status }: { status: ContractStatus | null }) {
   if (!status) return null
   return (
-    <div className="mt-1 inline-block text-[11px] font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-2 py-0.5">
+    <div className="mt-1 inline-block text-xs font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-2 py-0.5">
       ↺ Өмнөх гэрээ: {CONTRACT_STATUS_LABELS[status].toLowerCase()}
     </div>
   )
@@ -219,7 +219,7 @@ export default function ContractCandidates() {
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
-          <span className="text-[11px] text-orange-500/80">Үүсгэсний дараа ноорог дээрээ засах боломжтой.</span>
+          <span className="text-xs text-orange-500/80">Үүсгэсний дараа ноорог дээрээ засах боломжтой.</span>
         </div>
       )}
 
@@ -316,7 +316,7 @@ export default function ContractCandidates() {
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.user_name}</div>
                     <PreviousContract status={c.previous_status} />
-                    <div className="text-[11px] text-gray-400" suppressHydrationWarning><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatDate(c.created_at)}</div>
+                    <div className="text-xs text-gray-400" suppressHydrationWarning><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatDate(c.created_at)}</div>
                   </div>
                 </div>
                 <div className="text-xs font-semibold text-gray-600 truncate"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {c.job_title}</div>

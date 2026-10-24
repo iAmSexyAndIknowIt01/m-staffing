@@ -325,7 +325,7 @@ export default function CompanyContractDetailPage() {
       <div className="pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <BackToListLink href="/dashboard/company/contracts" className="text-xs font-bold text-gray-400 hover:text-orange-600">← Гэрээ</BackToListLink>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1">{contract.position}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mt-1">{contract.position}</h1>
           <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-500">
             <span className="font-mono">{contract.contract_number}</span>
             <span>·</span>
@@ -495,7 +495,7 @@ export default function CompanyContractDetailPage() {
                   <span className="text-xs font-bold text-gray-500">Эхлэх огноо *</span>
                   <input type="date" value={form.start_date} onChange={set("start_date")} className={inputClass} />
                   {startInPast && (
-                    <span className="block text-[11px] font-semibold text-amber-600">
+                    <span className="block text-xs font-semibold text-amber-600">
                       <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Эхлэх огноо өнгөрсөн өдөр байна. Зориуд биш бол шинэчилнэ үү.
                     </span>
                   )}
@@ -541,7 +541,7 @@ export default function CompanyContractDetailPage() {
 
           {events.length > 0 && (
             <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm">
-              <h2 className="text-sm font-black text-gray-900 mb-3">Түүх</h2>
+              <h2 className="text-sm font-bold text-gray-900 mb-3">Түүх</h2>
               <ul className="space-y-2">
                 {events.map((e) => (
                   <li key={e.id} className="flex flex-wrap gap-x-3 text-xs text-gray-600">

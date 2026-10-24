@@ -10,6 +10,8 @@ import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteM
 import AlertModal from "@/components/staff/jobs/AlertModal";
 import LoadingLayout from "@/components/staff/common/LoadingLayout";
 import { getErrorMessage } from "@/lib/errors"
+import { SearchX } from "lucide-react"
+import EmptyState from "@/components/common/EmptyState"
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -266,7 +268,16 @@ export default function JobDetailPage() {
     return <LoadingLayout loading={loading} />;
   }
 
-  if (!job) return <div className="container mx-auto p-8 text-center">Ажлын байр олдсонгүй</div>;
+  if (!job)
+    return (
+      <EmptyState
+        icon={SearchX}
+        title="Ажлын байр олдсонгүй"
+        description="Энэ зар устгагдсан эсвэл хугацаа нь дууссан байж болно."
+        action={{ label: "Бусад ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
+        className="max-w-lg mx-auto mt-10"
+      />
+    );
 
   return (
     <div className="container mx-auto p-4 relative min-h-screen">

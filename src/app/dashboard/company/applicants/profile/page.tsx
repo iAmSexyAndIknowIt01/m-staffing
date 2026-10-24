@@ -160,12 +160,12 @@ function ApplicantProfileContent() {
           <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
           <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
       </div>
@@ -183,7 +183,7 @@ function ApplicantProfileContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div>
-        <h1 className="text-3xl font-black text-gray-900">Ажил горилогчийн профайл</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900">Ажил горилогчийн профайл</h1>
         <p className="text-sm text-gray-400 mt-1">Ирүүлсэн анкетын дэлгэрэнгүй мэдээлэл</p>
       </div>
 
@@ -195,7 +195,7 @@ function ApplicantProfileContent() {
               {profile.avatarUrl ? (
                 <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-4xl font-black text-orange-600">
+                <span className="text-4xl font-extrabold text-orange-600">
                   {profile.fullName ? profile.fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}

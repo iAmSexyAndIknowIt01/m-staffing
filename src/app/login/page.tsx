@@ -136,8 +136,8 @@ export default function LoginPage() {
           className="
             relative
             overflow-hidden
-            rounded-[32px]
-            lg:rounded-[44px]
+            rounded-4xl
+            lg:rounded-4xl
             lg:min-h-180
             flex
             items-center
@@ -208,8 +208,8 @@ export default function LoginPage() {
         <div
           className="
             glass
-            rounded-[32px]
-            sm:rounded-[40px]
+            rounded-4xl
+            sm:rounded-4xl
             p-6
             sm:p-10
             shadow-[0_40px_100px_rgba(255,122,0,.08)]

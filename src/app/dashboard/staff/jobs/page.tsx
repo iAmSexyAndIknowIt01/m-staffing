@@ -362,7 +362,7 @@ export default function StaffJobsPage() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
           <p className="text-sm text-gray-400 mt-1">
             Танд тохирох {filteredJobs.length} ажлын санал байна
             {" • "}
@@ -398,7 +398,7 @@ export default function StaffJobsPage() {
             <div className="absolute inset-0 border border-dashed border-orange-200 rounded-full animate-[spin_6s_linear_infinite]" />
             <div className="absolute inset-1.5 border-t border-b border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
-              <span className="text-[9px] font-black tracking-wider text-slate-900 uppercase animate-pulse">
+              <span className="text-xs font-bold tracking-wider text-slate-900 uppercase animate-pulse">
                 mstaffing
               </span>
             </div>

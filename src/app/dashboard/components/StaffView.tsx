@@ -1,12 +1,13 @@
 "use client"
 
-import { BarChart3, Building2, Calendar, HelpCircle, Mail, MapPin, Wallet, X, Lightbulb, ArrowRight, CheckCircle2 } from "lucide-react"
+import { BarChart3, Building2, Calendar, HelpCircle, Mail, MapPin, Wallet, X, Lightbulb, ArrowRight, CheckCircle2, Briefcase, Send } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import LoadingLayout from "@/components/staff/common/LoadingLayout"
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal"
 import { getErrorMessage } from "@/lib/errors"
+import EmptyState from "@/components/common/EmptyState"
 
 interface StaffViewProps {
   userId: string
@@ -283,7 +284,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       {/* МЭНДЧИЛГЭЭНИЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">Сайн байна уу?</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Сайн байна уу?</h1>
           <p className="text-slate-300/90 text-sm md:text-base mt-2 font-medium">
             Өнөөдрийн байдлаар танд тохирох шинэ ажлын саналууд бэлэн байна.
           </p>
@@ -301,8 +302,8 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Илгээсэн хүсэлт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.appliedCount}</h3>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
+            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats.appliedCount}</h3>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
               {stats.appliedThisWeek}
             </span>
           </div>
@@ -312,8 +313,8 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-lg ${
+            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${
               stats.viewedCompaniesCount === 0 
                 ? "text-gray-500 bg-gray-50" 
                 : stats.viewedCompaniesCount <= 3 
@@ -329,8 +330,8 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">CV хандалт</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Маш сайн</span>
+            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Маш сайн</span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold"><BarChart3 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
         </div>
@@ -345,13 +346,21 @@ export default function StaffView({ userId }: StaffViewProps) {
           {/* САНАЛ БОЛГОХ АЖЛУУД */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <h2 className="text-xl font-black text-gray-900">Санал болгож буй ажлын байрууд</h2>
+              <h2 className="text-xl font-bold text-gray-900">Санал болгож буй ажлын байрууд</h2>
               <Link href={`/dashboard/staff/jobs/recommendedJobs?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
                 Бүгдийг үзэх ({recommendedJobs.length}) →
               </Link>
             </div>
 
             <div className="space-y-3">
+              {recommendedJobs.length === 0 && (
+                <EmptyState
+                  icon={Briefcase}
+                  title="Санал болгох ажлын байр одоогоор алга"
+                  description="Профайлаа бүрэн бөглөснөөр танд тохирох ажлын байрыг санал болгоно."
+                  action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
+                />
+              )}
               {recommendedJobs.slice(0, 2).map((job) => {
                 const isJobApplied = appliedJobIds.includes(job.id);
                 return (
@@ -366,8 +375,8 @@ export default function StaffView({ userId }: StaffViewProps) {
                           {isJobApplied && (
                             <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
                           )}
-                          <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
-                          <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
+                          <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
+                          <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
                         </div>
                         <h4 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">{job.title}</h4>
                         
@@ -398,13 +407,21 @@ export default function StaffView({ userId }: StaffViewProps) {
           {/* ХҮСЭЛТҮҮДИЙН ТӨЛӨВ */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <h2 className="text-xl font-black text-gray-900">Илгээсэн анкетын төлөв</h2>
+              <h2 className="text-xl font-bold text-gray-900">Илгээсэн анкетын төлөв</h2>
               <Link href={`/dashboard/staff/applications?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
                 Түүх үзэх ({recentApplications.length}) →
               </Link>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {recentApplications.length === 0 && (
+                <EmptyState
+                  icon={Send}
+                  title="Илгээсэн анкет алга"
+                  description="Сонирхсон ажлын байрандаа анкет илгээхэд төлөв нь энд харагдана."
+                  className="sm:col-span-2"
+                />
+              )}
               {recentApplications.slice(0, 2).map((app) => (
                 <div 
                   key={app.id}
@@ -423,7 +440,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-gray-400 font-medium pt-0.5"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.date}</p>
+                    <p className="text-xs text-gray-400 font-medium pt-0.5"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.date}</p>
                   </div>
                   <div className="flex items-center justify-between border-t border-gray-50 pt-3 w-full">
                     <span className="text-xs text-gray-400">Статус:</span>
@@ -439,7 +456,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="space-y-6">
           <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-6">
             <div>
-              <h3 className="font-black text-lg text-gray-900">Миний Профайл</h3>
+              <h3 className="font-bold text-lg text-gray-900">Миний Профайл</h3>
               <p className="text-xs text-gray-400 mt-1">Таны систем дэх бүртгэл баталгаажсан байна.</p>
             </div>
             <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
@@ -471,7 +488,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                 >
                   <div className="flex items-center gap-2">
                     <Lightbulb className="w-5 h-5 text-amber-600" />
-                    <h4 className="font-black text-sm text-amber-900">{tip.title}</h4>
+                    <h4 className="font-bold text-sm text-amber-900">{tip.title}</h4>
                   </div>
                   <p className="text-xs text-amber-800 leading-relaxed font-medium">
                     {tip.content}
@@ -499,15 +516,15 @@ export default function StaffView({ userId }: StaffViewProps) {
               <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
-                  <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
+                  <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
+                  <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
                 </div>
-                <h3 className="text-xl font-black text-gray-900">{selectedJob.title}</h3>
+                <h3 className="text-xl font-bold text-gray-900">{selectedJob.title}</h3>
                 
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
-                    className="text-base font-black text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
+                    className="text-base font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                   >
                     <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedJob.company}
                   </span>
@@ -549,7 +566,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
             <button onClick={() => setSelectedApp(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
             <div className="space-y-1">
-              <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
+              <h3 className="text-xl font-bold text-gray-900">{selectedApp.title}</h3>
               
               <div>
                 <span 
@@ -569,7 +586,7 @@ export default function StaffView({ userId }: StaffViewProps) {
             </div>
             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
               <span className="text-sm font-bold text-gray-500">Одоогийн статус:</span>
-              <span className={`px-4 py-1.5 text-xs font-black rounded-xl border ${selectedApp.statusColor}`}>{selectedApp.status}</span>
+              <span className={`px-4 py-1.5 text-xs font-bold rounded-xl border ${selectedApp.statusColor}`}>{selectedApp.status}</span>
             </div>
             <button onClick={() => setSelectedApp(null)} className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-sm rounded-xl transition text-center">Хаах</button>
           </div>
@@ -581,7 +598,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
             <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner"><HelpCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-            <h3 className="text-lg md:text-xl font-black text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
+            <h3 className="text-lg md:text-xl font-bold text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
               Анкет илгээх үйлдлийг баталгаажуулахын тулд баруун тийш чирнэ үү. Илгээсэн анкетыг цуцлах боломжгүй.
             </p>
@@ -626,7 +643,7 @@ export default function StaffView({ userId }: StaffViewProps) {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
             <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-            <h3 className="text-xl font-black text-gray-900">Амжилттай илгээгдлээ!</h3>
+            <h3 className="text-xl font-bold text-gray-900">Амжилттай илгээгдлээ!</h3>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">
               Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно. Тасралтгүй урагшилсаар байгаарай!
             </p>
@@ -653,7 +670,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       {alertModal.show && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4">
-            <h3 className="text-lg font-black text-gray-900">{alertModal.title}</h3>
+            <h3 className="text-lg font-bold text-gray-900">{alertModal.title}</h3>
             <p className="text-sm text-gray-500 leading-relaxed">{alertModal.message}</p>
             <button
               onClick={() => setAlertModal((prev) => ({ ...prev, show: false }))}

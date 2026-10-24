@@ -71,11 +71,11 @@ function Section({ step, title, hint, children }: { step: number; title: string;
   return (
     <section className="space-y-3">
       <div>
-        <h3 className="flex items-center gap-2 text-sm font-black text-gray-900">
-          <span className="w-5 h-5 rounded-full bg-orange-50 text-orange-600 text-[11px] grid place-items-center" aria-hidden>{step}</span>
+        <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+          <span className="w-5 h-5 rounded-full bg-orange-50 text-orange-600 text-xs grid place-items-center" aria-hidden>{step}</span>
           {title}
         </h3>
-        {hint && <p className="text-[11px] text-gray-400 mt-0.5 ml-7">{hint}</p>}
+        {hint && <p className="text-xs text-gray-400 mt-0.5 ml-7">{hint}</p>}
       </div>
       <div className="sm:ml-7">{children}</div>
     </section>
@@ -129,7 +129,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <button type="button" onClick={cancel} className="text-xs font-bold text-gray-400 hover:text-orange-600">← Загварууд</button>
-            <h2 className="text-xl font-black text-gray-900 mt-0.5">{isNew ? "Шинэ загвар" : form.name.trim() || "Загвар засах"}</h2>
+            <h2 className="text-xl font-bold text-gray-900 mt-0.5">{isNew ? "Шинэ загвар" : form.name.trim() || "Загвар засах"}</h2>
           </div>
           <div className="lg:hidden inline-flex bg-gray-100/80 p-1 rounded-xl text-xs font-bold">
             {(["edit", "preview"] as MobileView[]).map((view) => (
@@ -164,7 +164,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                       className={inputClass}
                       autoFocus={isNew}
                     />
-                    {nameInvalid && <span className="block text-[11px] font-semibold text-rose-600">Загварын нэрийг оруулна уу.</span>}
+                    {nameInvalid && <span className="block text-xs font-semibold text-rose-600">Загварын нэрийг оруулна уу.</span>}
                   </label>
                   <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/60 cursor-pointer select-none">
                     <input
@@ -175,7 +175,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                     />
                     <span>
                       <span className="block text-sm font-bold text-gray-800"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн загвар</span>
-                      <span className="block text-[11px] text-gray-500">Шинэ гэрээ үүсгэхэд автоматаар сонгогдоно. Өмнөх үндсэн загвар энгийн болно.</span>
+                      <span className="block text-xs text-gray-500">Шинэ гэрээ үүсгэхэд автоматаар сонгогдоно. Өмнөх үндсэн загвар энгийн болно.</span>
                     </span>
                   </label>
                 </div>
@@ -238,7 +238,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">сар</span>
                       </div>
                     </div>
-                    <p className="text-[11px] text-gray-400">Дуусах огноог гэрээний эхлэх огнооноос тооцно. «Заахгүй» бол гэрээ бүрт гараар оруулна.</p>
+                    <p className="text-xs text-gray-400">Дуусах огноог гэрээний эхлэх огнооноос тооцно. «Заахгүй» бол гэрээ бүрт гараар оруулна.</p>
                   </div>
                   <label className="block space-y-1.5">
                     <Label>Ажлын байршил</Label>
@@ -262,7 +262,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                     aria-invalid={termsInvalid}
                     className={`${inputClass} leading-relaxed`}
                   />
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span className={termsInvalid ? "font-semibold text-rose-600" : "text-gray-400"}>
                       {termsInvalid ? `Дор хаяж ${MIN_TEMPLATE_TERMS} тэмдэгт бичнэ үү. ` : ""}
                       {termsLength.toLocaleString("mn-MN")} / 20,000 тэмдэгт
@@ -280,9 +280,9 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
             {/* Урт формын доод хэсэгт ч үйлдлийн товч харагдана */}
             <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-2 px-5 sm:px-8 py-3 bg-white/95 backdrop-blur border-t border-gray-100 rounded-b-3xl">
               {showErrors && problems.length > 0 ? (
-                <span role="alert" className="mr-auto text-[11px] font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {problems[0]}</span>
+                <span role="alert" className="mr-auto text-xs font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {problems[0]}</span>
               ) : (
-                dirty && <span className="mr-auto text-[11px] font-semibold text-amber-600">● Хадгалаагүй өөрчлөлт</span>
+                dirty && <span className="mr-auto text-xs font-semibold text-amber-600">● Хадгалаагүй өөрчлөлт</span>
               )}
               <button type="button" onClick={cancel} disabled={busy} className="text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-50">
                 Болих

@@ -52,7 +52,7 @@ function ExpiresSoon({ contract }: { contract: ContractListItem }) {
   const days = expiresSoonDays(contract)
   if (days === null) return null
   return (
-    <div className="mt-1 text-[11px] font-bold text-amber-600" suppressHydrationWarning>
+    <div className="mt-1 text-xs font-bold text-amber-600" suppressHydrationWarning>
       <Hourglass size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {days === 0 ? "Өнөөдөр дуусна" : `${days} хоногийн дараа дуусна`}
     </div>
   )
@@ -284,7 +284,7 @@ export default function ContractList({ party }: ContractListProps) {
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.position}</div>
-                    <div className="text-[11px] text-gray-400 font-mono">{c.contract_number}</div>
+                    <div className="text-xs text-gray-400 font-mono">{c.contract_number}</div>
                   </div>
                   <ContractStatusBadge status={c.status} />
                 </div>

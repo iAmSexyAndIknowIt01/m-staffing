@@ -58,7 +58,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           onClick={() => setMobileMenuOpen(false)}
           className="font-bold tracking-wide text-orange-500 hover:opacity-80 transition"
         >
-          M-Staffing
+          MStaffing
         </LinkNext>
 
         <div className="flex items-center gap-1">
@@ -116,7 +116,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           <div className="flex items-center justify-between px-2 py-2">
             {!isCollapsed && (
               <LinkNext href="/dashboard" className="text-base font-bold tracking-wide text-orange-500 animate-fade-in hover:opacity-80 transition">
-                M-Staffing
+                MStaffing
               </LinkNext>
             )}
             <button

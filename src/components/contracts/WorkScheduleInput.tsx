@@ -148,7 +148,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
                           className={timeInputClass}
                         />
                         {!error && isOvernight(slot) && (
-                          <span className="text-[11px] font-semibold text-orange-500 whitespace-nowrap"><Moon size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> дараа өдөр</span>
+                          <span className="text-xs font-semibold text-orange-500 whitespace-nowrap"><Moon size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> дараа өдөр</span>
                         )}
                       </div>
                       {enabledCount > 1 && (
@@ -156,7 +156,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
                           type="button"
                           onClick={() => copyToOthers(i)}
                           title="Энэ цагийг бусад сонгосон өдөрт хуулах"
-                          className="order-2 sm:order-3 ml-auto inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition"
+                          className="order-2 sm:order-3 ml-auto inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition"
                         >
                           <Copy className="w-3.5 h-3.5" aria-hidden />
                           Бусдад хуулах
@@ -167,7 +167,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
                     <span className="order-2 text-xs text-gray-400">Амралтын өдөр</span>
                   )}
 
-                  {error && <p role="alert" className="order-4 w-full text-[11px] font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {error}</p>}
+                  {error && <p role="alert" className="order-4 w-full text-xs font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {error}</p>}
                 </li>
               )
             })}
@@ -197,7 +197,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
             aria-label="Ажлын цаг"
             className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-gray-800"
           />
-          <p className="text-[11px] text-gray-400">Ээлжийн, уян хатан цагийн ажил г.м. долоо хоногийн тогтмол хуваарьгүй үед ашиглана.</p>
+          <p className="text-xs text-gray-400">Ээлжийн, уян хатан цагийн ажил г.м. долоо хоногийн тогтмол хуваарьгүй үед ашиглана.</p>
         </div>
       )}
     </div>

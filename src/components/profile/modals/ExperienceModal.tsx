@@ -121,7 +121,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                       <div className="space-y-1">
                         <h4 className="font-bold text-gray-900 text-sm">{item.position}</h4>
                         <p className="text-xs text-orange-600 font-medium">{item.company}</p>
-                        <p className="text-[11px] text-gray-400">
+                        <p className="text-xs text-gray-400">
                           {item.startDate} ~ {item.endDate || "Одоог хүртэл"}
                         </p>
                       </div>
@@ -195,7 +195,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-xs text-gray-500 font-semibold">Дуусах огноо</label>
-                    <label className="flex items-center gap-1 text-[11px] text-orange-600 font-medium cursor-pointer">
+                    <label className="flex items-center gap-1 text-xs text-orange-600 font-medium cursor-pointer">
                       <input
                         type="checkbox"
                         checked={isCurrentJob}

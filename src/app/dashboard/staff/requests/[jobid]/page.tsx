@@ -261,20 +261,20 @@ ${job.requirements}
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100/80 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
               {modalLogoUrl ? (
-                <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
+                <img src={modalLogoUrl} alt="Байгууллагын лого" className="w-full h-full object-contain p-1" />
               ) : (
-                <span className="text-base font-black text-orange-500 uppercase">
+                <span className="text-base font-bold text-orange-500 uppercase">
                   {job.mt_company?.name?.substring(0, 2) || "CO"}
                 </span>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-orange-600 bg-orange-50/80 px-3 py-1 rounded-full border border-orange-100/60 uppercase tracking-wider">
+              <span className="text-xs font-bold text-orange-600 bg-orange-50/80 px-3 py-1 rounded-full border border-orange-100/60 uppercase tracking-wider">
                 {job.category}
               </span>
               
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
+              <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 leading-tight">
                 {job.title}
               </h2>
 
@@ -318,7 +318,7 @@ ${job.requirements}
                 <MapPin className="w-4 h-4 text-slate-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Байршил</span>
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Байршил</span>
                 <span className="text-xs font-bold text-slate-800">{job.location || "Улаанбаатар"}</span>
               </div>
             </div>
@@ -328,7 +328,7 @@ ${job.requirements}
                 <Briefcase className="w-4 h-4 text-orange-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ажлын төрөл</span>
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Ажлын төрөл</span>
                 <span className="text-xs font-bold text-slate-800">{getJobTypeText(job.job_type)}</span>
               </div>
             </div>
@@ -338,10 +338,10 @@ ${job.requirements}
                 <DollarSign className="w-4 h-4 text-emerald-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
                   Цалингийн нөхцөл ({getSalaryTypeText(job.salary_type)})
                 </span>
-                <span className="text-sm font-black text-emerald-600">
+                <span className="text-sm font-bold text-emerald-600">
                   ₮ {formatSalary(job.salary)}
                 </span>
               </div>

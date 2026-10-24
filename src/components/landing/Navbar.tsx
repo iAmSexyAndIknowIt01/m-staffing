@@ -44,7 +44,7 @@ export default function Navbar() {
                 <span className="text-orange-500">Staffing</span>
               </h1>
               <p
-                className="text-[10px] md:text-[11px] text-gray-400 mt-0.5"
+                className="text-xs md:text-xs text-gray-400 mt-0.5"
               >
                 Future of Work
               </p>

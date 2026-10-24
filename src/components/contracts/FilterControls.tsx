@@ -47,7 +47,7 @@ export function DateRange({
 }) {
   return (
     <div className="space-y-1">
-      <span className="block text-[11px] font-bold text-gray-400 px-1">{label}</span>
+      <span className="block text-xs font-bold text-gray-400 px-1">{label}</span>
       <div className="flex items-center gap-1.5">
         <input type="date" value={from} max={to || undefined} onChange={(e) => onChange({ from: e.target.value })} className={filterInputClass} aria-label={`${label} — эхлэх`} />
         <span className="text-gray-300">—</span>
@@ -60,7 +60,7 @@ export function DateRange({
 export function LabeledSelect({ label, children, ...props }: { label: string } & React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <label className="space-y-1 block">
-      <span className="block text-[11px] font-bold text-gray-400 px-1">{label}</span>
+      <span className="block text-xs font-bold text-gray-400 px-1">{label}</span>
       <select {...props} className={filterSelectClass}>
         {children}
       </select>

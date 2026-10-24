@@ -27,7 +27,7 @@ function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; ch
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
       <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{label}</p>
         <div className="mt-0.5 text-sm font-bold text-gray-800 break-words">{children}</div>
       </div>
     </div>
@@ -37,7 +37,7 @@ function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; ch
 function TextSection({ title, text, empty }: { title: string; text?: string | null; empty: string }) {
   return (
     <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6 sm:p-8">
-      <h2 className="text-lg font-black text-gray-900 pb-3 mb-4 border-b border-gray-50 flex items-center gap-2">
+      <h2 className="text-lg font-bold text-gray-900 pb-3 mb-4 border-b border-gray-50 flex items-center gap-2">
         <span className="w-1.5 h-5 rounded-full bg-orange-500" /> {title}
       </h2>
       {text?.trim() ? (
@@ -132,16 +132,16 @@ export default function JobDetailView({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {job.category && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-white/10 text-slate-300 rounded-lg uppercase border border-white/10">{job.category}</span>
+                <span className="px-2.5 py-0.5 text-xs font-bold bg-white/10 text-slate-300 rounded-lg uppercase border border-white/10">{job.category}</span>
               )}
               {job.job_type && (
-                <span className="px-2.5 py-0.5 text-[11px] font-medium bg-white/10 text-slate-300 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
+                <span className="px-2.5 py-0.5 text-xs font-medium bg-white/10 text-slate-300 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
               )}
               {isApplied && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-emerald-400/15 text-emerald-200 rounded-lg border border-emerald-300/20">Хүсэлт илгээсэн ✓</span>
+                <span className="px-2.5 py-0.5 text-xs font-bold bg-emerald-400/15 text-emerald-200 rounded-lg border border-emerald-300/20">Хүсэлт илгээсэн ✓</span>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight break-words">{job.title}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight break-words">{job.title}</h1>
             <div className="mt-1.5 flex items-center gap-1.5">
               {companyId ? (
                 <button
@@ -170,8 +170,8 @@ export default function JobDetailView({
           {/* Цалин + үйлдэл (компьютер) */}
           <div className="hidden md:flex flex-col items-end gap-3 shrink-0 text-right">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300/80">Цалин</p>
-              <p className="text-2xl font-black text-emerald-300">{salaryText}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-300/80">Цалин</p>
+              <p className="text-2xl font-extrabold text-emerald-300">{salaryText}</p>
               {salaryTypeText && <p className="text-xs font-medium text-slate-300/80">{salaryTypeText}</p>}
             </div>
             {applyButton(isApplied ? "" : "bg-white! text-orange-700! hover:bg-orange-50! shadow-slate-950/30!")}
@@ -189,7 +189,7 @@ export default function JobDetailView({
         {/* БАРУУН: АЖЛЫН БАЙРНЫ МЭДЭЭЛЭЛ, БАЙГУУЛЛАГА */}
         <aside className="space-y-6 lg:sticky lg:top-6">
           <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6">
-            <h2 className="text-lg font-black text-gray-900 pb-2">Ажлын байрны мэдээлэл</h2>
+            <h2 className="text-lg font-bold text-gray-900 pb-2">Ажлын байрны мэдээлэл</h2>
             <InfoRow icon={<Wallet className="w-4 h-4" />} label="Цалин">
               <span className="text-emerald-600">{salaryText}</span>
               {salaryTypeText && <span className="text-gray-400 font-medium"> · {salaryTypeText}</span>}
@@ -209,7 +209,7 @@ export default function JobDetailView({
           </section>
 
           <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6">
-            <h2 className="text-lg font-black text-gray-900 pb-4">Байгууллага</h2>
+            <h2 className="text-lg font-bold text-gray-900 pb-4">Байгууллага</h2>
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 shrink-0 bg-orange-50 border border-orange-100 rounded-2xl p-1 flex items-center justify-center">
                 {logoUrl ? (
@@ -253,8 +253,8 @@ export default function JobDetailView({
       {/* Утсан дээр доод талд тогтмол үйлдлийн мөр */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] px-4 py-3 flex items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Цалин</p>
-          <p className="text-sm font-black text-emerald-600 truncate">{salaryText}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Цалин</p>
+          <p className="text-sm font-bold text-emerald-600 truncate">{salaryText}</p>
         </div>
         {applyButton("shrink-0")}
       </div>

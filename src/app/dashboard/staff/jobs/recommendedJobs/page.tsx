@@ -234,12 +234,12 @@ export default function RecommendedJobsPage() {
           <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
           <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
       </div>
@@ -266,7 +266,7 @@ export default function RecommendedJobsPage() {
         >
           ← Буцах
         </button>
-        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Танд санал болгох ажлын байрууд</h1>
+        <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">Танд санал болгох ажлын байрууд</h1>
       </div>
 
       {jobs.length > 0 && (
@@ -310,8 +310,8 @@ export default function RecommendedJobsPage() {
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     {isJobApplied && <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>}
-                    <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
-                    <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
+                    <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
+                    <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
                   </div>
                   <h4 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">{job.title}</h4>
                   <div onClick={(e) => handleCompanyClick(e, job.company_id)} className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.company}</div>
@@ -338,14 +338,14 @@ export default function RecommendedJobsPage() {
               <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
-                  <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
+                  <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
+                  <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
                 </div>
-                <h3 className="text-xl font-black text-gray-900">{selectedJob.title}</h3>
+                <h3 className="text-xl font-bold text-gray-900">{selectedJob.title}</h3>
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
-                    className="text-base font-black text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
+                    className="text-base font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                   >
                     <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedJob.company}
                   </span>
@@ -384,7 +384,7 @@ export default function RecommendedJobsPage() {
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
            <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center">
              <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 mx-auto"><HelpCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-             <h3 className="text-lg font-black text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
+             <h3 className="text-lg font-bold text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
              <div ref={trackRef} className="relative w-full h-14 bg-gray-100 rounded-2xl mt-6 p-1 flex items-center overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400" style={{ opacity: Math.max(1 - sliderX / 100, 0) }}>Баруун тийш чирж илгээх</div>
                 <div
@@ -406,7 +406,7 @@ export default function RecommendedJobsPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center">
             <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto animate-bounce"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-            <h3 className="text-xl font-black text-gray-900">Амжилттай илгээгдлээ!</h3>
+            <h3 className="text-xl font-bold text-gray-900">Амжилттай илгээгдлээ!</h3>
             <button onClick={() => setShowSuccessModal(false)} className="mt-6 w-full py-3 bg-orange-600 text-white rounded-2xl font-bold">Ойлголоо</button>
           </div>
         </div>

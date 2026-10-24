@@ -215,7 +215,7 @@ export default function RegisterPage() {
 
       <div className="relative z-10 max-w-300 w-full grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
         {/* LEFT */}
-        <div className="relative overflow-hidden rounded-[32px] lg:rounded-[40px] lg:min-h-155 flex flex-col justify-center px-6 py-10 lg:p-14">
+        <div className="relative overflow-hidden rounded-4xl lg:rounded-4xl lg:min-h-155 flex flex-col justify-center px-6 py-10 lg:p-14">
           <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,rgba(255,140,0,.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,.06)_1px,transparent_1px)] bg-size-[56px_56px]" />
           <div className="absolute -left-32 top-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full bg-orange-300/20 blur-[140px]" />
 
@@ -233,7 +233,7 @@ export default function RegisterPage() {
         </div>
 
         {/* RIGHT */}
-        <div className="glass rounded-[32px] sm:rounded-[40px] p-6 sm:p-10">
+        <div className="glass rounded-4xl sm:rounded-4xl p-6 sm:p-10">
           <div className="bg-orange-50 rounded-full p-2 flex">
             <button
               type="button"
@@ -408,7 +408,7 @@ export default function RegisterPage() {
       {/* МЭДЭГДЛИЙН АНХААРУУЛГА МОДАЛ */}
       {alertModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white rounded-[28px] p-7 max-w-sm w-full shadow-xl border text-center animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-3xl p-7 max-w-sm w-full shadow-xl border text-center animate-in fade-in zoom-in-95 duration-150">
             
             <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
               {alertModal.type === "success" && (

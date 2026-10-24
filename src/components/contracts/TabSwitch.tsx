@@ -64,7 +64,7 @@ export default function TabSwitch<K extends string>({ tabs, value, onChange, ari
             {t.label}
             {!!t.badge && (
               <span
-                className={`min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[10px] font-black ${
+                className={`min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full text-xs font-bold ${
                   selected ? "bg-orange-600 text-white" : "bg-gray-300 text-gray-700"
                 }`}
               >

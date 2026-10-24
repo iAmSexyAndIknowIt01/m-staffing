@@ -261,12 +261,12 @@ export default function StaffProfilePage() {
           <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
           <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
       </div>
@@ -278,7 +278,7 @@ export default function StaffProfilePage() {
       {/* HEADER */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Ажилтны профайл</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900">Ажилтны профайл</h1>
           <p className="text-sm text-gray-400 mt-1">Ажил олгогчийн харах горим</p>
         </div>
       </div>
@@ -305,14 +305,14 @@ export default function StaffProfilePage() {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-4xl font-black text-orange-600">
+                <span className="text-4xl font-extrabold text-orange-600">
                   {fullName ? fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}
               
               {isEditMode && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200 text-[10px] text-white font-bold backdrop-blur-xs px-2">
-                  {uploadingAvatar ? "Уншиж байна..." : "Зураг солих"}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200 text-xs text-white font-bold backdrop-blur-xs px-2">
+                  {uploadingAvatar ? "Хуулж байна..." : "Зураг солих"}
                 </div>
               )}
             </div>

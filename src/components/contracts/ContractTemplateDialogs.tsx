@@ -42,7 +42,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 id="template-picker-title" className="text-lg font-black text-gray-900">Загвар хэрэглэх</h3>
+          <h3 id="template-picker-title" className="text-lg font-bold text-gray-900">Загвар хэрэглэх</h3>
           <p className="text-sm text-gray-500 mt-1">
             Гэрээний нөхцөл загвараар солигдоно. Загварт хоосон талбар (албан тушаал, цалин г.м.) одоогийн утгаараа үлдэнэ.
           </p>
@@ -68,7 +68,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-gray-900 truncate">{t.name}</span>
-                      {t.is_default && <span className="shrink-0 text-[10px] font-bold text-orange-600 bg-orange-50 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>}
+                      {t.is_default && <span className="shrink-0 text-xs font-bold text-orange-600 bg-orange-50 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>}
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5 truncate">{templateSummary(t) || "Зөвхөн гэрээний нөхцөл"}</div>
                   </button>
@@ -115,7 +115,7 @@ export function SaveTemplateDialog({ defaultName, busy, error, onConfirm, onClos
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 id="save-template-title" className="text-lg font-black text-gray-900">Загвар болгож хадгалах</h3>
+          <h3 id="save-template-title" className="text-lg font-bold text-gray-900">Загвар болгож хадгалах</h3>
           <p className="text-sm text-gray-500 mt-1">
             Албан тушаал, цалин, ажлын цаг, байршил, нөхцлийг загварт хадгална. Хугацааг «Загварууд» хэсэгт тохируулж болно.
           </p>

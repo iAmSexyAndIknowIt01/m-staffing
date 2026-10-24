@@ -26,7 +26,7 @@ export default function GlobalError({
           <div className="space-y-3">
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Системийн алдаа гарлаа</h1>
             <p className="text-slate-500 leading-relaxed">
-              Уучлаарай, системд түр зуурын саатал гарлаа. M-Staffing-ийн баг үүнийг аль хэдийн шалгаж байна.
+              Уучлаарай, системд түр зуурын саатал гарлаа. MStaffing-ийн баг үүнийг аль хэдийн шалгаж байна.
             </p>
             {error.digest && (
               <p className="text-xs text-slate-400 font-mono">Error ID: {error.digest}</p>
@@ -55,7 +55,7 @@ export default function GlobalError({
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-8 text-left w-full bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
               <span className="font-bold text-xs text-red-500 block mb-1">Development Details:</span>
-              <pre className="text-[10px] text-slate-600 font-mono overflow-x-auto">{error.message}</pre>
+              <pre className="text-xs text-slate-600 font-mono overflow-x-auto">{error.message}</pre>
             </div>
           )}
         </div>

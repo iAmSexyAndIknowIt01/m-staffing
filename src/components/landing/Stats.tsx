@@ -119,7 +119,7 @@ export default function Stats() {
               text-orange-300
             "
           >
-            MSTAFFING TODAY
+            MStaffing өнөөдөр
           </div>
 
           <h2

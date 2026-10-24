@@ -120,19 +120,19 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       case "pending":
       case "new":
       case "":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
       case "interview":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлага</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлага</span>
       case "accepted":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
       case "not-approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
       case "rejected":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
       default:
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200/50">Тодорхойгүй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200/50">Тодорхойгүй</span>
     }
   }
 
@@ -149,12 +149,12 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
             <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
             <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-[10px] sm:text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs sm:text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
             Төлөв шинэчилж байна...
           </p>
         </div>
@@ -294,7 +294,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
                       <div className="font-bold text-gray-900 text-sm sm:text-base truncate">{app.user_name}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
+                      <div className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>
                         <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>

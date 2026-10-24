@@ -89,7 +89,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition gap-1.5"
           >
             <span className="text-xl font-bold">f</span>
-            <span className="text-[11px] font-medium">Facebook</span>
+            <span className="text-xs font-medium">Facebook</span>
           </button>
 
           <button
@@ -97,7 +97,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50 text-sky-500 hover:bg-sky-100 transition gap-1.5"
           >
             <span className="text-xl"><Send size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-            <span className="text-[11px] font-medium">Telegram</span>
+            <span className="text-xs font-medium">Telegram</span>
           </button>
 
           <button
@@ -105,7 +105,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition gap-1.5"
           >
             <span className="text-lg font-bold">in</span>
-            <span className="text-[11px] font-medium">LinkedIn</span>
+            <span className="text-xs font-medium">LinkedIn</span>
           </button>
 
           <button
@@ -113,7 +113,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition gap-1.5"
           >
             <span className="text-lg"><MessageSquare size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-            <span className="text-[11px] font-medium">Viber</span>
+            <span className="text-xs font-medium">Viber</span>
           </button>
         </div>
 

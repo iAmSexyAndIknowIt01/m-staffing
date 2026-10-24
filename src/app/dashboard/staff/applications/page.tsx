@@ -128,7 +128,7 @@ export default function ApplicationsHistoryPage() {
             
             {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
@@ -136,7 +136,7 @@ export default function ApplicationsHistoryPage() {
           </div>
           
           {/* Доор уншиж буйг илтгэх жижиг текст */}
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Түр хүлээнэ үү...
           </p>
         </div>
@@ -165,7 +165,7 @@ export default function ApplicationsHistoryPage() {
         >
           ← Буцах
         </button>
-        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
+        <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
       </div>
 
       {/* 🌟 НӨХЦӨЛӨӨР ХАЙХ, ШҮҮХ ХЭСЭГ (SEARCH & FILTER BAR) */}
@@ -236,7 +236,7 @@ export default function ApplicationsHistoryPage() {
               className="bg-white border border-gray-100 p-6 rounded-4xl shadow-xs flex flex-col justify-between gap-4 hover:border-orange-100 hover:shadow-md transition-all group cursor-pointer animate-fade-in"
             >
               <div className="space-y-2">
-                <h3 className="font-black text-gray-900 text-lg group-hover:text-orange-600 transition-colors line-clamp-1">
+                <h3 className="font-bold text-gray-900 text-lg group-hover:text-orange-600 transition-colors line-clamp-1">
                   {app.title}
                 </h3>
                 
@@ -274,7 +274,7 @@ export default function ApplicationsHistoryPage() {
               <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
             </button>
             <div className="space-y-1">
-              <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
+              <h3 className="text-xl font-bold text-gray-900">{selectedApp.title}</h3>
               <div>
                 <span 
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
@@ -292,7 +292,7 @@ export default function ApplicationsHistoryPage() {
             </div>
             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
               <span className="text-sm font-bold text-gray-500">Одоогийн статус:</span>
-              <span className={`px-4 py-1.5 text-xs font-black rounded-xl border ${getStatusBadgeClass(selectedApp.status)}`}>
+              <span className={`px-4 py-1.5 text-xs font-bold rounded-xl border ${getStatusBadgeClass(selectedApp.status)}`}>
                 {getStatusTranslation(selectedApp.status)}
               </span>
             </div>

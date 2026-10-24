@@ -134,23 +134,25 @@ export default function JobCard({
             {logoFullUrl ? (
               <img
                 src={logoFullUrl}
-                alt={job.mt_company?.name || "Company logo"}
-                className="w-full h-full object-cover"
+                alt={`${job.mt_company?.name || "Байгууллага"} лого`}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-contain p-1"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = "none"
                 }}
               />
             ) : (
-              <span className="text-sm font-black text-orange-500 uppercase">
+              <span className="text-sm font-bold text-orange-500 uppercase">
                 {job.mt_company?.name?.substring(0, 2) || "CO"}
               </span>
             )}
           </div>
 
           <div>
-            {/* Гарчиг: Хэрэв өмнө нь үзсэн бол бор хүрэн (brown-red), үгүй бол стандарт хар өнгөтэй байна */}
+            {/* Гарчиг: өмнө нь үзсэн бол вэбийн «үзсэн холбоос»-ын ягаан өнгөтэй байна */}
             <h3 className={`text-[16px] font-bold leading-snug transition ${
-              hasVisited ? "text-[#8B263E]" : "text-slate-900 group-hover:text-orange-600"
+              hasVisited ? "text-purple-800" : "text-slate-900 group-hover:text-orange-600"
             }`}>
               {job.title}
             </h3>
@@ -208,7 +210,7 @@ export default function JobCard({
           </span>
         </div>
         
-        <div className="text-[11px] text-gray-400 font-medium">
+        <div className="text-xs text-gray-400 font-medium">
           {getDaysAgo(job.created_at)}
         </div>
       </div>
@@ -239,7 +241,7 @@ export default function JobCard({
           )}
         </div>
 
-        <div className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
+        <div className="text-xs font-medium text-gray-400 flex items-center gap-1">
           <span><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> {job.location || "Улаанбаатар"}
         </div>
       </div>

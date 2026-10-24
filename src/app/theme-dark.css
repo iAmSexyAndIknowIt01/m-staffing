@@ -217,6 +217,7 @@
   :where(html.dark) .text-pink-600 { color: var(--color-pink-400); }
   :where(html.dark) .text-pink-700 { color: var(--color-pink-300); }
   :where(html.dark) .text-purple-600 { color: var(--color-purple-400); }
+  :where(html.dark) .text-purple-800 { color: var(--color-purple-300); }
   :where(html.dark) .text-red-600 { color: var(--color-red-400); }
   :where(html.dark) .text-red-700 { color: var(--color-red-300); }
   :where(html.dark) .text-red-900 { color: var(--color-red-200); }

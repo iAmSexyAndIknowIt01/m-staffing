@@ -167,7 +167,7 @@ export default function ContractTemplates() {
         <div className="bg-white border border-gray-100 rounded-3xl sm:rounded-4xl shadow-sm p-6 sm:p-10 space-y-6">
           <div className="text-center max-w-md mx-auto">
             <span className="text-3xl sm:text-4xl block mb-3"><FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-            <h2 className="font-black text-gray-900 text-base sm:text-lg">Гэрээгээ дахин дахин бичих хэрэггүй</h2>
+            <h2 className="font-bold text-gray-900 text-base sm:text-lg">Гэрээгээ дахин дахин бичих хэрэггүй</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Байнга хэрэглэдэг нөхцөл, ажлын цаг, хугацааг загвар болгоод гэрээ үүсгэхдээ нэг товшилтоор бөглөнө.
             </p>
@@ -193,7 +193,7 @@ export default function ContractTemplates() {
 
           <div className="flex flex-col items-center gap-2">
             {newButton}
-            <p className="text-[11px] text-gray-400 text-center">Эсвэл бэлэн гэрээний ноорог дээрээс «<FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар болгож хадгалах» дарна.</p>
+            <p className="text-xs text-gray-400 text-center">Эсвэл бэлэн гэрээний ноорог дээрээс «<FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар болгож хадгалах» дарна.</p>
           </div>
         </div>
       ) : (
@@ -217,7 +217,7 @@ export default function ContractTemplates() {
               </p>
             )}
             <div className="flex items-center justify-between sm:justify-end gap-3">
-              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+              <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">
                 {templates.length} / {MAX_TEMPLATES_PER_COMPANY} загвар
               </span>
               {newButton}
@@ -261,11 +261,11 @@ export default function ContractTemplates() {
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-sm text-gray-900 truncate group-hover:text-orange-600 group-focus-visible:underline transition">{t.name}</span>
                             {t.is_default && (
-                              <span className="shrink-0 text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>
+                              <span className="shrink-0 text-xs font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>
                             )}
                           </div>
                           <p className="text-xs text-gray-400 truncate mt-0.5" title={t.terms}>{t.terms.split("\n")[0]}</p>
-                          <p className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>Шинэчилсэн: {formatDate(t.updated_at)}</p>
+                          <p className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>Шинэчилсэн: {formatDate(t.updated_at)}</p>
                         </button>
                       </div>
   

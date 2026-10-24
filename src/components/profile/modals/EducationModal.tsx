@@ -99,7 +99,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                       <h4 className="font-bold text-sm text-gray-800">{item.school}</h4>
                       <p className="text-xs text-gray-500">
                         {item.degree} {item.field && `— ${item.field}`} 
-                        <span className="ml-1.5 font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-[10px]">
+                        <span className="ml-1.5 font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-xs">
                           {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                         </span>
                       </p>

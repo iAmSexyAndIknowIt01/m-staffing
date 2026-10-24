@@ -160,7 +160,7 @@ export default function StaffRequestsPage() {
     <div className="max-w-5xl mx-auto w-full space-y-4 sm:space-y-6 px-3 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-900">Миний хүсэлтүүд</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Миний хүсэлтүүд</h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Илгээсэн анкет болон компаниудаас ирсэн хүсэлт, урилгын түүх</p>
         </div>
         <div>
@@ -308,8 +308,10 @@ export default function StaffRequestsPage() {
                           {logoSrc ? (
                             <img
                               src={logoSrc}
-                              alt={req.companyName}
-                              className="w-full h-full object-cover"
+                              alt={`${req.companyName} лого`}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-contain p-1"
                             />
                           ) : (
                             <span className="text-sm sm:text-base font-bold text-orange-600">
@@ -321,12 +323,12 @@ export default function StaffRequestsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                             <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{req.jobTitle}</h3>
-                            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
+                            <span className="text-xs sm:text-xs px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 w-fit">
                               {req.type === "applied" ? "Анкет илгээсэн" : "Урилга"}
                             </span>
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600 font-medium mt-0.5 truncate">{req.companyName}</p>
-                          <p className="text-[11px] sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
+                          <p className="text-xs sm:text-xs text-gray-400 mt-1">Огноо: {req.date}</p>
                         </div>
                       </div>
 

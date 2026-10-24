@@ -43,7 +43,7 @@ export default function CompanySupportPage() {
         <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-slate-900 transition">
           ← Буцах
         </Link>
-        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Тусламж & Дэмжлэг</h1>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Тусламж & Дэмжлэг</h1>
       </div>
 
       <div className="bg-white border border-gray-100 p-8 rounded-4xl shadow-xs space-y-6">

@@ -50,7 +50,7 @@ export default function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 id="confirm-dialog-title" className="text-lg font-black text-gray-900">{title}</h3>
+          <h3 id="confirm-dialog-title" className="text-lg font-bold text-gray-900">{title}</h3>
           <div className="text-sm text-gray-500 mt-1 space-y-2">{description}</div>
         </div>
         <div className="flex gap-2 justify-end">

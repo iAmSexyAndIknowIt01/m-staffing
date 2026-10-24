@@ -17,7 +17,7 @@ export default function NotFound() {
       <div className="space-y-3 max-w-md">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Хуудас олдсонгүй</h1>
         <p className="text-slate-500 leading-relaxed">
-          Уучлаарай, бидний хайж буй хуудас байхгүй эсвэл хаяг нь солигдсон байна. M-Staffing-ийн бусад хэсгүүдийг үзэх үү?
+          Уучлаарай, бидний хайж буй хуудас байхгүй эсвэл хаяг нь солигдсон байна. MStaffing-ийн бусад хэсгүүдийг үзэх үү?
         </p>
       </div>
 

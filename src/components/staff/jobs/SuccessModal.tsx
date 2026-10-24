@@ -18,7 +18,7 @@ export default function SuccessModal({ show, onClose }: SuccessModalProps) {
         <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce">
           <CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
         </div>
-        <h3 className="text-xl font-black text-gray-900">Амжилттай илгээгдлээ!</h3>
+        <h3 className="text-xl font-bold text-gray-900">Амжилттай илгээгдлээ!</h3>
         <p className="text-sm text-gray-500 mt-2 leading-relaxed">
           Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно.
         </p>

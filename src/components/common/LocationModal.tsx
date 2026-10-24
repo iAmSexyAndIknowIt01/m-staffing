@@ -26,7 +26,7 @@ export default function LocationModal({ isOpen, onClose, onSelect }: { isOpen: b
         {/* Бариул */}
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden" />
 
-        <h3 className="font-black text-xl mb-4 text-gray-800">
+        <h3 className="font-bold text-xl mb-4 text-gray-800">
           {selectedParent ? "Дүүрэг / Сум" : "Байршил сонгох"}
         </h3>
         

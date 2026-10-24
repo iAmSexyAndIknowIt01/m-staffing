@@ -72,7 +72,7 @@ export default function Footer() {
         <div
           className="
             rounded-4xl
-            md:rounded-[40px]
+            md:rounded-4xl
             bg-[#121212]/90
             md:bg-white/3
             border
@@ -218,7 +218,7 @@ export default function Footer() {
               <div
                 className="
                   rounded-3xl
-                  md:rounded-[28px]
+                  md:rounded-3xl
                   bg-white/2
                   md:bg-white/4
                   border

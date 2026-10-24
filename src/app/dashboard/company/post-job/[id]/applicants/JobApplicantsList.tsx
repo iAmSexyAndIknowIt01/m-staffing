@@ -77,13 +77,13 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
             
             {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
           
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Төлөв шинэчилж байна...
           </p>
         </div>
@@ -173,13 +173,13 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-bold text-gray-900">{app.user_name}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
+                      <div className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>
                         <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>
-                    {["new", "pending", ""].includes(currentStatus) && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600">Шинэ</span>}
-                    {currentStatus === "interview" && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600">Ярилцлага</span>}
-                    {currentStatus === "rejected" && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
+                    {["new", "pending", ""].includes(currentStatus) && <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">Шинэ</span>}
+                    {currentStatus === "interview" && <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-600">Ярилцлага</span>}
+                    {currentStatus === "rejected" && <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
                   </div>
 
                   <div className="text-xs text-gray-600 space-y-0.5 border-t border-b border-gray-50 py-2">
