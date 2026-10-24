@@ -24,7 +24,7 @@ export default function SuccessModal({ show, onClose }: SuccessModalProps) {
         </p>
         <button
           onClick={onClose}
-          className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-600/20 transition"
+          className="mt-6 w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-orange-600/20 transition"
         >
           Ойлголоо
         </button>

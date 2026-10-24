@@ -17,21 +17,21 @@ export default function DashboardFooter() {
             <span className="hidden sm:inline text-slate-200">•</span>
             <Link 
               href="/dashboard/support" 
-              className="text-slate-500 hover:text-indigo-600 hover:underline underline-offset-4 transition-all duration-200"
+              className="text-slate-500 hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200"
             >
               Тусламж авах
             </Link>
             <span className="text-slate-200">•</span>
             <Link 
               href="/dashboard/terms" 
-              className="text-slate-500 hover:text-indigo-600 hover:underline underline-offset-4 transition-all duration-200"
+              className="text-slate-500 hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200"
             >
               Үйлчилгээний нөхцөл
             </Link>
             <span className="text-slate-200">•</span>
             <Link 
               href="/dashboard/privacy" 
-              className="text-slate-500 hover:text-indigo-600 hover:underline underline-offset-4 transition-all duration-200"
+              className="text-slate-500 hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200"
             >
               Нууцлалын бодлого
             </Link>

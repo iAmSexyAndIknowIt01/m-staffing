@@ -257,11 +257,11 @@ export default function StaffProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
@@ -300,12 +300,12 @@ export default function StaffProfilePage() {
           <div className="flex flex-col items-center text-center pb-4 border-b border-gray-50">
             <div 
               onClick={() => isEditMode && !uploadingAvatar && fileInputRef.current?.click()}
-              className={`w-45 h-45 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group border border-gray-100 ${isEditMode ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+              className={`w-45 h-45 bg-orange-50 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group border border-gray-100 ${isEditMode ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-4xl font-black text-indigo-600">
+                <span className="text-4xl font-black text-orange-600">
                   {fullName ? fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}
@@ -382,7 +382,7 @@ export default function StaffProfilePage() {
           <div 
             className={`p-4 rounded-2xl border transition ${
               isEditMode 
-                ? agreement ? "border-indigo-200 bg-indigo-50/50" : "border-gray-200 bg-gray-50/50"
+                ? agreement ? "border-orange-200 bg-orange-50/50" : "border-gray-200 bg-gray-50/50"
                 : agreement ? "border-pink-200 bg-pink-50/50" : "border-gray-200 bg-gray-50/50"
             }`}
           >
@@ -395,7 +395,7 @@ export default function StaffProfilePage() {
                 onChange={(e) => setAgreement(e.target.checked)}
                 className={`w-5 h-5 mt-0.5 rounded-md border-gray-400 focus:ring-2 cursor-pointer transition-all ${
                   isEditMode 
-                    ? "accent-indigo-600 text-indigo-600 focus:ring-indigo-500 bg-white checked:bg-indigo-600" 
+                    ? "accent-orange-600 text-orange-600 focus:ring-orange-500 bg-white checked:bg-orange-600" 
                     : agreement 
                       ? "accent-pink-600 text-pink-600 focus:ring-pink-500 bg-pink-100 checked:bg-pink-600 opacity-100" 
                       : "accent-gray-400 text-gray-400 bg-gray-100 opacity-70"
@@ -485,7 +485,7 @@ export default function StaffProfilePage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="text-base font-bold text-gray-900">{item.position}</h4>
-                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">{item.company}</p>
+                        <p className="text-sm font-semibold text-orange-600 mt-0.5">{item.company}</p>
                       </div>
                       <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2.5 py-1 rounded-lg shrink-0">
                         {item.startDate} — {item.endDate || "Одоог хүртэл"}
@@ -523,11 +523,11 @@ export default function StaffProfilePage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="text-base font-bold text-gray-900">{item.school}</h4>
-                        <p className="text-sm font-semibold text-indigo-600 mt-0.5">
+                        <p className="text-sm font-semibold text-orange-600 mt-0.5">
                           {item.degree} {item.field ? `— ${item.field}` : ""}
                         </p>
                       </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 bg-gray-100'}`}>
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg shrink-0 ${item.isCurrent ? 'text-orange-600 bg-orange-50' : 'text-gray-400 bg-gray-100'}`}>
                         {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                       </span>
                     </div>
@@ -565,7 +565,7 @@ export default function StaffProfilePage() {
                 const day = currentAvailability[key as keyof typeof initialAvailability] || { enabled: false, from: "", to: "" }
                 
                 return (
-                  <div key={key} className={`border rounded-2xl p-4 transition ${day.enabled ? "border-indigo-200 bg-indigo-50/50" : "border-gray-100 bg-gray-50"}`}>
+                  <div key={key} className={`border rounded-2xl p-4 transition ${day.enabled ? "border-orange-200 bg-orange-50/50" : "border-gray-100 bg-gray-50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                       <div className="flex items-center justify-between md:w-48">
                         <span className="font-semibold text-gray-800">{label}</span>
@@ -584,7 +584,7 @@ export default function StaffProfilePage() {
                               setValidationErrors((prev) => ({ ...prev, availability: "" }))
                             }}
                           />
-                          <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition" />
+                          <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-orange-600 transition" />
                         </label>
                       </div>
 
@@ -634,7 +634,7 @@ export default function StaffProfilePage() {
           {/* SAVE BUTTON */}
           {isEditMode && (
             <div className="flex justify-end pt-4 border-t border-gray-100">
-              <button type="submit" disabled={saving || uploadingAvatar} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl text-sm font-bold transition">
+              <button type="submit" disabled={saving || uploadingAvatar} className="px-8 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white rounded-2xl text-sm font-bold transition">
                 {saving ? "Хадгалж байна..." : "Профайл хадгалах"}
               </button>
             </div>

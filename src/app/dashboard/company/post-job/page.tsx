@@ -206,11 +206,11 @@ export default function PostJobPage() {
       {(loading || checkingApproval) && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
@@ -251,7 +251,7 @@ export default function PostJobPage() {
                 placeholder="Нэр, чиглэлээр хайх..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-inner"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-orange-400 focus:bg-white transition-all shadow-inner"
               />
             </div>
 
@@ -259,7 +259,7 @@ export default function PostJobPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-orange-400 focus:bg-white transition-all"
               >
                 <option value="all">Бүх статус (Төлөв)</option>
                 <option value="active">Идэвхтэй</option>
@@ -272,7 +272,7 @@ export default function PostJobPage() {
               <select
                 value={salaryFilter}
                 onChange={(e) => { setSalaryFilter(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-orange-400 focus:bg-white transition-all"
               >
                 <option value="all">Бүх цалингийн төрөл</option>
                 <option value="specified">Цалин заасан зарууд</option>
@@ -284,7 +284,7 @@ export default function PostJobPage() {
               <select
                 value={applicantFilter}
                 onChange={(e) => { setApplicantFilter(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-orange-400 focus:bg-white transition-all"
               >
                 <option value="all">Бүх зар (Анкет хамаарахгүй)</option>
                 <option value="has_applicants">Зөвхөн анкет ирсэн</option>
@@ -295,7 +295,7 @@ export default function PostJobPage() {
               <select
                 value={dateSort}
                 onChange={(e) => { setDateSort(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-orange-400 focus:bg-white transition-all"
               >
                 <option value="newest">Сүүлд нэмэгдсэн</option>
                 <option value="oldest">Анх нэмэгдсэн</option>
@@ -324,7 +324,7 @@ export default function PostJobPage() {
               {isFilterActive ? "Шүүгдсэн үр дүн" : "Нийт зарласан ажлууд"} ({filteredAndSortedJobs.length})
             </h2>
             {isFilterActive && (
-              <span className="text-[10px] md:text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">
+              <span className="text-[10px] md:text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-xl">
                 Шүүлтүүр идэвхтэй
               </span>
             )}
@@ -378,7 +378,7 @@ export default function PostJobPage() {
                       {job.applicants_count > 0 && (
                         <button
                           onClick={() => handleViewApplicants(job.id)}
-                          className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100/80 rounded-xl transition text-center whitespace-nowrap cursor-pointer"
+                          className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100/80 rounded-xl transition text-center whitespace-nowrap cursor-pointer"
                         >
                           Анкет үзэх
                         </button>
@@ -501,7 +501,7 @@ export default function PostJobPage() {
             <p className="text-sm text-gray-600 leading-relaxed">{alertModal.message}</p>
             <button
               onClick={() => setAlertModal((prev) => ({ ...prev, show: false }))}
-              className="w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition cursor-pointer"
+              className="w-full py-2.5 bg-orange-600 text-white font-bold text-sm rounded-xl hover:bg-orange-700 transition cursor-pointer"
             >
               Ойлголоо
             </button>

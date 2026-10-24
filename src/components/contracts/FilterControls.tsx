@@ -75,7 +75,7 @@ export function ResultSummary({ total, filtered, hasFilters, onClear }: { total:
         {hasFilters ? `${total}-аас ${filtered} илэрц` : `Нийт ${total}`}
       </span>
       {hasFilters && (
-        <button onClick={onClear} className="font-bold text-indigo-600 hover:text-indigo-700">
+        <button onClick={onClear} className="font-bold text-orange-600 hover:text-orange-700">
           <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шүүлтүүр цэвэрлэх
         </button>
       )}

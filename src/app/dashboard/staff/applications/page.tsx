@@ -118,17 +118,17 @@ export default function ApplicationsHistoryPage() {
           <div className="relative flex items-center justify-center h-32 w-32">
             
             {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
             
             {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
             
             {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             
             {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
@@ -147,7 +147,7 @@ export default function ApplicationsHistoryPage() {
     return (
       <div className="text-center py-12 max-w-md mx-auto space-y-4">
         <p className="text-gray-500 font-medium">Хэрэглэгч баталгаажаагүй байна. Үндсэн хуудас руу шилжинэ үү.</p>
-        <button onClick={() => router.back()} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Буцах</button>
+        <button onClick={() => router.back()} className="px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold">Буцах</button>
       </div>
     )
   }
@@ -179,7 +179,7 @@ export default function ApplicationsHistoryPage() {
               placeholder="Ажлын нэр эсвэл компаниар хайх..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all text-gray-900"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-orange-500 transition-all text-gray-900"
             />
             {searchTerm && (
               <button 
@@ -196,7 +196,7 @@ export default function ApplicationsHistoryPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all font-bold text-gray-700 cursor-pointer"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-orange-500 transition-all font-bold text-gray-700 cursor-pointer"
             >
               <option value="all">Бүх статус</option>
               <option value="pending">Шалгагдаж буй</option>
@@ -217,7 +217,7 @@ export default function ApplicationsHistoryPage() {
           </p>
           <Link 
             href="/dashboard/staff/jobs"
-            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
+            className="inline-block px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
           >
             Ажил хайх
           </Link>
@@ -233,17 +233,17 @@ export default function ApplicationsHistoryPage() {
             <div 
               key={app.id}
               onClick={() => setSelectedApp(app)}
-              className="bg-white border border-gray-100 p-6 rounded-4xl shadow-xs flex flex-col justify-between gap-4 hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer animate-fade-in"
+              className="bg-white border border-gray-100 p-6 rounded-4xl shadow-xs flex flex-col justify-between gap-4 hover:border-orange-100 hover:shadow-md transition-all group cursor-pointer animate-fade-in"
             >
               <div className="space-y-2">
-                <h3 className="font-black text-gray-900 text-lg group-hover:text-indigo-600 transition-colors line-clamp-1">
+                <h3 className="font-black text-gray-900 text-lg group-hover:text-orange-600 transition-colors line-clamp-1">
                   {app.title}
                 </h3>
                 
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, app.company_id)}
-                    className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                    className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-flex items-center gap-1"
                   >
                     <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.company}
                   </span>
@@ -278,7 +278,7 @@ export default function ApplicationsHistoryPage() {
               <div>
                 <span 
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
-                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                  className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                 >
                   <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedApp.company}
                 </span>

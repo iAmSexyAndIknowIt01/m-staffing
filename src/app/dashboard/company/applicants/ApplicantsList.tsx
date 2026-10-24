@@ -121,7 +121,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       case "":
         return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
       case "interview":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-200/50">Ярилцлага</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлага</span>
       case "accepted":
         return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
@@ -144,11 +144,11 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/85 backdrop-blur-xs px-4">
           <div className="relative flex items-center justify-center h-28 w-28 sm:h-32 sm:w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-[10px] sm:text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-[10px] sm:text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                               </>
                             )}
                             {CONTRACTS_ENABLED && isApproved && (
-                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ</button>
+                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ</button>
                             )}
                           </div>
                         </td>
@@ -369,7 +369,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                       <button
                         disabled={showLoader}
                         onClick={() => handleCreateContract(app.id)}
-                        className="flex-1 text-xs font-bold bg-indigo-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
+                        className="flex-1 text-xs font-bold bg-orange-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
                       >
                         <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ
                       </button>

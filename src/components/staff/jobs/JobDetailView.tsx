@@ -25,7 +25,7 @@ function formatDate(value: string) {
 function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
-      <span className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">{icon}</span>
+      <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">{icon}</span>
       <div className="min-w-0">
         <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
         <div className="mt-0.5 text-sm font-bold text-gray-800 break-words">{children}</div>
@@ -38,7 +38,7 @@ function TextSection({ title, text, empty }: { title: string; text?: string | nu
   return (
     <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6 sm:p-8">
       <h2 className="text-lg font-black text-gray-900 pb-3 mb-4 border-b border-gray-50 flex items-center gap-2">
-        <span className="w-1.5 h-5 rounded-full bg-indigo-500" /> {title}
+        <span className="w-1.5 h-5 rounded-full bg-orange-500" /> {title}
       </h2>
       {text?.trim() ? (
         <p className="text-[15px] leading-7 text-gray-700 whitespace-pre-line">{text}</p>
@@ -84,7 +84,7 @@ export default function JobDetailView({
       className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all active:scale-[0.98] ${
         isApplied
           ? "bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed"
-          : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/20 disabled:opacity-60 disabled:cursor-wait"
+          : "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-600/20 disabled:opacity-60 disabled:cursor-wait"
       } ${extraClass}`}
     >
       {isApplied ? (
@@ -106,14 +106,14 @@ export default function JobDetailView({
       <div>
         <button
           onClick={onClose}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-100 hover:border-indigo-100 hover:text-indigo-600 rounded-2xl transition shadow-sm"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-100 hover:border-orange-100 hover:text-orange-600 rounded-2xl transition shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" /> Буцах
         </button>
       </div>
 
       {/* ТОЛГОЙ ХЭСЭГ — staff хянах самбарын banner-тай ижил */}
-      <section className="bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-indigo-950/10 p-6 sm:p-8">
+      <section className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8">
         <div className="flex flex-col md:flex-row md:items-start gap-5">
           <button
             type="button"
@@ -125,17 +125,17 @@ export default function JobDetailView({
             {logoUrl ? (
               <img src={logoUrl} alt={`${companyName} лого`} className="w-full h-full object-contain rounded-xl" />
             ) : (
-              <Building2 className="w-8 h-8 text-indigo-300" strokeWidth={1.5} />
+              <Building2 className="w-8 h-8 text-orange-300" strokeWidth={1.5} />
             )}
           </button>
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {job.category && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-white/10 text-indigo-100 rounded-lg uppercase border border-white/10">{job.category}</span>
+                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-white/10 text-slate-300 rounded-lg uppercase border border-white/10">{job.category}</span>
               )}
               {job.job_type && (
-                <span className="px-2.5 py-0.5 text-[11px] font-medium bg-white/10 text-indigo-100 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
+                <span className="px-2.5 py-0.5 text-[11px] font-medium bg-white/10 text-slate-300 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
               )}
               {isApplied && (
                 <span className="px-2.5 py-0.5 text-[11px] font-bold bg-emerald-400/15 text-emerald-200 rounded-lg border border-emerald-300/20">Хүсэлт илгээсэн ✓</span>
@@ -147,22 +147,22 @@ export default function JobDetailView({
                 <button
                   type="button"
                   onClick={(e) => handleCompanyClick(e, company)}
-                  className="text-sm sm:text-base font-bold text-indigo-200 hover:text-white hover:underline transition"
+                  className="text-sm sm:text-base font-bold text-slate-300 hover:text-white hover:underline transition"
                 >
                   {companyName}
                 </button>
               ) : (
-                <p className="text-sm sm:text-base font-bold text-indigo-200/80">{companyName}</p>
+                <p className="text-sm sm:text-base font-bold text-slate-300/80">{companyName}</p>
               )}
               {company && <VerifiedBadge className="w-4 h-4" />}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-indigo-100/90 font-medium">
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-300/90 font-medium">
               <span className="inline-flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-indigo-300" /> {job.location || "Байршил тодорхойгүй"}
+                <MapPin className="w-4 h-4 text-orange-300" /> {job.location || "Байршил тодорхойгүй"}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-indigo-300" /> {formatDate(job.created_at)}
+                <Calendar className="w-4 h-4 text-orange-300" /> {formatDate(job.created_at)}
               </span>
             </div>
           </div>
@@ -170,11 +170,11 @@ export default function JobDetailView({
           {/* Цалин + үйлдэл (компьютер) */}
           <div className="hidden md:flex flex-col items-end gap-3 shrink-0 text-right">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-200/80">Цалин</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300/80">Цалин</p>
               <p className="text-2xl font-black text-emerald-300">{salaryText}</p>
-              {salaryTypeText && <p className="text-xs font-medium text-indigo-200/80">{salaryTypeText}</p>}
+              {salaryTypeText && <p className="text-xs font-medium text-slate-300/80">{salaryTypeText}</p>}
             </div>
-            {applyButton(isApplied ? "" : "bg-white! text-indigo-700! hover:bg-indigo-50! shadow-indigo-950/30!")}
+            {applyButton(isApplied ? "" : "bg-white! text-orange-700! hover:bg-orange-50! shadow-slate-950/30!")}
           </div>
         </div>
       </section>
@@ -211,11 +211,11 @@ export default function JobDetailView({
           <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6">
             <h2 className="text-lg font-black text-gray-900 pb-4">Байгууллага</h2>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 shrink-0 bg-indigo-50 border border-indigo-100 rounded-2xl p-1 flex items-center justify-center">
+              <div className="w-11 h-11 shrink-0 bg-orange-50 border border-orange-100 rounded-2xl p-1 flex items-center justify-center">
                 {logoUrl ? (
                   <img src={logoUrl} alt="" className="w-full h-full object-contain rounded-lg" />
                 ) : (
-                  <Building2 className="w-5 h-5 text-indigo-400" strokeWidth={1.5} />
+                  <Building2 className="w-5 h-5 text-orange-400" strokeWidth={1.5} />
                 )}
               </div>
               <div className="flex items-center gap-1.5 min-w-0">
@@ -227,12 +227,12 @@ export default function JobDetailView({
               <div className="mt-4 space-y-2 text-sm font-medium text-gray-600">
                 {company?.industry && (
                   <p className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-indigo-400 shrink-0" /> {company.industry}
+                    <Briefcase className="w-4 h-4 text-orange-400 shrink-0" /> {company.industry}
                   </p>
                 )}
                 {company?.company_size && (
                   <p className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-indigo-400 shrink-0" /> {company.company_size}
+                    <Users className="w-4 h-4 text-orange-400 shrink-0" /> {company.company_size}
                   </p>
                 )}
               </div>
@@ -241,7 +241,7 @@ export default function JobDetailView({
               <button
                 type="button"
                 onClick={(e) => handleCompanyClick(e, company)}
-                className="mt-5 w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 rounded-2xl bg-indigo-50 text-sm font-bold text-indigo-600 hover:bg-indigo-100 transition"
+                className="mt-5 w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 rounded-2xl bg-orange-50 text-sm font-bold text-orange-600 hover:bg-orange-100 transition"
               >
                 Байгууллагын профайл үзэх <ChevronRight className="w-4 h-4" />
               </button>

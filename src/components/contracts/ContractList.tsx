@@ -241,7 +241,7 @@ export default function ContractList({ party }: ContractListProps) {
                   <tr
                     key={c.id}
                     {...rowProps(c)}
-                    className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-indigo-50/50"
+                    className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-orange-50/50"
                   >
                     <td className="px-6 py-5">
                       <div className="font-bold text-gray-900">{c.position}</div>
@@ -279,7 +279,7 @@ export default function ContractList({ party }: ContractListProps) {
               <div
                 key={c.id}
                 {...rowProps(c)}
-                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+                className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">

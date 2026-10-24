@@ -14,9 +14,9 @@ export default function GlobalError({
           
           {/* Дүрслэл хэсэг - NotFound-тай ижил стиль */}
           <div className="relative mb-8">
-            <div className="text-[150px] font-black text-indigo-100 select-none">500</div>
+            <div className="text-[150px] font-black text-orange-100 select-none">500</div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <svg className="w-24 h-24 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-24 h-24 text-orange-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
@@ -37,7 +37,7 @@ export default function GlobalError({
           <div className="mt-10 flex flex-col w-full gap-3">
             <button
               onClick={() => reset()}
-              className="w-full px-8 py-3 bg-indigo-600 text-white font-semibold rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98]"
+              className="w-full px-8 py-3 bg-orange-600 text-white font-semibold rounded-2xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-200 active:scale-[0.98]"
             >
               Дахин оролдох
             </button>

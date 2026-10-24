@@ -226,11 +226,11 @@ export default function SearchStaffPage() {
           staffList.map((staff) => (
             <div key={staff.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
                   {staff.avatarUrl ? (
                     <img src={staff.avatarUrl} alt={staff.fullName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-base sm:text-lg font-black text-indigo-600">{staff.fullName?.charAt(0) || "?"}</span>
+                    <span className="text-base sm:text-lg font-black text-orange-600">{staff.fullName?.charAt(0) || "?"}</span>
                   )}
                 </div>
 
@@ -273,7 +273,7 @@ export default function SearchStaffPage() {
               <div className="flex items-center gap-3 self-end sm:self-center w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                 <Link 
                   href={`/dashboard/company/search-staff/profile?id=${staff.id}`}
-                  className="w-full sm:w-auto justify-center px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-5 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <UserCheck size={16} /> Профайл үзэх
                 </Link>

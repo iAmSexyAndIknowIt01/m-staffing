@@ -87,7 +87,7 @@ export function useApplicantDetail(jobRequestId: string | null | undefined, enab
 export function ApplicantLoading() {
   return (
     <div className="py-16 flex justify-center">
-      <div className="h-10 w-10 border-b-2 border-indigo-600 rounded-full animate-spin" />
+      <div className="h-10 w-10 border-b-2 border-orange-600 rounded-full animate-spin" />
     </div>
   )
 }
@@ -103,11 +103,11 @@ export function ApplicantProfileSection({ profile }: { profile: ApplicantProfile
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 shrink-0 bg-indigo-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
+        <div className="w-16 h-16 shrink-0 bg-orange-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl font-black text-indigo-600">{profile.full_name.charAt(0) || <User className="w-6 h-6" />}</span>
+            <span className="text-2xl font-black text-orange-600">{profile.full_name.charAt(0) || <User className="w-6 h-6" />}</span>
           )}
         </div>
         <div className="min-w-0">
@@ -131,7 +131,7 @@ export function ApplicantProfileSection({ profile }: { profile: ApplicantProfile
           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Ур чадвар</h4>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s) => (
-              <span key={s} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-semibold">{s}</span>
+              <span key={s} className="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 text-xs font-semibold">{s}</span>
             ))}
           </div>
         </section>

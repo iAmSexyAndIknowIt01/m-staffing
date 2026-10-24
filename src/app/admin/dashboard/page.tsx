@@ -160,9 +160,9 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-indigo-50/50 border border-indigo-100/60 rounded-3xl p-6">
-              <h4 className="text-sm font-bold text-indigo-950">Шуурхай үйлдэл шаардлагатай</h4>
-              <p className="text-indigo-700 text-xs mt-1">
+            <div className="bg-orange-50/50 border border-orange-100/60 rounded-3xl p-6">
+              <h4 className="text-sm font-bold text-slate-900">Шуурхай үйлдэл шаардлагатай</h4>
+              <p className="text-orange-700 text-xs mt-1">
                 {pendingCount > 0 
                   ? `Одоогоор хүлээгдэж буй ${pendingCount} төлбөрийн хүсэлт байна. Та "Нэхэмжлэл" цэс рүү орж баталгаажуулна уу.`
                   : "Шинэ төлбөрийн хүсэлт байхгүй байна. Систем хэвийн ажиллаж байна."}
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
               {pendingCount > 0 && (
                 <button 
                   onClick={() => setActiveTab("invoices")}
-                  className="mt-4 bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-indigo-700 transition"
+                  className="mt-4 bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-orange-700 transition"
                 >
                   Нэхэмжлэл рүү шилжих →
                 </button>
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
                 <p className="text-gray-400 text-xs">&quot;{searchQuery}&quot; утгад тохирох нэхэмжлэх олдсонгүй. Хайлтын утгаа шалгана уу.</p>
                 <button 
                   onClick={() => setSearchQuery("")}
-                  className="text-xs font-bold text-indigo-600 underline"
+                  className="text-xs font-bold text-orange-600 underline"
                 >
                   Хайлтыг цэвэрлэх
                 </button>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                         <td className="p-4 text-gray-400">{new Date(inv.created_at).toLocaleString()}</td>
                         <td className="p-4 font-mono text-gray-400 truncate max-w-30">{inv.user_id}</td>
                         <td className="p-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
-                        <td className="p-4 uppercase font-bold text-indigo-600">{inv.plan_type}</td>
+                        <td className="p-4 uppercase font-bold text-orange-600">{inv.plan_type}</td>
                         <td className="p-4 font-black text-gray-900">{inv.amount.toLocaleString()} ₮</td>
                         <td className="p-4 text-center">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${

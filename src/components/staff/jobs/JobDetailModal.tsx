@@ -74,7 +74,7 @@ ${selectedJob.requirements}
               {modalLogoUrl ? (
                 <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-base font-black text-indigo-500 uppercase">
+                <span className="text-base font-black text-orange-500 uppercase">
                   {selectedJob.mt_company?.name?.substring(0, 2) || "CO"}
                 </span>
               )}
@@ -88,7 +88,7 @@ ${selectedJob.requirements}
                     Хүсэлт илгээсэн ✓
                   </span>
                 )}
-                <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50/70 px-2.5 py-0.5 rounded-full border border-indigo-100/50 uppercase tracking-wide">
+                <span className="text-[11px] font-bold text-orange-600 bg-orange-50/70 px-2.5 py-0.5 rounded-full border border-orange-100/50 uppercase tracking-wide">
                   {selectedJob.category}
                 </span>
               </div>
@@ -122,7 +122,7 @@ ${selectedJob.requirements}
             <button
               onClick={handleCopyDetails}
               title="Мэдээллийг хуулах"
-              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition flex items-center gap-1 text-xs font-semibold"
+              className="p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl text-slate-400 hover:text-orange-600 transition flex items-center gap-1 text-xs font-semibold"
             >
               {copied ? (
                 <>
@@ -163,7 +163,7 @@ ${selectedJob.requirements}
 
             <div className="flex items-center gap-2.5 text-slate-600">
               <div className="p-2 bg-white rounded-xl border border-slate-100 text-slate-400 shadow-xs">
-                <Briefcase className="w-4 h-4 text-indigo-500" />
+                <Briefcase className="w-4 h-4 text-orange-500" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Төрөл</span>
@@ -189,7 +189,7 @@ ${selectedJob.requirements}
           {/* Үүрэг хариуцлага */}
           <div className="space-y-2.5">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1 h-3.5 bg-indigo-500 rounded-full" />
+              <span className="w-1 h-3.5 bg-orange-500 rounded-full" />
               Ажлын үүрэг, тодорхойлолт
             </h4>
             <div className="text-[14px] text-slate-600 leading-relaxed whitespace-pre-line bg-white rounded-xl p-1">
@@ -236,7 +236,7 @@ ${selectedJob.requirements}
               <button
                 onClick={() => triggerApplyConfirmation(selectedJob.id)}
                 disabled={submitting || checkingProfile}
-                className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-md shadow-indigo-600/10 active:scale-98 disabled:opacity-50 min-w-35 flex items-center justify-center gap-2"
+                className="px-6 py-2.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-xl transition shadow-md shadow-orange-600/10 active:scale-98 disabled:opacity-50 min-w-35 flex items-center justify-center gap-2"
               >
                 {checkingProfile ? (
                   <>

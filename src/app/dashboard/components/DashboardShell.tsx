@@ -49,7 +49,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
   const isActive = (href: string) => pathname === href
 
   return (
-    <div className="min-h-screen bg-[#f8faff] flex flex-col lg:flex-row w-full relative">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row w-full relative">
 
       {/* 1. MOBILE NAVBAR */}
       <div className="lg:hidden sticky top-0 w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-50 shrink-0">

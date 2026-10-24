@@ -98,13 +98,13 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                       <h4 className="font-bold text-sm text-gray-800">{item.school}</h4>
                       <p className="text-xs text-gray-500">
                         {item.degree} {item.field && `— ${item.field}`} 
-                        <span className="ml-1.5 font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[10px]">
+                        <span className="ml-1.5 font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-[10px]">
                           {item.isCurrent ? "Одоо суралцаж буй" : `${item.graduationYear} онд төгссөн`}
                         </span>
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <button type="button" onClick={() => handleEdit(idx)} className="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-indigo-100">Засах</button>
+                      <button type="button" onClick={() => handleEdit(idx)} className="text-xs bg-orange-50 text-orange-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-orange-100">Засах</button>
                       <button type="button" onClick={() => handleDelete(idx)} className="text-xs bg-red-50 text-red-500 px-2.5 py-1.5 rounded-lg font-medium hover:bg-red-100">Устгах</button>
                     </div>
                   </div>
@@ -126,7 +126,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                 placeholder="Жишээ нь: Монгол Улсын Их Сургууль"
                 value={form.school}
                 onChange={(e) => setForm({ ...form, school: e.target.value })}
-                className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
               />
             </div>
 
@@ -138,7 +138,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   placeholder="Жишээ нь: Бакалавр, Магистр"
                   value={form.degree}
                   onChange={(e) => setForm({ ...form, degree: e.target.value })}
-                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                 />
               </div>
               <div>
@@ -148,7 +148,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   placeholder="Жишээ нь: Программын хангамж"
                   value={form.field}
                   onChange={(e) => setForm({ ...form, field: e.target.value })}
-                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                  className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                   type="checkbox"
                   checked={form.isCurrent || false}
                   onChange={(e) => setForm({ ...form, isCurrent: e.target.checked, graduationYear: e.target.checked ? "" : form.graduationYear })}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                  className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
                 />
                 <span className="text-xs font-bold text-gray-600">Би одоо энэ сургуульд суралцаж байгаа</span>
               </label>
@@ -172,7 +172,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
                     placeholder="Жишээ нь: 2024"
                     value={form.graduationYear}
                     onChange={(e) => setForm({ ...form, graduationYear: e.target.value })}
-                    className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-indigo-50"
+                    className="w-full border bg-white rounded-xl p-3 text-sm text-gray-800 outline-none focus:border-orange-50"
                   />
                 </div>
               )}
@@ -195,7 +195,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
             type="button"
             onClick={handleFinalSave}
             disabled={list.length === 0} // 👈 Хэрэв жагсаалт хоосон бол идэвхгүй болгоно
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
+            className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
             Батлах & Хадгалах
           </button>

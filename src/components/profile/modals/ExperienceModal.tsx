@@ -107,7 +107,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition"
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition"
                 >
                   + Шинэ туршлага нэмэх
                 </button>
@@ -119,7 +119,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                     <div key={idx} className="border border-gray-100 rounded-2xl p-4 bg-gray-50 flex justify-between items-start gap-4">
                       <div className="space-y-1">
                         <h4 className="font-bold text-gray-900 text-sm">{item.position}</h4>
-                        <p className="text-xs text-indigo-600 font-medium">{item.company}</p>
+                        <p className="text-xs text-orange-600 font-medium">{item.company}</p>
                         <p className="text-[11px] text-gray-400">
                           {item.startDate} ~ {item.endDate || "Одоог хүртэл"}
                         </p>
@@ -152,8 +152,8 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
               )}
             </div>
           ) : (
-            <form onSubmit={handleAddOrUpdateToList} className="space-y-4 border border-indigo-100 bg-indigo-50/30 p-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-              <h3 className="text-sm font-bold text-indigo-900">
+            <form onSubmit={handleAddOrUpdateToList} className="space-y-4 border border-orange-100 bg-orange-50/30 p-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+              <h3 className="text-sm font-bold text-slate-900">
                 {editingIndex !== null ? "Туршлага засах" : "Шинэ туршлага оруулах"}
               </h3>
               
@@ -194,12 +194,12 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-xs text-gray-500 font-semibold">Дуусах огноо</label>
-                    <label className="flex items-center gap-1 text-[11px] text-indigo-600 font-medium cursor-pointer">
+                    <label className="flex items-center gap-1 text-[11px] text-orange-600 font-medium cursor-pointer">
                       <input
                         type="checkbox"
                         checked={isCurrentJob}
                         onChange={(e) => setIsCurrentJob(e.target.checked)}
-                        className="rounded border-gray-300 text-indigo-600"
+                        className="rounded border-gray-300 text-orange-600"
                       />
                       Одоо ажиллаж байгаа
                     </label>
@@ -235,7 +235,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold"
                 >
                   {editingIndex !== null ? "Жагсаалтад шинэчлэх" : "Жагсаалтад нэмэх"}
                 </button>

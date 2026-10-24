@@ -102,7 +102,7 @@ export default function StaffRequestsPage() {
       case "pending":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
       case "interview":
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200/50">Ярилцлагад урьж байна</span>
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлагад урьж байна</span>
       case "accepted":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
@@ -175,7 +175,7 @@ export default function StaffRequestsPage() {
 
       {loading ? (
         <div className="text-center py-20 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
-          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-gray-500 text-sm font-medium animate-pulse">Мэдээллийг ачаалж байна...</p>
         </div>
       ) : error ? (
@@ -184,7 +184,7 @@ export default function StaffRequestsPage() {
         </div>
       ) : requests.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm space-y-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl mx-auto shadow-inner">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl mx-auto shadow-inner">
             <FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
@@ -196,7 +196,7 @@ export default function StaffRequestsPage() {
           <div className="pt-2">
             <Link
               href="/dashboard/staff/jobs"
-              className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-indigo-600 text-white font-semibold text-xs sm:text-sm hover:bg-indigo-700 transition shadow-md shadow-indigo-600/20"
+              className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-orange-600 text-white font-semibold text-xs sm:text-sm hover:bg-orange-700 transition shadow-md shadow-orange-600/20"
             >
               <Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын байр үзэх
             </Link>
@@ -208,7 +208,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("all"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "all" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "all" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Бүгд ({requests.length})
@@ -216,7 +216,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("applied"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "applied" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "applied" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Миний явуулсан анкетууд
@@ -224,7 +224,7 @@ export default function StaffRequestsPage() {
             <button
               onClick={() => { setActiveTab("invitations"); setCurrentPage(1) }}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shrink-0 ${
-                activeTab === "invitations" ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-50"
+                activeTab === "invitations" ? "bg-orange-50 text-orange-600" : "text-gray-500 hover:bg-gray-50"
               }`}
             >
               Компанийн урилгууд
@@ -241,7 +241,7 @@ export default function StaffRequestsPage() {
                 placeholder="Ажлын нэр эсвэл компаниар хайх..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-indigo-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-orange-500 transition"
               />
             </div>
 
@@ -252,7 +252,7 @@ export default function StaffRequestsPage() {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:border-indigo-300 focus:outline-none focus:border-indigo-500 transition"
+                  className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:border-orange-300 focus:outline-none focus:border-orange-500 transition"
                 >
                   <span className="truncate">{statusLabels[statusFilter] || "Бүгд"}</span>
                   <svg
@@ -278,12 +278,12 @@ export default function StaffRequestsPage() {
                         }}
                         className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-medium transition flex items-center justify-between ${
                           statusFilter === key
-                            ? "bg-indigo-50/80 text-indigo-600 font-semibold"
+                            ? "bg-orange-50/80 text-orange-600 font-semibold"
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
                         <span>{label}</span>
-                        {statusFilter === key && <span className="text-indigo-600 text-xs">✓</span>}
+                        {statusFilter === key && <span className="text-orange-600 text-xs">✓</span>}
                       </button>
                     ))}
                   </div>
@@ -312,7 +312,7 @@ export default function StaffRequestsPage() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <span className="text-sm sm:text-base font-bold text-indigo-600">
+                            <span className="text-sm sm:text-base font-bold text-orange-600">
                               {req.companyName ? req.companyName.charAt(0).toUpperCase() : "C"}
                             </span>
                           )}
@@ -381,7 +381,7 @@ export default function StaffRequestsPage() {
                           onClick={() => setCurrentPage(page as number)}
                           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-xs sm:text-sm font-semibold transition ${
                             currentPage === page
-                              ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
+                              ? "bg-orange-600 text-white shadow-sm shadow-orange-500/20"
                               : "text-gray-600 hover:bg-gray-50"
                           }`}
                         >

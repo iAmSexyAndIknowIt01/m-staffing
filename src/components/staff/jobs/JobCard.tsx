@@ -141,7 +141,7 @@ export default function JobCard({
                 }}
               />
             ) : (
-              <span className="text-sm font-black text-indigo-500 uppercase">
+              <span className="text-sm font-black text-orange-500 uppercase">
                 {job.mt_company?.name?.substring(0, 2) || "CO"}
               </span>
             )}
@@ -150,7 +150,7 @@ export default function JobCard({
           <div>
             {/* Гарчиг: Хэрэв өмнө нь үзсэн бол бор хүрэн (brown-red), үгүй бол стандарт хар өнгөтэй байна */}
             <h3 className={`text-[16px] font-bold leading-snug transition ${
-              hasVisited ? "text-[#8B263E]" : "text-slate-900 group-hover:text-indigo-600"
+              hasVisited ? "text-[#8B263E]" : "text-slate-900 group-hover:text-orange-600"
             }`}>
               {job.title}
             </h3>
@@ -191,7 +191,7 @@ export default function JobCard({
               e.stopPropagation();       
               onShare(e, job);
             }}
-            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+            className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
             title="Хуваалцах"
           >
             <Share2 className="w-4 h-4" />

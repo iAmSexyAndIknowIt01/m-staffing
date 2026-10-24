@@ -26,7 +26,7 @@ const HIGHLIGHT_MS = 2500
 const copyName = (name: string) => `${name.slice(0, 90)} (хуулбар)`
 
 const iconButtonBase =
-  "w-9 h-9 inline-flex items-center justify-center rounded-xl transition disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+  "w-9 h-9 inline-flex items-center justify-center rounded-xl transition disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
 const iconButtonClass = `${iconButtonBase} text-gray-400 hover:bg-gray-100 hover:text-gray-700`
 
 // Жагсаалтын багана (md-ээс дээш). Толгой мөр тусдаа grid тул тогтмол өргөнтэй баганаар зэрэгцүүлнэ.
@@ -152,7 +152,7 @@ export default function ContractTemplates() {
       onClick={() => openEditor({ kind: "new" })}
       disabled={atLimit}
       title={atLimit ? `${MAX_TEMPLATES_PER_COMPANY} хүртэл загвар хадгална` : undefined}
-      className="shrink-0 text-sm font-bold px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition disabled:opacity-50"
+      className="shrink-0 text-sm font-bold px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition disabled:opacity-50"
     >
       <Plus size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шинэ загвар
     </button>
@@ -180,7 +180,7 @@ export default function ContractTemplates() {
                 <li key={s.title}>
                   <button
                     onClick={() => openEditor({ kind: "new", initial: s.template })}
-                    className="w-full h-full text-left p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+                    className="w-full h-full text-left p-4 rounded-2xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
                   >
                     <span className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center" aria-hidden><s.icon className="w-5 h-5" /></span>
                     <div className="font-bold text-sm text-gray-900 mt-2">{s.title}</div>
@@ -227,7 +227,7 @@ export default function ContractTemplates() {
           {filtered.length === 0 ? (
             <div className="p-10 bg-white border border-gray-100 rounded-3xl text-center text-gray-400 shadow-sm text-sm">
               «{query}» хайлтад тохирох загвар алга.{" "}
-              <button onClick={() => setQuery("")} className="font-bold text-indigo-600">Цэвэрлэх</button>
+              <button onClick={() => setQuery("")} className="font-bold text-orange-600">Цэвэрлэх</button>
             </div>
           ) : (
             <div className="bg-white border border-gray-100 rounded-3xl sm:rounded-4xl shadow-sm overflow-hidden">
@@ -259,9 +259,9 @@ export default function ContractTemplates() {
                           title="Загвар засах"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-gray-900 truncate group-hover:text-indigo-600 group-focus-visible:underline transition">{t.name}</span>
+                            <span className="font-bold text-sm text-gray-900 truncate group-hover:text-orange-600 group-focus-visible:underline transition">{t.name}</span>
                             {t.is_default && (
-                              <span className="shrink-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>
+                              <span className="shrink-0 text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>
                             )}
                           </div>
                           <p className="text-xs text-gray-400 truncate mt-0.5" title={t.terms}>{t.terms.split("\n")[0]}</p>
@@ -290,7 +290,7 @@ export default function ContractTemplates() {
                         <Link
                           href={`/dashboard/company/contracts?tab=new&n_tpl=${encodeURIComponent(t.id)}`}
                           title="Энэ загвараар гэрээ үүсгэх"
-                          className="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition md:mr-1"
+                          className="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 transition md:mr-1"
                         >
                           <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ үүсгэх
                         </Link>

@@ -40,7 +40,7 @@ export default async function JobApplicantsPage({ params }: PageProps) {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
-          <div className="flex items-center gap-2 text-xs md:text-sm text-indigo-600 font-bold mb-1">
+          <div className="flex items-center gap-2 text-xs md:text-sm text-orange-600 font-bold mb-1">
             <Link href="/dashboard/company/post-job" className="hover:underline"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын байрны жагсаалт</Link>
             <span>/</span>
             <span className="text-gray-400">Ирсэн хүсэлтүүд</span>

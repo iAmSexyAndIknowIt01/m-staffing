@@ -57,7 +57,7 @@ export default function CompanyTipsPage() {
           onClick={() => setActiveTab("general")}
           className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
             activeTab === "general"
-              ? "bg-white text-indigo-600 shadow-sm"
+              ? "bg-white text-orange-600 shadow-sm"
               : "text-gray-500 hover:text-gray-900"
           }`}
         >
@@ -67,7 +67,7 @@ export default function CompanyTipsPage() {
           onClick={() => setActiveTab("interview")}
           className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
             activeTab === "interview"
-              ? "bg-white text-indigo-600 shadow-sm"
+              ? "bg-white text-orange-600 shadow-sm"
               : "text-gray-500 hover:text-gray-900"
           }`}
         >
@@ -89,7 +89,7 @@ export default function CompanyTipsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {activeData.map((tip) => (
-            <div key={tip.id} className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
+            <div key={tip.id} className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col justify-between group hover:border-orange-100 hover:shadow-md transition-all">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Lightbulb className="w-5 h-5" /></span>
@@ -97,7 +97,7 @@ export default function CompanyTipsPage() {
                     Үзсэн: {tip.views_count}
                   </span>
                 </div>
-                <h3 className="font-black text-lg text-gray-900 group-hover:text-indigo-600 transition">
+                <h3 className="font-black text-lg text-gray-900 group-hover:text-orange-600 transition">
                   {tip.title}
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">

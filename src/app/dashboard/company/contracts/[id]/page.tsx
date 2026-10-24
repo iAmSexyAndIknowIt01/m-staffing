@@ -302,7 +302,7 @@ export default function CompanyContractDetailPage() {
     return (
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-0 space-y-4">
         <div className="p-6 bg-red-50 text-red-500 font-bold rounded-2xl">{error || "Гэрээ олдсонгүй."}</div>
-        <BackToListLink href="/dashboard/company/contracts" className="text-sm font-bold text-indigo-600">← Гэрээ рүү буцах</BackToListLink>
+        <BackToListLink href="/dashboard/company/contracts" className="text-sm font-bold text-orange-600">← Гэрээ рүү буцах</BackToListLink>
       </div>
     )
   }
@@ -324,7 +324,7 @@ export default function CompanyContractDetailPage() {
     <div className="w-full max-w-5xl mx-auto animate-fade-in px-4 sm:px-0 pb-10 space-y-6">
       <div className="pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <BackToListLink href="/dashboard/company/contracts" className="text-xs font-bold text-gray-400 hover:text-indigo-600">← Гэрээ</BackToListLink>
+          <BackToListLink href="/dashboard/company/contracts" className="text-xs font-bold text-gray-400 hover:text-orange-600">← Гэрээ</BackToListLink>
           <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1">{contract.position}</h1>
           <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-500">
             <span className="font-mono">{contract.contract_number}</span>
@@ -360,7 +360,7 @@ export default function CompanyContractDetailPage() {
             </>
           )}
           {actions.includes("revise") && (
-            <button onClick={() => setPendingConfirm("revise")} disabled={busy} className={`${buttonClass} bg-indigo-50 hover:bg-indigo-100 text-indigo-600`}>
+            <button onClick={() => setPendingConfirm("revise")} disabled={busy} className={`${buttonClass} bg-orange-50 hover:bg-orange-100 text-orange-600`}>
               Засварлах
             </button>
           )}
@@ -375,7 +375,7 @@ export default function CompanyContractDetailPage() {
             </button>
           )}
           {canRecreate && (
-            <button onClick={handleRecreate} disabled={busy} className={`${buttonClass} bg-indigo-500 hover:bg-indigo-600 text-white`}>
+            <button onClick={handleRecreate} disabled={busy} className={`${buttonClass} bg-orange-500 hover:bg-orange-600 text-white`}>
               <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шинэ гэрээ үүсгэх
             </button>
           )}
@@ -439,7 +439,7 @@ export default function CompanyContractDetailPage() {
                     key={view}
                     onClick={() => setDraftView(view)}
                     aria-pressed={draftView === view}
-                    className={`px-4 py-2 rounded-lg transition ${draftView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+                    className={`px-4 py-2 rounded-lg transition ${draftView === view ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
                   >
                     {view === "edit" ? "Засах" : "Ажилтанд харагдах байдал"}
                   </button>
@@ -453,7 +453,7 @@ export default function CompanyContractDetailPage() {
                 <button
                   onClick={() => setShowTemplatePicker(true)}
                   disabled={busy}
-                  className="text-xs font-bold px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition disabled:opacity-50"
+                  className="text-xs font-bold px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 transition disabled:opacity-50"
                 >
                   <ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар хэрэглэх
                 </button>

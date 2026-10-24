@@ -11,7 +11,7 @@ import { formatDate, formatSalary } from "./format"
 type Source = "template" | "job" | "manual"
 
 const SOURCE_BADGE: Record<Source, { label: string; className: string }> = {
-  template: { label: "Загвараас", className: "bg-indigo-50 text-indigo-600" },
+  template: { label: "Загвараас", className: "bg-orange-50 text-orange-600" },
   job: { label: "Ажлын зараас", className: "bg-amber-50 text-amber-700" },
   manual: { label: "Гэрээ бүрт", className: "bg-gray-100 text-gray-500" },
 }

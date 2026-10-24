@@ -66,7 +66,7 @@ export default function CompanySupportPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-indigo-500 focus:bg-white transition"
+              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
             >
               <option value="system">Системийн алдаа / Ажиллахгүй байна</option>
               <option value="billing">Багц сунгалт / Төлбөр тооцоо</option>
@@ -83,7 +83,7 @@ export default function CompanySupportPage() {
               placeholder="Жишээ нь: Багцын лимит шинэчлэгдсэнгүй"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-indigo-500 focus:bg-white transition"
+              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
             />
           </div>
 
@@ -95,14 +95,14 @@ export default function CompanySupportPage() {
               placeholder="Алдаа гарсан алхам эсвэл тусламж авахыг хүссэн асуудлаа тодорхой бичнэ үү..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-indigo-500 focus:bg-white transition resize-none leading-relaxed"
+              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-orange-500 focus:bg-white transition resize-none leading-relaxed"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl transition shadow-md shadow-indigo-600/10 flex items-center justify-center gap-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-2xl transition shadow-md shadow-orange-600/10 flex items-center justify-center gap-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {submitting && (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

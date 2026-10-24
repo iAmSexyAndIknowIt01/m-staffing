@@ -38,7 +38,7 @@ export default function TipsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
       </div>
     )
   }
@@ -58,7 +58,7 @@ export default function TipsPage() {
 
       <div className="space-y-6">
         {tips.map((tip) => (
-          <div key={tip.id} className="bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-indigo-100 transition-all">
+          <div key={tip.id} className="bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-orange-100 transition-all">
             <div className="flex items-center gap-3">
               <span className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0"><Lightbulb className="w-6 h-6" /></span>
               <div>

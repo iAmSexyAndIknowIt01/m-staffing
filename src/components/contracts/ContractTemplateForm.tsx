@@ -72,7 +72,7 @@ function Section({ step, title, hint, children }: { step: number; title: string;
     <section className="space-y-3">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-black text-gray-900">
-          <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 text-[11px] grid place-items-center" aria-hidden>{step}</span>
+          <span className="w-5 h-5 rounded-full bg-orange-50 text-orange-600 text-[11px] grid place-items-center" aria-hidden>{step}</span>
           {title}
         </h3>
         {hint && <p className="text-[11px] text-gray-400 mt-0.5 ml-7">{hint}</p>}
@@ -128,7 +128,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
       <form onSubmit={submit} noValidate className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <button type="button" onClick={cancel} className="text-xs font-bold text-gray-400 hover:text-indigo-600">← Загварууд</button>
+            <button type="button" onClick={cancel} className="text-xs font-bold text-gray-400 hover:text-orange-600">← Загварууд</button>
             <h2 className="text-xl font-black text-gray-900 mt-0.5">{isNew ? "Шинэ загвар" : form.name.trim() || "Загвар засах"}</h2>
           </div>
           <div className="lg:hidden inline-flex bg-gray-100/80 p-1 rounded-xl text-xs font-bold">
@@ -138,7 +138,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                 type="button"
                 onClick={() => setMobileView(view)}
                 aria-pressed={mobileView === view}
-                className={`px-3 py-1.5 rounded-lg transition ${mobileView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"}`}
+                className={`px-3 py-1.5 rounded-lg transition ${mobileView === view ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
               >
                 {view === "edit" ? "Засах" : "Харах"}
               </button>
@@ -171,7 +171,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                       type="checkbox"
                       checked={form.is_default}
                       onChange={(e) => setForm({ ...form, is_default: e.target.checked })}
-                      className="mt-0.5 w-4 h-4 rounded accent-indigo-600"
+                      className="mt-0.5 w-4 h-4 rounded accent-orange-600"
                     />
                     <span>
                       <span className="block text-sm font-bold text-gray-800"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн загвар</span>
@@ -217,7 +217,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                             onClick={() => setForm({ ...form, duration_months: value })}
                             aria-pressed={selected}
                             className={`px-3 py-2 rounded-xl text-xs font-bold border transition ${
-                              selected ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-white border-gray-200 text-gray-600 hover:border-indigo-200 hover:text-indigo-600"
+                              selected ? "bg-orange-50 border-orange-200 text-orange-600" : "bg-white border-gray-200 text-gray-600 hover:border-orange-200 hover:text-orange-600"
                             }`}
                           >
                             {m ? `${m} сар` : "Заахгүй"}
@@ -268,7 +268,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                       {termsLength.toLocaleString("mn-MN")} / 20,000 тэмдэгт
                     </span>
                     {form.terms !== DEFAULT_CONTRACT_TERMS && (
-                      <button type="button" onClick={() => setForm({ ...form, terms: DEFAULT_CONTRACT_TERMS })} className="font-bold text-gray-400 hover:text-indigo-600">
+                      <button type="button" onClick={() => setForm({ ...form, terms: DEFAULT_CONTRACT_TERMS })} className="font-bold text-gray-400 hover:text-orange-600">
                         ↺ Анхны нөхцлөөр солих
                       </button>
                     )}
@@ -287,7 +287,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
               <button type="button" onClick={cancel} disabled={busy} className="text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-50">
                 Болих
               </button>
-              <button type="submit" disabled={busy} className="text-sm font-bold px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition disabled:opacity-50">
+              <button type="submit" disabled={busy} className="text-sm font-bold px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition disabled:opacity-50">
                 {busy ? "Хадгалж байна..." : isNew ? "Загвар үүсгэх" : "Хадгалах"}
               </button>
             </div>

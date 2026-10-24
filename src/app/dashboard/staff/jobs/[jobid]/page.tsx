@@ -271,8 +271,8 @@ export default function JobDetailPage() {
   return (
     <div className="container mx-auto p-4 relative min-h-screen">
       {checkingProfile && (
-        <div className="fixed top-0 left-0 right-0 h-1.5 bg-indigo-100 z-100 overflow-hidden">
-          <div className="h-full bg-indigo-600 rounded-full w-1/2 animate-[bounce_1.5s_infinite] origin-left" style={{ animationDuration: '1s' }} />
+        <div className="fixed top-0 left-0 right-0 h-1.5 bg-orange-100 z-100 overflow-hidden">
+          <div className="h-full bg-orange-600 rounded-full w-1/2 animate-[bounce_1.5s_infinite] origin-left" style={{ animationDuration: '1s' }} />
         </div>
       )}
 

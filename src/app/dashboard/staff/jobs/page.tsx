@@ -394,11 +394,11 @@ export default function StaffJobsPage() {
       {isFiltering ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
           <div className="relative flex items-center justify-center h-20 w-20">
-            <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-lg animate-pulse" />
-            <div className="absolute inset-0 border border-dashed border-indigo-200 rounded-full animate-[spin_6s_linear_infinite]" />
-            <div className="absolute inset-1.5 border-t border-b border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-lg animate-pulse" />
+            <div className="absolute inset-0 border border-dashed border-orange-200 rounded-full animate-[spin_6s_linear_infinite]" />
+            <div className="absolute inset-1.5 border-t border-b border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
-              <span className="text-[9px] font-black tracking-wider text-indigo-950 uppercase animate-pulse">
+              <span className="text-[9px] font-black tracking-wider text-slate-900 uppercase animate-pulse">
                 mstaffing
               </span>
             </div>

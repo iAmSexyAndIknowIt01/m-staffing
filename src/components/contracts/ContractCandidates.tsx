@@ -178,7 +178,7 @@ export default function ContractCandidates() {
         handleCreate(c.id)
       }}
       disabled={creatingId !== null}
-      className={`text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition disabled:opacity-50 ${extraClass}`}
+      className={`text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition disabled:opacity-50 ${extraClass}`}
     >
       {creatingId === c.id ? "Үүсгэж байна..." : "Гэрээ үүсгэх"}
     </button>
@@ -205,8 +205,8 @@ export default function ContractCandidates() {
       {createError && <div role="alert" className="p-4 bg-red-50 text-red-500 font-bold rounded-2xl text-sm">{createError}</div>}
 
       {templates.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
-          <label htmlFor="contract-template-choice" className="text-xs font-bold text-indigo-700 shrink-0"><ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээнд хэрэглэх загвар</label>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
+          <label htmlFor="contract-template-choice" className="text-xs font-bold text-orange-700 shrink-0"><ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээнд хэрэглэх загвар</label>
           <select
             id="contract-template-choice"
             value={templateChoice}
@@ -219,7 +219,7 @@ export default function ContractCandidates() {
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
-          <span className="text-[11px] text-indigo-500/80">Үүсгэсний дараа ноорог дээрээ засах боломжтой.</span>
+          <span className="text-[11px] text-orange-500/80">Үүсгэсний дараа ноорог дээрээ засах боломжтой.</span>
         </div>
       )}
 
@@ -284,7 +284,7 @@ export default function ContractCandidates() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {paged.map((c) => (
-                  <tr key={c.id} {...rowProps(c)} className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-indigo-50/50">
+                  <tr key={c.id} {...rowProps(c)} className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-orange-50/50">
                     <td className="px-6 py-5">
                       <div className="font-bold text-gray-900">{c.user_name}</div>
                       <PreviousContract status={c.previous_status} />
@@ -311,7 +311,7 @@ export default function ContractCandidates() {
           {/* 📱 УТАС */}
           <div className="block md:hidden space-y-3">
             {paged.map((c) => (
-              <div key={c.id} {...rowProps(c)} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40">
+              <div key={c.id} {...rowProps(c)} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40">
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.user_name}</div>

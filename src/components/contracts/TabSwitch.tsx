@@ -57,15 +57,15 @@ export default function TabSwitch<K extends string>({ tabs, value, onChange, ari
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(t.key)}
             onKeyDown={(e) => onKeyDown(e, index)}
-            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
-              selected ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
+            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40 ${
+              selected ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
             }`}
           >
             {t.label}
             {!!t.badge && (
               <span
                 className={`min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[10px] font-black ${
-                  selected ? "bg-indigo-600 text-white" : "bg-gray-300 text-gray-700"
+                  selected ? "bg-orange-600 text-white" : "bg-gray-300 text-gray-700"
                 }`}
               >
                 {t.badge}

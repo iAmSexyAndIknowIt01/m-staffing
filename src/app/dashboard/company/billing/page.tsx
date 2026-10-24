@@ -174,11 +174,11 @@ export default function BillingPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
@@ -207,7 +207,7 @@ export default function BillingPage() {
       period: "сарын",
       features: ["Идэвхтэй 50 ажлын байр зарлах", "Шүүлтүүртэй анкет удирдах", "Зарласан ажлын хандалт үзэх", "24/7 Чат тусламж"],
       buttonText: "Багц ахиулах",
-      color: "border-indigo-100 shadow-md"
+      color: "border-orange-100 shadow-md"
     },
     {
       id: "premium",
@@ -224,7 +224,7 @@ export default function BillingPage() {
     <div className="animate-fade-in space-y-8 p-1 relative">
       {/* Толгой хэсэг */}
       <div className="space-y-2">
-        <Link href="/dashboard" className="text-xs font-bold text-gray-400 hover:text-indigo-600 transition flex items-center gap-1">
+        <Link href="/dashboard" className="text-xs font-bold text-gray-400 hover:text-orange-600 transition flex items-center gap-1">
           ← Удирдах самбар руу буцах
         </Link>
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо</h1>
@@ -308,7 +308,7 @@ export default function BillingPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-black text-lg text-gray-900">{plan.name}</h4>
-                      {isCurrent && <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md mt-1 inline-block">Ашиглаж буй</span>}
+                      {isCurrent && <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">Ашиглаж буй</span>}
                     </div>
                     {plan.id === "premium" && <span className="text-[10px] font-bold text-white bg-orange-500 px-2.5 py-1 rounded-full uppercase tracking-wider">Best Choice</span>}
                   </div>
@@ -380,7 +380,7 @@ export default function BillingPage() {
                     <td className="p-4 text-right">
                       <button 
                         onClick={() => handleOpenDetailModal(inv)}
-                        className="text-[11px] font-bold text-indigo-600 bg-indigo-50/60 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-xl transition duration-150"
+                        className="text-[11px] font-bold text-orange-600 bg-orange-50/60 hover:bg-orange-600 hover:text-white px-3 py-1.5 rounded-xl transition duration-150"
                       >
                         Дэлгэрэнгүй
                       </button>
@@ -404,7 +404,7 @@ export default function BillingPage() {
 
             <div className="bg-slate-50 p-4 rounded-3xl space-y-2.5 border border-slate-100 text-xs">
               <div className="flex justify-between"><span className="text-gray-400 font-bold">Сонгосон багц:</span><span className="font-black text-slate-900">{selectedPlan?.name}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Төлбөрийн дүн:</span><span className="font-black text-indigo-600 text-sm">{selectedPlan?.price}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400 font-bold">Төлбөрийн дүн:</span><span className="font-black text-orange-600 text-sm">{selectedPlan?.price}</span></div>
               <hr className="border-slate-200/60 my-1" />
               
               {invoiceDetails ? (
@@ -432,7 +432,7 @@ export default function BillingPage() {
                     <div className="space-y-4">
                       <button
                         onClick={() => setPaymentStage('confirm')} // Дараагийн шат руу шилжих
-                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-2xl transition"
+                        className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-black text-sm rounded-2xl transition"
                       >
                         Төлбөр амжилттай шилжүүлсэн
                       </button>
@@ -447,19 +447,19 @@ export default function BillingPage() {
                       {/* Slider хэсэг */}
                       <div 
                         ref={sliderRef}
-                        className="relative h-16 bg-slate-100 border-2 border-dashed border-indigo-200 rounded-2xl select-none overflow-hidden p-1 flex items-center justify-center"
+                        className="relative h-16 bg-slate-100 border-2 border-dashed border-orange-200 rounded-2xl select-none overflow-hidden p-1 flex items-center justify-center"
                         onMouseMove={(e) => handleMove(e.clientX)}
                         onMouseUp={handleEnd}
                         // ... бусад event handlers
                       >
                         <div 
-                          className={`absolute left-1 top-1 bottom-1 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab shadow-lg transition-all`}
+                          className={`absolute left-1 top-1 bottom-1 bg-orange-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab shadow-lg transition-all`}
                           style={{ width: '56px', transform: `translateX(${swipeX}px)` }}
                           onMouseDown={(e) => handleStart(e.clientX)}
                         >
                           {updatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : "→"}
                         </div>
-                        <span className="text-[11px] font-black text-indigo-400 tracking-widest uppercase pointer-events-none">
+                        <span className="text-[11px] font-black text-orange-400 tracking-widest uppercase pointer-events-none">
                           Гүйлгэж баталгаажуул
                         </span>
                       </div>
@@ -494,7 +494,7 @@ export default function BillingPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400 font-bold">Төлөх дүн:</span>
-                <span className="font-black text-indigo-600 text-sm">{selectedInvoice.amount.toLocaleString()} ₮</span>
+                <span className="font-black text-orange-600 text-sm">{selectedInvoice.amount.toLocaleString()} ₮</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400 font-bold">Төлбөрийн төлөв:</span>

@@ -54,7 +54,7 @@ function BioModalContent({
               text-sm
               text-gray-800
               outline-none
-              focus:border-indigo-500
+              focus:border-orange-500
               resize-none
             "
           />
@@ -76,9 +76,9 @@ function BioModalContent({
             className="
               px-5
               py-2.5
-              bg-indigo-600
-              hover:bg-indigo-700
-              disabled:bg-indigo-400
+              bg-orange-600
+              hover:bg-orange-700
+              disabled:bg-orange-400
               disabled:opacity-50
               disabled:cursor-not-allowed
               text-white

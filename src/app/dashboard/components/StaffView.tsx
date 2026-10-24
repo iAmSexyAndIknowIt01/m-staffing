@@ -281,10 +281,10 @@ export default function StaffView({ userId }: StaffViewProps) {
     <div className="animate-fade-in space-y-8 relative">
       
       {/* МЭНДЧИЛГЭЭНИЙ ХЭСЭГ */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-indigo-950/10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/10">
         <div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight">Сайн байна уу?</h1>
-          <p className="text-indigo-200/90 text-sm md:text-base mt-2 font-medium">
+          <p className="text-slate-300/90 text-sm md:text-base mt-2 font-medium">
             Өнөөдрийн байдлаар танд тохирох шинэ ажлын саналууд бэлэн байна.
           </p>
         </div>
@@ -298,7 +298,7 @@ export default function StaffView({ userId }: StaffViewProps) {
 
       {/* СТАТИСТИК КАРТУУД */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
+        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Илгээсэн хүсэлт</p>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.appliedCount}</h3>
@@ -306,10 +306,10 @@ export default function StaffView({ userId }: StaffViewProps) {
               {stats.appliedThisWeek}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl font-bold"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
         </div>
 
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
+        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
@@ -317,7 +317,7 @@ export default function StaffView({ userId }: StaffViewProps) {
               stats.viewedCompaniesCount === 0 
                 ? "text-gray-500 bg-gray-50" 
                 : stats.viewedCompaniesCount <= 3 
-                ? "text-indigo-600 bg-indigo-50" 
+                ? "text-orange-600 bg-orange-50" 
                 : "text-amber-600 bg-amber-50"
             }`}>
               {getCompanyViewStatus(stats.viewedCompaniesCount)}
@@ -326,7 +326,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold"><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
         </div>
 
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
+        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">CV хандалт</p>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
@@ -346,7 +346,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Санал болгож буй ажлын байрууд</h2>
-              <Link href={`/dashboard/staff/jobs/recommendedJobs?userId=${userId}`} className="text-xs font-bold text-indigo-600 hover:underline">
+              <Link href={`/dashboard/staff/jobs/recommendedJobs?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
                 Бүгдийг үзэх ({recommendedJobs.length}) →
               </Link>
             </div>
@@ -358,7 +358,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                   <div
                     key={job.id}
                     onClick={() => setSelectedJob(job)}
-                    className="w-full text-left block bg-white border border-gray-100 hover:border-indigo-100 p-6 rounded-4xl shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                    className="w-full text-left block bg-white border border-gray-100 hover:border-orange-100 p-6 rounded-4xl shadow-sm hover:shadow-md transition-all group cursor-pointer"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-2 flex-1">
@@ -366,15 +366,15 @@ export default function StaffView({ userId }: StaffViewProps) {
                           {isJobApplied && (
                             <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
                           )}
-                          <span className="px-2.5 py-0.5 text-[11px] font-bold bg-indigo-50 text-indigo-600 rounded-lg uppercase">{job.category}</span>
+                          <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
                           <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
                         </div>
-                        <h4 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">{job.title}</h4>
+                        <h4 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">{job.title}</h4>
                         
                         <div>
                           <span 
                             onClick={(e) => handleCompanyClick(e, job.company_id)}
-                            className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                            className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                           >
                             <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.company}
                           </span>
@@ -386,7 +386,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                         </div>
                       </div>
                       <div className="flex justify-end sm:block">
-                        <span className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-sm font-bold transition-all shadow-sm">→</span>
+                        <span className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-orange-600 group-hover:text-white flex items-center justify-center text-sm font-bold transition-all shadow-sm">→</span>
                       </div>
                     </div>
                   </div>
@@ -399,7 +399,7 @@ export default function StaffView({ userId }: StaffViewProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Илгээсэн анкетын төлөв</h2>
-              <Link href={`/dashboard/staff/applications?userId=${userId}`} className="text-xs font-bold text-indigo-600 hover:underline">
+              <Link href={`/dashboard/staff/applications?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
                 Түүх үзэх ({recentApplications.length}) →
               </Link>
             </div>
@@ -409,15 +409,15 @@ export default function StaffView({ userId }: StaffViewProps) {
                 <div 
                   key={app.id}
                   onClick={() => setSelectedApp(app)}
-                  className="w-full text-left bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer"
+                  className="w-full text-left bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-orange-100 hover:shadow-md transition-all group cursor-pointer"
                 >
                   <div className="space-y-1">
-                    <h4 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-indigo-600 transition-colors">{app.title}</h4>
+                    <h4 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-orange-600 transition-colors">{app.title}</h4>
                     
                     <div>
                       <span 
                         onClick={(e) => handleCompanyClick(e, app.company_id)}
-                        className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                        className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                       >
                         <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.company}
                       </span>
@@ -445,14 +445,14 @@ export default function StaffView({ userId }: StaffViewProps) {
             <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-gray-500">Профайл бөглөлт</span>
-                <span className="text-indigo-600">{profileProgress}%</span>
+                <span className="text-orange-600">{profileProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${profileProgress}%` }} />
+                <div className="bg-orange-600 h-full rounded-full transition-all duration-500" style={{ width: `${profileProgress}%` }} />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Link href="/dashboard/staff/profile" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-indigo-600/10">Профайл засах</Link>
+              <Link href="/dashboard/staff/profile" className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-orange-600/10">Профайл засах</Link>
               <button 
                 onClick={() => router.push("/dashboard/staff/cv")}
                 className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block"
@@ -499,7 +499,7 @@ export default function StaffView({ userId }: StaffViewProps) {
               <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="px-2.5 py-0.5 text-[11px] font-bold bg-indigo-50 text-indigo-600 rounded-lg uppercase">{selectedJob.category}</span>
+                  <span className="px-2.5 py-0.5 text-[11px] font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
                   <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
                 </div>
                 <h3 className="text-xl font-black text-gray-900">{selectedJob.title}</h3>
@@ -507,7 +507,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
-                    className="text-base font-black text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                    className="text-base font-black text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                   >
                     <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedJob.company}
                   </span>
@@ -531,7 +531,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                   <button
                     disabled={isSubmitting || checkingProfile}
                     onClick={() => triggerApplyConfirmation(selectedJob.id)}
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-bold text-sm text-center rounded-xl transition shadow-md shadow-indigo-600/10"
+                    className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold text-sm text-center rounded-xl transition shadow-md shadow-orange-600/10"
                   >
                     {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх"}
                   </button>
@@ -554,7 +554,7 @@ export default function StaffView({ userId }: StaffViewProps) {
               <div>
                 <span 
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
-                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                  className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                 >
                   <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedApp.company}
                 </span>
@@ -596,7 +596,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                   ref={handleRef}
                   onMouseDown={(e) => handleDragStart(e.clientX)}
                   onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-                  className="absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg"
+                  className="absolute top-1 bottom-1 w-12 bg-orange-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg"
                   style={{
                     transform: `translateX(${sliderX}px)`,
                     transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
@@ -635,7 +635,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                 setShowSuccessModal(false)
                 window.location.reload() 
               }}
-              className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-600/20 transition"
+              className="mt-6 w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-orange-600/20 transition"
             >
               Ойлголоо
             </button>

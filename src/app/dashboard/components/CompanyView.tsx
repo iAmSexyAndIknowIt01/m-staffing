@@ -83,11 +83,11 @@ export default function CompanyView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-black tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
@@ -118,7 +118,7 @@ export default function CompanyView() {
     <div className="animate-fade-in space-y-8">
       
       {/* ТОЛГОЙ ХЭСЭГ */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-indigo-950 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/15">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-slate-950 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/15">
         <div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight">Компанийн удирдлага</h1>
           <p className="text-slate-300 text-sm md:text-base mt-2 font-medium">
@@ -183,7 +183,7 @@ export default function CompanyView() {
               {activeJobs.length > 2 && (
                 <Link 
                   href="/dashboard/company/post-job" 
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition underline underline-offset-4"
+                  className="text-xs font-bold text-orange-600 hover:text-orange-800 transition underline underline-offset-4"
                 >
                   Бүгдийг харах ({activeJobs.length}) →
                 </Link>
@@ -222,7 +222,7 @@ export default function CompanyView() {
                       )}
                       <Link 
                         href={`/dashboard/company/post-job/${job.id}/applicants`}
-                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/70 px-4 py-2.5 rounded-xl transition"
+                        className="text-sm font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100/70 px-4 py-2.5 rounded-xl transition"
                       >
                         Анкетуудыг үзэх →
                       </Link>
@@ -237,7 +237,7 @@ export default function CompanyView() {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xl font-black text-gray-900">Сүүлд ирсэн анкетууд</h2>
-              <Link href="/dashboard/company/applicants" className="text-xs font-bold text-gray-400 hover:text-indigo-600 transition">
+              <Link href="/dashboard/company/applicants" className="text-xs font-bold text-gray-400 hover:text-orange-600 transition">
                 Бүгдийг харах
               </Link>
             </div>
@@ -263,7 +263,7 @@ export default function CompanyView() {
                       <div>
                         <h5 className="font-bold text-gray-900 text-sm sm:text-base">{applicant.name}</h5>
                         <p className="text-xs text-gray-400 font-medium mt-0.5">
-                          <span className="text-indigo-600 font-semibold">{applicant.role}</span>
+                          <span className="text-orange-600 font-semibold">{applicant.role}</span>
                         </p>
                       </div>
                     </div>
@@ -334,13 +334,13 @@ export default function CompanyView() {
           </div>
 
           {/* ДИНАМИК ЗӨВЛӨГӨӨНИЙ КАРТ */}
-          <div className="bg-indigo-50/60 border border-indigo-100 p-6 rounded-4xl shadow-sm space-y-4 relative overflow-hidden">
+          <div className="bg-orange-50/60 border border-orange-100 p-6 rounded-4xl shadow-sm space-y-4 relative overflow-hidden">
             {currentTip ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Lightbulb className="w-5 h-5 text-orange-500" />
-                    <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider bg-indigo-100/80 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-extrabold text-orange-600 uppercase tracking-wider bg-orange-100/80 px-2 py-0.5 rounded-md">
                       Зөвлөгөө
                     </span>
                   </div>
@@ -348,7 +348,7 @@ export default function CompanyView() {
                   {tips.length > 1 && (
                     <button 
                       onClick={() => setActiveTipIndex((prev) => (prev + 1) % tips.length)}
-                      className="text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-all p-1 flex items-center gap-1"
+                      className="text-xs text-orange-500 hover:text-orange-700 font-bold transition-all p-1 flex items-center gap-1"
                       title="Дараагийн зөвлөгөө"
                     >
                       Дараагийнх
@@ -364,10 +364,10 @@ export default function CompanyView() {
                   {currentTip.content}
                 </p>
 
-                <div className="flex justify-between items-center pt-2 border-t border-indigo-100/50">
+                <div className="flex justify-between items-center pt-2 border-t border-orange-100/50">
                   <Link 
                     href="/dashboard/company/tips" 
-                    className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
+                    className="inline-block text-xs font-bold text-orange-600 hover:text-orange-800 transition"
                   >
                     Илүүг унших →
                   </Link>
@@ -382,7 +382,7 @@ export default function CompanyView() {
                 <p className="text-xs text-gray-500 leading-relaxed">
                   Зар тавихад алдаа гарах, эсвэл тохирох ажилтан олдохгүй бол манай тусламжийн менежертэй шууд холбогдоорой.
                 </p>
-                <Link href="/support" className="inline-block text-xs font-bold text-indigo-600 hover:underline pt-1">
+                <Link href="/support" className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1">
                   Чатлах →
                 </Link>
               </div>

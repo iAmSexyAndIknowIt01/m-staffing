@@ -168,7 +168,7 @@ ${job.requirements}
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto py-24 text-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
         <p className="text-slate-400 text-sm font-medium">Мэдээллийг ачаалж байна...</p>
       </div>
     )
@@ -213,13 +213,13 @@ ${job.requirements}
             <button
               onClick={handleAcceptInterview}
               disabled={updating}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-2xl shadow-md shadow-indigo-600/20 transition disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 active:scale-95 rounded-2xl shadow-md shadow-orange-600/20 transition disabled:opacity-50"
             >
               <CheckCheck className="w-4 h-4" />
               {updating ? "Шинэчилж байна..." : "Баталгаажуулах"}
             </button>
-            <div className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-indigo-700 bg-indigo-50 rounded-2xl border border-indigo-200/60 shadow-xs">
-              <Users className="w-4 h-4 text-indigo-600" />
+            <div className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-orange-700 bg-orange-50 rounded-2xl border border-orange-200/60 shadow-xs">
+              <Users className="w-4 h-4 text-orange-600" />
               Ярилцлагад урьж байна
             </div>
           </div>
@@ -247,7 +247,7 @@ ${job.requirements}
       <div className="mb-5">
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-indigo-600 bg-white px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xs transition"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-orange-600 bg-white px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xs transition"
         >
           <ArrowLeft className="w-4 h-4" /> Буцах
         </button>
@@ -262,14 +262,14 @@ ${job.requirements}
               {modalLogoUrl ? (
                 <img src={modalLogoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-base font-black text-indigo-500 uppercase">
+                <span className="text-base font-black text-orange-500 uppercase">
                   {job.mt_company?.name?.substring(0, 2) || "CO"}
                 </span>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50/80 px-3 py-1 rounded-full border border-indigo-100/60 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-orange-600 bg-orange-50/80 px-3 py-1 rounded-full border border-orange-100/60 uppercase tracking-wider">
                 {job.category}
               </span>
               
@@ -292,7 +292,7 @@ ${job.requirements}
             <button
               onClick={handleCopyDetails}
               title="Мэдээллийг хуулах"
-              className="p-2.5 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-2xl text-slate-400 hover:text-indigo-600 transition flex items-center gap-1.5 text-xs font-semibold"
+              className="p-2.5 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-2xl text-slate-400 hover:text-orange-600 transition flex items-center gap-1.5 text-xs font-semibold"
             >
               {copied ? (
                 <>
@@ -324,7 +324,7 @@ ${job.requirements}
 
             <div className="flex items-center gap-3 text-slate-600">
               <div className="p-2.5 bg-white rounded-xl border border-slate-100 shadow-2xs">
-                <Briefcase className="w-4 h-4 text-indigo-500" />
+                <Briefcase className="w-4 h-4 text-orange-500" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ажлын төрөл</span>
@@ -349,7 +349,7 @@ ${job.requirements}
 
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-3.5 bg-indigo-500 rounded-full" />
+              <span className="w-1.5 h-3.5 bg-orange-500 rounded-full" />
               Ажлын үүрэг, тодорхойлолт
             </h4>
             <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-line bg-slate-50/40 rounded-2xl p-4 border border-slate-100">
