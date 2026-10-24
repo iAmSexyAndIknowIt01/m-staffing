@@ -4,6 +4,18 @@ import Link from "next/link"
 import { useState } from "react"
 import PasswordInput from "@/components/common/PasswordInput"
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const inputClass = (hasError: boolean) => `
+  w-full
+  rounded-2xl
+  border
+  px-5
+  py-4
+  outline-none
+  ${hasError ? "border-red-400 focus:border-red-500" : "border-orange-100 focus:border-orange-400"}
+`
+
 export default function LoginPage() {
   const [role, setRole] = useState<"staff" | "company">("staff")
   const [email, setEmail] = useState("")
@@ -12,8 +24,28 @@ export default function LoginPage() {
   
   // Modal-д зориулсан state
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // Талбар тус бүрийн шалгалтын алдаа (сервер рүү явуулахаас өмнө)
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
+
+  function validate() {
+    const errors: { email?: string; password?: string } = {}
+    const trimmed = email.trim()
+
+    if (!trimmed) errors.email = "Имэйл хаягаа оруулна уу."
+    else if (!EMAIL_RE.test(trimmed)) errors.email = "Имэйл хаяг буруу байна. Жишээ нь: name@email.com"
+
+    if (!password) errors.password = "Нууц үгээ оруулна уу."
+
+    setFieldErrors(errors)
+    if (errors.email) document.getElementById("login-email")?.focus()
+    else if (errors.password) document.getElementById("login-password")?.focus()
+    return !errors.email && !errors.password
+  }
 
   async function login() {
+    if (loading) return
+    if (!validate()) return
+
     try {
       setLoading(true)
 
@@ -23,7 +55,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: email.trim(),
           password,
           role,
         }),
@@ -209,69 +241,81 @@ export default function LoginPage() {
             Нэвтрэх
           </h2>
 
-          <div className="mt-8">
-            <label>Имэйл</label>
-            <input
-              type="email"
-              placeholder="name@email.com"
-              className="
-                mt-3
-                w-full
-                rounded-2xl
-                border
-                border-orange-100
-                px-5
-                py-4
-                outline-none
-                focus:border-orange-400
-              "
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="mt-6">
-            <label>Нууц үг</label>
-            <PasswordInput
-              autoComplete="current-password"
-              placeholder="••••••••"
-              wrapperClassName="mt-3"
-              className="
-                w-full
-                rounded-2xl
-                border
-                border-orange-100
-                px-5
-                py-4
-                outline-none
-                focus:border-orange-400
-              "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="mt-3 text-right">
-              <Link href="/forgot-password" className="orange-text text-sm hover:underline">
-                Нууц үгээ мартсан уу?
-              </Link>
-            </div>
-          </div>
-
-          <button
-            className="
-              orange-btn
-              w-full
-              mt-10
-              disabled:opacity-50
-            "
-            onClick={login}
-            disabled={loading}
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault()
+              login()
+            }}
           >
-            {loading
-              ? "Түр хүлээнэ үү..."
-              : role === "staff"
-              ? "Ажил Хайгчаар Нэвтрэх"
-              : "Ажил Олгогчоор Нэвтрэх"}
-          </button>
+            <div className="mt-8">
+              <label htmlFor="login-email">Имэйл</label>
+              <input
+                id="login-email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@email.com"
+                className={`mt-3 ${inputClass(!!fieldErrors.email)}`}
+                aria-invalid={!!fieldErrors.email}
+                aria-describedby={fieldErrors.email ? "login-email-error" : undefined}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined }))
+                }}
+              />
+              {fieldErrors.email && (
+                <p id="login-email-error" className="mt-2 text-sm text-red-600">
+                  {fieldErrors.email}
+                </p>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <label htmlFor="login-password">Нууц үг</label>
+              <PasswordInput
+                id="login-password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                wrapperClassName="mt-3"
+                className={inputClass(!!fieldErrors.password)}
+                aria-invalid={!!fieldErrors.password}
+                aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (fieldErrors.password) setFieldErrors((f) => ({ ...f, password: undefined }))
+                }}
+              />
+              {fieldErrors.password && (
+                <p id="login-password-error" className="mt-2 text-sm text-red-600">
+                  {fieldErrors.password}
+                </p>
+              )}
+              <div className="mt-3 text-right">
+                <Link href="/forgot-password" className="orange-text text-sm hover:underline">
+                  Нууц үгээ мартсан уу?
+                </Link>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="
+                orange-btn
+                w-full
+                mt-10
+                disabled:opacity-50
+              "
+              disabled={loading}
+            >
+              {loading
+                ? "Түр хүлээнэ үү..."
+                : role === "staff"
+                ? "Ажил Хайгчаар Нэвтрэх"
+                : "Ажил Олгогчоор Нэвтрэх"}
+            </button>
+          </form>
 
           <p className="mt-8 text-center text-gray-500">
             Бүртгэлгүй юу?

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import ThemeToggle from "@/components/theme/ThemeToggle"
 
 export default function Navbar() {
   // Доош scroll хийсэн үед navbar нарийсч "island" хэлбэртэй болно
@@ -83,6 +84,7 @@ export default function Navbar() {
           <div
             className="flex items-center gap-3"
           >
+            <ThemeToggle className="w-10 h-10 md:w-11 md:h-11 rounded-full grid place-items-center text-gray-700 hover:text-orange-500 hover:bg-gray-100 transition" />
             <Link href="/login">
               <button
                 className="orange-btn btn-shine h-10 md:h-11 px-5 md:px-7 text-xs md:text-sm flex items-center justify-center active:scale-100 md:hover:scale-[1.03] transition"
