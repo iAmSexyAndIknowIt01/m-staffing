@@ -5,6 +5,7 @@ import Stats from "@/components/landing/Stats"
 import CTA from "@/components/landing/CTA"
 import Footer from "@/components/landing/Footer"
 import ScrollProgress from "@/components/landing/ScrollProgress"
+import ScrollToTop from "@/components/landing/ScrollToTop"
 
 export default function Home() {
   return (
@@ -22,6 +23,8 @@ export default function Home() {
       <CTA />
 
       <Footer />
+
+      <ScrollToTop />
     </>
   )
 }
