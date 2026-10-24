@@ -1,3 +1,4 @@
+import { Building2, Sprout, Timer, type LucideIcon } from "lucide-react"
 import { DEFAULT_CONTRACT_TERMS } from "@/lib/contracts"
 import type { ContractTemplateInput } from "@/types/contract"
 
@@ -5,7 +6,7 @@ import type { ContractTemplateInput } from "@/types/contract"
 // өөрийн нөхцлөөр засаад хадгална (автоматаар хадгалагдахгүй).
 
 export interface StarterTemplate {
-  emoji: string
+  icon: LucideIcon
   title: string
   description: string
   template: ContractTemplateInput
@@ -23,7 +24,7 @@ const base: Omit<ContractTemplateInput, "name" | "terms"> = {
 
 export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
-    emoji: "🏢",
+    icon: Building2,
     title: "Бүтэн цагийн ажилтан",
     description: "Да–Ба 09:00–18:00, хугацаагүй",
     template: {
@@ -34,7 +35,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     },
   },
   {
-    emoji: "⏱️",
+    icon: Timer,
     title: "Цагийн ажилтан",
     description: "Цагийн цалин, 6 сар",
     template: {
@@ -49,7 +50,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     },
   },
   {
-    emoji: "🌱",
+    icon: Sprout,
     title: "Туршилтын хугацаатай",
     description: "3 сар, Да–Ба 09:00–18:00",
     template: {

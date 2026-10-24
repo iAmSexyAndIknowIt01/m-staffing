@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck, Clock } from "lucide-react"
+import { Search, MapPin, Briefcase, User, UserCheck, Clock, SearchX } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import EmptyState from "@/components/common/EmptyState"
 
 interface Staff {
   id: string
@@ -103,8 +104,8 @@ export default function SearchStaffPage() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
-            Ажилтан хайх 👨‍💻
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+            Ажилтан хайх
           </h1>
           <p className="text-sm text-gray-500 mt-1">Танай байгууллагад хэрэгцээтэй чадварлаг мэргэжилтнүүдийн жагсаалт.</p>
         </div>
@@ -214,7 +215,7 @@ export default function SearchStaffPage() {
       {/* Нийт илэрц хэсэг */}
       <div className="mb-4">
         <h2 className="font-bold text-gray-800 text-base sm:text-lg">
-          Илэрсэн ажилчид <span className="text-orange-500 font-black">({staffList.length})</span>
+          Илэрсэн ажилчид <span className="text-orange-500 font-bold">({staffList.length})</span>
         </h2>
       </div>
 
@@ -226,21 +227,21 @@ export default function SearchStaffPage() {
           staffList.map((staff) => (
             <div key={staff.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
                   {staff.avatarUrl ? (
-                    <img src={staff.avatarUrl} alt={staff.fullName} className="w-full h-full object-cover" />
+                    <img src={staff.avatarUrl} alt={staff.fullName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-base sm:text-lg font-black text-indigo-600">{staff.fullName?.charAt(0) || "?"}</span>
+                    <span className="text-base sm:text-lg font-bold text-orange-600">{staff.fullName?.charAt(0) || "?"}</span>
                   )}
                 </div>
 
                 <div className="space-y-2 w-full overflow-hidden">
                   <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate max-w-full">{staff.fullName}</h3>
-                    <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-50 text-amber-700 rounded-full">
+                    <span className="text-xs sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-50 text-amber-700 rounded-full">
                       {staff.role}
                     </span>
-                    <span className="text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-emerald-50 text-emerald-600 rounded-full">
+                    <span className="text-xs sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-emerald-50 text-emerald-600 rounded-full">
                       Идэвхтэй
                     </span>
                   </div>
@@ -262,7 +263,7 @@ export default function SearchStaffPage() {
 
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {staff.skills?.technical?.map((tech, idx) => (
-                      <span key={idx} className="text-[10px] sm:text-[11px] bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-md font-medium">
+                      <span key={idx} className="text-xs sm:text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-md font-medium">
                         {tech}
                       </span>
                     ))}
@@ -273,7 +274,7 @@ export default function SearchStaffPage() {
               <div className="flex items-center gap-3 self-end sm:self-center w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                 <Link 
                   href={`/dashboard/company/search-staff/profile?id=${staff.id}`}
-                  className="w-full sm:w-auto justify-center px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-5 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <UserCheck size={16} /> Профайл үзэх
                 </Link>
@@ -281,9 +282,12 @@ export default function SearchStaffPage() {
             </div>
           ))
         ) : (
-          <div className="p-12 text-center text-gray-400 text-sm">
-            Хайлтд тохирох ажилтан олдсонгүй.
-          </div>
+          <EmptyState
+            icon={SearchX}
+            title="Хайлтад тохирох ажилтан олдсонгүй"
+            description="Шүүлтүүрээ өөрчилж эсвэл хайлтын үгээ товчилж дахин оролдоно уу."
+            className="border-0"
+          />
         )}
       </div>
     </div>

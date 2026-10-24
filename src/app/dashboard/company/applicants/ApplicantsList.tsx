@@ -1,9 +1,12 @@
 "use client"
 
+import { Briefcase, Calendar, FileText, Folder, Mail, Phone, Search, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
+import { showAlert } from "@/components/common/AppDialog"
+import { confirmCreateContract, confirmStatusChange } from "@/components/company/confirmApplicantAction"
 
 interface Applicant {
   id: string
@@ -72,6 +75,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   }, [applicants, statusFilter, selectedJobFilter, searchQuery])
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!(await confirmStatusChange(newStatus, applicants.find((a) => a.id === id)))) return
+
     try {
       setUpdatingId(id)
       const response = await fetch("/api/company/jobrequest", {
@@ -86,7 +91,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
         applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       )
     } catch {
-      alert("Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert("Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setUpdatingId(null)
     }
@@ -94,6 +99,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
   // Тэнцсэн анкетаас гэрээний ноорог үүсгэж (эсвэл байгааг нь) нээнэ
   const handleCreateContract = async (id: string) => {
+    if (!(await confirmCreateContract(applicants.find((a) => a.id === id)))) return
+
     try {
       setUpdatingId(id)
       const response = await fetch("/api/company/contracts", {
@@ -106,7 +113,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
       router.push(`/dashboard/company/contracts/${result.data.id}`)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
       setUpdatingId(null)
     }
   }
@@ -118,19 +125,19 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       case "pending":
       case "new":
       case "":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
       case "interview":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-200/50">Ярилцлага</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлага</span>
       case "accepted":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
       case "approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
       case "not-approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
       case "rejected":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
       default:
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200/50">Тодорхойгүй</span>
+        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200/50">Тодорхойгүй</span>
     }
   }
 
@@ -143,16 +150,16 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/85 backdrop-blur-xs px-4">
           <div className="relative flex items-center justify-center h-28 w-28 sm:h-32 sm:w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-[10px] sm:text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs sm:text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
             Төлөв шинэчилж байна...
           </p>
         </div>
@@ -161,7 +168,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН ХЭСЭГ */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-50/50 p-3 sm:p-4 border border-gray-100 rounded-2xl sm:rounded-3xl">
         <div className="relative w-full">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <input
             type="text"
             placeholder="Нэр, имэйл, утас..."
@@ -204,7 +211,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {/* ИЛЭРЦҮҮД */}
       {filteredApplicants.length === 0 ? (
         <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl sm:text-4xl block mb-3">📁</span>
+          <span className="text-3xl sm:text-4xl block mb-3"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Илэрц олдсонгүй</div>
           <p className="text-xs sm:text-sm text-gray-400">Таны сонгосон шүүлтүүрт тохирох анкет байхгүй байна.</p>
         </div>
@@ -236,7 +243,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                         <td className="px-6 py-5 max-w-xs">
                           <div className="font-bold text-gray-900 text-base mb-1.5">{app.user_name}</div>
                           <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
-                            <span className="text-sm">💼</span> {app.job_title}
+                            <span className="text-sm"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> {app.job_title}
                           </div>
                         </td>
                         <td className="px-5 py-5 whitespace-nowrap">
@@ -267,7 +274,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                               </>
                             )}
                             {CONTRACTS_ENABLED && isApproved && (
-                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">📑 Гэрээ</button>
+                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ</button>
                             )}
                           </div>
                         </td>
@@ -292,8 +299,8 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
                       <div className="font-bold text-gray-900 text-sm sm:text-base truncate">{app.user_name}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
-                        📅 {new Date(app.created_at).toLocaleDateString("mn-MN")}
+                      <div className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>
+                        <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>
                     <div className="shrink-0">
@@ -303,16 +310,16 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
                   <div className="bg-slate-50 border border-gray-100 px-3 py-2 rounded-xl">
                     <div className="text-xs font-semibold text-gray-600 flex items-center gap-1.5 truncate">
-                      <span className="shrink-0">💼</span> <span className="truncate">{app.job_title}</span>
+                      <span className="shrink-0"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="truncate">{app.job_title}</span>
                     </div>
                   </div>
 
                   <div className="text-xs space-y-1 text-gray-600 font-medium pt-1 border-t border-gray-50">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400">📞</span> <a href={`tel:${app.phone}`} className="hover:underline">{app.phone}</a>
+                      <span className="text-gray-400"><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <a href={`tel:${app.phone}`} className="hover:underline">{app.phone}</a>
                     </div>
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-gray-400">✉️</span> <span className="text-gray-500 truncate">{app.email}</span>
+                      <span className="text-gray-400"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="text-gray-500 truncate">{app.email}</span>
                     </div>
                   </div>
 
@@ -339,7 +346,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           className="px-3.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl transition disabled:opacity-50"
                           title="Татгалзах"
                         >
-                          ✕
+                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                       </>
                     )}
@@ -359,7 +366,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           className="px-3.5 text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 py-2.5 rounded-xl transition disabled:opacity-50"
                           title="Тэнцээгүй"
                         >
-                          ✕
+                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                       </>
                     )}
@@ -368,9 +375,9 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                       <button
                         disabled={showLoader}
                         onClick={() => handleCreateContract(app.id)}
-                        className="flex-1 text-xs font-bold bg-indigo-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
+                        className="flex-1 text-xs font-bold bg-orange-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
                       >
-                        📑 Гэрээ
+                        <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ
                       </button>
                     )}
                   </div>

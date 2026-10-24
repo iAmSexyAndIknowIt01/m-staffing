@@ -62,7 +62,7 @@ export default function StaffContractDetailPage() {
   }
 
   const handleSign = () =>
-    runAction("sign", { signed_name: signedName.trim(), agree, content_hash: contract?.content_hash }, "Гэрээнд амжилттай гарын үсэг зурлаа. 🎉")
+    runAction("sign", { signed_name: signedName.trim(), agree, content_hash: contract?.content_hash }, "Гэрээнд амжилттай гарын үсэг зурлаа.")
 
   async function handleDownload() {
     if (!contract || !documentRef.current) return
@@ -84,7 +84,7 @@ export default function StaffContractDetailPage() {
     return (
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-0 space-y-4">
         <div className="p-6 bg-red-50 text-red-500 font-bold rounded-2xl">{error || "Гэрээ олдсонгүй."}</div>
-        <BackToListLink href="/dashboard/staff/contracts" className="text-sm font-bold text-indigo-600">← Миний гэрээ рүү буцах</BackToListLink>
+        <BackToListLink href="/dashboard/staff/contracts" className="text-sm font-bold text-orange-600">← Миний гэрээ рүү буцах</BackToListLink>
       </div>
     )
   }
@@ -96,8 +96,8 @@ export default function StaffContractDetailPage() {
     <div className="w-full max-w-5xl mx-auto animate-fade-in px-4 sm:px-0 pb-10 space-y-6">
       <div className="pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <BackToListLink href="/dashboard/staff/contracts" className="text-xs font-bold text-gray-400 hover:text-indigo-600">← Миний гэрээ</BackToListLink>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1">{contract.position}</h1>
+          <BackToListLink href="/dashboard/staff/contracts" className="text-xs font-bold text-gray-400 hover:text-orange-600">← Миний гэрээ</BackToListLink>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mt-1">{contract.position}</h1>
           <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
             <span className="font-mono">{contract.contract_number}</span>
             <span>·</span>
@@ -127,7 +127,7 @@ export default function StaffContractDetailPage() {
       {canSign && (
         <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-sm space-y-4">
           <div>
-            <h2 className="text-lg font-black text-gray-900">Гарын үсэг зурах</h2>
+            <h2 className="text-lg font-bold text-gray-900">Гарын үсэг зурах</h2>
             <p className="text-sm text-gray-500 mt-1">
               Гэрээг анхааралтай уншаад зөвшөөрч байвал бүтэн нэрээ бичиж баталгаажуулна уу.
             </p>

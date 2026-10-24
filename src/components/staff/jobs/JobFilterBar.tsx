@@ -86,7 +86,7 @@ export default function JobFilterBar({
             placeholder="Ажил хайх (Байршил...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 bg-white text-slate-800 placeholder-slate-400 text-[14px] rounded-xl border border-slate-200 shadow-xs outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100/50 transition-all"
+            className="w-full pl-11 pr-4 py-2.5 bg-white text-slate-800 placeholder-slate-400 text-sm rounded-xl border border-slate-200 shadow-xs outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100/50 transition-all"
           />
         </div>
 
@@ -95,17 +95,17 @@ export default function JobFilterBar({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className={`w-full px-4 py-2.5 bg-white text-[14px] rounded-xl border shadow-xs outline-none transition-all flex items-center justify-between font-medium ${
+            className={`w-full px-4 py-2.5 bg-white text-sm rounded-xl border shadow-xs outline-none transition-all flex items-center justify-between font-medium ${
               isOpen 
-                ? "border-indigo-400 ring-2 ring-indigo-100/50 text-slate-900" 
+                ? "border-orange-400 ring-2 ring-orange-100/50 text-slate-900" 
                 : "border-slate-200 text-slate-800 hover:bg-slate-50/80"
             }`}
           >
             <div className="flex items-center gap-2 truncate">
-              <CheckCircle2 className={`w-4 h-4 shrink-0 ${filterApplied !== "all" ? "text-indigo-600" : "text-slate-400"}`} />
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${filterApplied !== "all" ? "text-orange-600" : "text-slate-400"}`} />
               <span className="truncate">{getFilterAppliedLabel(filterApplied)}</span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 text-indigo-600" : ""}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 text-orange-600" : ""}`} />
           </button>
 
           {/* Dropdown Options Box */}
@@ -121,14 +121,14 @@ export default function JobFilterBar({
                       setFilterApplied(opt.value)
                       setIsOpen(false)
                     }}
-                    className={`w-full px-4 py-2.5 text-left text-[14px] flex items-center justify-between transition-colors ${
+                    className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors ${
                       isSelected 
-                        ? "bg-indigo-50/60 text-indigo-700 font-semibold" 
+                        ? "bg-orange-50/60 text-orange-700 font-semibold" 
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                     }`}
                   >
                     <span>{opt.label}</span>
-                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
+                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-orange-600" />}
                   </button>
                 )
               })}
@@ -180,7 +180,7 @@ export default function JobFilterBar({
         <div className="flex flex-wrap items-center gap-2 pt-0.5 px-0.5 animate-in fade-in duration-200">
           
           {selectedJobType && (
-            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-[12px] text-slate-800 font-medium">
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-xs text-slate-800 font-medium">
               <span>{getJobTypeLabel(selectedJobType)}</span>
               <button onClick={() => setSelectedJobType("")} className="text-slate-400 hover:text-slate-600 ml-0.5">
                 <X className="w-3 h-3" />
@@ -189,7 +189,7 @@ export default function JobFilterBar({
           )}
 
           {selectedCategory && (
-            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-[12px] text-slate-800 font-medium">
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-xs text-slate-800 font-medium">
               <span>{selectedCategory === "it" || selectedCategory === "IT" ? "IT" : selectedCategory}</span>
               <button onClick={() => setSelectedCategory("")} className="text-slate-400 hover:text-slate-600 ml-0.5">
                 <X className="w-3 h-3" />
@@ -198,8 +198,8 @@ export default function JobFilterBar({
           )}
 
           {filterApplied !== "all" && (
-            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-[12px] text-slate-800 font-medium">
-              <CheckCircle2 className="w-3 h-3 text-indigo-600" />
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-xs text-slate-800 font-medium">
+              <CheckCircle2 className="w-3 h-3 text-orange-600" />
               <span>{getFilterAppliedLabel(filterApplied)}</span>
               <button onClick={() => setFilterApplied("all")} className="text-slate-400 hover:text-slate-600 ml-0.5">
                 <X className="w-3 h-3" />
@@ -209,7 +209,7 @@ export default function JobFilterBar({
 
           <button
             onClick={handleClearAll}
-            className="text-[12px] text-indigo-600 hover:text-indigo-700 font-semibold transition-colors ml-1 py-1"
+            className="text-xs text-orange-600 hover:text-orange-700 font-semibold transition-colors ml-1 py-1"
           >
             Бүгдийг цэвэрлэх
           </button>

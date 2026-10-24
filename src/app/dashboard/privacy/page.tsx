@@ -57,7 +57,7 @@ export default function PrivacyPage() {
         <input 
           type="text" 
           placeholder="Заалт хайх..."
-          className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+          className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
         />
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-4 top-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,23 +69,23 @@ export default function PrivacyPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-75 w-full">
           <div className="relative flex items-center justify-center h-32 w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-[10px] font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Түр хүлээнэ үү...
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {currentItems.map((item) => (
-            <div key={item.id} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-all group">
+            <div key={item.id} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-orange-300 transition-all group">
               <h3 className="font-semibold text-slate-800 mb-2">{item.title}</h3>
               <p className="text-slate-600 text-[15px] leading-relaxed">{item.content}</p>
             </div>
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
               key={i}
               onClick={() => setCurrentPage(i + 1)}
               className={`w-8 h-8 rounded-lg font-medium text-sm transition-all ${
-                currentPage === i + 1 ? "bg-indigo-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                currentPage === i + 1 ? "bg-orange-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-600"
               }`}
             >
               {i + 1}

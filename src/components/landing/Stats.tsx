@@ -1,3 +1,4 @@
+import { Building2, Clock, UserRound } from "lucide-react"
 import Reveal from "./Reveal"
 import TiltCard from "./TiltCard"
 import CountUp from "./CountUp"
@@ -6,19 +7,19 @@ const data = [
   {
     value: "100+",
     title: "Ажил Олгогч",
-    icon: "🏢",
+    icon: Building2,
     desc: "Баталгаажсан байгууллагууд",
   },
   {
     value: "10,000+",
     title: "Ажил Хайгч",
-    icon: "👨‍💼",
+    icon: UserRound,
     desc: "Өдөр бүр идэвхтэй хэрэглэгч",
   },
   {
     value: "24/7",
     title: "Нээлттэй",
-    icon: "⚡",
+    icon: Clock,
     desc: "Хэзээ ч ажил хайх боломж",
   },
 ]
@@ -118,7 +119,7 @@ export default function Stats() {
               text-orange-300
             "
           >
-            MSTAFFING TODAY
+            MStaffing өнөөдөр
           </div>
 
           <h2
@@ -243,7 +244,7 @@ export default function Stats() {
                   md:text-3xl
                 "
               >
-                {item.icon}
+                <item.icon className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.8} />
               </div>
 
               {/* VALUE */}

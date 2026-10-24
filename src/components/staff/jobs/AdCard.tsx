@@ -22,7 +22,7 @@ export default function AdCard({
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex-1">
-          <span className="inline-block bg-white/25 text-white backdrop-blur-md text-[10px] px-3 py-1 rounded-full font-bold tracking-widest uppercase border border-white/20">
+          <span className="inline-block bg-white/25 text-white backdrop-blur-md text-xs px-3 py-1 rounded-full font-bold tracking-widest uppercase border border-white/20">
             {ad.badge}
           </span>
           <h3 className="text-lg font-extrabold mt-3 leading-tight text-white group-hover:opacity-90 transition-opacity">

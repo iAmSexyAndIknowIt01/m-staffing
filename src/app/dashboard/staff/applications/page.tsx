@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, Calendar, Folder, Frown, Search, X } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -117,17 +118,17 @@ export default function ApplicationsHistoryPage() {
           <div className="relative flex items-center justify-center h-32 w-32">
             
             {/* 1. Ард талын зөөлөн гэрэлтэлт (Glow effect) */}
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
             
             {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
             
             {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             
             {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
@@ -135,7 +136,7 @@ export default function ApplicationsHistoryPage() {
           </div>
           
           {/* Доор уншиж буйг илтгэх жижиг текст */}
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Түр хүлээнэ үү...
           </p>
         </div>
@@ -146,7 +147,7 @@ export default function ApplicationsHistoryPage() {
     return (
       <div className="text-center py-12 max-w-md mx-auto space-y-4">
         <p className="text-gray-500 font-medium">Хэрэглэгч баталгаажаагүй байна. Үндсэн хуудас руу шилжинэ үү.</p>
-        <button onClick={() => router.back()} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Буцах</button>
+        <button onClick={() => router.back()} className="px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold">Буцах</button>
       </div>
     )
   }
@@ -164,7 +165,7 @@ export default function ApplicationsHistoryPage() {
         >
           ← Буцах
         </button>
-        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
+        <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">Миний илгээсэн анкетууд</h1>
       </div>
 
       {/* 🌟 НӨХЦӨЛӨӨР ХАЙХ, ШҮҮХ ХЭСЭГ (SEARCH & FILTER BAR) */}
@@ -172,20 +173,20 @@ export default function ApplicationsHistoryPage() {
         <div className="bg-white border border-gray-100 p-4 rounded-3xl shadow-xs flex flex-col sm:flex-row gap-3 items-center">
           {/* Текстээр хайх оролт */}
           <div className="relative w-full sm:flex-1">
-            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">🔍</span>
+            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <input 
               type="text"
               placeholder="Ажлын нэр эсвэл компаниар хайх..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all text-gray-900"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-orange-500 transition-all text-gray-900"
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm("")}
                 className="absolute inset-y-0 right-4 flex items-center text-xs text-gray-400 hover:text-gray-600"
               >
-                ✕ Арилгах
+                <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Арилгах
               </button>
             )}
           </div>
@@ -195,12 +196,12 @@ export default function ApplicationsHistoryPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all font-bold text-gray-700 cursor-pointer"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-orange-500 transition-all font-bold text-gray-700 cursor-pointer"
             >
-              <option value="all">📊 Бүх статус</option>
-              <option value="pending">⏳ Шалгагдаж буй</option>
-              <option value="approved">✅ Хүлээж авсан</option>
-              <option value="rejected">❌ Татгалзсан</option>
+              <option value="all">Бүх статус</option>
+              <option value="pending">Шалгагдаж буй</option>
+              <option value="approved">Хүлээж авсан</option>
+              <option value="rejected">Татгалзсан</option>
             </select>
           </div>
         </div>
@@ -209,22 +210,22 @@ export default function ApplicationsHistoryPage() {
       {/* ТҮҮХИЙН ЖАГСААЛТ */}
       {applications.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-4xl p-12 text-center space-y-4">
-          <div className="text-4xl text-gray-300">📁</div>
+          <div className="text-4xl text-gray-300"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
           <h3 className="text-lg font-bold text-gray-900">Анкет илгээсэн түүх хоосон байна</h3>
           <p className="text-xs text-gray-400 max-w-sm mx-auto">
             Та одоогоор ямар нэгэн ажлын байранд хүсэлт гаргаагүй байна.
           </p>
           <Link 
             href="/dashboard/staff/jobs"
-            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
+            className="inline-block px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
           >
-            Aжил хайх 🔍
+            Ажил хайх
           </Link>
         </div>
       ) : filteredApplications.length === 0 ? (
         // Шүүлтүүрт тохирох дата олдоогүй үед
         <div className="bg-white border border-gray-100 rounded-4xl p-12 text-center text-gray-500 text-sm font-medium">
-          😞 Таны хайсан нөхцөлд тохирох анкет олдсонгүй.
+          <Frown size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Таны хайсан нөхцөлд тохирох анкет олдсонгүй.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,23 +233,23 @@ export default function ApplicationsHistoryPage() {
             <div 
               key={app.id}
               onClick={() => setSelectedApp(app)}
-              className="bg-white border border-gray-100 p-6 rounded-4xl shadow-xs flex flex-col justify-between gap-4 hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer animate-fade-in"
+              className="bg-white border border-gray-100 p-6 rounded-4xl shadow-xs flex flex-col justify-between gap-4 hover:border-orange-100 hover:shadow-md transition-all group cursor-pointer animate-fade-in"
             >
               <div className="space-y-2">
-                <h3 className="font-black text-gray-900 text-lg group-hover:text-indigo-600 transition-colors line-clamp-1">
+                <h3 className="font-bold text-gray-900 text-lg group-hover:text-orange-600 transition-colors line-clamp-1">
                   {app.title}
                 </h3>
                 
                 <div>
                   <span 
                     onClick={(e) => handleCompanyClick(e, app.company_id)}
-                    className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-flex items-center gap-1"
+                    className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-flex items-center gap-1"
                   >
-                    🏢 {app.company}
+                    <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.company}
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 font-medium">📅 Илгээсэн огноо: {app.date}</p>
+                <p className="text-xs text-gray-400 font-medium"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээсэн огноо: {app.date}</p>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-50 pt-4 w-full">
@@ -270,19 +271,19 @@ export default function ApplicationsHistoryPage() {
               onClick={() => setSelectedApp(null)} 
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"
             >
-              ✕
+              <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
             </button>
             <div className="space-y-1">
-              <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
+              <h3 className="text-xl font-bold text-gray-900">{selectedApp.title}</h3>
               <div>
                 <span 
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
-                  className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
+                  className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
                 >
-                  🏢 {selectedApp.company}
+                  <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedApp.company}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 font-medium">📅 Илгээсэн огноо: {selectedApp.date}</p>
+              <p className="text-xs text-gray-400 font-medium"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээсэн огноо: {selectedApp.date}</p>
             </div>
             <hr className="border-gray-100" />
             <div className="bg-gray-50 p-4 rounded-2xl text-xs text-gray-600 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line">
@@ -291,7 +292,7 @@ export default function ApplicationsHistoryPage() {
             </div>
             <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
               <span className="text-sm font-bold text-gray-500">Одоогийн статус:</span>
-              <span className={`px-4 py-1.5 text-xs font-black rounded-xl border ${getStatusBadgeClass(selectedApp.status)}`}>
+              <span className={`px-4 py-1.5 text-xs font-bold rounded-xl border ${getStatusBadgeClass(selectedApp.status)}`}>
                 {getStatusTranslation(selectedApp.status)}
               </span>
             </div>

@@ -68,7 +68,7 @@ function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; ch
     <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
       <span className="mt-0.5 text-slate-400 shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
         <div className="mt-0.5 text-sm font-medium text-slate-800 break-words">{children}</div>
       </div>
     </div>

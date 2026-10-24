@@ -1,5 +1,6 @@
 "use client"
 
+import { Search, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
 // Гэрээний жагсаалтуудын шүүлтүүрийн нийтлэг элементүүд
@@ -21,7 +22,7 @@ export function SearchInput({ value, placeholder, onCommit }: { value: string; p
 
   return (
     <div className="relative w-full">
-      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
       <input
         type="text"
         placeholder={placeholder}
@@ -46,7 +47,7 @@ export function DateRange({
 }) {
   return (
     <div className="space-y-1">
-      <span className="block text-[11px] font-bold text-gray-400 px-1">{label}</span>
+      <span className="block text-xs font-bold text-gray-400 px-1">{label}</span>
       <div className="flex items-center gap-1.5">
         <input type="date" value={from} max={to || undefined} onChange={(e) => onChange({ from: e.target.value })} className={filterInputClass} aria-label={`${label} — эхлэх`} />
         <span className="text-gray-300">—</span>
@@ -59,7 +60,7 @@ export function DateRange({
 export function LabeledSelect({ label, children, ...props }: { label: string } & React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <label className="space-y-1 block">
-      <span className="block text-[11px] font-bold text-gray-400 px-1">{label}</span>
+      <span className="block text-xs font-bold text-gray-400 px-1">{label}</span>
       <select {...props} className={filterSelectClass}>
         {children}
       </select>
@@ -74,8 +75,8 @@ export function ResultSummary({ total, filtered, hasFilters, onClear }: { total:
         {hasFilters ? `${total}-аас ${filtered} илэрц` : `Нийт ${total}`}
       </span>
       {hasFilters && (
-        <button onClick={onClear} className="font-bold text-indigo-600 hover:text-indigo-700">
-          ✕ Шүүлтүүр цэвэрлэх
+        <button onClick={onClear} className="font-bold text-orange-600 hover:text-orange-700">
+          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шүүлтүүр цэвэрлэх
         </button>
       )}
     </div>

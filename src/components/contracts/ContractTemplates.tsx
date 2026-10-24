@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Copy, Pencil, Star, Trash2 } from "lucide-react"
+import { Copy, Pencil, Star, Trash2, Briefcase, ClipboardList, Clock, FileText, FolderOpen, Hourglass, Plus, Search, Wallet } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import { MAX_TEMPLATES_PER_COMPANY } from "@/lib/contractTemplates"
@@ -26,7 +26,7 @@ const HIGHLIGHT_MS = 2500
 const copyName = (name: string) => `${name.slice(0, 90)} (хуулбар)`
 
 const iconButtonBase =
-  "w-9 h-9 inline-flex items-center justify-center rounded-xl transition disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+  "w-9 h-9 inline-flex items-center justify-center rounded-xl transition disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
 const iconButtonClass = `${iconButtonBase} text-gray-400 hover:bg-gray-100 hover:text-gray-700`
 
 // Жагсаалтын багана (md-ээс дээш). Толгой мөр тусдаа grid тул тогтмол өргөнтэй баганаар зэрэгцүүлнэ.
@@ -152,9 +152,9 @@ export default function ContractTemplates() {
       onClick={() => openEditor({ kind: "new" })}
       disabled={atLimit}
       title={atLimit ? `${MAX_TEMPLATES_PER_COMPANY} хүртэл загвар хадгална` : undefined}
-      className="shrink-0 text-sm font-bold px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition disabled:opacity-50"
+      className="shrink-0 text-sm font-bold px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition disabled:opacity-50"
     >
-      ➕ Шинэ загвар
+      <Plus size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шинэ загвар
     </button>
   )
 
@@ -166,8 +166,8 @@ export default function ContractTemplates() {
       {templates.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl sm:rounded-4xl shadow-sm p-6 sm:p-10 space-y-6">
           <div className="text-center max-w-md mx-auto">
-            <span className="text-3xl sm:text-4xl block mb-3">🗂️</span>
-            <h2 className="font-black text-gray-900 text-base sm:text-lg">Гэрээгээ дахин дахин бичих хэрэггүй</h2>
+            <span className="text-3xl sm:text-4xl block mb-3"><FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
+            <h2 className="font-bold text-gray-900 text-base sm:text-lg">Гэрээгээ дахин дахин бичих хэрэггүй</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Байнга хэрэглэдэг нөхцөл, ажлын цаг, хугацааг загвар болгоод гэрээ үүсгэхдээ нэг товшилтоор бөглөнө.
             </p>
@@ -180,9 +180,9 @@ export default function ContractTemplates() {
                 <li key={s.title}>
                   <button
                     onClick={() => openEditor({ kind: "new", initial: s.template })}
-                    className="w-full h-full text-left p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+                    className="w-full h-full text-left p-4 rounded-2xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
                   >
-                    <span className="text-2xl" aria-hidden>{s.emoji}</span>
+                    <span className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center" aria-hidden><s.icon className="w-5 h-5" /></span>
                     <div className="font-bold text-sm text-gray-900 mt-2">{s.title}</div>
                     <div className="text-xs text-gray-500">{s.description}</div>
                   </button>
@@ -193,7 +193,7 @@ export default function ContractTemplates() {
 
           <div className="flex flex-col items-center gap-2">
             {newButton}
-            <p className="text-[11px] text-gray-400 text-center">Эсвэл бэлэн гэрээний ноорог дээрээс «🗂️ Загвар болгож хадгалах» дарна.</p>
+            <p className="text-xs text-gray-400 text-center">Эсвэл бэлэн гэрээний ноорог дээрээс «<FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар болгож хадгалах» дарна.</p>
           </div>
         </div>
       ) : (
@@ -201,7 +201,7 @@ export default function ContractTemplates() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             {templates.length > SEARCH_THRESHOLD ? (
               <div className="relative flex-1">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden>🔍</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
                 <input
                   type="search"
                   value={query}
@@ -213,11 +213,11 @@ export default function ContractTemplates() {
               </div>
             ) : (
               <p className="flex-1 text-xs text-gray-500">
-                Гэрээ үүсгэхдээ загвар сонгох, эсвэл ноорог дээр «📋 Загвар хэрэглэх» дарж бөглөнө.
+                Гэрээ үүсгэхдээ загвар сонгох, эсвэл ноорог дээр «<ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар хэрэглэх» дарж бөглөнө.
               </p>
             )}
             <div className="flex items-center justify-between sm:justify-end gap-3">
-              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+              <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">
                 {templates.length} / {MAX_TEMPLATES_PER_COMPANY} загвар
               </span>
               {newButton}
@@ -227,7 +227,7 @@ export default function ContractTemplates() {
           {filtered.length === 0 ? (
             <div className="p-10 bg-white border border-gray-100 rounded-3xl text-center text-gray-400 shadow-sm text-sm">
               «{query}» хайлтад тохирох загвар алга.{" "}
-              <button onClick={() => setQuery("")} className="font-bold text-indigo-600">Цэвэрлэх</button>
+              <button onClick={() => setQuery("")} className="font-bold text-orange-600">Цэвэрлэх</button>
             </div>
           ) : (
             <div className="bg-white border border-gray-100 rounded-3xl sm:rounded-4xl shadow-sm overflow-hidden">
@@ -259,20 +259,20 @@ export default function ContractTemplates() {
                           title="Загвар засах"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-gray-900 truncate group-hover:text-indigo-600 group-focus-visible:underline transition">{t.name}</span>
+                            <span className="font-bold text-sm text-gray-900 truncate group-hover:text-orange-600 group-focus-visible:underline transition">{t.name}</span>
                             {t.is_default && (
-                              <span className="shrink-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-1.5 py-0.5">⭐ Үндсэн</span>
+                              <span className="shrink-0 text-xs font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>
                             )}
                           </div>
                           <p className="text-xs text-gray-400 truncate mt-0.5" title={t.terms}>{t.terms.split("\n")[0]}</p>
-                          <p className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>Шинэчилсэн: {formatDate(t.updated_at)}</p>
+                          <p className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>Шинэчилсэн: {formatDate(t.updated_at)}</p>
                         </button>
                       </div>
   
                       {/* Гар утсанд: товч мэдээлэл нэг хэсэгт */}
                       <div className="md:hidden mt-2 text-xs space-y-0.5">
-                        <div className="truncate">💼 <Value value={t.position} /> · 💰 <Value value={salary} /></div>
-                        <div className="truncate">⏳ <Value value={duration} fallback="Хугацаа гэрээ бүрт" /> · 🕘 <Value value={hours.length ? hours.join(", ") : null} fallback="Цаг гэрээ бүрт" /></div>
+                        <div className="truncate"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <Value value={t.position} /> · <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <Value value={salary} /></div>
+                        <div className="truncate"><Hourglass size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <Value value={duration} fallback="Хугацаа гэрээ бүрт" /> · <Clock size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <Value value={hours.length ? hours.join(", ") : null} fallback="Цаг гэрээ бүрт" /></div>
                       </div>
   
                       <div className="hidden md:block min-w-0 text-xs space-y-0.5">
@@ -290,9 +290,9 @@ export default function ContractTemplates() {
                         <Link
                           href={`/dashboard/company/contracts?tab=new&n_tpl=${encodeURIComponent(t.id)}`}
                           title="Энэ загвараар гэрээ үүсгэх"
-                          className="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition md:mr-1"
+                          className="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 transition md:mr-1"
                         >
-                          📑 Гэрээ үүсгэх
+                          <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ үүсгэх
                         </Link>
                         <div className="flex shrink-0">
                           <button onClick={() => openEditor({ kind: "edit", template: t })} disabled={busy} className={iconButtonClass} title="Засах" aria-label={`«${t.name}» засах`}>

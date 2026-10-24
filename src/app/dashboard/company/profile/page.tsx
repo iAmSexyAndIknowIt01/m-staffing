@@ -8,6 +8,7 @@ import CompanyProfileView from "@/components/company/CompanyProfileView"
 import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
 import { getProfileCompleteness } from "@/lib/companyProfileCompleteness"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface CompanyProfileData {
   company_name: string
@@ -119,7 +120,7 @@ export default function CompanyProfilePage() {
 
       setInitialData(formData)
       setIsEditMode(false)
-      setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ! 🎉" })
+      setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ!" })
       
       window.scrollTo({ top: 0, behavior: "smooth" })
     } catch (err) {
@@ -136,10 +137,16 @@ export default function CompanyProfilePage() {
     setMessage(null)
   }
 
-  const showLoader = pageLoading || actionLoading || uploadingLogo
+  // Хадгалах, лого солих үед контентын дээгүүр гарах loader
+  const showLoader = actionLoading || uploadingLogo
+
+  // Анх ачаалж байхад бусад хуудастай ижил: контентын оронд loader (цэс харагдсаар)
+  if (pageLoading) {
+    return <LoadingLayout loading />
+  }
 
   // Харах горим: ажил хайгчид харагдах албан ёсны профайл (ачаалж байх үед доорх loader-тай хэсэг)
-  if (!isEditMode && !pageLoading) {
+  if (!isEditMode) {
     const completeness = getProfileCompleteness(formData)
     return (
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
@@ -201,51 +208,46 @@ export default function CompanyProfilePage() {
     )
   }
 
-  // Засах горим (эсвэл анх ачаалж байх үе)
+  // Засах горим
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6 relative">
       {showLoader && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
           
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-            {pageLoading && "Профайл мэдээллийг ачаалж байна..."}
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             {uploadingLogo && "Лого зургийг шинэчилж байна..."}
             {actionLoading && "Өөрчлөлтийг хадгалж байна..."}
           </p>
         </div>
       )}
 
-      {!pageLoading && (
-        <>
-          {message && (
-            <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
-              message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-            }`}>
-              {message.text}
-            </div>
-          )}
-
-          <CompanyProfileEditForm
-            value={formData}
-            onChange={(next) => setFormData((prev) => ({ ...prev, ...next }))}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            onLogoSelect={handleLogoUpload}
-            uploadingLogo={uploadingLogo}
-            saving={actionLoading}
-          />
-        </>
+      {message && (
+        <div className={`p-4 rounded-2xl font-bold text-sm shadow-sm ${
+          message.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+        }`}>
+          {message.text}
+        </div>
       )}
+
+      <CompanyProfileEditForm
+        value={formData}
+        onChange={(next) => setFormData((prev) => ({ ...prev, ...next }))}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        onLogoSelect={handleLogoUpload}
+        uploadingLogo={uploadingLogo}
+        saving={actionLoading}
+      />
     </div>
   )
 }

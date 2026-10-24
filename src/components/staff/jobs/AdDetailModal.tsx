@@ -32,7 +32,7 @@ export default function AdDetailModal({ selectedAd, onClose }: AdDetailModalProp
           <span className="inline-block bg-white/20 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-widest text-white mb-3">
             {selectedAd.badge}
           </span>
-          <h2 className="text-2xl font-black leading-tight pr-8">{selectedAd.title}</h2>
+          <h2 className="text-2xl font-extrabold leading-tight pr-8">{selectedAd.title}</h2>
         </div>
 
         {/* Модалын контент хэсэг */}

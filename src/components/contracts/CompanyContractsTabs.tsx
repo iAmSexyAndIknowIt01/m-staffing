@@ -51,9 +51,9 @@ export default function CompanyContractsTabs() {
   }
 
   const tabs = [
-    { key: "contracts" as const, label: "📑 Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
-    { key: "new" as const, label: "➕ Шинээр үүсгэх", badge: summary?.candidates },
-    { key: "templates" as const, label: "🗂️ Загварууд" },
+    { key: "contracts" as const, label: "Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
+    { key: "new" as const, label: "Шинээр үүсгэх", badge: summary?.candidates },
+    { key: "templates" as const, label: "Загварууд" },
   ]
 
   return (
@@ -61,7 +61,7 @@ export default function CompanyContractsTabs() {
       <div className="space-y-2">
         <TabSwitch idPrefix="contracts" ariaLabel="Гэрээ" tabs={tabs} value={tab} onChange={selectTab} />
         {summary && (summary.drafts > 0 || summary.awaiting > 0) && (
-          <p className="text-[11px] text-gray-400 px-1">
+          <p className="text-xs text-gray-400 px-1">
             {[
               summary.drafts > 0 && `${summary.drafts} ноорог илгээгээгүй`,
               summary.awaiting > 0 && `${summary.awaiting} гэрээ ажилтны гарын үсэг хүлээж байна`,

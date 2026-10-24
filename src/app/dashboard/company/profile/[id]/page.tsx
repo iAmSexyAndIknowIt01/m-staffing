@@ -131,7 +131,7 @@ export default function CompanyProfilePage() {
 
       setInitialData(formData)
       setIsEditMode(false)
-      setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ! 🎉" })
+      setMessage({ type: "success", text: "Профайл мэдээлэл амжилттай шинэчлэгдлээ!" })
       window.scrollTo({ top: 0, behavior: "smooth" })
     } catch (err) {
       setMessage({ type: "error", text: getErrorMessage(err) })

@@ -1,7 +1,10 @@
 "use client"
 
+import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
+import { showAlert } from "@/components/common/AppDialog"
+import { confirmStatusChange } from "@/components/company/confirmApplicantAction"
 
 interface Applicant {
   id: string
@@ -34,6 +37,8 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
 
   // Анкетын төлөв өөрчлөх (Урих / Татгалзах)
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!(await confirmStatusChange(newStatus, applicants.find((a) => a.id === id)))) return
+
     try {
       setUpdatingId(id)
       const response = await fetch("/api/company/jobrequest", {
@@ -48,7 +53,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
         applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       )
     } catch {
-      alert("Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert("Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setUpdatingId(null)
     }
@@ -65,23 +70,23 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
           <div className="relative flex items-center justify-center h-32 w-32">
             {/* 1. Ард талын зөөлөн гэрэлтэлт */}
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
             
             {/* 2. Гадуурх нарийн тасархай эргэлдэх шугам */}
-            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
+            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
             
             {/* 3. Үндсэн хурдан эргэлдэх тод зураас */}
-            <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
             
             {/* 4. Гол хэсэгт байрлах брэндийн нэр */}
             <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+              <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
                 mstaffing
               </span>
             </div>
           </div>
           
-          <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
             Төлөв шинэчилж байна...
           </p>
         </div>
@@ -109,7 +114,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
 
       {filteredApplicants.length === 0 ? (
         <div className="p-12 bg-white border border-gray-100 rounded-3xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl block mb-2">📁</span>
+          <span className="text-3xl block mb-2"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <div className="font-bold text-gray-700 text-sm">Илэрц олдсонгүй</div>
         </div>
       ) : (
@@ -171,18 +176,18 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-bold text-gray-900">{app.user_name}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
-                        📅 {new Date(app.created_at).toLocaleDateString("mn-MN")}
+                      <div className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>
+                        <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>
-                    {["new", "pending", ""].includes(currentStatus) && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600">Шинэ</span>}
-                    {currentStatus === "interview" && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600">Ярилцлага</span>}
-                    {currentStatus === "rejected" && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
+                    {["new", "pending", ""].includes(currentStatus) && <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">Шинэ</span>}
+                    {currentStatus === "interview" && <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-600">Ярилцлага</span>}
+                    {currentStatus === "rejected" && <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
                   </div>
 
                   <div className="text-xs text-gray-600 space-y-0.5 border-t border-b border-gray-50 py-2">
-                    <div>📞 {app.phone}</div>
-                    <div className="text-gray-400 break-all">✉️ {app.email}</div>
+                    <div><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.phone}</div>
+                    <div className="text-gray-400 break-all"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.email}</div>
                   </div>
 
                   <div className="flex gap-2 pt-1">
@@ -192,7 +197,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                     {["new", "pending", ""].includes(currentStatus) && (
                       <>
                         <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="flex-1 text-center text-xs font-bold bg-emerald-500 text-white py-2 rounded-lg disabled:opacity-50">Урих</button>
-                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50">❌</button>
+                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50"><XCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
                       </>
                     )}
                   </div>

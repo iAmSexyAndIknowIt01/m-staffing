@@ -1,5 +1,6 @@
 "use client"
 
+import { Star } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { workHoursLines } from "@/lib/workSchedule"
@@ -41,7 +42,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 id="template-picker-title" className="text-lg font-black text-gray-900">Загвар хэрэглэх</h3>
+          <h3 id="template-picker-title" className="text-lg font-bold text-gray-900">Загвар хэрэглэх</h3>
           <p className="text-sm text-gray-500 mt-1">
             Гэрээний нөхцөл загвараар солигдоно. Загварт хоосон талбар (албан тушаал, цалин г.м.) одоогийн утгаараа үлдэнэ.
           </p>
@@ -55,7 +56,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
           ) : templates.length === 0 ? (
             <div className="text-sm text-gray-500 py-6 text-center space-y-2">
               <p>Хадгалсан загвар алга.</p>
-              <Link href="/dashboard/company/contracts?tab=templates" className="font-bold text-indigo-600">Загвар үүсгэх →</Link>
+              <Link href="/dashboard/company/contracts?tab=templates" className="font-bold text-orange-600">Загвар үүсгэх →</Link>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -63,11 +64,11 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
                 <li key={t.id}>
                   <button
                     onClick={() => onApply(t)}
-                    className="w-full text-left p-3 rounded-2xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+                    className="w-full text-left p-3 rounded-2xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-gray-900 truncate">{t.name}</span>
-                      {t.is_default && <span className="shrink-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 rounded-md px-1.5 py-0.5">⭐ Үндсэн</span>}
+                      {t.is_default && <span className="shrink-0 text-xs font-bold text-orange-600 bg-orange-50 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>}
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5 truncate">{templateSummary(t) || "Зөвхөн гэрээний нөхцөл"}</div>
                   </button>
@@ -114,7 +115,7 @@ export function SaveTemplateDialog({ defaultName, busy, error, onConfirm, onClos
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 id="save-template-title" className="text-lg font-black text-gray-900">Загвар болгож хадгалах</h3>
+          <h3 id="save-template-title" className="text-lg font-bold text-gray-900">Загвар болгож хадгалах</h3>
           <p className="text-sm text-gray-500 mt-1">
             Албан тушаал, цалин, ажлын цаг, байршил, нөхцлийг загварт хадгална. Хугацааг «Загварууд» хэсэгт тохируулж болно.
           </p>
@@ -131,15 +132,15 @@ export function SaveTemplateDialog({ defaultName, busy, error, onConfirm, onClos
           />
         </label>
         <label className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
-          <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="w-4 h-4 rounded accent-indigo-600" />
-          ⭐ Үндсэн загвар болгох (шинэ гэрээнд автоматаар)
+          <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="w-4 h-4 rounded accent-orange-600" />
+          <Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн загвар болгох (шинэ гэрээнд автоматаар)
         </label>
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} disabled={busy} className={cancelClass}>Болих</button>
           <button
             type="submit"
             disabled={busy || !name.trim()}
-            className="text-sm font-bold px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition disabled:opacity-50"
+            className="text-sm font-bold px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition disabled:opacity-50"
           >
             {busy ? "Хадгалж байна..." : "Хадгалах"}
           </button>

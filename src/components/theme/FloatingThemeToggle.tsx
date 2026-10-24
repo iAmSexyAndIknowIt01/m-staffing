@@ -7,7 +7,8 @@ import ThemeToggle from "./ThemeToggle"
 // горим солих товч. Dashboard болон landing өөрийн цэсэндээ товчтой тул энд харуулахгүй.
 export default function FloatingThemeToggle() {
   const pathname = usePathname()
-  if (pathname === "/" || pathname.startsWith("/dashboard")) return null
+  // Өөрийн navbar-тай (горим солих товчтой) хуудсууд
+  if (["/", "/about", "/terms", "/privacy"].includes(pathname) || pathname.startsWith("/dashboard")) return null
 
   // Admin хуудасны дээд талд navbar байгаа тул тэнд баруун доод буланд байрлуулна
   const position = pathname.startsWith("/admin") ? "bottom-6 right-6" : "top-4 right-4 sm:top-8 sm:right-8"

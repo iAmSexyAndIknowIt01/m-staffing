@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
         ← Нэвтрэх
       </Link>
 
-      <div className="glass w-full max-w-lg rounded-[32px] sm:rounded-[40px] p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
+      <div className="glass w-full max-w-lg rounded-4xl sm:rounded-4xl p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
         <p className="orange-text font-bold tracking-[6px] text-sm">MSTAFFING</p>
         <h1 className="text-2xl sm:text-3xl font-black mt-4">Нууц үг сэргээх</h1>
 

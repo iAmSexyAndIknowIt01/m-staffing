@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Search } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import AlertModal from "@/components/staff/jobs/AlertModal"
@@ -361,7 +362,7 @@ export default function StaffJobsPage() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Нээлттэй ажлын байрууд</h1>
           <p className="text-sm text-gray-400 mt-1">
             Танд тохирох {filteredJobs.length} ажлын санал байна
             {" • "}
@@ -385,7 +386,7 @@ export default function StaffJobsPage() {
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
-          ⚠️ Алдаа гарлаа: {error}
+          <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
         </div>
       )}
 
@@ -393,11 +394,11 @@ export default function StaffJobsPage() {
       {isFiltering ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
           <div className="relative flex items-center justify-center h-20 w-20">
-            <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-lg animate-pulse" />
-            <div className="absolute inset-0 border border-dashed border-indigo-200 rounded-full animate-[spin_6s_linear_infinite]" />
-            <div className="absolute inset-1.5 border-t border-b border-indigo-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-lg animate-pulse" />
+            <div className="absolute inset-0 border border-dashed border-orange-200 rounded-full animate-[spin_6s_linear_infinite]" />
+            <div className="absolute inset-1.5 border-t border-b border-orange-600 rounded-full animate-spin" />
             <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
-              <span className="text-[9px] font-black tracking-wider text-indigo-950 uppercase animate-pulse">
+              <span className="text-xs font-bold tracking-wider text-slate-900 uppercase animate-pulse">
                 mstaffing
               </span>
             </div>
@@ -408,7 +409,7 @@ export default function StaffJobsPage() {
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center text-gray-400 shadow-sm flex flex-col items-center">
-          <span className="text-5xl mb-3">🔍</span>
+          <span className="text-5xl mb-3"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <p className="font-semibold text-gray-600">Илэрц олдсонгүй</p>
           <p className="text-xs text-gray-400 mt-1">Хайлтын үг эсвэл шүүлтүүрээ өөрчилж үзнэ үү.</p>
         </div>

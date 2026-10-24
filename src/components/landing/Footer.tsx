@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
@@ -71,7 +72,7 @@ export default function Footer() {
         <div
           className="
             rounded-4xl
-            md:rounded-[40px]
+            md:rounded-4xl
             bg-[#121212]/90
             md:bg-white/3
             border
@@ -171,11 +172,11 @@ export default function Footer() {
                   text-gray-400
                 "
               >
-                <Link href="/jobs" className="hover:text-orange-400 transition">
-                  Ажил Хайх
+                <Link href="/dashboard/staff/jobs" className="hover:text-orange-400 transition">
+                  Ажил хайх
                 </Link>
-                <Link href="/staff" className="hover:text-orange-400 transition">
-                  Staff Хайх
+                <Link href="/dashboard/company/search-staff" className="hover:text-orange-400 transition">
+                  Ажилтан хайх
                 </Link>
                 <Link href="/register" className="hover:text-orange-400 transition">
                   Бүртгүүлэх
@@ -200,15 +201,15 @@ export default function Footer() {
                   text-gray-400
                 "
               >
-                <a className="hover:text-orange-400 cursor-pointer transition">
+                <Link href="/about" className="hover:text-orange-400 transition">
                   Бидний тухай
-                </a>
-                <a className="hover:text-orange-400 cursor-pointer transition">
+                </Link>
+                <Link href="/about#contact" className="hover:text-orange-400 transition">
                   Холбоо барих
-                </a>
-                <a className="hover:text-orange-400 cursor-pointer transition">
+                </Link>
+                <Link href="/about#faq" className="hover:text-orange-400 transition">
                   Түгээмэл асуулт
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -217,7 +218,7 @@ export default function Footer() {
               <div
                 className="
                   rounded-3xl
-                  md:rounded-[28px]
+                  md:rounded-3xl
                   bg-white/2
                   md:bg-white/4
                   border
@@ -243,7 +244,7 @@ export default function Footer() {
                     font-semibold
                   "
                 >
-                  ⚡ START TODAY
+                  <Zap size="1em" className="inline-block shrink-0 align-[-0.125em] mr-1.5" aria-hidden="true" /> Өнөөдөр эхэл
                 </div>
 
                 <h3
@@ -284,7 +285,7 @@ export default function Footer() {
                       justify-center
                     "
                   >
-                    Үнэгүй Эхлэх
+                    Үнэгүй эхлэх
                   </button>
                 </Link>
               </div>
@@ -310,7 +311,7 @@ export default function Footer() {
             "
           >
             <div className="text-gray-500 text-center md:text-left">
-              © 2026 MStaffing • All rights reserved
+              © {new Date().getFullYear()} MStaffing. Бүх эрх хуулиар хамгаалагдсан.
             </div>
 
             <div
@@ -322,12 +323,12 @@ export default function Footer() {
                 text-gray-500
               "
             >
-              <a className="hover:text-orange-400 cursor-pointer transition">
+              <Link href="/terms" className="hover:text-orange-400 transition">
                 Үйлчилгээний нөхцөл
-              </a>
-              <a className="hover:text-orange-400 cursor-pointer transition">
-                Нууцлал
-              </a>
+              </Link>
+              <Link href="/privacy" className="hover:text-orange-400 transition">
+                Нууцлалын бодлого
+              </Link>
             </div>
           </div>
         </div>

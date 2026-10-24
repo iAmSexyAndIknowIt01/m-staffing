@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, UserRound } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import Reveal from "./Reveal"
@@ -71,7 +72,7 @@ export default function CTA() {
       <div className="absolute inset-0 opacity-[0.05] md:opacity-[0.09] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-size-[50px_50px] md:bg-size-[70px_70px]" />
 
       <div className="relative z-10 max-w-350 mx-auto px-4 md:px-6">
-        <Reveal className="rounded-4xl md:rounded-[44px] bg-white md:bg-white/65 md:backdrop-blur-xl border border-gray-100 md:border-white px-6 py-12 md:px-14 md:py-20 shadow-[0_20px_50px_rgba(0,0,0,.04)] md:shadow-[0_40px_120px_rgba(0,0,0,.06)]">
+        <Reveal className="rounded-4xl md:rounded-4xl bg-white md:bg-white/65 md:backdrop-blur-xl border border-gray-100 md:border-white px-6 py-12 md:px-14 md:py-20 shadow-[0_20px_50px_rgba(0,0,0,.04)] md:shadow-[0_40px_120px_rgba(0,0,0,.06)]">
           
           {/* HEADER */}
           <div className="text-center">
@@ -100,7 +101,7 @@ export default function CTA() {
                     activeRole === "staff" ? "text-orange-600" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  👨‍💼 Ажилтан (Staff)
+                  <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажилтан (Staff)
                 </button>
                 
                 {/* Ажил олгогчийн товчлуур */}
@@ -110,7 +111,7 @@ export default function CTA() {
                     activeRole === "employer" ? "text-orange-600" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  🏢 Ажил олгогч
+                  <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажил олгогч
                 </button>
               </div>
             </div>

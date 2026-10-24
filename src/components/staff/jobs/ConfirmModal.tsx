@@ -36,7 +36,7 @@ export default function ConfirmModal({
       <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 flex flex-col items-center animate-in zoom-in-95 duration-200">
         
         {/* Асуултын тэмдэг бүхий дүрс */}
-        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4 border border-indigo-100/50 shadow-xs">
+        <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mb-4 border border-orange-100/50 shadow-xs">
           <HelpCircle className="w-6 h-6" />
         </div>
 
@@ -55,7 +55,7 @@ export default function ConfirmModal({
           >
             {/* Слайдер чирэгдэх үед арын дэвсгэрийг хөхрүүлж харуулах хэсэг */}
             <div 
-              className="absolute left-0 top-0 bottom-0 bg-indigo-50/50 transition-all pointer-events-none"
+              className="absolute left-0 top-0 bottom-0 bg-orange-50/50 transition-all pointer-events-none"
               style={{ width: `${sliderX + 48}px` }}
             />
 
@@ -73,7 +73,7 @@ export default function ConfirmModal({
               ref={handleRef}
               onMouseDown={(e) => onDragStart(e.clientX)}
               onTouchStart={(e) => onDragStart(e.touches[0].clientX)}
-              className="absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-md shadow-indigo-600/20 hover:bg-indigo-700 transition-colors select-none"
+              className="absolute top-1 bottom-1 w-12 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-md shadow-orange-600/20 hover:bg-orange-700 transition-colors select-none"
               style={{
                 transform: `translateX(${sliderX}px)`,
                 transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), bg-color 0.2s"

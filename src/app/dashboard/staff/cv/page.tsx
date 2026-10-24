@@ -1,9 +1,11 @@
 "use client"
 
+import { Mail, Phone, User } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import type { AvailabilityDay } from "@/types/profile"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface ProfileData {
   full_name: string
@@ -98,7 +100,7 @@ export default function StaffCVPage() {
       await html2pdf().set(opt).from(cvTemplateRef.current).save()
     } catch (err) {
       console.error("PDF үүсгэхэд алдаа гарлаа:", err)
-      alert("PDF татахад алдаа гарлаа.")
+      showAlert("PDF татахад алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setIsExporting(false)
     }
@@ -108,16 +110,16 @@ export default function StaffCVPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
         <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
+          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
           <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-black tracking-widest text-indigo-950 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
+            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
               mstaffing
             </span>
           </div>
         </div>
-        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
+        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
           Түр хүлээнэ үү...
         </p>
       </div>
@@ -158,7 +160,7 @@ export default function StaffCVPage() {
           className="w-full sm:w-auto px-5 py-2.5 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2"
           style={{ backgroundColor: "#ea580c" }}
         >
-          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах 📥"}
+          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах"}
         </button>
       </div>
 
@@ -190,11 +192,11 @@ export default function StaffCVPage() {
                 <p style={{ fontSize: "12px", color: "#ffedd5", lineHeight: "1.6", margin: "0 0 16px 0", whiteSpace: "pre-line", maxWidth: "90%" }}>{profile.bio}</p>
                 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "16px 24px", fontSize: "12px", color: "#fff7ed" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📧 {profile.email}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📞 {profile.phone}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.email}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.phone}</div>
                   {/* ХҮЙСНИЙ МЭДЭЭЛЭЛ */}
                   {profile.gender && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>👤 {getGenderText(profile.gender)}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><User size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {getGenderText(profile.gender)}</div>
                   )}
                 </div>
               </div>
