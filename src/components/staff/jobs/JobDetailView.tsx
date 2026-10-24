@@ -251,7 +251,7 @@ export default function JobDetailView({
       </div>
 
       {/* Утсан дээр доод талд тогтмол үйлдлийн мөр */}
-      <div className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] px-4 py-3 flex items-center gap-3">
+      <div data-mobile-bottom-bar className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] px-4 py-3 flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Цалин</p>
           <p className="text-sm font-bold text-emerald-600 truncate">{salaryText}</p>

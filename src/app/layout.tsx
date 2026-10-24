@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
 import AppDialogHost from "@/components/common/AppDialog";
+import ScrollToTop from "@/components/common/ScrollToTop";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const inter = Inter({
@@ -91,6 +92,7 @@ export default function RootLayout({
 
         <FloatingThemeToggle />
         <AppDialogHost />
+        <ScrollToTop />
         
       </body>
     </html>
