@@ -142,17 +142,20 @@ export default function JobDetailView({
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight break-words">{job.title}</h1>
-            {companyId ? (
-              <button
-                type="button"
-                onClick={(e) => handleCompanyClick(e, company)}
-                className="mt-1.5 text-sm sm:text-base font-bold text-indigo-200 hover:text-white hover:underline transition"
-              >
-                {companyName}
-              </button>
-            ) : (
-              <p className="mt-1.5 text-sm sm:text-base font-bold text-indigo-200/80">{companyName}</p>
-            )}
+            <div className="mt-1.5 flex items-center gap-1.5">
+              {companyId ? (
+                <button
+                  type="button"
+                  onClick={(e) => handleCompanyClick(e, company)}
+                  className="text-sm sm:text-base font-bold text-indigo-200 hover:text-white hover:underline transition"
+                >
+                  {companyName}
+                </button>
+              ) : (
+                <p className="text-sm sm:text-base font-bold text-indigo-200/80">{companyName}</p>
+              )}
+              {company && <VerifiedBadge className="w-4 h-4" />}
+            </div>
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-indigo-100/90 font-medium">
               <span className="inline-flex items-center gap-1.5">
@@ -215,7 +218,10 @@ export default function JobDetailView({
                   <Building2 className="w-5 h-5 text-indigo-400" strokeWidth={1.5} />
                 )}
               </div>
-              <p className="text-sm font-bold text-gray-900 break-words">{companyName}</p>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <p className={`text-sm font-bold break-words ${company ? "text-[#1877F2]" : "text-gray-900"}`}>{companyName}</p>
+                {company && <VerifiedBadge className="w-3.5 h-3.5" />}
+              </div>
             </div>
             {(company?.industry || company?.company_size) && (
               <div className="mt-4 space-y-2 text-sm font-medium text-gray-600">
@@ -253,5 +259,20 @@ export default function JobDetailView({
         {applyButton("shrink-0")}
       </div>
     </div>
+  );
+}
+
+// Ажлын жагсаалтын (JobCard) байгууллагын нэрний хажууд гардаг цэнхэр баталгаажсан тэмдэг
+function VerifiedBadge({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center justify-center bg-[#1877F2] rounded-full text-white shrink-0 ${className}`}
+      aria-label="Баталгаажсан байгууллага"
+      title="Баталгаажсан байгууллага"
+    >
+      <svg className="w-[70%] h-[70%] fill-current" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+      </svg>
+    </span>
   );
 }
