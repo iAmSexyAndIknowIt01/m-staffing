@@ -4,6 +4,7 @@ import { useState } from "react"
 import { usePathname } from "next/navigation"
 import LinkNext from "next/link"
 import { CONTRACTS_ENABLED } from "@/lib/features"
+import ThemeToggle from "@/components/theme/ThemeToggle"
 
 interface DashboardShellProps {
   userId: string
@@ -44,6 +45,8 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
           MSTAFFING
         </LinkNext>
 
+        <div className="flex items-center gap-1">
+        <ThemeToggle className="p-2 rounded-xl text-gray-700 hover:bg-gray-50 transition" />
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label={mobileMenuOpen ? "Цэс хаах" : "Цэс нээх"}
@@ -51,6 +54,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         >
           {mobileMenuOpen ? "✕" : "☰"}
         </button>
+        </div>
       </div>
 
       {/* MOBILE MENU DROPDOWN */}
@@ -326,6 +330,10 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
               </div>
             )}
           </div>
+          <ThemeToggle
+            withLabel={!isCollapsed}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-900 transition"
+          />
           <button 
             onClick={() => onLogout()}
             className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-red-500 bg-red-50/50 hover:bg-red-50 transition"
