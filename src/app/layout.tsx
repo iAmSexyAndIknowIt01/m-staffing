@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
+import AppDialogHost from "@/components/common/AppDialog";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const inter = Inter({
@@ -89,6 +90,7 @@ export default function RootLayout({
         </main>
 
         <FloatingThemeToggle />
+        <AppDialogHost />
         
       </body>
     </html>

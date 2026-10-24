@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import type { AvailabilityDay } from "@/types/profile"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface ProfileData {
   full_name: string
@@ -99,7 +100,7 @@ export default function StaffCVPage() {
       await html2pdf().set(opt).from(cvTemplateRef.current).save()
     } catch (err) {
       console.error("PDF үүсгэхэд алдаа гарлаа:", err)
-      alert("PDF татахад алдаа гарлаа.")
+      showAlert("PDF татахад алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setIsExporting(false)
     }

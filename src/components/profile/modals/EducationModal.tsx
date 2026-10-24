@@ -2,6 +2,7 @@
 
 import { GraduationCap, X } from "lucide-react"
 import { useState } from "react"
+import { showAlert } from "@/components/common/AppDialog"
 
 export type Education = {
   school: string
@@ -33,9 +34,9 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
 
 
   const handleAddOrUpdate = () => {
-    if (!form.school.trim()) return alert("Сургуулийн нэрийг оруулна уу")
+    if (!form.school.trim()) return void showAlert("Сургуулийн нэрийг оруулна уу.", { tone: "warning", title: "Мэдээлэл дутуу" })
     if (!form.isCurrent && !form.graduationYear.trim()) {
-      return alert("Төгссөн оноо оруулна уу эсвэл 'Одоо суралцаж буй' сонголтыг сонгоно уу")
+      return void showAlert("Төгссөн оноо оруулна уу эсвэл «Одоо суралцаж буй» сонголтыг сонгоно уу.", { tone: "warning", title: "Мэдээлэл дутуу" })
     }
 
     let updated: Education[]

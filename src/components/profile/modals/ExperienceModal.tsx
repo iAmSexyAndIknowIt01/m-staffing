@@ -2,6 +2,7 @@
 
 import { Pencil, Trash2, X } from "lucide-react"
 import { useState } from "react"
+import { showConfirm } from "@/components/common/AppDialog"
 
 type Experience = {
   company: string
@@ -60,8 +61,8 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
     resetForm()
   }
 
-  const handleDeleteItem = (index: number) => {
-    if (confirm("Энэ ажлын туршлагыг устгахдаа итгэлтэй байна уу?")) {
+  const handleDeleteItem = async (index: number) => {
+    if (await showConfirm("Энэ ажлын туршлагыг устгахдаа итгэлтэй байна уу?", { title: "Туршлага устгах", confirmLabel: "Устгах", danger: true })) {
       setList(list.filter((_, idx) => idx !== index))
     }
   }

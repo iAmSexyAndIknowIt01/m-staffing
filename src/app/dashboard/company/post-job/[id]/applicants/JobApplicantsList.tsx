@@ -3,6 +3,7 @@
 import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface Applicant {
   id: string
@@ -49,7 +50,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
         applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       )
     } catch {
-      alert("Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert("Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setUpdatingId(null)
     }

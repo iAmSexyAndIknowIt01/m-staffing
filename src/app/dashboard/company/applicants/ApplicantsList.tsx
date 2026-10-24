@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface Applicant {
   id: string
@@ -87,7 +88,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
         applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
       )
     } catch {
-      alert("Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert("Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setUpdatingId(null)
     }
@@ -107,7 +108,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
       router.push(`/dashboard/company/contracts/${result.data.id}`)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.")
+      showAlert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
       setUpdatingId(null)
     }
   }

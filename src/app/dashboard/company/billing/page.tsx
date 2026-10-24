@@ -3,6 +3,7 @@
 import { AlertTriangle, CheckCircle2, Lightbulb, Receipt, X, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface SubscriptionInfo {
   plan_type: string
@@ -126,11 +127,11 @@ export default function BillingPage() {
         setIsModalOpen(false)
         window.location.reload()
       } else {
-        alert(result.error || "Алдаа гарлаа.")
+        showAlert(result.error || "Алдаа гарлаа.", { tone: "error" })
         resetSwipe()
       }
     } catch {
-      alert("Серверийн алдаа гарлаа.")
+      showAlert("Серверийн алдаа гарлаа.", { tone: "error" })
       resetSwipe()
     } finally {
       setUpdatingPlan(null)

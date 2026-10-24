@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { showAlert } from "@/components/common/AppDialog"
 
 export default function TermsPage() {
   const router = useRouter()
@@ -37,7 +38,7 @@ export default function TermsPage() {
 
   const copyToClipboard = (title: string, content: string) => {
     navigator.clipboard.writeText(`${title}\n\n${content}`)
-    alert("Заалтыг хууллаа!")
+    showAlert("Заалтыг санах ойд хууллаа.", { tone: "success", title: "Хууллаа" })
   }
 
   return (

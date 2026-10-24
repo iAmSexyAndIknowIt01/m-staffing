@@ -2,6 +2,7 @@
 
 import { Home, Receipt, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
+import { showAlert, showConfirm } from "@/components/common/AppDialog"
 
 interface AdminInvoice {
   id: string
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
   }, [])
 
   const handleApproveStatus = async (invoiceId: string) => {
-    if (!confirm("Энэхүү төлбөрийг баталгаажуулж, компанийн багцыг ахиулахдаа итгэлтэй байна уу?")) return
+    if (!(await showConfirm("Энэхүү төлбөрийг баталгаажуулж, компанийн багцыг ахиулахдаа итгэлтэй байна уу?", { title: "Төлбөр баталгаажуулах", confirmLabel: "Баталгаажуулах" }))) return
     setActionLoading(invoiceId)
 
     try {
@@ -53,13 +54,13 @@ export default function AdminDashboard() {
       const result = await res.json()
       
       if (result.success) {
-        alert("Төлбөр амжилттай баталгаажлаа!")
+        showAlert("Төлбөр амжилттай баталгаажлаа.", { tone: "success" })
         setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, status: "paid" } : inv))
       } else {
-        alert(result.error || "Алдаа гарлаа.")
+        showAlert(result.error || "Алдаа гарлаа.", { tone: "error" })
       }
     } catch {
-      alert("Серверийн алдаа гарлаа.")
+      showAlert("Серверийн алдаа гарлаа.", { tone: "error" })
     } finally {
       setActionLoading(null)
     }

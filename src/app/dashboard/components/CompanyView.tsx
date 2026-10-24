@@ -4,6 +4,7 @@ import { BarChart3, Briefcase, CalendarDays, Flame, Inbox, Lock, MailOpen, Light
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface TipData {
   id: number
@@ -127,7 +128,7 @@ export default function CompanyView() {
         </div>
         {isLimitReached ? (
           <button
-            onClick={() => alert(`Таны ажлын байрны лимит (${subscription.jobLimit}) дүүрсэн байна. Шинэ зар оруулахын тулд багцаа ахиулна уу.`)}
+            onClick={() => showAlert(`Таны ажлын байрны лимит (${subscription.jobLimit}) дүүрсэн байна. Шинэ зар оруулахын тулд багцаа ахиулна уу.`, { tone: "warning", title: "Лимит дүүрсэн" })}
             className="px-6 py-3.5 bg-gray-600 text-gray-300 font-bold text-sm rounded-2xl cursor-not-allowed shadow-lg flex items-center gap-2"
           >
             <span><Lock size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> Лимит дүүрсэн

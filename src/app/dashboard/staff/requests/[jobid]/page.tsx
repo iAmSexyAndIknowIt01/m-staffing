@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, Clock, CheckCircle, XCircle, Users, Copy, Check, CheckCheck } from "lucide-react"
 import { getErrorMessage } from "@/lib/errors"
+import { showAlert } from "@/components/common/AppDialog"
 
 interface Company {
   id?: string
@@ -106,7 +107,7 @@ export default function StaffRequestDetailPage({ params }: { params: Promise<{ j
       setJob((prev) => (prev ? { ...prev, status: "accepted" } : null))
     } catch (err) {
       console.error("Error updating status:", err)
-      alert(getErrorMessage(err, "Серверийн алдаа гарлаа"))
+      showAlert(getErrorMessage(err, "Серверийн алдаа гарлаа"), { tone: "error" })
     } finally {
       setUpdating(false)
     }
