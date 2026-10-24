@@ -1,3 +1,4 @@
+import { Eye } from "lucide-react"
 import { todayISO } from "@/lib/contracts"
 import { contractEndDate } from "@/lib/contractTemplates"
 import { workHoursLines } from "@/lib/workSchedule"
@@ -36,7 +37,7 @@ export default function TemplatePreview({ template }: { template: ContractTempla
   return (
     <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-3">
       <div>
-        <h3 className="text-sm font-black text-gray-900">👁 Гэрээнд ингэж бөглөгдөнө</h3>
+        <h3 className="text-sm font-black text-gray-900"><Eye size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээнд ингэж бөглөгдөнө</h3>
         <p className="text-[11px] text-gray-400 mt-0.5">Тэнцсэн анкетаас гэрээ үүсгэхэд. Ноорог дээрээ дараа нь засаж болно.</p>
       </div>
 

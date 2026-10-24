@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Copy, Check, X, Share2 } from "lucide-react"
+import { Copy, Check, X, Share2, MessageSquare, Send } from "lucide-react"
 
 interface ShareModalProps {
   show: boolean
@@ -96,7 +96,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             onClick={shareToTelegram}
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50 text-sky-500 hover:bg-sky-100 transition gap-1.5"
           >
-            <span className="text-xl">✈️</span>
+            <span className="text-xl"><Send size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <span className="text-[11px] font-medium">Telegram</span>
           </button>
 
@@ -112,7 +112,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
             onClick={shareToViber}
             className="flex flex-col items-center justify-center p-3 rounded-2xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition gap-1.5"
           >
-            <span className="text-lg">💬</span>
+            <span className="text-lg"><MessageSquare size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <span className="text-[11px] font-medium">Viber</span>
           </button>
         </div>

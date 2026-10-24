@@ -1,5 +1,6 @@
 "use client"
 
+import { X } from "lucide-react"
 import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -88,7 +89,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
         setModal({
           isOpen: true,
           type: "success",
-          message: "Ажлын байр амжилттай зарлагдаж, баазад хадгалагдлаа! 🚀"
+          message: "Ажлын байр амжилттай зарлагдаж, баазад хадгалагдлаа!"
         })
         
      
@@ -119,7 +120,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
               )}
               {modal.type === "error" && (
                 <div className="flex items-center justify-center h-16 w-16 bg-red-50 rounded-full text-red-500 text-2xl font-bold">
-                  ✕
+                  <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                 </div>
               )}
               {modal.type === "warning" && (
@@ -339,7 +340,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
             disabled={loading}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold px-6 py-4 rounded-2xl transition shadow-lg shadow-orange-500/10 text-center"
           >
-            {loading ? "Түр хүлээнэ үү..." : "Ажлын байрны зарыг нийтлэх 🚀"}
+            {loading ? "Түр хүлээнэ үү..." : "Ажлын байрны зарыг нийтлэх"}
           </button>
         </div>
       </form>

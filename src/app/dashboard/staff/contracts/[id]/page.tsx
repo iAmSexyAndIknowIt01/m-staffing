@@ -62,7 +62,7 @@ export default function StaffContractDetailPage() {
   }
 
   const handleSign = () =>
-    runAction("sign", { signed_name: signedName.trim(), agree, content_hash: contract?.content_hash }, "Гэрээнд амжилттай гарын үсэг зурлаа. 🎉")
+    runAction("sign", { signed_name: signedName.trim(), agree, content_hash: contract?.content_hash }, "Гэрээнд амжилттай гарын үсэг зурлаа.")
 
   async function handleDownload() {
     if (!contract || !documentRef.current) return

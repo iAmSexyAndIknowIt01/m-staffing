@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Star } from "lucide-react"
 import { useState } from "react"
 import { DEFAULT_CONTRACT_TERMS, SALARY_TYPE_LABELS } from "@/lib/contracts"
 import { MIN_TEMPLATE_TERMS, validateTemplate } from "@/lib/contractTemplates"
@@ -139,7 +140,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                 aria-pressed={mobileView === view}
                 className={`px-3 py-1.5 rounded-lg transition ${mobileView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"}`}
               >
-                {view === "edit" ? "✏️ Засах" : "👁 Харах"}
+                {view === "edit" ? "Засах" : "Харах"}
               </button>
             ))}
           </div>
@@ -173,7 +174,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
                       className="mt-0.5 w-4 h-4 rounded accent-indigo-600"
                     />
                     <span>
-                      <span className="block text-sm font-bold text-gray-800">⭐ Үндсэн загвар</span>
+                      <span className="block text-sm font-bold text-gray-800"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн загвар</span>
                       <span className="block text-[11px] text-gray-500">Шинэ гэрээ үүсгэхэд автоматаар сонгогдоно. Өмнөх үндсэн загвар энгийн болно.</span>
                     </span>
                   </label>
@@ -279,7 +280,7 @@ export default function ContractTemplateForm({ initial, isNew, busy, error, onSu
             {/* Урт формын доод хэсэгт ч үйлдлийн товч харагдана */}
             <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-2 px-5 sm:px-8 py-3 bg-white/95 backdrop-blur border-t border-gray-100 rounded-b-3xl">
               {showErrors && problems.length > 0 ? (
-                <span role="alert" className="mr-auto text-[11px] font-semibold text-rose-600">⚠️ {problems[0]}</span>
+                <span role="alert" className="mr-auto text-[11px] font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {problems[0]}</span>
               ) : (
                 dirty && <span className="mr-auto text-[11px] font-semibold text-amber-600">● Хадгалаагүй өөрчлөлт</span>
               )}

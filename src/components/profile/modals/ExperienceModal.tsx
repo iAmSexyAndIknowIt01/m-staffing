@@ -1,5 +1,6 @@
 "use client"
 
+import { Pencil, Trash2, X } from "lucide-react"
 import { useState } from "react"
 
 type Experience = {
@@ -92,7 +93,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-white border shadow-sm hover:bg-gray-100 flex items-center justify-center text-gray-500 transition"
           >
-            ✕
+            <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </button>
         </div>
 
@@ -130,7 +131,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                           className="w-7 h-7 bg-white border border-gray-200 hover:bg-gray-100 rounded-lg flex items-center justify-center text-xs"
                           title="Засах"
                         >
-                          ✏️
+                          <Pencil size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                         <button
                           type="button"
@@ -138,7 +139,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                           className="w-7 h-7 bg-white border border-red-100 hover:bg-red-50 rounded-lg flex items-center justify-center text-xs text-red-500"
                           title="Устгах"
                         >
-                          🗑️
+                          <Trash2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                       </div>
                     </div>

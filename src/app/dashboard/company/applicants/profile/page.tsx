@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Briefcase, Clock, GraduationCap, Wrench, User, UserRound } from "lucide-react"
 import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
@@ -174,7 +175,7 @@ function ApplicantProfileContent() {
   if (error) {
     return (
       <div className="max-w-5xl mx-auto mt-8 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
-        ⚠️ Алдаа гарлаа: {error}
+        <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
       </div>
     )
   }
@@ -195,7 +196,7 @@ function ApplicantProfileContent() {
                 <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
                 <span className="text-4xl font-black text-indigo-600">
-                  {profile.fullName ? profile.fullName.charAt(0) : "👤"}
+                  {profile.fullName ? profile.fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}
             </div>
@@ -228,14 +229,14 @@ function ApplicantProfileContent() {
         {/* RIGHT PANEL */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6">
           <div>
-            <label className="text-sm font-bold block mb-2">🚀 Товч танилцуулга (Bio)</label>
+            <label className="text-sm font-bold block mb-2"><UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Товч танилцуулга (Bio)</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-700 min-h-20 whitespace-pre-wrap">
               {profile.bio || "Танилцуулга бичээгүй байна."}
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">🛠️ Ур чадвар</label>
+            <label className="text-sm font-bold block mb-2"><Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар</label>
             <div className="border border-gray-100 rounded-2xl p-5 bg-gray-50/50">
               <div className="mb-5">
                 <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Техникийн ур чадвар</h4>
@@ -261,7 +262,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">💼 Ажлын туршлага</label>
+            <label className="text-sm font-bold block mb-2"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын туршлага</label>
             {profile.experience.length > 0 ? (
               <div className="space-y-3">
                 {profile.experience.map((item, idx) => (
@@ -291,7 +292,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-2">🎓 Боловсрол</label>
+            <label className="text-sm font-bold block mb-2"><GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсрол</label>
             {profile.education.length > 0 ? (
               <div className="space-y-3">
                 {profile.education.map((item, idx) => (
@@ -318,7 +319,7 @@ function ApplicantProfileContent() {
           </div>
 
           <div>
-            <label className="text-sm font-bold block mb-1">🕒 Ажиллах боломжтой цаг</label>
+            <label className="text-sm font-bold block mb-1"><Clock size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажиллах боломжтой цаг</label>
             <div className="space-y-2.5 mt-2">
               {[
                 ["monday", "Даваа"],

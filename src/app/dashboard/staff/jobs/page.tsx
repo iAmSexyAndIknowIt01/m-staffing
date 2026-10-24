@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Search } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import AlertModal from "@/components/staff/jobs/AlertModal"
@@ -385,7 +386,7 @@ export default function StaffJobsPage() {
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
-          ⚠️ Алдаа гарлаа: {error}
+          <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
         </div>
       )}
 
@@ -408,7 +409,7 @@ export default function StaffJobsPage() {
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center text-gray-400 shadow-sm flex flex-col items-center">
-          <span className="text-5xl mb-3">🔍</span>
+          <span className="text-5xl mb-3"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <p className="font-semibold text-gray-600">Илэрц олдсонгүй</p>
           <p className="text-xs text-gray-400 mt-1">Хайлтын үг эсвэл шүүлтүүрээ өөрчилж үзнэ үү.</p>
         </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, Calendar, Inbox, RefreshCw, Search, Wallet, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -223,7 +224,7 @@ export default function PostJobPage() {
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага 💼</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Ажлын байрны удирдлага</h1>
           <p className="text-gray-500 mt-1 text-xs md:text-base">
             Танай компанийн зарласан идэвхтэй болон хаагдсан ажлын байруудын жагсаалт.
           </p>
@@ -244,7 +245,7 @@ export default function PostJobPage() {
         <div className="bg-white border border-gray-100 p-4 md:p-5 rounded-2xl md:rounded-4xl shadow-sm space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             <div className="relative sm:col-span-2 lg:col-span-1">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">🔍</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
               <input
                 type="text"
                 placeholder="Нэр, чиглэлээр хайх..."
@@ -286,7 +287,7 @@ export default function PostJobPage() {
                 className="w-full px-4 py-3 bg-slate-50 border border-gray-100 text-xs font-semibold rounded-xl outline-none focus:border-indigo-400 focus:bg-white transition-all"
               >
                 <option value="all">Бүх зар (Анкет хамаарахгүй)</option>
-                <option value="has_applicants">📥 Зөвхөн анкет ирсэн</option>
+                <option value="has_applicants">Зөвхөн анкет ирсэн</option>
               </select>
             </div>
 
@@ -308,7 +309,7 @@ export default function PostJobPage() {
                 onClick={handleResetFilters}
                 className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition cursor-pointer"
               >
-                🔄 Шүүлтүүрүүдийг цэвэрлэх
+                <RefreshCw size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шүүлтүүрүүдийг цэвэрлэх
               </button>
             </div>
           )}
@@ -332,7 +333,7 @@ export default function PostJobPage() {
 
         {error ? (
           <div className="text-center p-8 bg-red-50 text-red-600 rounded-2xl font-semibold text-sm">
-            ❌ Алдаа гарлаа: {error}
+            <XCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
           </div>
         ) : filteredAndSortedJobs.length > 0 ? (
           <>
@@ -359,11 +360,11 @@ export default function PostJobPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] md:text-xs text-gray-400 font-medium">
-                      <span>🏢 {job.category || "Ерөнхий"}</span>
+                      <span><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.category || "Ерөнхий"}</span>
                       <span className="text-slate-800 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">
-                        💰 {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
+                        <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
                       </span>
-                      <span>📅 {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+                      <span><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
                     </div>
                   </div>
 
@@ -386,7 +387,7 @@ export default function PostJobPage() {
                         href={`/dashboard/company/post-job/edit/${job.id}`}
                         className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition text-center whitespace-nowrap"
                       >
-                        Засах ✏️
+                        Засах
                       </Link>
                     </div>
                   </div>
@@ -461,7 +462,7 @@ export default function PostJobPage() {
         ) : (
           !loading && (
             <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
-              <div className="text-3xl md:text-4xl">📭</div>
+              <div className="text-3xl md:text-4xl"><Inbox size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
               <div className="max-w-sm mx-auto space-y-1">
                 <h3 className="font-bold text-gray-800 text-base md:text-lg">
                   {isFilterActive ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
@@ -477,14 +478,14 @@ export default function PostJobPage() {
                   onClick={handleResetFilters}
                   className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer"
                 >
-                  Бүх зарыг буцааж харах 🔄
+                  Бүх зарыг буцааж харах
                 </button>
               ) : (
                 <button
                   onClick={handleAddNewJobClick}
                   className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer"
                 >
-                  Анхны зараа оруулах 🚀
+                  Анхны зараа оруулах
                 </button>
               )}
             </div>

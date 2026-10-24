@@ -104,7 +104,7 @@ export default function SearchStaffPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
-            Ажилтан хайх 👨‍💻
+            Ажилтан хайх
           </h1>
           <p className="text-sm text-gray-500 mt-1">Танай байгууллагад хэрэгцээтэй чадварлаг мэргэжилтнүүдийн жагсаалт.</p>
         </div>

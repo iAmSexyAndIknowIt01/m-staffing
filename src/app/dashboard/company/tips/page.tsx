@@ -1,5 +1,6 @@
 "use client"
 
+import { Handshake, PenLine, Lightbulb } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 
@@ -47,7 +48,7 @@ export default function CompanyTipsPage() {
         <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-slate-900 transition">
           ← Буцах
         </Link>
-        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">HR хөтөч & Зөвлөмж 💡</h1>
+        <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">HR хөтөч & Зөвлөмж</h1>
       </div>
 
       {/* Таб сэлгэгч */}
@@ -60,7 +61,7 @@ export default function CompanyTipsPage() {
               : "text-gray-500 hover:text-gray-900"
           }`}
         >
-          📝 Зөвлөгөө ({generalTips.length})
+          <PenLine size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Зөвлөгөө ({generalTips.length})
         </button>
         <button
           onClick={() => setActiveTab("interview")}
@@ -70,7 +71,7 @@ export default function CompanyTipsPage() {
               : "text-gray-500 hover:text-gray-900"
           }`}
         >
-          🤝 Ярилцлагын бэлтгэл ({interviewTips.length})
+          <Handshake size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ярилцлагын бэлтгэл ({interviewTips.length})
         </button>
       </div>
 
@@ -91,7 +92,7 @@ export default function CompanyTipsPage() {
             <div key={tip.id} className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col justify-between group hover:border-indigo-100 hover:shadow-md transition-all">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{tip.icon || "💡"}</span>
+                  <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Lightbulb className="w-5 h-5" /></span>
                   <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded-md">
                     Үзсэн: {tip.views_count}
                   </span>

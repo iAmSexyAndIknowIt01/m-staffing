@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, Calendar, Folder, Frown, Search, X } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -172,7 +173,7 @@ export default function ApplicationsHistoryPage() {
         <div className="bg-white border border-gray-100 p-4 rounded-3xl shadow-xs flex flex-col sm:flex-row gap-3 items-center">
           {/* Текстээр хайх оролт */}
           <div className="relative w-full sm:flex-1">
-            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">🔍</span>
+            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <input 
               type="text"
               placeholder="Ажлын нэр эсвэл компаниар хайх..."
@@ -185,7 +186,7 @@ export default function ApplicationsHistoryPage() {
                 onClick={() => setSearchTerm("")}
                 className="absolute inset-y-0 right-4 flex items-center text-xs text-gray-400 hover:text-gray-600"
               >
-                ✕ Арилгах
+                <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Арилгах
               </button>
             )}
           </div>
@@ -197,10 +198,10 @@ export default function ApplicationsHistoryPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all font-bold text-gray-700 cursor-pointer"
             >
-              <option value="all">📊 Бүх статус</option>
-              <option value="pending">⏳ Шалгагдаж буй</option>
-              <option value="approved">✅ Хүлээж авсан</option>
-              <option value="rejected">❌ Татгалзсан</option>
+              <option value="all">Бүх статус</option>
+              <option value="pending">Шалгагдаж буй</option>
+              <option value="approved">Хүлээж авсан</option>
+              <option value="rejected">Татгалзсан</option>
             </select>
           </div>
         </div>
@@ -209,7 +210,7 @@ export default function ApplicationsHistoryPage() {
       {/* ТҮҮХИЙН ЖАГСААЛТ */}
       {applications.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-4xl p-12 text-center space-y-4">
-          <div className="text-4xl text-gray-300">📁</div>
+          <div className="text-4xl text-gray-300"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
           <h3 className="text-lg font-bold text-gray-900">Анкет илгээсэн түүх хоосон байна</h3>
           <p className="text-xs text-gray-400 max-w-sm mx-auto">
             Та одоогоор ямар нэгэн ажлын байранд хүсэлт гаргаагүй байна.
@@ -218,13 +219,13 @@ export default function ApplicationsHistoryPage() {
             href="/dashboard/staff/jobs"
             className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
           >
-            Aжил хайх 🔍
+            Ажил хайх
           </Link>
         </div>
       ) : filteredApplications.length === 0 ? (
         // Шүүлтүүрт тохирох дата олдоогүй үед
         <div className="bg-white border border-gray-100 rounded-4xl p-12 text-center text-gray-500 text-sm font-medium">
-          😞 Таны хайсан нөхцөлд тохирох анкет олдсонгүй.
+          <Frown size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Таны хайсан нөхцөлд тохирох анкет олдсонгүй.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -244,11 +245,11 @@ export default function ApplicationsHistoryPage() {
                     onClick={(e) => handleCompanyClick(e, app.company_id)}
                     className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-flex items-center gap-1"
                   >
-                    🏢 {app.company}
+                    <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.company}
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 font-medium">📅 Илгээсэн огноо: {app.date}</p>
+                <p className="text-xs text-gray-400 font-medium"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээсэн огноо: {app.date}</p>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-50 pt-4 w-full">
@@ -270,7 +271,7 @@ export default function ApplicationsHistoryPage() {
               onClick={() => setSelectedApp(null)} 
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"
             >
-              ✕
+              <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
             </button>
             <div className="space-y-1">
               <h3 className="text-xl font-black text-gray-900">{selectedApp.title}</h3>
@@ -279,10 +280,10 @@ export default function ApplicationsHistoryPage() {
                   onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
                   className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
                 >
-                  🏢 {selectedApp.company}
+                  <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedApp.company}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 font-medium">📅 Илгээсэн огноо: {selectedApp.date}</p>
+              <p className="text-xs text-gray-400 font-medium"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээсэн огноо: {selectedApp.date}</p>
             </div>
             <hr className="border-gray-100" />
             <div className="bg-gray-50 p-4 rounded-2xl text-xs text-gray-600 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line">

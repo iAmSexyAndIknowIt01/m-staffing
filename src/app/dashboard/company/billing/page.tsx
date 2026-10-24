@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, CheckCircle2, Lightbulb, Receipt, X, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 
@@ -205,7 +206,7 @@ export default function BillingPage() {
       price: "150,000 ₮",
       period: "сарын",
       features: ["Идэвхтэй 50 ажлын байр зарлах", "Шүүлтүүртэй анкет удирдах", "Зарласан ажлын хандалт үзэх", "24/7 Чат тусламж"],
-      buttonText: "Багц ахиулах ⚡",
+      buttonText: "Багц ахиулах",
       color: "border-indigo-100 shadow-md"
     },
     {
@@ -214,7 +215,7 @@ export default function BillingPage() {
       price: "350,000 ₮",
       period: "сарын",
       features: ["Идэвхтэй 100 ажлын байр зарлах", "Мэргэжлийн HR зөвлөгөө", "Зарууд хайлтын эхэнд байрших", "VIP Менежер тусламж", "Ажил горилогчдыг шууд урих эрх"],
-      buttonText: "Багц ахиулах 🔥",
+      buttonText: "Багц ахиулах",
       color: "border-orange-200 shadow-xl"
     }
   ]
@@ -226,7 +227,7 @@ export default function BillingPage() {
         <Link href="/dashboard" className="text-xs font-bold text-gray-400 hover:text-indigo-600 transition flex items-center gap-1">
           ← Удирдах самбар руу буцах
         </Link>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо 💳</h1>
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо</h1>
         <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
       </div>
 
@@ -237,7 +238,7 @@ export default function BillingPage() {
           className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-amber-900 hover:bg-amber-100/50 transition"
         >
           <div className="flex items-center gap-2">
-            <span className="text-base">💡</span>
+            <span className="text-base"><Lightbulb size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <span>Төлбөр төлөлт болон буцаалтын тухай санамж (Анхаарах зүйлс)</span>
           </div>
           <span className={`transform transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`}>
@@ -276,7 +277,7 @@ export default function BillingPage() {
         <div className="space-y-1">
           <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Одоогийн идэвхтэй багц</p>
           <h2 className="text-2xl font-black text-orange-400">
-            {sub?.plan_type === "premium" ? "Premium Plan 🔥" : sub?.plan_type === "standard" ? "Standard Plan ⚡" : "Үнэгүй багц"}
+            {sub?.plan_type === "premium" ? "Premium Plan" : sub?.plan_type === "standard" ? "Standard Plan" : "Үнэгүй багц"}
           </h2>
           <p className="text-xs text-slate-300">
             Дуусах хугацаа: <b className="text-white">{sub?.expires_at || "Хугацаагүй"}</b>
@@ -347,7 +348,7 @@ export default function BillingPage() {
         <h3 className="text-xl font-black text-gray-900 px-1">Төлбөр төлөлтийн түүх</h3>
         {invoices.length === 0 ? (
           <div className="bg-white border border-gray-100 rounded-4xl p-6 text-center text-gray-400 font-medium text-xs">
-            🧾 Одоогоор төлбөрийн түүх байхгүй байна.
+            <Receipt size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Одоогоор төлбөрийн түүх байхгүй байна.
           </div>
         ) : (
           <div className="bg-white border border-gray-100 rounded-4xl overflow-x-auto shadow-sm">
@@ -381,7 +382,7 @@ export default function BillingPage() {
                         onClick={() => handleOpenDetailModal(inv)}
                         className="text-[11px] font-bold text-indigo-600 bg-indigo-50/60 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-xl transition duration-150"
                       >
-                        Дэлгэрэнгүй 📄
+                        Дэлгэрэнгүй
                       </button>
                     </td>
                   </tr>
@@ -397,8 +398,8 @@ export default function BillingPage() {
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-gray-100 shadow-2xl space-y-5">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-black text-gray-900">Нэхэмжлэх үүсгэх 🧾</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+              <h3 className="text-lg font-black text-gray-900">Нэхэмжлэх үүсгэх</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-3xl space-y-2.5 border border-slate-100 text-xs">
@@ -422,7 +423,7 @@ export default function BillingPage() {
             </div>
 
             <div className="bg-amber-50/70 border border-amber-100 text-amber-800 p-3.5 rounded-2xl text-[11px] leading-relaxed font-medium">
-              ⚠️ <b>Анхаар:</b> Та шилжүүлэг хийхдээ <b>Гүйлгээний утга</b>-ыг огт алдалгүй <span className="font-bold text-red-600">том үсгээр</span>, яг дээрх хэлбэрээр бичнэ үү. Утга буруу орсон тохиолдолд багц автоматаар идэвхжих боломжгүй болно.
+              <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Анхаар:</b> Та шилжүүлэг хийхдээ <b>Гүйлгээний утга</b>-ыг огт алдалгүй <span className="font-bold text-red-600">том үсгээр</span>, яг дээрх хэлбэрээр бичнэ үү. Утга буруу орсон тохиолдолд багц автоматаар идэвхжих боломжгүй болно.
             </div>
 
             {/* 🔥 ШИНЭ НЭМСЭН ТОВЧ болон Слайд хэсэг */}
@@ -439,7 +440,7 @@ export default function BillingPage() {
                   ) : (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                       <div className="text-center space-y-2 py-4">
-                        <div className="text-4xl">✅</div>
+                        <div className="text-4xl"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
                         <p className="text-sm font-bold text-gray-800">Шилжүүлгээ хийсэн бол баруун тийш гүйлгэж эцсийн баталгаажуулалт хийнэ үү.</p>
                       </div>
                       
@@ -456,7 +457,7 @@ export default function BillingPage() {
                           style={{ width: '56px', transform: `translateX(${swipeX}px)` }}
                           onMouseDown={(e) => handleStart(e.clientX)}
                         >
-                          {updatingPlan ? "⏳" : "→"}
+                          {updatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : "→"}
                         </div>
                         <span className="text-[11px] font-black text-indigo-400 tracking-widest uppercase pointer-events-none">
                           Гүйлгэж баталгаажуул
@@ -480,10 +481,10 @@ export default function BillingPage() {
             
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-base font-black text-gray-900">Гүйлгээний дэлгэрэнгүй 📄</h3>
+                <h3 className="text-base font-black text-gray-900">Гүйлгээний дэлгэрэнгүй</h3>
                 <p className="text-[11px] text-gray-400 mt-0.5">Огноо: {new Date(selectedInvoice.created_at).toLocaleString()}</p>
               </div>
-              <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+              <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-3xl space-y-3 border border-slate-100 text-xs">

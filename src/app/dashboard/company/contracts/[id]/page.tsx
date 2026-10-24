@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, ClipboardList, FileText, FolderOpen, Hourglass } from "lucide-react"
 import BackToListLink from "@/components/contracts/BackToListLink"
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -54,9 +55,9 @@ type DraftView = "edit" | "preview"
 type PendingConfirm = "send" | "revise" | "cancel" | null
 
 const DETAIL_TABS: { key: DetailTab; label: string }[] = [
-  { key: "contract", label: "📑 Гэрээ" },
-  { key: "staff", label: "👤 Ажилтан" },
-  { key: "job", label: "💼 Ажлын байр" },
+  { key: "contract", label: "Гэрээ" },
+  { key: "staff", label: "Ажилтан" },
+  { key: "job", label: "Ажлын байр" },
 ]
 
 function toDetailTab(value: string | null): DetailTab {
@@ -332,7 +333,7 @@ export default function CompanyContractDetailPage() {
             <ContractStatusBadge status={contract.status} />
             {contract.status === "sent" && (
               <span className={contract.viewed_at ? "text-emerald-600 font-semibold" : "text-gray-400"} suppressHydrationWarning>
-                {contract.viewed_at ? `👁 Ажилтан нээж үзсэн: ${formatDateTime(contract.viewed_at)}` : "👁 Ажилтан хараахан нээгээгүй"}
+                {contract.viewed_at ? `Ажилтан нээж үзсэн: ${formatDateTime(contract.viewed_at)}` : "Ажилтан хараахан нээгээгүй"}
               </span>
             )}
           </div>
@@ -375,7 +376,7 @@ export default function CompanyContractDetailPage() {
           )}
           {canRecreate && (
             <button onClick={handleRecreate} disabled={busy} className={`${buttonClass} bg-indigo-500 hover:bg-indigo-600 text-white`}>
-              📑 Шинэ гэрээ үүсгэх
+              <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шинэ гэрээ үүсгэх
             </button>
           )}
           {!isDraft && (
@@ -391,7 +392,7 @@ export default function CompanyContractDetailPage() {
 
       {expiresIn !== null && (
         <div className="p-4 bg-amber-50 text-amber-700 rounded-2xl text-sm" suppressHydrationWarning>
-          ⏳ Гэрээ {formatDate(contract.end_date)}-нд дуусна ({expiresIn === 0 ? "өнөөдөр" : `${expiresIn} хоног үлдлээ`}).
+          <Hourglass size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ {formatDate(contract.end_date)}-нд дуусна ({expiresIn === 0 ? "өнөөдөр" : `${expiresIn} хоног үлдлээ`}).
           Үргэлжлүүлэн хамтран ажиллах бол хугацаа дуусахаас өмнө шинэ гэрээ байгуулна уу.
         </div>
       )}
@@ -440,7 +441,7 @@ export default function CompanyContractDetailPage() {
                     aria-pressed={draftView === view}
                     className={`px-4 py-2 rounded-lg transition ${draftView === view ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
                   >
-                    {view === "edit" ? "✏️ Засах" : "👁 Ажилтанд харагдах байдал"}
+                    {view === "edit" ? "Засах" : "Ажилтанд харагдах байдал"}
                   </button>
                 ))}
               </div>
@@ -454,7 +455,7 @@ export default function CompanyContractDetailPage() {
                   disabled={busy}
                   className="text-xs font-bold px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition disabled:opacity-50"
                 >
-                  📋 Загвар хэрэглэх
+                  <ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар хэрэглэх
                 </button>
               )}
               <button
@@ -466,7 +467,7 @@ export default function CompanyContractDetailPage() {
                 title="Энэ гэрээний нөхцлийг дараагийн гэрээнд дахин ашиглах загвар болгоно"
                 className="text-xs font-bold px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-50"
               >
-                🗂️ Загвар болгож хадгалах
+                <FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Загвар болгож хадгалах
               </button>
             </div>
           </div>
@@ -495,7 +496,7 @@ export default function CompanyContractDetailPage() {
                   <input type="date" value={form.start_date} onChange={set("start_date")} className={inputClass} />
                   {startInPast && (
                     <span className="block text-[11px] font-semibold text-amber-600">
-                      ⚠️ Эхлэх огноо өнгөрсөн өдөр байна. Зориуд биш бол шинэчилнэ үү.
+                      <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Эхлэх огноо өнгөрсөн өдөр байна. Зориуд биш бол шинэчилнэ үү.
                     </span>
                   )}
                 </label>
@@ -519,7 +520,7 @@ export default function CompanyContractDetailPage() {
               {blockers.length > 0 && (
                 <ul className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs font-semibold text-amber-700 space-y-1">
                   {blockers.map((b) => (
-                    <li key={b}>⚠️ Илгээхийн өмнө: {b}</li>
+                    <li key={b}><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээхийн өмнө: {b}</li>
                   ))}
                 </ul>
               )}
@@ -564,7 +565,7 @@ export default function CompanyContractDetailPage() {
             <>
               <p>Илгээснээр таны нэрийн өмнөөс гарын үсэг зурсанд тооцогдоно. Дахин засахын тулд «Засварлах» дарж ноорог болгох шаардлагатай.</p>
               {dirty && <p className="text-gray-700 font-semibold">Хадгалаагүй өөрчлөлтийг хадгалаад илгээнэ.</p>}
-              {startInPast && <p className="text-amber-600 font-semibold">⚠️ Эхлэх огноо ({formatDate(form.start_date)}) өнгөрсөн өдөр байна.</p>}
+              {startInPast && <p className="text-amber-600 font-semibold"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Эхлэх огноо ({formatDate(form.start_date)}) өнгөрсөн өдөр байна.</p>}
             </>
           }
           confirmLabel="Илгээх"

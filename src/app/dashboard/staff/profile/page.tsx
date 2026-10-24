@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertTriangle, Briefcase, Clock, GraduationCap, Pencil, Wrench, User, UserRound } from "lucide-react"
 import { useEffect, useState, useRef } from "react"
 import { uploadImage } from "@/lib/uploadImage"
 import BioModal from "@/components/profile/modals/BioModal"
@@ -230,7 +231,7 @@ export default function StaffProfilePage() {
 
       await fetchProfile()
       setIsEditMode(false)
-      setMessage("Профайл амжилттай хадгалагдлаа 🎉")
+      setMessage("Профайл амжилттай хадгалагдлаа")
       window.scrollTo({ top: 0, behavior: "smooth" })
       setTimeout(() => setMessage(null), 4000)
     } catch (err) {
@@ -288,7 +289,7 @@ export default function StaffProfilePage() {
       </div>
 
       {message && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">{message}</div>}
-      {error && <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {error}</div>}
 
       <input 
         type="file" 
@@ -310,13 +311,13 @@ export default function StaffProfilePage() {
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-2xl" />
               ) : (
                 <span className="text-4xl font-black text-indigo-600">
-                  {fullName ? fullName.charAt(0) : "👤"}
+                  {fullName ? fullName.charAt(0) : <User className="w-10 h-10" strokeWidth={1.5} />}
                 </span>
               )}
               
               {isEditMode && (
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200 text-[10px] text-white font-bold backdrop-blur-xs px-2">
-                  {uploadingAvatar ? "Уншиж байна..." : "Зураг солих 📸"}
+                  {uploadingAvatar ? "Уншиж байна..." : "Зураг солих"}
                 </div>
               )}
             </div>
@@ -424,9 +425,9 @@ export default function StaffProfilePage() {
           {/* BIO */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">🚀 Bio</label>
+              <label className="text-sm font-bold"><UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Bio</label>
               {isEditMode && (
-                <button type="button" onClick={() => setActiveModal("bio")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
+                <button type="button" onClick={() => setActiveModal("bio")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"><Pencil size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               )}
             </div>
             <textarea
@@ -441,9 +442,9 @@ export default function StaffProfilePage() {
           {/* SKILLS */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">🛠️ Ур чадвар</label>
+              <label className="text-sm font-bold"><Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар</label>
               {isEditMode && (
-                <button type="button" onClick={() => setActiveModal("skills")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
+                <button type="button" onClick={() => setActiveModal("skills")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"><Pencil size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               )}
             </div>
             <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 mt-2">
@@ -478,9 +479,9 @@ export default function StaffProfilePage() {
           {/* EXPERIENCE */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">💼 Ажлын туршлага</label>
+              <label className="text-sm font-bold"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын туршлага</label>
               {isEditMode && (
-                <button type="button" onClick={() => setActiveModal("experience")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
+                <button type="button" onClick={() => setActiveModal("experience")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"><Pencil size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               )}
             </div>
 
@@ -516,9 +517,9 @@ export default function StaffProfilePage() {
           {/* EDUCATION */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">🎓 Боловсрол</label>
+              <label className="text-sm font-bold"><GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсрол</label>
               {isEditMode && (
-                <button type="button" onClick={() => setActiveModal("education")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center">✏️</button>
+                <button type="button" onClick={() => setActiveModal("education")} className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center"><Pencil size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               )}
             </div>
 
@@ -552,7 +553,7 @@ export default function StaffProfilePage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <label className="text-sm font-bold">🕒 Ажиллах боломжтой цаг</label>
+                <label className="text-sm font-bold"><Clock size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажиллах боломжтой цаг</label>
                 <p className="text-xs text-gray-400 mt-1">Аль өдөр хэдээс хэдэн цагийн хооронд ажиллах боломжтой вэ?</p>
               </div>
             </div>
@@ -641,7 +642,7 @@ export default function StaffProfilePage() {
           {isEditMode && (
             <div className="flex justify-end pt-4 border-t border-gray-100">
               <button type="submit" disabled={saving || uploadingAvatar} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl text-sm font-bold transition">
-                {saving ? "Хадгалж байна..." : "Профайл хадгалах ✨"}
+                {saving ? "Хадгалж байна..." : "Профайл хадгалах"}
               </button>
             </div>
           )}

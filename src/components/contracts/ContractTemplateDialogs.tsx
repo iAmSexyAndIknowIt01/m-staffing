@@ -1,5 +1,6 @@
 "use client"
 
+import { Star } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { workHoursLines } from "@/lib/workSchedule"
@@ -67,7 +68,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-gray-900 truncate">{t.name}</span>
-                      {t.is_default && <span className="shrink-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 rounded-md px-1.5 py-0.5">⭐ Үндсэн</span>}
+                      {t.is_default && <span className="shrink-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 rounded-md px-1.5 py-0.5"><Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн</span>}
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5 truncate">{templateSummary(t) || "Зөвхөн гэрээний нөхцөл"}</div>
                   </button>
@@ -132,7 +133,7 @@ export function SaveTemplateDialog({ defaultName, busy, error, onConfirm, onClos
         </label>
         <label className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
           <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="w-4 h-4 rounded accent-indigo-600" />
-          ⭐ Үндсэн загвар болгох (шинэ гэрээнд автоматаар)
+          <Star size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Үндсэн загвар болгох (шинэ гэрээнд автоматаар)
         </label>
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} disabled={busy} className={cancelClass}>Болих</button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Copy } from "lucide-react"
+import { Copy, AlertTriangle, Moon } from "lucide-react"
 import {
   DEFAULT_END,
   DEFAULT_START,
@@ -25,8 +25,8 @@ interface WorkScheduleInputProps {
 }
 
 const MODES: { key: WorkHoursMode; label: string }[] = [
-  { key: "schedule", label: "📅 Өдрөөр сонгох" },
-  { key: "text", label: "✏️ Чөлөөт бичих" },
+  { key: "schedule", label: "Өдрөөр сонгох" },
+  { key: "text", label: "Чөлөөт бичих" },
 ]
 
 const timeInputClass =
@@ -148,7 +148,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
                           className={timeInputClass}
                         />
                         {!error && isOvernight(slot) && (
-                          <span className="text-[11px] font-semibold text-indigo-500 whitespace-nowrap">🌙 дараа өдөр</span>
+                          <span className="text-[11px] font-semibold text-indigo-500 whitespace-nowrap"><Moon size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> дараа өдөр</span>
                         )}
                       </div>
                       {enabledCount > 1 && (
@@ -167,7 +167,7 @@ export default function WorkScheduleInput({ value, onChange }: WorkScheduleInput
                     <span className="order-2 text-xs text-gray-400">Амралтын өдөр</span>
                   )}
 
-                  {error && <p role="alert" className="order-4 w-full text-[11px] font-semibold text-rose-600">⚠️ {error}</p>}
+                  {error && <p role="alert" className="order-4 w-full text-[11px] font-semibold text-rose-600"><AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {error}</p>}
                 </li>
               )
             })}

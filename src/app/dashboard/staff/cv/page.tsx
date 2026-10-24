@@ -1,5 +1,6 @@
 "use client"
 
+import { Mail, Phone, User } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import type { AvailabilityDay } from "@/types/profile"
 import { useRouter } from "next/navigation"
@@ -158,7 +159,7 @@ export default function StaffCVPage() {
           className="w-full sm:w-auto px-5 py-2.5 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2"
           style={{ backgroundColor: "#ea580c" }}
         >
-          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах 📥"}
+          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах"}
         </button>
       </div>
 
@@ -190,11 +191,11 @@ export default function StaffCVPage() {
                 <p style={{ fontSize: "12px", color: "#ffedd5", lineHeight: "1.6", margin: "0 0 16px 0", whiteSpace: "pre-line", maxWidth: "90%" }}>{profile.bio}</p>
                 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "16px 24px", fontSize: "12px", color: "#fff7ed" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📧 {profile.email}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>📞 {profile.phone}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.email}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {profile.phone}</div>
                   {/* ХҮЙСНИЙ МЭДЭЭЛЭЛ */}
                   {profile.gender && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>👤 {getGenderText(profile.gender)}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><User size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {getGenderText(profile.gender)}</div>
                   )}
                 </div>
               </div>

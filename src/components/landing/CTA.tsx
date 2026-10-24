@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, UserRound } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import Reveal from "./Reveal"
@@ -100,7 +101,7 @@ export default function CTA() {
                     activeRole === "staff" ? "text-orange-600" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  👨‍💼 Ажилтан (Staff)
+                  <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажилтан (Staff)
                 </button>
                 
                 {/* Ажил олгогчийн товчлуур */}
@@ -110,7 +111,7 @@ export default function CTA() {
                     activeRole === "employer" ? "text-orange-600" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  🏢 Ажил олгогч
+                  <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажил олгогч
                 </button>
               </div>
             </div>

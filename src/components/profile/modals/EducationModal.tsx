@@ -1,5 +1,6 @@
 "use client"
 
+import { GraduationCap, X } from "lucide-react"
 import { useState } from "react"
 
 export type Education = {
@@ -79,9 +80,9 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
         {/* HEADER */}
         <div className="p-6 border-b flex justify-between items-center bg-white shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-            🎓 Боловсролын мэдээлэл удирдах
+            <GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсролын мэдээлэл удирдах
           </h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200">✕</button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
         </div>
 
         {/* BODY */}
@@ -115,7 +116,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
           {/* ФОРМ ОРУУЛАХ ХЭСЭГ */}
           <div className="border border-dashed p-5 rounded-2xl bg-gray-50/50 space-y-4">
             <h3 className="text-sm font-bold text-gray-700">
-              {editingIndex !== null ? "📝 Мэдээлэл засах" : "➕ Шинээр боловсрол нэмэх"}
+              {editingIndex !== null ? "Мэдээлэл засах" : "Шинээр боловсрол нэмэх"}
             </h3>
             
             <div>
@@ -196,7 +197,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
             disabled={list.length === 0} // 👈 Хэрэв жагсаалт хоосон бол идэвхгүй болгоно
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
-            Батлах & Хадгалах ✨
+            Батлах & Хадгалах
           </button>
         </div>
       </div>

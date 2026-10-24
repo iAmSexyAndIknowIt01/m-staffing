@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useSyncExternalStore } from "react"
-import { Heart, Share2 } from "lucide-react"
+import { Heart, Share2, MapPin } from "lucide-react"
 
 const VISITED_JOBS_KEY = "visited_jobs"
 const VISITED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй
@@ -240,7 +240,7 @@ export default function JobCard({
         </div>
 
         <div className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
-          <span>📍</span> {job.location || "Улаанбаатар"}
+          <span><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> {job.location || "Улаанбаатар"}
         </div>
       </div>
     </div>

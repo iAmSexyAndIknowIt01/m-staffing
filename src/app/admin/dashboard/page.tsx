@@ -1,5 +1,6 @@
 "use client"
 
+import { Home, Receipt, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 interface AdminInvoice {
@@ -104,7 +105,7 @@ export default function AdminDashboard() {
                     : "text-gray-500 hover:text-gray-900 hover:bg-slate-100"
                 }`}
               >
-                🏠 Home
+                <Home size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Home
               </button>
               <button
                 onClick={() => {
@@ -117,7 +118,7 @@ export default function AdminDashboard() {
                     : "text-gray-500 hover:text-gray-900 hover:bg-slate-100"
                 }`}
               >
-                🧾 Нэхэмжлэл
+                <Receipt size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Нэхэмжлэл
                 {pendingCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
                     {pendingCount}
@@ -140,7 +141,7 @@ export default function AdminDashboard() {
         {activeTab === "home" && (
           <div className="space-y-8">
             <div>
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight">Тавтай морил 👑</h1>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">Тавтай морил</h1>
               <p className="text-gray-500 text-xs">Системийн өнөөдрийн байдал болон ерөнхий аналитик.</p>
             </div>
 
@@ -183,7 +184,7 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт 🧾</h1>
+                <h1 className="text-2xl font-black text-gray-900 tracking-tight">Нэхэмжлэхийн хяналт</h1>
                 <p className="text-gray-500 text-xs">Компаниудаас ирүүлсэн багц идэвхжүүлэх хүсэлтүүдийн жагсаалт.</p>
               </div>
 
@@ -264,7 +265,7 @@ export default function AdminDashboard() {
                               disabled={actionLoading !== null}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl transition shadow-xs text-[11px]"
                             >
-                              {actionLoading === inv.id ? "⏳" : "Баталгаажуулах ✓"}
+                              {actionLoading === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin inline-block" aria-label="Түр хүлээнэ үү" /> : "Баталгаажуулах ✓"}
                             </button>
                           ) : (
                             <span className="text-gray-300 text-[11px] font-bold pr-2">Шийдвэрлэсэн</span>

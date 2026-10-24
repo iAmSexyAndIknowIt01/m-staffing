@@ -1,5 +1,6 @@
 "use client"
 
+import { X } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -93,7 +94,7 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
       setModal({
         isOpen: true,
         type: "success",
-        message: "Ажлын байрны өөрчлөлт амжилттай хадгалагдлаа! ✏️"
+        message: "Ажлын байрны өөрчлөлт амжилттай хадгалагдлаа!"
       })
     } catch (err) {
       setModal({
@@ -132,7 +133,7 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
               )}
               {modal.type === "error" && (
                 <div className="flex items-center justify-center h-16 w-16 bg-red-50 rounded-full text-red-500 text-2xl font-bold">
-                  ✕
+                  <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                 </div>
               )}
               {modal.type === "warning" && (
@@ -369,7 +370,7 @@ export default function EditJobForm({ jobId, initialData }: EditJobFormProps) {
             disabled={isSaving}
             className="flex-1 py-4 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-2xl transition disabled:opacity-50 shadow-lg shadow-orange-500/10 order-1 sm:order-2 flex items-center justify-center gap-2 cursor-pointer"
           >
-            {isSaving ? "Түр хүлээнэ үү..." : "Өөрчлөлтийг хадгалах 💾"}
+            {isSaving ? "Түр хүлээнэ үү..." : "Өөрчлөлтийг хадгалах"}
           </button>
         </div>
       </form>

@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
@@ -243,7 +244,7 @@ export default function Footer() {
                     font-semibold
                   "
                 >
-                  ⚡ START TODAY
+                  <Zap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> START TODAY
                 </div>
 
                 <h3

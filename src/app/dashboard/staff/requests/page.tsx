@@ -1,5 +1,6 @@
 "use client"
 
+import { Briefcase, FolderOpen, Search } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
@@ -167,7 +168,7 @@ export default function StaffRequestsPage() {
             href="/dashboard/staff/jobs"
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl sm:rounded-2xl bg-orange-500 text-white font-semibold text-xs sm:text-sm hover:bg-orange-600 transition shadow-sm shadow-orange-500/20 w-full sm:w-auto"
           >
-            <span>💼</span> Ажил хайх
+            <span><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> Ажил хайх
           </Link>
         </div>
       </div>
@@ -184,7 +185,7 @@ export default function StaffRequestsPage() {
       ) : requests.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm space-y-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl mx-auto shadow-inner">
-            📂
+            <FolderOpen size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
             <h2 className="text-base sm:text-lg font-bold text-gray-900">Та одоогоор ямар нэгэн хүсэлт илгээгээгүй байна</h2>
@@ -197,7 +198,7 @@ export default function StaffRequestsPage() {
               href="/dashboard/staff/jobs"
               className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-indigo-600 text-white font-semibold text-xs sm:text-sm hover:bg-indigo-700 transition shadow-md shadow-indigo-600/20"
             >
-              🚀 Ажлын байр үзэх
+              <Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажлын байр үзэх
             </Link>
           </div>
         </div>
@@ -233,7 +234,7 @@ export default function StaffRequestsPage() {
           <div className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <div className="relative w-full sm:w-72">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400 text-sm">
-                🔍
+                <Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
               </span>
               <input
                 type="text"
@@ -343,7 +344,7 @@ export default function StaffRequestsPage() {
                 })
               ) : (
                 <div className="text-center py-14 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm px-4">
-                  <div className="text-3xl sm:text-4xl mb-2">🔍</div>
+                  <div className="text-3xl sm:text-4xl mb-2"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
                   <p className="text-gray-700 font-bold text-sm sm:text-base">Хайлтанд тохирох хүсэлт олдсонгүй</p>
                   <p className="text-xs sm:text-sm text-gray-400 mt-1">Та хайлтын үг эсвэл шүүлтүүрээ өөрчлөөд үзнэ үү.</p>
                 </div>

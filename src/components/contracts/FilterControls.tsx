@@ -1,5 +1,6 @@
 "use client"
 
+import { Search, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
 // Гэрээний жагсаалтуудын шүүлтүүрийн нийтлэг элементүүд
@@ -21,7 +22,7 @@ export function SearchInput({ value, placeholder, onCommit }: { value: string; p
 
   return (
     <div className="relative w-full">
-      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
       <input
         type="text"
         placeholder={placeholder}
@@ -75,7 +76,7 @@ export function ResultSummary({ total, filtered, hasFilters, onClear }: { total:
       </span>
       {hasFilters && (
         <button onClick={onClear} className="font-bold text-indigo-600 hover:text-indigo-700">
-          ✕ Шүүлтүүр цэвэрлэх
+          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Шүүлтүүр цэвэрлэх
         </button>
       )}
     </div>

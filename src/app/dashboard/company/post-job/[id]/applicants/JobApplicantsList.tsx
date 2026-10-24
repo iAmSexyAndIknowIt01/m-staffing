@@ -1,5 +1,6 @@
 "use client"
 
+import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
 
@@ -109,7 +110,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
 
       {filteredApplicants.length === 0 ? (
         <div className="p-12 bg-white border border-gray-100 rounded-3xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl block mb-2">📁</span>
+          <span className="text-3xl block mb-2"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <div className="font-bold text-gray-700 text-sm">Илэрц олдсонгүй</div>
         </div>
       ) : (
@@ -172,7 +173,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                     <div>
                       <div className="font-bold text-gray-900">{app.user_name}</div>
                       <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
-                        📅 {new Date(app.created_at).toLocaleDateString("mn-MN")}
+                        <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>
                     {["new", "pending", ""].includes(currentStatus) && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600">Шинэ</span>}
@@ -181,8 +182,8 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                   </div>
 
                   <div className="text-xs text-gray-600 space-y-0.5 border-t border-b border-gray-50 py-2">
-                    <div>📞 {app.phone}</div>
-                    <div className="text-gray-400 break-all">✉️ {app.email}</div>
+                    <div><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.phone}</div>
+                    <div className="text-gray-400 break-all"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.email}</div>
                   </div>
 
                   <div className="flex gap-2 pt-1">
@@ -192,7 +193,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                     {["new", "pending", ""].includes(currentStatus) && (
                       <>
                         <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="flex-1 text-center text-xs font-bold bg-emerald-500 text-white py-2 rounded-lg disabled:opacity-50">Урих</button>
-                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50">❌</button>
+                        <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="px-2.5 bg-rose-50 text-rose-600 py-2 rounded-lg text-xs disabled:opacity-50"><XCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
                       </>
                     )}
                   </div>

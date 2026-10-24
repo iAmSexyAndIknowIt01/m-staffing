@@ -1,5 +1,6 @@
 "use client"
 
+import { Briefcase, Calendar, FileText, Folder, Mail, Phone, Search, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
@@ -161,7 +162,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН ХЭСЭГ */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-50/50 p-3 sm:p-4 border border-gray-100 rounded-2xl sm:rounded-3xl">
         <div className="relative w-full">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <input
             type="text"
             placeholder="Нэр, имэйл, утас..."
@@ -204,7 +205,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {/* ИЛЭРЦҮҮД */}
       {filteredApplicants.length === 0 ? (
         <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl sm:text-4xl block mb-3">📁</span>
+          <span className="text-3xl sm:text-4xl block mb-3"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
           <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Илэрц олдсонгүй</div>
           <p className="text-xs sm:text-sm text-gray-400">Таны сонгосон шүүлтүүрт тохирох анкет байхгүй байна.</p>
         </div>
@@ -236,7 +237,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                         <td className="px-6 py-5 max-w-xs">
                           <div className="font-bold text-gray-900 text-base mb-1.5">{app.user_name}</div>
                           <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
-                            <span className="text-sm">💼</span> {app.job_title}
+                            <span className="text-sm"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> {app.job_title}
                           </div>
                         </td>
                         <td className="px-5 py-5 whitespace-nowrap">
@@ -267,7 +268,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                               </>
                             )}
                             {CONTRACTS_ENABLED && isApproved && (
-                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">📑 Гэрээ</button>
+                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ</button>
                             )}
                           </div>
                         </td>
@@ -293,7 +294,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                     <div className="min-w-0">
                       <div className="font-bold text-gray-900 text-sm sm:text-base truncate">{app.user_name}</div>
                       <div className="text-[11px] text-gray-400 mt-0.5" suppressHydrationWarning>
-                        📅 {new Date(app.created_at).toLocaleDateString("mn-MN")}
+                        <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
                       </div>
                     </div>
                     <div className="shrink-0">
@@ -303,16 +304,16 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
 
                   <div className="bg-slate-50 border border-gray-100 px-3 py-2 rounded-xl">
                     <div className="text-xs font-semibold text-gray-600 flex items-center gap-1.5 truncate">
-                      <span className="shrink-0">💼</span> <span className="truncate">{app.job_title}</span>
+                      <span className="shrink-0"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="truncate">{app.job_title}</span>
                     </div>
                   </div>
 
                   <div className="text-xs space-y-1 text-gray-600 font-medium pt-1 border-t border-gray-50">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400">📞</span> <a href={`tel:${app.phone}`} className="hover:underline">{app.phone}</a>
+                      <span className="text-gray-400"><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <a href={`tel:${app.phone}`} className="hover:underline">{app.phone}</a>
                     </div>
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-gray-400">✉️</span> <span className="text-gray-500 truncate">{app.email}</span>
+                      <span className="text-gray-400"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="text-gray-500 truncate">{app.email}</span>
                     </div>
                   </div>
 
@@ -339,7 +340,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           className="px-3.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl transition disabled:opacity-50"
                           title="Татгалзах"
                         >
-                          ✕
+                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                       </>
                     )}
@@ -359,7 +360,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                           className="px-3.5 text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 py-2.5 rounded-xl transition disabled:opacity-50"
                           title="Тэнцээгүй"
                         >
-                          ✕
+                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
                         </button>
                       </>
                     )}
@@ -370,7 +371,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                         onClick={() => handleCreateContract(app.id)}
                         className="flex-1 text-xs font-bold bg-indigo-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
                       >
-                        📑 Гэрээ
+                        <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ
                       </button>
                     )}
                   </div>

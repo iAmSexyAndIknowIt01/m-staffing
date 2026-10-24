@@ -51,9 +51,9 @@ export default function CompanyContractsTabs() {
   }
 
   const tabs = [
-    { key: "contracts" as const, label: "📑 Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
-    { key: "new" as const, label: "➕ Шинээр үүсгэх", badge: summary?.candidates },
-    { key: "templates" as const, label: "🗂️ Загварууд" },
+    { key: "contracts" as const, label: "Гэрээнүүд", badge: summary ? summary.drafts + summary.awaiting : undefined },
+    { key: "new" as const, label: "Шинээр үүсгэх", badge: summary?.candidates },
+    { key: "templates" as const, label: "Загварууд" },
   ]
 
   return (

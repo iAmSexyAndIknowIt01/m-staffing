@@ -1,5 +1,6 @@
 "use client"
 
+import { Briefcase, Calendar, CheckCircle2, ClipboardList, Mail, Phone } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState, type SetStateAction } from "react"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -161,7 +162,7 @@ export default function ContractCandidates() {
   if (candidates.length === 0) {
     return (
       <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-        <span className="text-3xl sm:text-4xl block mb-3">✅</span>
+        <span className="text-3xl sm:text-4xl block mb-3"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
         <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Шинээр үүсгэх гэрээ алга</div>
         <p className="text-xs sm:text-sm text-gray-400">
           Анкетууд хэсэгт ажил горилогчийг &quot;Тэнцсэн&quot; болгоход энд гарч ирнэ.
@@ -179,7 +180,7 @@ export default function ContractCandidates() {
       disabled={creatingId !== null}
       className={`text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition disabled:opacity-50 ${extraClass}`}
     >
-      {creatingId === c.id ? "Үүсгэж байна..." : "📑 Гэрээ үүсгэх"}
+      {creatingId === c.id ? "Үүсгэж байна..." : "Гэрээ үүсгэх"}
     </button>
   )
 
@@ -205,14 +206,14 @@ export default function ContractCandidates() {
 
       {templates.length > 0 && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
-          <label htmlFor="contract-template-choice" className="text-xs font-bold text-indigo-700 shrink-0">📋 Гэрээнд хэрэглэх загвар</label>
+          <label htmlFor="contract-template-choice" className="text-xs font-bold text-indigo-700 shrink-0"><ClipboardList size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээнд хэрэглэх загвар</label>
           <select
             id="contract-template-choice"
             value={templateChoice}
             onChange={(e) => update({ tpl: e.target.value || null, page })}
             className={`${filterSelectClass} sm:w-80`}
           >
-            <option value="">{defaultTemplate ? `⭐ ${defaultTemplate.name} (үндсэн)` : "Загваргүй (ажлын зараас)"}</option>
+            <option value="">{defaultTemplate ? `${defaultTemplate.name} (үндсэн)` : "Загваргүй (ажлын зараас)"}</option>
             {defaultTemplate && <option value="none">Загваргүй (ажлын зараас)</option>}
             {templates.filter((t) => !t.is_default).map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -290,7 +291,7 @@ export default function ContractCandidates() {
                     </td>
                     <td className="px-5 py-5">
                       <span className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
-                        💼 {c.job_title}
+                        <Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {c.job_title}
                       </span>
                     </td>
                     <td className="px-5 py-5 whitespace-nowrap">
@@ -315,13 +316,13 @@ export default function ContractCandidates() {
                   <div className="min-w-0">
                     <div className="font-bold text-gray-900 text-sm truncate">{c.user_name}</div>
                     <PreviousContract status={c.previous_status} />
-                    <div className="text-[11px] text-gray-400" suppressHydrationWarning>📅 {formatDate(c.created_at)}</div>
+                    <div className="text-[11px] text-gray-400" suppressHydrationWarning><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatDate(c.created_at)}</div>
                   </div>
                 </div>
-                <div className="text-xs font-semibold text-gray-600 truncate">💼 {c.job_title}</div>
+                <div className="text-xs font-semibold text-gray-600 truncate"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {c.job_title}</div>
                 <div className="text-xs text-gray-500 space-y-0.5 pt-2 border-t border-gray-50">
-                  {c.phone && <div>📞 {c.phone}</div>}
-                  {c.email && <div className="truncate">✉️ {c.email}</div>}
+                  {c.phone && <div><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {c.phone}</div>}
+                  {c.email && <div className="truncate"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {c.email}</div>}
                 </div>
                 {createButton(c, "w-full py-2.5")}
               </div>

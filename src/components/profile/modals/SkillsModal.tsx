@@ -1,5 +1,6 @@
 "use client"
 
+import { Wrench, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
 type Props = {
@@ -93,14 +94,14 @@ function SkillsModalContent({
         
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
-            🛠️ Ур чадвар засах
+            <Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар засах
           </h2>
           <button 
             type="button"
             onClick={onClose} 
             className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition"
           >
-            ✕
+            <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </button>
         </div>
 
@@ -234,7 +235,7 @@ function SkillsModalContent({
             }}
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
           >
-            Хадгалах ✨
+            Хадгалах
           </button>
         </div>
 

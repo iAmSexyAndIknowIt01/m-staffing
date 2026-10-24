@@ -244,7 +244,7 @@ ${selectedJob.requirements}
                     <span>Шалгаж байна...</span>
                   </>
                 ) : (
-                  "Анкет илгээх 🚀"
+                  "Анкет илгээх"
                 )}
               </button>
             )}

@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, HelpCircle, MapPin, Search, Wallet, X, ArrowRight, CheckCircle2 } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import AlertModal from "@/components/staff/jobs/AlertModal"
@@ -271,7 +272,7 @@ export default function RecommendedJobsPage() {
       {jobs.length > 0 && (
         <div className="bg-white border border-gray-100 p-4 rounded-3xl shadow-xs flex flex-col sm:flex-row gap-3 items-center">
           <div className="relative w-full sm:flex-1">
-            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">🔍</span>
+            <span className="absolute inset-y-0 left-4 flex items-center text-gray-400"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <input 
               type="text"
               placeholder="Ажлын нэр эсвэл компаниар хайх..."
@@ -286,7 +287,7 @@ export default function RecommendedJobsPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-hidden focus:border-indigo-500 transition-all font-bold text-gray-700 cursor-pointer"
             >
-              <option value="all">📂 Бүх салбар, ангилал</option>
+              <option value="all">Бүх салбар, ангилал</option>
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -313,10 +314,10 @@ export default function RecommendedJobsPage() {
                     <span className="px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
                   </div>
                   <h4 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">{job.title}</h4>
-                  <div onClick={(e) => handleCompanyClick(e, job.company_id)} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block">🏢 {job.company}</div>
+                  <div onClick={(e) => handleCompanyClick(e, job.company_id)} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.company}</div>
                   <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
-                    <span>📍 {job.location}</span>
-                    <span className="text-emerald-600 font-bold">💰 {job.salary}</span>
+                    <span><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.location}</span>
+                    <span className="text-emerald-600 font-bold"><Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.salary}</span>
                   </div>
                 </div>
                 <div className="flex justify-end sm:block">
@@ -334,7 +335,7 @@ export default function RecommendedJobsPage() {
         return (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white max-w-lg w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
-              <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">✕</button>
+              <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="px-2.5 py-0.5 text-[11px] font-bold bg-indigo-50 text-indigo-600 rounded-lg uppercase">{selectedJob.category}</span>
@@ -346,14 +347,14 @@ export default function RecommendedJobsPage() {
                     onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
                     className="text-base font-black text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer inline-block"
                   >
-                    🏢 {selectedJob.company}
+                    <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedJob.company}
                   </span>
                 </div>
               </div>
               <hr className="border-gray-100" />
               <div className="space-y-3 text-sm text-gray-600 font-medium">
-                <p>📍 <b>Байршил:</b> {selectedJob.location}</p>
-                <p className="text-emerald-600">💰 <b>Цалин:</b> {selectedJob.salary}</p>
+                <p><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Байршил:</b> {selectedJob.location}</p>
+                <p className="text-emerald-600"><Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Цалин:</b> {selectedJob.salary}</p>
                 <div className="bg-gray-50 p-4 rounded-2xl mt-2 text-xs text-gray-600 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line">
                   <b className="text-gray-900 block mb-1">Ажлын тайлбар:</b> 
                   {selectedJob.description || "Ажлын тайлбар байхгүй байна."}
@@ -368,7 +369,7 @@ export default function RecommendedJobsPage() {
                     onClick={() => triggerApplyConfirmation(selectedJob.id)}
                     className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm text-center rounded-xl transition"
                   >
-                    {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх 🚀"}
+                    {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх"}
                   </button>
                 )}
                 <button onClick={() => setSelectedJob(null)} className="px-5 py-3 bg-gray-100 text-gray-600 font-bold text-sm rounded-xl">Хаах</button>
@@ -382,10 +383,10 @@ export default function RecommendedJobsPage() {
       {showConfirmModal && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
            <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center">
-             <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 mx-auto">❓</div>
+             <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 mx-auto"><HelpCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
              <h3 className="text-lg font-black text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
              <div ref={trackRef} className="relative w-full h-14 bg-gray-100 rounded-2xl mt-6 p-1 flex items-center overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400" style={{ opacity: Math.max(1 - sliderX / 100, 0) }}>Баруун тийш чирж илгээх ➔</div>
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400" style={{ opacity: Math.max(1 - sliderX / 100, 0) }}>Баруун тийш чирж илгээх</div>
                 <div
                   ref={handleRef}
                   onMouseDown={(e) => handleDragStart(e.clientX)}
@@ -393,7 +394,7 @@ export default function RecommendedJobsPage() {
                   className="absolute top-1 bottom-1 w-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing"
                   style={{ transform: `translateX(${sliderX}px)`, transition: isDragging ? "none" : "transform 0.25s ease" }}
                 >
-                  {isSubmitting ? <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "🚀"}
+                  {isSubmitting ? <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <ArrowRight className="w-5 h-5" />}
                 </div>
              </div>
              <button onClick={() => setShowConfirmModal(false)} className="mt-4 w-full py-2 text-gray-500 font-bold text-sm">Үгүй, буцах</button>
@@ -404,9 +405,9 @@ export default function RecommendedJobsPage() {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto animate-bounce">🚀</div>
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto animate-bounce"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
             <h3 className="text-xl font-black text-gray-900">Амжилттай илгээгдлээ!</h3>
-            <button onClick={() => setShowSuccessModal(false)} className="mt-6 w-full py-3 bg-indigo-600 text-white rounded-2xl font-bold">Ойлголоо 👍</button>
+            <button onClick={() => setShowSuccessModal(false)} className="mt-6 w-full py-3 bg-indigo-600 text-white rounded-2xl font-bold">Ойлголоо</button>
           </div>
         </div>
       )}
