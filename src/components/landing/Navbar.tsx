@@ -57,16 +57,20 @@ export default function Navbar() {
           >
             {[
               {
-                label: "Ажил Хайх",
+                label: "Ажил хайх",
                 href: "/dashboard/staff/jobs",
               },
               {
-                label: "Staff Хайх",
-                href: "/dashboard/company/applicants",
+                label: "Ажилтан хайх",
+                href: "/dashboard/company/search-staff",
               },
               {
                 label: "Яагаад MStaffing",
-                href: "#features",
+                href: "/#features",
+              },
+              {
+                label: "Бидний тухай",
+                href: "/about",
               },
             ].map((item) => (
               <Link
