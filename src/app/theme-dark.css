@@ -66,6 +66,7 @@
   :where(html.dark) .bg-white\/90 { background-color: color-mix(in srgb, var(--dk-surface) 90%, transparent); }
   :where(html.dark) .bg-white\/95 { background-color: color-mix(in srgb, var(--dk-surface) 95%, transparent); }
   :where(html.dark) .border-amber-100 { border-color: color-mix(in srgb, var(--color-amber-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .border-amber-200 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-amber-200\/50 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-amber-200\/60 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-amber-200\/80 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
@@ -94,8 +95,10 @@
   :where(html.dark) .border-red-100 { border-color: color-mix(in srgb, var(--color-red-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-red-200 { border-color: color-mix(in srgb, var(--color-red-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-rose-100 { border-color: color-mix(in srgb, var(--color-rose-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .border-rose-200 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-rose-200\/50 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-rose-200\/60 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
+  :where(html.dark) .border-sky-200 { border-color: color-mix(in srgb, var(--color-sky-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-slate-100 { border-color: var(--dk-border); }
   :where(html.dark) .border-slate-100\/80 { border-color: color-mix(in srgb, var(--dk-border) 80%, transparent); }
   :where(html.dark) .border-slate-200 { border-color: var(--dk-border-strong); }
@@ -218,6 +221,8 @@
   :where(html.dark) .text-red-900 { color: var(--color-red-200); }
   :where(html.dark) .text-rose-600 { color: var(--color-rose-400); }
   :where(html.dark) .text-rose-700 { color: var(--color-rose-300); }
+  :where(html.dark) .text-sky-600 { color: var(--color-sky-400); }
+  :where(html.dark) .text-sky-700 { color: var(--color-sky-300); }
   :where(html.dark) .text-slate-300 { color: var(--dk-fg-5); }
   :where(html.dark) .text-slate-300\/80 { color: color-mix(in srgb, var(--dk-fg-5) 80%, transparent); }
   :where(html.dark) .text-slate-300\/90 { color: color-mix(in srgb, var(--dk-fg-5) 90%, transparent); }
