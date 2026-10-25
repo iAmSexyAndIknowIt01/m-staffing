@@ -78,7 +78,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
 
       {/* MOBILE MENU DROPDOWN */}
       {mobileMenuOpen && (
-        <div className="lg:hidden sticky top-16 w-full max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-gray-100 z-40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden sticky top-16 w-full max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-b border-gray-100 z-46 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="p-4 space-y-1">
             {navItems.map(({ href, label, icon: Icon }) => (
               <LinkNext

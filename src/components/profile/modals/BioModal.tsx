@@ -23,11 +23,11 @@ function BioModalContent({
   const isDisabled = !text.trim()
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 sm:p-4">
 
-      <div className="bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl">
+      <div className="bg-white w-full max-w-3xl rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[92dvh] overflow-y-auto">
 
-        <div className="p-6 border-b flex justify-between items-center">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
             <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Bio засах
           </h2>
@@ -60,7 +60,7 @@ function BioModalContent({
           />
         </div>
 
-        <div className="border-t p-6 flex justify-end gap-3 bg-gray-50">
+        <div className="border-t border-gray-100 p-6 flex justify-end gap-3 bg-gray-50">
           <button
             type="button"
             onClick={onClose}

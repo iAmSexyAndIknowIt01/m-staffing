@@ -120,11 +120,13 @@ export default function JobCard({
 
   const isNew = isNewJob(job.created_at)
 
+  // Анкет илгээсэн картын зүүн улаан хүрээ: dark mode-ийн border-gray-100 дүрэм бүх талын
+  // өнгийг солидог тул border-l-red-500!-ээр (important) хоёр горимд ижил харагдуулна
   return (
     <div
       onClick={handleClick}
       className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-all duration-200 cursor-pointer ${
-        isJobApplied ? "border-l-4 border-l-red-500" : ""
+        isJobApplied ? "border-l-4 border-l-red-500!" : ""
       }`}
     >
       {/* Дээд хэсэг: Лого, Гарчиг, Үйлдэлүүд */}

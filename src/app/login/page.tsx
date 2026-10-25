@@ -13,7 +13,7 @@ const inputClass = (hasError: boolean) => `
   px-5
   py-4
   outline-none
-  ${hasError ? "border-red-400 focus:border-red-500" : "border-orange-100 focus:border-orange-400"}
+  ${hasError ? "border-red-400 focus:border-red-500" : "border-orange-100 focus:border-orange-500"}
 `
 
 export default function LoginPage() {
@@ -97,125 +97,37 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      className="
-        relative
-        min-h-screen
-        flex
-        items-center
-        justify-center
-        overflow-hidden
-        px-4
-        sm:px-6
-        pt-20
-        pb-8
-        lg:py-0
-      "
-    >
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8 lg:py-0">
+      {/* BG — бүртгүүлэх хуудастай ижил */}
+      <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
+
+      {/* GLOW */}
+      <div className="absolute top-[10%] left-[10%] w-175 h-175 rounded-full bg-orange-300/10 blur-[180px]" />
+
+      {/* GRID */}
+      <div className="absolute inset-0 opacity-[0.5] bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)] bg-size-[70px_70px]" />
+
       <Link
         href="/"
-        className="
-          fixed
-          top-4
-          left-4
-          sm:top-8
-          sm:left-8
-          glass
-          rounded-full
-          px-4
-          py-2
-          sm:px-6
-          sm:py-3
-          text-sm
-          sm:text-base
-          flex
-          items-center
-          gap-3
-          transition
-          hover:-translate-y-1
-          z-30
-        "
+        className="fixed top-4 left-4 sm:top-8 sm:left-8 z-20 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base transition hover:-translate-y-1"
       >
-        ← Нүүр Хуудас
+        ← Нүүр хуудас
       </Link>
 
-      <div
-        className="
-          max-w-300
-          w-full
-          grid
-          lg:grid-cols-2
-          gap-6
-          lg:gap-10
-          items-center
-        "
-      >
+      <div className="relative z-10 max-w-300 w-full grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
         {/* LEFT */}
-        <div
-          className="
-            relative
-            overflow-hidden
-            rounded-4xl
-            lg:rounded-4xl
-            lg:min-h-180
-            flex
-            items-center
-            px-6
-            py-10
-            md:px-16
-            lg:py-0
-          "
-        >
-          {/* GRID */}
-          <div
-            className="
-              absolute
-              inset-0
-              opacity-[0.5]
-              bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)]
-              bg-size-[70px_70px]
-            "
-          />
+        <div className="relative overflow-hidden rounded-4xl lg:rounded-4xl lg:min-h-155 flex flex-col justify-center px-6 py-10 lg:p-14">
+          <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,rgba(255,140,0,.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,.06)_1px,transparent_1px)] bg-size-[56px_56px]" />
+          <div className="absolute -left-32 top-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full bg-orange-300/20 blur-[140px]" />
 
-          {/* ORANGE GLOW */}
-          <div
-            className="
-              absolute
-              top-[10%]
-              left-[5%]
-              w-130
-              h-130
-              rounded-full
-              bg-orange-300/12
-              blur-[140px]
-              animate-pulse
-            "
-          />
-
-          <div
-            className="
-              absolute
-              -bottom-37.5
-              -right-25
-              w-125
-              h-125
-              rounded-full
-              bg-orange-200/20
-              blur-[180px]
-            "
-          />
-
-          {/* CONTENT */}
           <div className="relative z-10">
-            <p className="orange-text font-bold tracking-[6px]">
-              MSTAFFING
-            </p>
-            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black">
+            <p className="orange-text font-bold tracking-[6px]">MSTAFFING</p>
+            <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05]">
               {role === "staff" ? "Ажлаа ол." : "Багаа бүрдүүл."}
               <br />
               Тавтай морил.
             </h1>
-            <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl">
+            <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl leading-7 sm:leading-9">
               {role === "staff"
                 ? "Өөрт тохирох ажлаа олоод шууд эхлээрэй."
                 : "Шилдэг ажилтнаа хурдан олоорой."}
@@ -224,16 +136,7 @@ export default function LoginPage() {
         </div>
 
         {/* RIGHT */}
-        <div
-          className="
-            glass
-            rounded-4xl
-            sm:rounded-4xl
-            p-6
-            sm:p-10
-            shadow-[0_40px_100px_rgba(255,122,0,.08)]
-          "
-        >
+        <div className="glass rounded-4xl sm:rounded-4xl p-6 sm:p-10">
           <div className="bg-orange-50 rounded-full p-2 flex">
             <button
               type="button"

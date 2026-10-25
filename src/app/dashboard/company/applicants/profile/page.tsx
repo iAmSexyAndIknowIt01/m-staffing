@@ -239,7 +239,7 @@ function ApplicantProfileContent() {
             <label className="text-sm font-bold block mb-2"><Wrench size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ур чадвар</label>
             <div className="border border-gray-100 rounded-2xl p-5 bg-gray-50/50">
               <div className="mb-5">
-                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Техникийн ур чадвар</h4>
+                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
                   {profile.skills.technical && profile.skills.technical.length > 0 ? (
                     profile.skills.technical.map((skill) => (

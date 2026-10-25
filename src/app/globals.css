@@ -463,3 +463,14 @@ html.dark [class*="rgba(255,140,0,.35)"] {
     font-size: 90%;
   }
 }
+
+/* Утсан дээр доод талд бэхлэгдсэн мөртэй хуудас (data-mobile-bottom-bar):
+   «Дээш буцах» товч мөрийн дээр байрлаж, footer мөрийн ард далд орохгүй */
+@media (max-width: 767px) {
+  body:has([data-mobile-bottom-bar]) .scroll-to-top {
+    bottom: 5.5rem;
+  }
+  body:has([data-mobile-bottom-bar]) {
+    padding-bottom: 4.5rem;
+  }
+}
