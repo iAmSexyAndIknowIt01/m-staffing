@@ -63,14 +63,14 @@ export default function JobDetailView({
   triggerApplyConfirmation,
   onClose,
   action,
-  footer,
+  topSection,
 }: JobDetailHelpers & {
   job: JobDetail
   onClose: () => void
   // «Анкет илгээх» товчны оронд харуулах элемент (жишээ нь хүсэлтийн хуудсанд төлөв)
   action?: (variant: "header" | "mobile") => ReactNode
-  // Үндсэн агуулгын доор нэмэлт хэсэг
-  footer?: ReactNode
+  // Толгой хэсгийн шууд доор (үндсэн агуулгаас дээр) харуулах нэмэлт хэсэг
+  topSection?: ReactNode
 }) {
   const isApplied = job.is_applied || (Array.isArray(appliedJobIds) && appliedJobIds.includes(job.id));
   const company = job.mt_company;
@@ -188,6 +188,8 @@ export default function JobDetailView({
         </div>
       </section>
 
+      {topSection}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* ЗҮҮН: ҮҮРЭГ, ШААРДЛАГА */}
         <div className="lg:col-span-2 space-y-6">
@@ -258,8 +260,6 @@ export default function JobDetailView({
           </section>
         </aside>
       </div>
-
-      {footer}
 
       {/* Утсан дээр доод талд тогтмол үйлдлийн мөр */}
       <div data-mobile-bottom-bar className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] px-4 py-3 flex items-center gap-3">

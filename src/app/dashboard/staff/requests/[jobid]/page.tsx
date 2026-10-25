@@ -216,7 +216,7 @@ export default function StaffRequestDetailPage({ params }: { params: Promise<{ j
           </span>
         )
       }
-      footer={
+      topSection={
         <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6 sm:p-8" aria-labelledby="request-status-title">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex items-start gap-4 min-w-0">
