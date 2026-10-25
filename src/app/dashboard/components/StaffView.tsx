@@ -1,13 +1,26 @@
 "use client"
 
-import { BarChart3, Building2, Calendar, HelpCircle, Mail, MapPin, Wallet, X, Lightbulb, ArrowRight, CheckCircle2, Briefcase, Send } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import {
+  ArrowRight,
+  Briefcase,
+  Building2,
+  ChevronRight,
+  Eye,
+  FileText,
+  Lightbulb,
+  MapPin,
+  Search,
+  Send,
+  UserRound,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import LoadingLayout from "@/components/staff/common/LoadingLayout"
-import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal"
-import { getErrorMessage } from "@/lib/errors"
+import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import { getErrorMessage } from "@/lib/errors"
+import { Progress, STATUS, toRequestStatus } from "@/components/staff/requests/requestStatus"
 
 interface StaffViewProps {
   userId: string
@@ -22,18 +35,14 @@ interface Job {
   location: string
   salary: string
   category: string
-  description?: string
 }
 
 interface Application {
   id: string
-  company_id?: string
   title: string
   company: string
   date: string
   status: string
-  statusColor: string
-  description?: string
 }
 
 interface DashboardData {
@@ -48,72 +57,96 @@ interface DashboardData {
   recentApplications: Application[]
   tips?: {
     title: string
-    icon: string
     content: string
     detail_url: string
   }[]
 }
 
+const WEEKDAYS = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"]
+
+function greeting(date: Date) {
+  const h = date.getHours()
+  if (h < 5) return "Сайн байна уу"
+  if (h < 12) return "Өглөөний мэнд"
+  if (h < 18) return "Өдрийн мэнд"
+  return "Оройн мэнд"
+}
+
+function formatSalary(salaryStr: string) {
+  const numericValue = salaryStr?.replace(/[^0-9]/g, "")
+  if (!numericValue) return salaryStr || "Тохиролцоно"
+  return `${Number(numericValue).toLocaleString()} ₮`
+}
+
+function StatCard({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  hint,
+  href,
+}: {
+  icon: LucideIcon
+  tone: string
+  label: string
+  value: number
+  hint: string
+  href?: string
+}) {
+  const body = (
+    <>
+      <span className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-2xl flex items-center justify-center ${tone}`}>
+        <Icon className="w-5 h-5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs sm:text-sm text-gray-500 leading-snug">{label}</p>
+        <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{value}</p>
+        <p className="hidden sm:block text-xs text-gray-400 mt-0.5">{hint}</p>
+      </div>
+    </>
+  )
+  const className = "bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-5 flex flex-col sm:flex-row items-start gap-2.5 sm:gap-4 transition"
+  return href ? (
+    <Link href={href} className={`${className} hover:border-orange-200 hover:shadow-md`}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
+  )
+}
+
+function SectionHeader({ title, href, linkLabel }: { title: string; href?: string; linkLabel?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 mb-3 px-1">
+      <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+      {href && (
+        <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600 hover:text-orange-700">
+          {linkLabel} <ChevronRight className="w-4 h-4" />
+        </Link>
+      )}
+    </div>
+  )
+}
+
+const QUICK_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/dashboard/staff/jobs", label: "Ажил хайх", icon: Search },
+  { href: "/dashboard/staff/requests", label: "Миний хүсэлтүүд", icon: Send },
+  { href: "/dashboard/staff/profile", label: "Миний профайл", icon: UserRound },
+  { href: "/dashboard/staff/cv", label: "Миний CV", icon: FileText },
+]
+
 export default function StaffView({ userId }: StaffViewProps) {
-  const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [checkingProfile, setCheckingProfile] = useState(false)
-  const [appliedJobIds, setAppliedJobIds] = useState<string[]>([])
-
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  
-  // 🌟 ШИНЭ: Профайл дутуу эсэхийг шалгах modal-ын state-үүд
-  const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false)
-  const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("")
-
-  const [pendingJobId, setPendingJobId] = useState<string | null>(null)
-  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
-    show: false,
-    message: "",
-    title: "Мэдэгдэл"
-  })
-
-  const [sliderX, setSliderX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const handleRef = useRef<HTMLDivElement>(null)
-  const startXRef = useRef(0)
-
-  const formatSalary = (salaryStr: string) => {
-    if (!salaryStr) return ""
-    const numericValue = salaryStr.replace(/[^0-9]/g, "")
-    if (!numericValue) return salaryStr 
-    
-    return Number(numericValue).toLocaleString() + " ₮"
-  }
-
-  const getCompanyViewStatus = (count: number) => {
-    if (count === 0) return "Хандалт хийгээгүй (7 хоногт)"
-    if (count <= 3) return "Идэвхтэй хандаж байна (7 хоногт)"
-    return "Маш идэвхтэй хандалт (7 хоногт)"
-  }
-
-  const showAlert = (message: string, title: string = "Анхааруулга") => {
-    setAlertModal({ show: true, message, title })
-  }
+  const [now] = useState(() => new Date())
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
-        const res = await fetch(`${baseUrl}/api/staff/dashboard?userId=${userId}`, {
-          cache: "no-store",
-        })
-        if (!res.ok) throw new Error("Dashboard-ын өгөгдлийг татаж чадсангүй.")
-        const result = await res.json()
-        setData(result)
+        const res = await fetch(`/api/staff/dashboard?userId=${userId}`, { cache: "no-store" })
+        if (!res.ok) throw new Error("Хянах самбарын мэдээллийг татаж чадсангүй.")
+        setData(await res.json())
       } catch (err) {
         setError(getErrorMessage(err))
       } finally {
@@ -123,565 +156,241 @@ export default function StaffView({ userId }: StaffViewProps) {
     fetchData()
   }, [userId])
 
-  const handleCompanyClick = (e: React.MouseEvent, companyId: string | undefined) => {
-    e.preventDefault()
-    e.stopPropagation() 
-    
-    if (!companyId || typeof companyId !== "string") {
-      console.warn("Компанийн ID олдсонгүй эсвэл буруу байна:", companyId)
-      return
-    }
-
-    fetch("/api/staff/companyView", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ company_id: companyId })
-    }).catch(err => console.error("Үзэлт бүртгэхэд алдаа гарлаа:", err))
-
-    router.push(`/dashboard/company/profile/${companyId}`)
-  }
-
-  // 🌟 ШИНЭЧЛЭСЭН: Профайл дутуу үед JobDetailModal-ийг хааж, ProfileIncompleteModal-ийг харуулна
-  const triggerApplyConfirmation = async (jobId: string) => {
-    if (checkingProfile) return
-    setCheckingProfile(true)
-
-    try {
-      const response = await fetch("/api/staff/jobs/profileCheck")
-      const result = await response.json()
-
-      if (!response.ok || result.isComplete === false) {
-        setProfileIncompleteMessage(result.error || "Профайл мэдээлэл дутуу байна. Та профайлаа бүрэн бөглөнө үү.")
-        setSelectedJob(null) // JobDetailModal-ийг хаах
-        setShowProfileIncompleteModal(true) // Профайл дутуу модалыг нээх
-        return
-      }
-
-      setPendingJobId(jobId)
-      setSliderX(0)
-      setShowConfirmModal(true)
-    } catch {
-      showAlert("Профайл шалгахад алдаа гарлаа. Дахин оролдоно уу.", "Алдаа")
-    } finally {
-      setCheckingProfile(false)
-    }
-  }
-
-  const handleApplyJob = async () => {
-    if (!pendingJobId) return
-    setIsSubmitting(true)
-    setShowConfirmModal(false)
-    setSliderX(0)
-    try {
-      const response = await fetch("/api/jobRequest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_id: pendingJobId, resume_url: "" }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || "Анкет илгээхэд алдаа гарлаа")
-
-      fetch("/api/mail/job-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_id: pendingJobId }),
-      }).catch((mailErr) => {
-        console.error("Мэйл илгээхэд алдаа гарлаа (Background):", mailErr)
-      })
-
-      setAppliedJobIds((prev) => [...prev, pendingJobId])
-      setSelectedJob(null)
-      setShowSuccessModal(true)
-    } catch (err) {
-      showAlert(getErrorMessage(err), "Алдаа гарлаа")
-    } finally {
-      setIsSubmitting(false)
-      setPendingJobId(null)
-    }
-  }
-
-  const handleDragStart = (clientX: number) => {
-    if (isSubmitting) return
-    setIsDragging(true)
-    startXRef.current = clientX - sliderX
-  }
-
-  const handleDragMove = (clientX: number) => {
-    if (!isDragging || !trackRef.current || !handleRef.current) return
-
-    const trackWidth = trackRef.current.clientWidth
-    const handleWidth = handleRef.current.clientWidth
-    const maxSlide = trackWidth - handleWidth - 8
-
-    let currentX = clientX - startXRef.current
-    if (currentX < 0) currentX = 0
-    if (currentX > maxSlide) currentX = maxSlide
-
-    setSliderX(currentX)
-
-    if (currentX >= maxSlide - 2) {
-      setIsDragging(false)
-      handleApplyJob()
-    }
-  }
-
-  const handleDragEnd = () => {
-    if (!isDragging) return
-    setIsDragging(false)
-    
-    if (trackRef.current && handleRef.current) {
-      const trackWidth = trackRef.current.clientWidth
-      const handleWidth = handleRef.current.clientWidth
-      const maxSlide = trackWidth - handleWidth - 8
-      
-      if (sliderX < maxSlide - 2) {
-        setSliderX(0)
-      }
-    }
-  }
-
-  // Сүүлийн render-ийн handler-уудыг ref-д хадгална — window listener-ийг чирэлт бүрт нэг л удаа бүртгэнэ
-  const dragHandlersRef = useRef({ move: handleDragMove, end: handleDragEnd })
-  useEffect(() => {
-    dragHandlersRef.current = { move: handleDragMove, end: handleDragEnd }
-  })
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => dragHandlersRef.current.move(e.clientX)
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) dragHandlersRef.current.move(e.touches[0].clientX)
-    }
-    const handleEnd = () => dragHandlersRef.current.end()
-
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove)
-      window.addEventListener("mouseup", handleEnd)
-      window.addEventListener("touchmove", handleTouchMove, { passive: false })
-      window.addEventListener("touchend", handleEnd)
-    }
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("mouseup", handleEnd)
-      window.removeEventListener("touchmove", handleTouchMove)
-      window.removeEventListener("touchend", handleEnd)
-    }
-  }, [isDragging])
-
   if (loading) {
-    return <LoadingLayout loading={loading} />
+    return <LoadingLayout loading />
   }
 
-  if (error) return <div className="text-center py-12 text-red-500 font-medium">{error}</div>
-  if (!data) return null
+  if (error || !data) {
+    return (
+      <div role="alert" className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
+        {error || "Мэдээлэл олдсонгүй."}
+      </div>
+    )
+  }
 
   const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
-  const cleanCvViewRate = stats.cvViewRate.replace(/[^0-9]/g, "") || "0"
+  const cvViews = Number(stats.cvViewRate.replace(/[^0-9]/g, "")) || 0
+  const profileDone = profileProgress >= 100
 
   return (
-    <div className="animate-fade-in space-y-8 relative">
-      
-      {/* МЭНДЧИЛГЭЭНИЙ ХЭСЭГ */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 p-8 rounded-4xl text-white shadow-xl shadow-slate-950/10">
+    <div className="animate-fade-in space-y-6 sm:space-y-8">
+      {/* МЭНДЧИЛГЭЭ */}
+      <section className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Сайн байна уу?</h1>
-          <p className="text-slate-300/90 text-sm md:text-base mt-2 font-medium">
-            Өнөөдрийн байдлаар танд тохирох шинэ ажлын саналууд бэлэн байна.
+          <p className="text-sm font-medium text-slate-300">
+            {now.getMonth() + 1} сарын {now.getDate()}, {WEEKDAYS[now.getDay()]} гараг
+          </p>
+          <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">{greeting(now)}!</h1>
+          <p className="mt-2 text-sm sm:text-base text-slate-300">
+            {recommendedJobs.length > 0
+              ? `Танд ${recommendedJobs.length} нээлттэй ажлын байр санал болгож байна.`
+              : "Шинэ ажлын байр нэмэгдэхэд энд харагдана."}
           </p>
         </div>
-        <Link 
-          href="/dashboard/staff/jobs" 
-          className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-2xl border border-white/10 backdrop-blur-sm transition-all"
+        <Link
+          href="/dashboard/staff/jobs"
+          className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition"
         >
-          Ажил хайх
+          <Search className="w-4 h-4" /> Ажил хайх
         </Link>
-      </div>
+      </section>
 
-      {/* СТАТИСТИК КАРТУУД */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Илгээсэн хүсэлт</p>
-            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats.appliedCount}</h3>
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
-              {stats.appliedThisWeek}
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl font-bold"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-        </div>
-
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Үзсэн компаниуд</p>
-            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{stats.viewedCompaniesCount}</h3>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${
-              stats.viewedCompaniesCount === 0 
-                ? "text-gray-500 bg-gray-50" 
-                : stats.viewedCompaniesCount <= 3 
-                ? "text-orange-600 bg-orange-50" 
-                : "text-amber-600 bg-amber-50"
-            }`}>
-              {getCompanyViewStatus(stats.viewedCompaniesCount)}
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold"><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-        </div>
-
-        <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex items-center justify-between group hover:border-orange-100 hover:shadow-md transition-all">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">CV хандалт</p>
-            <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">{cleanCvViewRate}</h3>
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Маш сайн</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold"><BarChart3 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-        </div>
-      </div>
-
-      {/* ГОЛ КОНТЕНТ СЕКЦ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        
-        {/* ЗҮҮН ТАЛ */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* САНАЛ БОЛГОХ АЖЛУУД */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center px-1">
-              <h2 className="text-xl font-bold text-gray-900">Санал болгож буй ажлын байрууд</h2>
-              <Link href={`/dashboard/staff/jobs/recommendedJobs?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
-                Бүгдийг үзэх ({recommendedJobs.length}) →
-              </Link>
+      {/* ПРОФАЙЛ ДУУСГАХ САНАЛ */}
+      {!profileDone && (
+        <section className="bg-orange-50/70 border border-orange-200 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-semibold text-gray-900">Профайлаа бөглөж дуусгаарай</h2>
+              <span className="text-sm font-bold text-orange-600">{profileProgress}%</span>
             </div>
+            <div className="mt-2 h-2 rounded-full bg-orange-100 overflow-hidden">
+              <div className="h-full rounded-full bg-orange-500 transition-all duration-500" style={{ width: `${profileProgress}%` }} />
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Бүрэн профайлтай ажил хайгч ажил олгогчдод илүү олон харагдаж, анкет илгээх боломжтой болно.</p>
+          </div>
+          <Link
+            href="/dashboard/staff/profile"
+            className="shrink-0 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold transition"
+          >
+            Профайл бөглөх <ArrowRight className="w-4 h-4" />
+          </Link>
+        </section>
+      )}
 
-            <div className="space-y-3">
-              {recommendedJobs.length === 0 && (
-                <EmptyState
-                  icon={Briefcase}
-                  title="Санал болгох ажлын байр одоогоор алга"
-                  description="Профайлаа бүрэн бөглөснөөр танд тохирох ажлын байрыг санал болгоно."
-                  action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
-                />
-              )}
-              {recommendedJobs.slice(0, 2).map((job) => {
-                const isJobApplied = appliedJobIds.includes(job.id);
-                return (
-                  <div
-                    key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className="w-full text-left block bg-white border border-gray-100 hover:border-orange-100 p-6 rounded-4xl shadow-sm hover:shadow-md transition-all group cursor-pointer"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {isJobApplied && (
-                            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">Хүсэлт илгээсэн ✓</span>
-                          )}
-                          <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{job.category}</span>
-                          <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{job.type}</span>
+      {/* ТОЙМ */}
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+        <StatCard
+          icon={Send}
+          tone="bg-orange-50 text-orange-600"
+          label="Илгээсэн анкет"
+          value={stats.appliedCount}
+          hint={stats.appliedThisWeek}
+          href="/dashboard/staff/requests"
+        />
+        <StatCard
+          icon={Eye}
+          tone="bg-sky-50 text-sky-600"
+          label="CV-г тань үзсэн"
+          value={cvViews}
+          hint="Ажил олгогчид таны CV-г үзсэн тоо"
+        />
+        <StatCard
+          icon={Building2}
+          tone="bg-emerald-50 text-emerald-600"
+          label="Танилцсан байгууллага"
+          value={stats.viewedCompaniesCount}
+          hint="Сүүлийн 7 хоногт үзсэн байгууллага"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* ЗҮҮН */}
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          {/* САНАЛ БОЛГОХ АЖИЛ */}
+          <section>
+            <SectionHeader
+              title="Танд санал болгох ажил"
+              href={recommendedJobs.length > 0 ? `/dashboard/staff/jobs/recommendedJobs?userId=${userId}` : undefined}
+              linkLabel="Бүгдийг үзэх"
+            />
+            {recommendedJobs.length === 0 ? (
+              <EmptyState
+                icon={Briefcase}
+                title="Санал болгох ажлын байр одоогоор алга"
+                description="Шинэ ажлын байр нэмэгдэхэд энд харагдана."
+                action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
+              />
+            ) : (
+              <ul className="space-y-3">
+                {recommendedJobs.slice(0, 4).map((job) => (
+                  <li key={job.id}>
+                    <Link
+                      href={`/dashboard/staff/jobs/${job.id}`}
+                      className="group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
+                    >
+                      <span className="w-11 h-11 shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
+                        {job.company.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition">{job.title}</h3>
+                        <p className="text-sm text-gray-500 truncate">{job.company}</p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" /> {job.location}
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+                            <Wallet className="w-3.5 h-3.5" /> {formatSalary(job.salary)}
+                          </span>
+                          {job.type && <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">{job.type}</span>}
                         </div>
-                        <h4 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">{job.title}</h4>
-                        
-                        <div>
-                          <span 
-                            onClick={(e) => handleCompanyClick(e, job.company_id)}
-                            className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
-                          >
-                            <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.company}
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 transition" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* СҮҮЛД ИЛГЭЭСЭН АНКЕТ */}
+          <section>
+            <SectionHeader
+              title="Сүүлд илгээсэн анкет"
+              href={recentApplications.length > 0 ? "/dashboard/staff/requests" : undefined}
+              linkLabel="Бүгдийг үзэх"
+            />
+            {recentApplications.length === 0 ? (
+              <EmptyState
+                icon={Send}
+                title="Илгээсэн анкет алга"
+                description="Сонирхсон ажлын байрандаа анкет илгээхэд явц нь энд харагдана."
+              />
+            ) : (
+              <ul className="space-y-3">
+                {recentApplications.slice(0, 3).map((app) => {
+                  const status = toRequestStatus(app.status)
+                  const info = STATUS[status]
+                  const StatusIcon = info.icon
+                  return (
+                    <li key={app.id}>
+                      <Link
+                        href={`/dashboard/staff/requests/${app.id}`}
+                        className="group block bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition">{app.title}</h3>
+                            <p className="text-sm text-gray-500 truncate">
+                              {app.company} · {app.date}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold ${info.badge}`}>
+                            <StatusIcon className="w-3.5 h-3.5" /> {info.label}
                           </span>
                         </div>
-
-                        <div className="flex flex-wrap gap-4 text-xs text-gray-400 font-medium pt-1">
-                          <span><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.location}</span>
-                          <span className="text-emerald-600 font-bold"><Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {formatSalary(job.salary)}</span>
+                        <div className="mt-3">
+                          <Progress status={status} />
                         </div>
-                      </div>
-                      <div className="flex justify-end sm:block">
-                        <span className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-orange-600 group-hover:text-white flex items-center justify-center text-sm font-bold transition-all shadow-sm">→</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* ХҮСЭЛТҮҮДИЙН ТӨЛӨВ */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center px-1">
-              <h2 className="text-xl font-bold text-gray-900">Илгээсэн анкетын төлөв</h2>
-              <Link href={`/dashboard/staff/applications?userId=${userId}`} className="text-xs font-bold text-orange-600 hover:underline">
-                Түүх үзэх ({recentApplications.length}) →
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentApplications.length === 0 && (
-                <EmptyState
-                  icon={Send}
-                  title="Илгээсэн анкет алга"
-                  description="Сонирхсон ажлын байрандаа анкет илгээхэд төлөв нь энд харагдана."
-                  className="sm:col-span-2"
-                />
-              )}
-              {recentApplications.slice(0, 2).map((app) => (
-                <div 
-                  key={app.id}
-                  onClick={() => setSelectedApp(app)}
-                  className="w-full text-left bg-white border border-gray-100 p-5 rounded-3xl shadow-sm flex flex-col justify-between gap-4 hover:border-orange-100 hover:shadow-md transition-all group cursor-pointer"
-                >
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-orange-600 transition-colors">{app.title}</h4>
-                    
-                    <div>
-                      <span 
-                        onClick={(e) => handleCompanyClick(e, app.company_id)}
-                        className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
-                      >
-                        <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.company}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-gray-400 font-medium pt-0.5"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {app.date}</p>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-gray-50 pt-3 w-full">
-                    <span className="text-xs text-gray-400">Статус:</span>
-                    <span className={`px-3 py-1 text-xs font-bold rounded-xl border ${app.statusColor}`}>{app.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </section>
         </div>
 
-        {/* БАРУУН ТАЛ */}
-        <div className="space-y-6">
-          <div className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm space-y-6">
-            <div>
-              <h3 className="font-bold text-lg text-gray-900">Миний Профайл</h3>
-              <p className="text-xs text-gray-400 mt-1">Таны систем дэх бүртгэл баталгаажсан байна.</p>
-            </div>
-            <div className="space-y-2 bg-gray-50 p-4 rounded-2xl">
-              <div className="flex justify-between text-xs font-bold">
-                <span className="text-gray-500">Профайл бөглөлт</span>
-                <span className="text-orange-600">{profileProgress}%</span>
+        {/* БАРУУН */}
+        <aside className="space-y-6 lg:sticky lg:top-6">
+          {profileDone && (
+            <section className="bg-white border border-gray-100 rounded-3xl shadow-sm p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900">Профайлын бүрэн байдал</h2>
+                <span className="text-sm font-bold text-emerald-600">100%</span>
               </div>
-              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                <div className="bg-orange-600 h-full rounded-full transition-all duration-500" style={{ width: `${profileProgress}%` }} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Link href="/dashboard/staff/profile" className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm text-center rounded-2xl transition shadow-md shadow-orange-600/10">Профайл засах</Link>
-              <button 
-                onClick={() => router.push("/dashboard/staff/cv")}
-                className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-sm text-center rounded-2xl transition border border-gray-100 block"
-              >
-                Миний CV үзэх
-              </button>
-            </div>
-          </div>
+              <div className="mt-3 h-2 rounded-full bg-emerald-500" />
+              <p className="mt-2 text-xs text-emerald-600">Профайл бүрэн бөглөгдсөн байна.</p>
+            </section>
+          )}
+
+          <section className="bg-white border border-gray-100 rounded-3xl shadow-sm p-2">
+            <h2 className="px-3 pt-3 pb-2 text-sm font-semibold text-gray-900">Шууд холбоос</h2>
+            <ul>
+              {QUICK_LINKS.map(({ href, label, icon: Icon }) => (
+                <li key={href}>
+                  <Link href={href} className="group flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-gray-50 transition">
+                    <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                      <Icon className="w-4.5 h-4.5" />
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900">{label}</span>
+                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-orange-500 transition" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           {tips && tips.length > 0 && (
-            <div className="space-y-4">
+            <section className="space-y-3">
               {tips.map((tip, index) => (
-                <div 
-                  key={index} 
-                  className="bg-linear-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 rounded-4xl shadow-xs space-y-3"
-                >
+                <article key={index} className="bg-amber-50/70 border border-amber-100 rounded-3xl p-5">
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-600" />
-                    <h4 className="font-bold text-sm text-amber-900">{tip.title}</h4>
+                    <Lightbulb className="w-5 h-5 text-amber-600 shrink-0" />
+                    <h3 className="font-semibold text-sm text-amber-900">{tip.title}</h3>
                   </div>
-                  <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                    {tip.content}
-                  </p>
-                  <Link 
-                    href={tip.detail_url.startsWith("/") ? tip.detail_url : `/${tip.detail_url}`} 
-                    className="inline-block text-xs font-bold text-orange-600 hover:underline pt-1"
+                  <p className="mt-2 text-sm text-amber-900/80 leading-relaxed line-clamp-4">{tip.content}</p>
+                  <Link
+                    href={tip.detail_url.startsWith("/") ? tip.detail_url : `/${tip.detail_url}`}
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-orange-600 hover:text-orange-700"
                   >
-                    Үргэлжлүүлж унших →
+                    Үргэлжлүүлж унших <ChevronRight className="w-4 h-4" />
                   </Link>
-                </div>
+                </article>
               ))}
-            </div>
+            </section>
           )}
-        </div>
-
+        </aside>
       </div>
-
-      {/* 🏢 САНАЛ БОЛГОЖ БУЙ АЖЛЫН MODAL ЦОНХ */}
-      {selectedJob && (() => {
-        const isJobApplied = appliedJobIds.includes(selectedJob.id);
-        return (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white max-w-lg w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
-              <button onClick={() => setSelectedJob(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <span className="px-2.5 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 rounded-lg uppercase">{selectedJob.category}</span>
-                  <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">{selectedJob.type}</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">{selectedJob.title}</h3>
-                
-                <div>
-                  <span 
-                    onClick={(e) => handleCompanyClick(e, selectedJob.company_id)}
-                    className="text-base font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
-                  >
-                    <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedJob.company}
-                  </span>
-                </div>
-              </div>
-              <hr className="border-gray-100" />
-              <div className="space-y-3 text-sm text-gray-600 font-medium">
-                <p><MapPin size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Байршил:</b> {selectedJob.location}</p>
-                <p className="text-emerald-600"><Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Цалин:</b> {formatSalary(selectedJob.salary)}</p>
-                <div className="bg-gray-50 p-4 rounded-2xl mt-2 text-xs text-gray-600 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line">
-                  <b className="text-gray-900 block mb-1">Ажлын тайлбар:</b> 
-                  {selectedJob.description || "Ажлын тайлбар байхгүй байна."}
-                </div>
-              </div>
-              <div className="pt-2 flex gap-3">
-                {isJobApplied ? (
-                  <button disabled className="flex-1 py-3 bg-red-100 text-red-700 font-bold text-sm text-center rounded-xl cursor-not-allowed shadow-inner">
-                    Хүсэлт илгээгдсэн ✓
-                  </button>
-                ) : (
-                  <button
-                    disabled={isSubmitting || checkingProfile}
-                    onClick={() => triggerApplyConfirmation(selectedJob.id)}
-                    className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold text-sm text-center rounded-xl transition shadow-md shadow-orange-600/10"
-                  >
-                    {checkingProfile ? "Шалгаж байна..." : "Анкет илгээх"}
-                  </button>
-                )}
-                <button onClick={() => setSelectedJob(null)} className="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-sm rounded-xl transition">Хаах</button>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* ✉️ ИЛГЭЭСЭН АНКЕТЫН ТӨЛӨВ БАЙДЛЫН MODAL ЦОНХ */}
-      {selectedApp && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl relative space-y-4">
-            <button onClick={() => setSelectedApp(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold text-gray-900">{selectedApp.title}</h3>
-              
-              <div>
-                <span 
-                  onClick={(e) => handleCompanyClick(e, selectedApp.company_id)}
-                  className="text-sm font-bold text-orange-600 hover:text-orange-800 hover:underline cursor-pointer inline-block"
-                >
-                  <Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {selectedApp.company}
-                </span>
-              </div>
-
-              <p className="text-xs text-gray-400 font-medium"><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Илгээсэн огноо: {selectedApp.date}</p>
-            </div>
-            <hr className="border-gray-100" />
-            <div className="bg-gray-50 p-4 rounded-2xl text-xs text-gray-600 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-line">
-              <b className="text-gray-900 block mb-1">Ажлын тайлбар:</b>
-              {selectedApp.description || "Ажлын тайлбар байхгүй байна."}
-            </div>
-            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl">
-              <span className="text-sm font-bold text-gray-500">Одоогийн статус:</span>
-              <span className={`px-4 py-1.5 text-xs font-bold rounded-xl border ${selectedApp.statusColor}`}>{selectedApp.status}</span>
-            </div>
-            <button onClick={() => setSelectedApp(null)} className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-sm rounded-xl transition text-center">Хаах</button>
-          </div>
-        </div>
-      )}
-
-      {/* --- БАТАЛГААЖУУЛАХ (SLIDER) МОДАЛ ЦОНХ --- */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
-            <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner"><HelpCircle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-            <h3 className="text-lg md:text-xl font-bold text-gray-900">Илгээхдээ итгэлтэй байна уу?</h3>
-            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-              Анкет илгээх үйлдлийг баталгаажуулахын тулд баруун тийш чирнэ үү. Илгээсэн анкетыг цуцлах боломжгүй.
-            </p>
-
-            <div className="w-full mt-6 space-y-4">
-              <div ref={trackRef} className="relative w-full h-14 bg-gray-100 rounded-2xl p-1 flex items-center select-none overflow-hidden border border-gray-200/60">
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-400 transition-opacity" style={{ opacity: Math.max(1 - sliderX / 100, 0) }}>
-                  Баруун тийш чирж илгээх
-                </div>
-
-                <div
-                  ref={handleRef}
-                  onMouseDown={(e) => handleDragStart(e.clientX)}
-                  onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-                  className="absolute top-1 bottom-1 w-12 bg-orange-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab active:cursor-grabbing shadow-lg"
-                  style={{
-                    transform: `translateX(${sliderX}px)`,
-                    transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
-                  }}
-                >
-                  {isSubmitting ? (
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ArrowRight className="w-5 h-5" />
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={() => { setShowConfirmModal(false); setPendingJobId(null); setSliderX(0); }}
-                className="w-full py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200/80 text-gray-500 text-xs md:text-sm font-bold rounded-2xl transition"
-              >
-                Үгүй, буцах
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- АМЖИЛТТАЙ ИЛГЭЭГДСЭН ҮЕИЙН МОДАЛ ЦОНХ --- */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 flex flex-col items-center">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner animate-bounce"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-            <h3 className="text-xl font-bold text-gray-900">Амжилттай илгээгдлээ!</h3>
-            <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-              Таны анкетыг хүлээн авлаа. Бид таны мэдээллийг хянаж үзээд эргэж холбогдох болно. Тасралтгүй урагшилсаар байгаарай!
-            </p>
-            <button
-              onClick={() => {
-                setShowSuccessModal(false)
-                window.location.reload() 
-              }}
-              className="mt-6 w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-orange-600/20 transition"
-            >
-              Ойлголоо
-            </button>
-          </div>
-        </div>
-      )}
-
-      <ProfileIncompleteModal
-        show={showProfileIncompleteModal}
-        onClose={() => setShowProfileIncompleteModal(false)}
-        message={profileIncompleteMessage}
-      />
-
-      {/* --- МЭДЭГДЭЛ БОЛОН АЛДААНЫ НЭГДСЭН МОДАЛ --- */}
-      {alertModal.show && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">{alertModal.title}</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">{alertModal.message}</p>
-            <button
-              onClick={() => setAlertModal((prev) => ({ ...prev, show: false }))}
-              className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition text-center"
-            >
-              Хаах
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   )
 }
