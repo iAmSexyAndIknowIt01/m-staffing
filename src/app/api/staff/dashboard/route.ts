@@ -87,14 +87,18 @@ export async function GET() {
     );
 
     // Бүх компанийг биш, зөвхөн харуулах ажлуудын компанийн нэрийг татна
-    const companies = await selectInChunks<{ id: string; company_name: string }>(
+    const companies = await selectInChunks<{ id: string; company_name: string; logo_url: string | null }>(
       [...recommendedJobs, ...relatedJobs].map((job) => job.user_id).filter(Boolean),
-      (ids) => supabase.from("mt_company").select("id, company_name").in("id", ids)
+      (ids) => supabase.from("mt_company").select("id, company_name, logo_url").in("id", ids)
     );
 
     // Компаниудыг ID-аар нь хурдан хайх Map үүсгэнэ
     const companyMap = companies.reduce((acc, curr) => {
       if (curr.id) acc[curr.id.toString()] = curr.company_name;
+      return acc;
+    }, {} as Record<string, string>);
+    const logoMap = companies.reduce((acc, curr) => {
+      if (curr.id && curr.logo_url) acc[curr.id.toString()] = curr.logo_url;
       return acc;
     }, {} as Record<string, string>);
 
@@ -170,6 +174,7 @@ export async function GET() {
           company_id: companyIdStr, 
           title: job.title,
           company: companyMap[companyIdStr] || "Ажил олгогч", 
+          company_logo: logoMap[companyIdStr] || null,
           type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
           location: job.location || "Улаанбаатар",
           salary: job.salary ? `${job.salary}` : "Тохиролцоно",

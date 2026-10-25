@@ -6,12 +6,14 @@ import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
 
 interface Job {
   id: string
   company_id?: string
   title: string
   company: string
+  company_logo?: string | null
   type: string
   location: string
   salary: string
@@ -193,15 +195,13 @@ export default function RecommendedJobsPage() {
                       className="group block bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition"
                     >
                       <div className="flex items-start gap-3 sm:gap-4">
-                        <span className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-base font-bold">
-                          {job.company.charAt(0).toUpperCase()}
-                        </span>
+                        <CompanyLogo name={job.company} logoUrl={job.company_logo} className="w-11 h-11 sm:w-12 sm:h-12" />
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition">{job.title}</h3>
-                              <p className="text-sm text-gray-500 truncate">{job.company}</p>
+                              <VerifiedCompanyName name={job.company} className="text-sm mt-0.5" />
                             </div>
                             <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 mt-0.5 transition" />
                           </div>

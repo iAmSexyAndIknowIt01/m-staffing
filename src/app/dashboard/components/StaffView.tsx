@@ -21,6 +21,7 @@ import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import { getErrorMessage } from "@/lib/errors"
 import { Progress, STATUS, toRequestStatus } from "@/components/staff/requests/requestStatus"
+import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
 
 interface StaffViewProps {
   userId: string
@@ -31,6 +32,7 @@ interface Job {
   company_id?: string
   title: string
   company: string
+  company_logo?: string | null
   type: string
   location: string
   salary: string
@@ -268,12 +270,10 @@ export default function StaffView({ userId }: StaffViewProps) {
                       href={`/dashboard/staff/jobs/${job.id}`}
                       className="group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
                     >
-                      <span className="w-11 h-11 shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
-                        {job.company.charAt(0).toUpperCase()}
-                      </span>
+                      <CompanyLogo name={job.company} logoUrl={job.company_logo} />
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition">{job.title}</h3>
-                        <p className="text-sm text-gray-500 truncate">{job.company}</p>
+                        <VerifiedCompanyName name={job.company} className="text-sm mt-0.5" />
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5" /> {job.location}
