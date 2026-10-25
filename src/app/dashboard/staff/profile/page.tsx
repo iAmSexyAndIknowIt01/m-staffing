@@ -515,7 +515,7 @@ export default function StaffProfilePage() {
                   </button>
                 )}
               </div>
-              <h2 className="mt-3 text-lg font-bold text-gray-900 break-words">{fullName || "Таны нэр"}</h2>
+              <h2 className="mt-3 text-lg font-bold text-gray-900 wrap-break-word">{fullName || "Таны нэр"}</h2>
               <p className="text-sm text-gray-500">Ажил хайгч</p>
 
               <span
@@ -639,7 +639,7 @@ export default function StaffProfilePage() {
             action={isEditMode ? { label: bio ? "Засах" : "Нэмэх", onClick: () => setActiveModal("bio") } : undefined}
           >
             {bio ? (
-              <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed whitespace-pre-line break-words">{bio}</p>
+              <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word">{bio}</p>
             ) : (
               <EmptyHint text="Өөрийгөө товч танилцуулна уу." />
             )}
@@ -653,7 +653,7 @@ export default function StaffProfilePage() {
             action={isEditMode ? { label: "Засах", onClick: () => setActiveModal("skills") } : undefined}
           >
             <div className="space-y-4">
-              <ChipGroup title="Техникийн ур чадвар" items={skills.technical} />
+              <ChipGroup title="Ур чадвар" items={skills.technical} />
               <ChipGroup title="Хэлний мэдлэг" items={skills.languages} />
             </div>
           </Section>
@@ -672,15 +672,15 @@ export default function StaffProfilePage() {
                     <span className="absolute left-0 top-1.5 w-3.75 h-3.75 rounded-full bg-white border-2 border-orange-500" />
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3">
                       <div className="min-w-0">
-                        <h4 className="font-semibold text-gray-900 break-words">{item.position}</h4>
-                        <p className="text-sm text-orange-600 font-medium break-words">{item.company}</p>
+                        <h4 className="font-semibold text-gray-900 wrap-break-word">{item.position}</h4>
+                        <p className="text-sm text-orange-600 font-medium wrap-break-word">{item.company}</p>
                       </div>
                       <span className="text-xs text-gray-500 sm:shrink-0 sm:pt-0.5">
                         {item.startDate} — {item.endDate || "Одоог хүртэл"}
                       </span>
                     </div>
                     {item.description && (
-                      <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words">{item.description}</p>
+                      <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap wrap-break-word">{item.description}</p>
                     )}
                   </li>
                 ))}
@@ -705,8 +705,8 @@ export default function StaffProfilePage() {
                       <GraduationCap className="w-5 h-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-900 break-words">{item.school}</h4>
-                      <p className="text-sm text-gray-600 break-words">
+                      <h4 className="font-semibold text-gray-900 wrap-break-word">{item.school}</h4>
+                      <p className="text-sm text-gray-600 wrap-break-word">
                         {item.degree}
                         {item.field ? ` — ${item.field}` : ""}
                       </p>

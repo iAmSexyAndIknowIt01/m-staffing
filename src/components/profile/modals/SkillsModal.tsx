@@ -109,7 +109,7 @@ function SkillsModalContent({
           {/* Technical */}
           <div>
             <h3 className="font-bold text-sm text-gray-700 mb-2">
-              Техникийн ур чадвар
+              Ур чадвар
             </h3>
             <div className="flex gap-2">
               <input

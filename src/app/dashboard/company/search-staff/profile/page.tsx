@@ -442,7 +442,7 @@ export default function StaffProfilePage() {
             </div>
             <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 mt-2">
               <div className="mb-5">
-                <h4 className="font-semibold mb-3">Техникийн ур чадвар</h4>
+                <h4 className="font-semibold mb-3">Ур чадвар</h4>
                 <div className="flex flex-wrap gap-2">
                   {skills.technical && skills.technical.length > 0 ? (
                     skills.technical.map((skill) => (
