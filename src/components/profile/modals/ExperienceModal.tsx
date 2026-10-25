@@ -80,11 +80,11 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[85vh] overflow-hidden animate-in fade-in zoom-in duration-200">
         
         {/* ТОЛГОЙ */}
-        <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Ажлын туршлага удирдах</h2>
             <p className="text-xs text-gray-400 mt-0.5">Нийт {list.length} туршлага нэмэгдсэн байна</p>
@@ -92,7 +92,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
           <button 
             type="button" 
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border shadow-sm hover:bg-gray-100 flex items-center justify-center text-gray-500 transition"
+            className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 flex items-center justify-center text-gray-500 transition"
           >
             <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
           </button>
@@ -147,7 +147,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                   ))}
                 </div>
               ) : (
-                <div className="border border-dashed rounded-2xl p-8 text-center text-gray-400 text-sm bg-gray-50">
+                <div className="border border-gray-200 border-dashed rounded-2xl p-8 text-center text-gray-400 text-sm bg-gray-50">
                   Одоогоор ажлын туршлага нэмэгдээгүй байна.
                 </div>
               )}
@@ -230,7 +230,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 border bg-white rounded-xl text-xs font-medium"
+                  className="px-4 py-2 border border-gray-200 bg-white rounded-xl text-xs font-medium"
                 >
                   Болих
                 </button>
@@ -247,7 +247,7 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
         </div>
 
         {/* ХӨЛ */}
-        <div className="p-4 bg-gray-50 border-t flex justify-end gap-2">
+        <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -262,7 +262,8 @@ function ExperienceModalContent({ value, onSave, onClose }: Props) {
               disabled={list.length === 0} // 👈 Туршлагын жагсаалт хоосон үед идэвхгүй болгоно
               className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-sm transition-all"
             >
-              Өөрчлөлтийг баталгаажуулж хадгалах
+              <span className="sm:hidden">Хадгалах</span>
+              <span className="hidden sm:inline">Өөрчлөлтийг баталгаажуулж хадгалах</span>
             </button>
           )}
         </div>
