@@ -12,13 +12,13 @@ import {
   SearchX,
   Send,
   XCircle,
-  type LucideIcon,
 } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import { Progress, STATUS, formatDate, timeAgo, toRequestStatus, type RequestStatus } from "@/components/staff/requests/requestStatus"
 
 // /api/staff/requests-ийн буцаах мөр
 interface ApiRequestRow {
@@ -27,8 +27,6 @@ interface ApiRequestRow {
   created_at: string
   mt_openjob: { title: string | null; mt_company: { company_name: string | null; logo_url: string | null } | null } | null
 }
-
-type RequestStatus = "pending" | "approved" | "interview" | "rejected" | "accepted" | "not-approved"
 
 interface RequestItem {
   id: string
@@ -41,16 +39,6 @@ interface RequestItem {
 
 const ITEMS_PER_PAGE = 10
 
-// Статус бүрийн нэр, өнгө, дүрс, явцын шат (0 Илгээсэн, 1 Хянагдаж буй, 2 Ярилцлага, 3 Шийдвэр)
-const STATUS: Record<RequestStatus, { label: string; badge: string; icon: LucideIcon; step: number; outcome?: "success" | "fail" }> = {
-  pending: { label: "Хянагдаж буй", badge: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock, step: 1 },
-  interview: { label: "Ярилцлагад урьсан", badge: "bg-sky-50 text-sky-700 border-sky-200", icon: CalendarCheck, step: 2 },
-  approved: { label: "Тэнцсэн", badge: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2, step: 3, outcome: "success" },
-  accepted: { label: "Баталгаажсан", badge: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2, step: 3, outcome: "success" },
-  "not-approved": { label: "Тэнцээгүй", badge: "bg-gray-100 text-gray-600 border-gray-200", icon: XCircle, step: 3, outcome: "fail" },
-  rejected: { label: "Татгалзсан", badge: "bg-rose-50 text-rose-700 border-rose-200", icon: XCircle, step: 3, outcome: "fail" },
-}
-
 const FILTERS: { key: "all" | RequestStatus; label: string }[] = [
   { key: "all", label: "Бүгд" },
   { key: "pending", label: "Хянагдаж буй" },
@@ -61,8 +49,6 @@ const FILTERS: { key: "all" | RequestStatus; label: string }[] = [
   { key: "rejected", label: "Татгалзсан" },
 ]
 
-const STEPS = ["Илгээсэн", "Хянагдаж буй", "Ярилцлага", "Шийдвэр"]
-
 // Логоны URL-ийг шалгах функц
 function getCompanyLogoUrl(logoUrl: string | null | undefined) {
   if (!logoUrl) return null
@@ -70,55 +56,6 @@ function getCompanyLogoUrl(logoUrl: string | null | undefined) {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
   if (!base) return logoUrl
   return `${base}/storage/v1/object/public/company-logos/${logoUrl}`
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`
-}
-
-function timeAgo(iso: string) {
-  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
-  if (days <= 0) return "Өнөөдөр"
-  if (days === 1) return "Өчигдөр"
-  if (days < 7) return `${days} хоногийн өмнө`
-  if (days < 30) return `${Math.floor(days / 7)} долоо хоногийн өмнө`
-  if (days < 365) return `${Math.floor(days / 30)} сарын өмнө`
-  return `${Math.floor(days / 365)} жилийн өмнө`
-}
-
-// Хүсэлтийн явц: Илгээсэн → Хянагдаж буй → Ярилцлага → Шийдвэр
-function Progress({ status }: { status: RequestStatus }) {
-  const { step, outcome } = STATUS[status]
-  // Ярилцлагагүйгээр шууд шийдвэр гарсан бол ярилцлагын шатыг алгассан гэж харуулна
-  const skippedInterview = step === 3 && status === "rejected"
-
-  return (
-    <ol className="flex items-center gap-1.5" aria-label={`Явц: ${STATUS[status].label}`}>
-      {STEPS.map((label, i) => {
-        const done = i < step || (i === step && i < 3)
-        const isFinal = i === 3 && step === 3
-        const skipped = skippedInterview && i === 2
-        const color = isFinal
-          ? outcome === "success"
-            ? "bg-emerald-500"
-            : "bg-rose-400"
-          : skipped
-            ? "bg-gray-200"
-            : done
-              ? "bg-orange-500"
-              : "bg-gray-200"
-        return (
-          <li key={label} className="flex-1 min-w-0" title={label}>
-            <span className={`block h-1.5 rounded-full ${color}`} />
-            <span className={`mt-1 hidden sm:block text-xs leading-tight truncate ${i <= step ? "text-gray-600" : "text-gray-400"}`}>
-              {i === 3 && step === 3 ? STATUS[status].label : label}
-            </span>
-          </li>
-        )
-      })}
-    </ol>
-  )
 }
 
 export default function StaffRequestsPage() {
@@ -145,7 +82,7 @@ export default function StaffRequestsPage() {
             jobTitle: item.mt_openjob?.title || "Тодорхойгүй ажлын байр",
             companyName: item.mt_openjob?.mt_company?.company_name || "Компанийн нэр байхгүй",
             logoUrl: item.mt_openjob?.mt_company?.logo_url || null,
-            status: item.status && item.status in STATUS ? item.status : "pending",
+            status: toRequestStatus(item.status),
             createdAt: item.created_at,
           }))
         )
