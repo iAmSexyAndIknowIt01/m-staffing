@@ -173,141 +173,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const {
-      fullName,
-      email,
-      phone,
-      bio,
-      avatarUrl,
-      gender,
-      agreement,
-      skills,
-      experience,
-      education,
-      availability,
-    } = body
 
-    // VALIDATION — DB-д юу ч бичихээс өмнө бүх оролтыг шалгана
-    if (typeof fullName !== "string" || !fullName.trim()) {
-      return NextResponse.json({ error: "Бүтэн нэр заавал бөглөнө." }, { status: 400 })
-    }
-    if (fullName.length > 100) {
-      return NextResponse.json({ error: "Нэр хамгийн ихдээ 100 тэмдэгт байна." }, { status: 400 })
-    }
-    if (typeof email !== "string" || !email.trim()) {
-      return NextResponse.json({ error: "Имэйл заавал бөглөнө." }, { status: 400 })
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email) || email.length > 254) {
-      return NextResponse.json({ error: "Имэйл формат буруу байна." }, { status: 400 })
-    }
-    if (typeof phone !== "string" || !phone.trim()) {
-      return NextResponse.json({ error: "Утасны дугаар заавал бөглөнө." }, { status: 400 })
-    }
-    if (phone.length > 30) {
-      return NextResponse.json({ error: "Утасны дугаар хэт урт байна." }, { status: 400 })
-    }
-    if (typeof bio !== "string" || !bio.trim()) {
-      return NextResponse.json({ error: "Bio бөглөнө үү." }, { status: 400 })
-    }
-    if (bio.length > 1000) {
-      return NextResponse.json({ error: "Bio хамгийн ихдээ 1000 тэмдэгт байна." }, { status: 400 })
-    }
-    if (gender !== undefined && gender !== null && (typeof gender !== "string" || gender.length > 20)) {
-      return NextResponse.json({ error: "Хүйсийн утга буруу байна." }, { status: 400 })
+    // VALIDATION — DB-д юу ч бичихээс өмнө бүх оролтыг шалгана (POST: бүх хэсэг заавал)
+    const result = validateProfileFields(body, ALL_FIELDS)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
     }
 
-    const selectedSkills = parseSkillNames(skills)
-    if (!selectedSkills) {
-      return NextResponse.json({ error: "Ур чадварын мэдээлэл буруу байна." }, { status: 400 })
-    }
-    if (selectedSkills.length === 0) {
-      return NextResponse.json({ error: "Ур чадвараа оруулна уу." }, { status: 400 })
-    }
-
-    const photoUrl = normalizeHttpUrl(avatarUrl)
-    if (photoUrl === undefined) {
-      return NextResponse.json({ error: "Профайл зургийн холбоос буруу байна." }, { status: 400 })
-    }
-
-    // EXPERIENCE / EDUCATION VALIDATION
-    const experienceResult = parseExperience(experience)
-    if (!experienceResult.ok) {
-      return NextResponse.json({ error: experienceResult.error }, { status: 400 })
-    }
-    const educationResult = parseEducation(education)
-    if (!educationResult.ok) {
-      return NextResponse.json({ error: educationResult.error }, { status: 400 })
-    }
-
-    // AVAILABILITY VALIDATION
-    if (availability !== undefined && availability !== null && typeof availability !== "object") {
-      return NextResponse.json({ error: "Ажиллах цагийн мэдээлэл буруу байна." }, { status: 400 })
-    }
-    const enabledDays = (Object.entries(availability || {}) as [string, AvailabilityDay | null][]).filter(
-      ([, value]) => value?.enabled
-    )
-    if (enabledDays.length === 0) {
-      return NextResponse.json({ error: "Дор хаяж нэг ажиллах өдөр сонгоно уу." }, { status: 400 })
-    }
-    for (const [dayName, day] of enabledDays) {
-      if (!day?.from || !day?.to) {
-        return NextResponse.json(
-          { error: `${dayName} гарагийн ажиллах цаг дутуу байна.` },
-          { status: 400 }
-        )
-      }
-      if (day.from >= day.to) {
-        return NextResponse.json(
-          { error: `${dayName} гарагийн эхлэх цаг дуусах цагаас бага байх ёстой.` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // UPDATE STAFF NAME
-    const splittedName = fullName.trim().split(/\s+/)
-    const first_name = splittedName.slice(1).join(" ")
-    const last_name = splittedName[0] || ""
-
-    const { error: staffUpdateError } = await supabase
-      .from("mt_staff")
-      .update({
-        first_name,
-        last_name,
-      })
-      .eq("id", userId)
-
-    if (staffUpdateError) {
-      throw staffUpdateError
-    }
-
-    // UPDATE PROFILE DATA
-    const { data, error } = await supabase
-      .from("mt_profile")
-      .update({
-        email: email.trim(),
-        phone: phone.trim(),
-        bio,
-        skills,
-        availability,
-        gender: gender || null,
-        agreement: agreement === true,
-        photo_url: photoUrl,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .select()
-
-    if (error) {
-      throw error
-    }
-
-    // Жагсаалтуудыг "эхлээд шинийг нэмж, дараа нь хуучныг устгах" дарааллаар шинэчилнэ.
-    // Нэмэх үед алдаа гарвал хуучин мэдээлэл хэвээр үлдэнэ (өмнө нь устгаад нэмдэг байсан тул алга болдог байсан).
-    await replaceSkills(userId, selectedSkills)
-    await replaceRows("tr_staff_experience", userId, experienceResult.rows)
-    await replaceRows("tr_staff_education", userId, educationResult.rows)
+    const data = await applyProfileUpdate(userId, result.values)
 
     return NextResponse.json({
       success: true,
@@ -321,6 +194,212 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+}
+
+// ========================================
+// SAVE ONE SECTION (профайлын карт тус бүрээс)
+// ========================================
+// Зөвхөн илгээсэн талбаруудыг POST-той ижил дүрмээр шалгаж хадгална.
+// Ингэснээр бусад хэсэг дутуу байсан ч тухайн картаа хадгалах боломжтой.
+export async function PATCH(request: Request) {
+  try {
+    const session = await getSession()
+    const userId = session?.userId
+
+    if (!userId || session?.role !== "staff") {
+      return NextResponse.json({ error: "Хандах эрхгүй байна." }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const isObject = !!body && typeof body === "object" && !Array.isArray(body)
+    const fields = isObject ? ALL_FIELDS.filter((key) => key !== "email" && key in body) : []
+    if (fields.length === 0) {
+      return NextResponse.json({ error: "Хадгалах мэдээлэл алга." }, { status: 400 })
+    }
+
+    const result = validateProfileFields(body, fields)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
+    }
+
+    const data = await applyProfileUpdate(userId, result.values)
+
+    return NextResponse.json({ success: true, message: "Амжилттай хадгалагдлаа.", data })
+  } catch (error) {
+    console.error("PATCH PROFILE ERROR:", error)
+    return NextResponse.json({ error: "Серверийн алдаа" }, { status: 500 })
+  }
+}
+
+const ALL_FIELDS = [
+  "fullName",
+  "email",
+  "phone",
+  "bio",
+  "avatarUrl",
+  "gender",
+  "agreement",
+  "skills",
+  "experience",
+  "education",
+  "availability",
+] as const
+
+type ProfileField = (typeof ALL_FIELDS)[number]
+
+type ProfileValues = {
+  fullName?: string
+  email?: string
+  phone?: string
+  bio?: string
+  photoUrl?: string | null
+  gender?: string | null
+  agreement?: boolean
+  skills?: unknown
+  skillNames?: string[]
+  experienceRows?: ExperienceRow[]
+  educationRows?: EducationRow[]
+  availability?: unknown
+}
+
+type ValidationResult = { ok: true; values: ProfileValues } | { ok: false; error: string }
+
+// Талбар бүрийн шалгалт POST/PATCH-д нэг дор. fields-д байгаа талбарууд л шалгагдаж values-д орно.
+function validateProfileFields(body: Record<string, unknown>, fields: readonly ProfileField[]): ValidationResult {
+  const has = (key: ProfileField) => fields.includes(key)
+  const fail = (error: string): ValidationResult => ({ ok: false, error })
+  const values: ProfileValues = {}
+
+  if (has("fullName")) {
+    const fullName = body.fullName
+    if (typeof fullName !== "string" || !fullName.trim()) return fail("Бүтэн нэр заавал бөглөнө.")
+    if (fullName.length > 100) return fail("Нэр хамгийн ихдээ 100 тэмдэгт байна.")
+    values.fullName = fullName
+  }
+
+  if (has("email")) {
+    const email = body.email
+    if (typeof email !== "string" || !email.trim()) return fail("Имэйл заавал бөглөнө.")
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email) || email.length > 254) return fail("Имэйл формат буруу байна.")
+    values.email = email.trim()
+  }
+
+  if (has("phone")) {
+    const phone = body.phone
+    if (typeof phone !== "string" || !phone.trim()) return fail("Утасны дугаар заавал бөглөнө.")
+    if (phone.length > 30) return fail("Утасны дугаар хэт урт байна.")
+    values.phone = phone.trim()
+  }
+
+  if (has("bio")) {
+    const bio = body.bio
+    if (typeof bio !== "string" || !bio.trim()) return fail("Bio бөглөнө үү.")
+    if (bio.length > 1000) return fail("Bio хамгийн ихдээ 1000 тэмдэгт байна.")
+    values.bio = bio
+  }
+
+  if (has("gender")) {
+    const gender = body.gender
+    if (gender !== undefined && gender !== null && (typeof gender !== "string" || gender.length > 20)) {
+      return fail("Хүйсийн утга буруу байна.")
+    }
+    values.gender = (gender as string) || null
+  }
+
+  if (has("agreement")) {
+    values.agreement = body.agreement === true
+  }
+
+  if (has("skills")) {
+    const selectedSkills = parseSkillNames(body.skills)
+    if (!selectedSkills) return fail("Ур чадварын мэдээлэл буруу байна.")
+    if (selectedSkills.length === 0) return fail("Ур чадвараа оруулна уу.")
+    values.skills = body.skills
+    values.skillNames = selectedSkills
+  }
+
+  if (has("avatarUrl")) {
+    const photoUrl = normalizeHttpUrl(body.avatarUrl)
+    if (photoUrl === undefined) return fail("Профайл зургийн холбоос буруу байна.")
+    values.photoUrl = photoUrl
+  }
+
+  if (has("experience")) {
+    const experienceResult = parseExperience(body.experience)
+    if (!experienceResult.ok) return fail(experienceResult.error)
+    values.experienceRows = experienceResult.rows
+  }
+
+  if (has("education")) {
+    const educationResult = parseEducation(body.education)
+    if (!educationResult.ok) return fail(educationResult.error)
+    values.educationRows = educationResult.rows
+  }
+
+  if (has("availability")) {
+    const availability = body.availability
+    if (availability !== undefined && availability !== null && typeof availability !== "object") {
+      return fail("Ажиллах цагийн мэдээлэл буруу байна.")
+    }
+    const enabledDays = (Object.entries(availability || {}) as [string, AvailabilityDay | null][]).filter(
+      ([, value]) => value?.enabled
+    )
+    if (enabledDays.length === 0) return fail("Дор хаяж нэг ажиллах өдөр сонгоно уу.")
+    for (const [dayName, day] of enabledDays) {
+      if (!day?.from || !day?.to) return fail(`${dayName} гарагийн ажиллах цаг дутуу байна.`)
+      if (day.from >= day.to) return fail(`${dayName} гарагийн эхлэх цаг дуусах цагаас бага байх ёстой.`)
+    }
+    values.availability = availability
+  }
+
+  return { ok: true, values }
+}
+
+// Шалгагдсан утгуудыг DB-д бичнэ. values-д байхгүй талбарт хүрэхгүй.
+async function applyProfileUpdate(userId: string, values: ProfileValues) {
+  if (values.fullName !== undefined) {
+    // UPDATE STAFF NAME
+    const splittedName = values.fullName.trim().split(/\s+/)
+    const { error: staffUpdateError } = await supabase
+      .from("mt_staff")
+      .update({
+        first_name: splittedName.slice(1).join(" "),
+        last_name: splittedName[0] || "",
+      })
+      .eq("id", userId)
+    if (staffUpdateError) throw staffUpdateError
+  }
+
+  // UPDATE PROFILE DATA
+  const profileUpdate: Record<string, unknown> = {}
+  if (values.email !== undefined) profileUpdate.email = values.email
+  if (values.phone !== undefined) profileUpdate.phone = values.phone
+  if (values.bio !== undefined) profileUpdate.bio = values.bio
+  if (values.skills !== undefined) profileUpdate.skills = values.skills
+  if (values.availability !== undefined) profileUpdate.availability = values.availability
+  if (values.gender !== undefined) profileUpdate.gender = values.gender
+  if (values.agreement !== undefined) profileUpdate.agreement = values.agreement
+  if (values.photoUrl !== undefined) profileUpdate.photo_url = values.photoUrl
+
+  let data = null
+  if (Object.keys(profileUpdate).length > 0) {
+    const result = await supabase
+      .from("mt_profile")
+      .update({ ...profileUpdate, updated_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .select()
+    if (result.error) throw result.error
+    data = result.data
+  }
+
+  // Жагсаалтуудыг "эхлээд шинийг нэмж, дараа нь хуучныг устгах" дарааллаар шинэчилнэ.
+  // Нэмэх үед алдаа гарвал хуучин мэдээлэл хэвээр үлдэнэ (өмнө нь устгаад нэмдэг байсан тул алга болдог байсан).
+  if (values.skillNames !== undefined) await replaceSkills(userId, values.skillNames)
+  if (values.experienceRows !== undefined) await replaceRows("tr_staff_experience", userId, values.experienceRows)
+  if (values.educationRows !== undefined) await replaceRows("tr_staff_education", userId, values.educationRows)
+
+  return data
 }
 
 // Ур чадвар: зөвхөн нэмэгдсэнийг нэмж, хасагдсаныг устгана (staff_id, skill_id нь unique)

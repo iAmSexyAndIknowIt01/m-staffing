@@ -115,7 +115,7 @@ function Section({
   title: string
   description?: string
   error?: string
-  action?: { label: string; onClick: () => void }
+  action?: { label: string; onClick: () => void; busy?: boolean }
   children: React.ReactNode
 }) {
   return (
@@ -132,15 +132,20 @@ function Section({
             {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
           </div>
         </div>
-        {action && (
-          <button
-            type="button"
-            onClick={action.onClick}
-            className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 transition"
-          >
-            <Pencil className="w-3.5 h-3.5" /> {action.label}
-          </button>
-        )}
+        {action &&
+          (action.busy ? (
+            <span className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 text-sm font-medium text-gray-500">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Хадгалж байна...
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={action.onClick}
+              className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 transition"
+            >
+              <Pencil className="w-3.5 h-3.5" /> {action.label}
+            </button>
+          ))}
       </div>
       {children}
       {error && (
@@ -232,51 +237,79 @@ function Switch({ checked, label, onChange }: { checked: boolean; label: string;
   )
 }
 
+type SectionKey = "personal" | "avatar" | "bio" | "skills" | "experience" | "education" | "availability"
+
+const EMPTY_DAY: DayAvailability = { enabled: false, from: "", to: "" }
+
+// Ажиллах цагийн шалгалт (сервертэй ижил дүрэм)
+function validateAvailability(value: typeof initialAvailability): string | null {
+  const enabled = Object.values(value).filter((day) => day?.enabled)
+  if (enabled.length === 0) return "Дор хаяж нэг ажиллах өдөр сонгоно уу."
+  if (enabled.some((day) => !day.from || !day.to)) return "Ажиллах цагийг бүрэн оруулна уу."
+  if (enabled.some((day) => day.from >= day.to)) return "Эхлэх цаг дуусах цагаас бага байх ёстой."
+  return null
+}
+
+// Хадгалах товчнуудын мөр (хувийн мэдээлэл, ажиллах цагийн картын доор)
+function CardActions({ saving, onCancel }: { saving: boolean; onCancel: () => void }) {
+  return (
+    <div className="mt-5 pt-4 border-t border-gray-100 flex gap-2 justify-end">
+      <button
+        type="button"
+        onClick={onCancel}
+        disabled={saving}
+        className="flex-1 sm:flex-none h-10 px-4 rounded-xl text-sm font-semibold border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition disabled:opacity-50"
+      >
+        Болих
+      </button>
+      <button
+        type="submit"
+        disabled={saving}
+        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl text-sm font-semibold bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white shadow-sm transition"
+      >
+        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+        {saving ? "Хадгалж байна..." : "Хадгалах"}
+      </button>
+    </div>
+  )
+}
+
 export default function StaffProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [activeModal, setActiveModal] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Аль карт засагдаж / хадгалагдаж байгаа
+  const [editing, setEditing] = useState<"personal" | "availability" | null>(null)
+  const [savingSection, setSavingSection] = useState<SectionKey | null>(null)
+  const [sectionErrors, setSectionErrors] = useState<Partial<Record<SectionKey, string>>>({})
+  const [activeModal, setActiveModal] = useState<"bio" | "skills" | "experience" | "education" | null>(null)
 
   // ========================================
-  // FORM STATE
+  // ХАДГАЛАГДСАН ПРОФАЙЛ
   // ========================================
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
-  const [gender, setGender] = useState("") 
-  const [agreement, setAgreement] = useState(false) 
-  
-
-  const [skills, setSkills] = useState<{
-    technical: string[]
-    languages: string[]
-  }>({
-    technical: [],
-    languages: [],
-  })
-
+  const [gender, setGender] = useState("")
+  const [agreement, setAgreement] = useState(false)
+  const [skills, setSkills] = useState<{ technical: string[]; languages: string[] }>({ technical: [], languages: [] })
   const [experience, setExperience] = useState<Experience[]>([])
   const [education, setEducation] = useState<Education[]>([])
   const [availability, setAvailability] = useState(initialAvailability)
 
+  // Засаж буй картын түр утга (Болих дарахад хаягдана)
+  const [personalDraft, setPersonalDraft] = useState({ fullName: "", phone: "", gender: "", agreement: false })
+  const [personalErrors, setPersonalErrors] = useState<{ fullName?: string; phone?: string }>({})
+  const [availabilityDraft, setAvailabilityDraft] = useState(initialAvailability)
+
   // ========================================
   // FETCH PROFILE
   // ========================================
-  // Дахин ачаалах (хадгалсны дараа гэх мэт) — loader харуулна
-  async function fetchProfile() {
-    setLoading(true)
-    await loadProfile()
-  }
-
-  // Анх mount болоход дуудна. loading аль хэдийн true тул await-аас өмнө state өөрчлөхгүй
   async function loadProfile() {
     try {
       const response = await fetch("/api/staff/profile")
@@ -290,141 +323,149 @@ export default function StaffProfilePage() {
         setPhone(result.profile.phone || "")
         setBio(result.profile.bio || "")
         setAvatarUrl(result.profile.avatar_url || "")
-        setGender(result.profile.gender || "") 
+        setGender(result.profile.gender || "")
         setAgreement(!!result.profile.agreement)
-        
         setSkills({
           technical: result.profile.skills?.technical || [],
-          languages: result.profile.skills?.languages || []
+          languages: result.profile.skills?.languages || [],
         })
-        
         setExperience(Array.isArray(result.profile.experience) ? result.profile.experience : [])
         setEducation(Array.isArray(result.profile.education) ? result.profile.education : [])
-        
-        setAvailability({
-          ...initialAvailability,
-          ...(result.profile.availability || {})
-        })
+        setAvailability({ ...initialAvailability, ...(result.profile.availability || {}) })
       }
     } catch (err) {
-      setError(getErrorMessage(err))
+      setLoadError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
-  }
-
-  // ========================================
-  // AVATAR UPLOAD HANDLER
-  // ========================================
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return
-    
-    const file = e.target.files[0]
-    setUploadingAvatar(true)
-    setError(null)
-
-    try {
-      const publicUrl = await uploadImage(file, "avatars")
-
-      setAvatarUrl(publicUrl)
-      setMessage("Зураг түр ачаалагдлаа. 'Профайл хадгалах' товчийг дарж баталгаажуулна уу.")
-    } catch (err) {
-      setError(getErrorMessage(err, "Зураг хуулахад алдаа гарлаа."))
-    } finally {
-      setUploadingAvatar(false)
-    }
-  }
-
-  // ========================================
-  // VALIDATION FORM
-  // ========================================
-  function validateForm() {
-    const errors: Record<string, string> = {}
-
-    if (!fullName.trim()) errors.fullName = "Бүтэн нэрээ оруулна уу"
-    if (!email.trim()) {
-      errors.email = "Имэйлээ оруулна уу"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Имэйл хаяг буруу байна"
-    }
-    if (!phone.trim()) errors.phone = "Утасны дугаараа оруулна уу"
-    if (!bio.trim()) errors.bio = "Bio бөглөнө үү"
-    if (skills.technical.length === 0 && skills.languages.length === 0) {
-      errors.skills = "Ур чадвараа оруулна уу"
-    }
-    if (experience.length === 0) {
-      errors.experience = "Ажлын туршлагаа оруулна уу"
-    }
-    if (education.length === 0) errors.education = "Боловсролын мэдээллээ оруулна уу"
-
-    const currentAvailability = availability || initialAvailability
-    const enabledDays = Object.values(currentAvailability).filter((day) => day?.enabled)
-    
-    if (enabledDays.length === 0) errors.availability = "Дор хаяж нэг ажиллах өдөр сонгоно уу"
-
-    enabledDays.forEach((day) => {
-      if (!day.from || !day.to) errors.availability = "Ажиллах цагийг бүрэн оруулна уу"
-      if (day.from && day.to && day.from >= day.to) {
-        errors.availability = "Эхлэх цаг дуусах цагаас бага байх ёстой"
-      }
-    })
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
   }
 
   useEffect(() => {
     loadProfile()
   }, [])
 
-  // ========================================
-  // SAVE PROFILE
-  // ========================================
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+  }, [])
 
-    if (!validateForm()) {
-      setError("Улаанаар тэмдэглэгдсэн мэдээллүүдийг шалгана уу.")
-      window.scrollTo({ top: 0, behavior: "smooth" })
+  const flash = (text: string) => {
+    setToast(text)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 3000)
+  }
+
+  // ========================================
+  // НЭГ КАРТЫГ ХАДГАЛАХ (PATCH)
+  // ========================================
+  async function saveSection(section: SectionKey, payload: Record<string, unknown>): Promise<boolean> {
+    setSavingSection(section)
+    setSectionErrors((prev) => ({ ...prev, [section]: undefined }))
+    try {
+      const response = await fetch("/api/staff/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || "Хадгалахад алдаа гарлаа.")
+      flash("Амжилттай хадгалагдлаа")
+      return true
+    } catch (err) {
+      setSectionErrors((prev) => ({ ...prev, [section]: getErrorMessage(err, "Хадгалахад алдаа гарлаа.") }))
+      return false
+    } finally {
+      setSavingSection(null)
+    }
+  }
+
+  // Модалаар засах хэсгүүд: шууд харуулж хадгална, алдаа гарвал өмнөх утгыг сэргээнэ
+  async function saveFromModal<T>(section: SectionKey, payload: Record<string, unknown>, next: T, prev: T, set: (v: T) => void) {
+    set(next)
+    setActiveModal(null)
+    const ok = await saveSection(section, payload)
+    if (!ok) set(prev)
+  }
+
+  // ========================================
+  // ЗУРАГ
+  // ========================================
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+
+    const previous = avatarUrl
+    setSavingSection("avatar")
+    setSectionErrors((prev) => ({ ...prev, avatar: undefined }))
+    try {
+      const publicUrl = await uploadImage(file, "avatars")
+      setAvatarUrl(publicUrl)
+      const ok = await saveSection("avatar", { avatarUrl: publicUrl })
+      if (!ok) setAvatarUrl(previous)
+    } catch (err) {
+      setSectionErrors((prev) => ({ ...prev, avatar: getErrorMessage(err, "Зураг хуулахад алдаа гарлаа.") }))
+      setSavingSection(null)
+    }
+  }
+
+  // ========================================
+  // ХУВИЙН МЭДЭЭЛЭЛ
+  // ========================================
+  const startPersonalEdit = () => {
+    setPersonalDraft({ fullName, phone, gender, agreement })
+    setPersonalErrors({})
+    setSectionErrors((prev) => ({ ...prev, personal: undefined }))
+    setEditing("personal")
+  }
+
+  const savePersonal = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const errors: { fullName?: string; phone?: string } = {}
+    if (!personalDraft.fullName.trim()) errors.fullName = "Бүтэн нэрээ оруулна уу"
+    if (!personalDraft.phone.trim()) errors.phone = "Утасны дугаараа оруулна уу"
+    setPersonalErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
+    const ok = await saveSection("personal", {
+      fullName: personalDraft.fullName.trim(),
+      phone: personalDraft.phone.trim(),
+      gender: personalDraft.gender,
+      agreement: personalDraft.agreement,
+    })
+    if (ok) {
+      setFullName(personalDraft.fullName.trim())
+      setPhone(personalDraft.phone.trim())
+      setGender(personalDraft.gender)
+      setAgreement(personalDraft.agreement)
+      setEditing(null)
+    }
+  }
+
+  // ========================================
+  // АЖИЛЛАХ ЦАГ
+  // ========================================
+  const startAvailabilityEdit = () => {
+    setAvailabilityDraft({ ...initialAvailability, ...availability })
+    setSectionErrors((prev) => ({ ...prev, availability: undefined }))
+    setEditing("availability")
+  }
+
+  const updateDay = (key: DayKey, patch: Partial<DayAvailability>) => {
+    setAvailabilityDraft((prev) => ({ ...prev, [key]: { ...(prev[key] || EMPTY_DAY), ...patch } }))
+    setSectionErrors((prev) => ({ ...prev, availability: undefined }))
+  }
+
+  const saveAvailability = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const problem = validateAvailability(availabilityDraft)
+    if (problem) {
+      setSectionErrors((prev) => ({ ...prev, availability: problem }))
       return
     }
-
-    try {
-      setSaving(true)
-      setError(null)
-      setMessage(null)
-
-      const response = await fetch("/api/staff/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          bio,
-          avatarUrl,
-          skills,
-          experience,
-          education, 
-          availability,
-          gender,
-          agreement,
-        }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error)
-
-      await fetchProfile()
-      setIsEditMode(false)
-      setMessage("Профайл амжилттай хадгалагдлаа")
-      window.scrollTo({ top: 0, behavior: "smooth" })
-      setTimeout(() => setMessage(null), 4000)
-    } catch (err) {
-      setError(getErrorMessage(err))
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    } finally {
-      setSaving(false)
+    const ok = await saveSection("availability", { availability: availabilityDraft })
+    if (ok) {
+      setAvailability(availabilityDraft)
+      setEditing(null)
     }
   }
 
@@ -432,67 +473,50 @@ export default function StaffProfilePage() {
     return <LoadingLayout loading />
   }
 
+  if (loadError) {
+    return (
+      <div role="alert" className="max-w-5xl mx-auto flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
+        <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {loadError}
+      </div>
+    )
+  }
+
   const enabledDays = DAYS.filter(([key]) => availability?.[key]?.enabled)
   const completeness = getCompleteness({ fullName, phone, bio, avatarUrl, gender, skills, experience, education, enabledDays: enabledDays.length })
-  const errorCount = Object.values(validationErrors).filter(Boolean).length
-
-  const cancelEdit = async () => {
-    await fetchProfile()
-    setValidationErrors({})
-    setError(null)
-    setIsEditMode(false)
-  }
-
-  const updateDay = (key: DayKey, patch: Partial<DayAvailability>) => {
-    const current = availability?.[key] || { enabled: false, from: "", to: "" }
-    setAvailability({ ...initialAvailability, ...availability, [key]: { ...current, ...patch } })
-    setValidationErrors((prev) => ({ ...prev, availability: "" }))
-  }
+  const busy = savingSection !== null
 
   return (
     <div className="max-w-5xl mx-auto w-full space-y-5 sm:space-y-6 pb-6">
       {/* ТОЛГОЙ */}
-      <div className="flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Миний профайл</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {isEditMode ? "Мэдээллээ шинэчлээд хадгална уу." : "Ажил олгогчдод харагдах таны мэдээлэл"}
-          </p>
-        </div>
-        {!isEditMode && (
-          <button
-            type="button"
-            onClick={() => setIsEditMode(true)}
-            className="shrink-0 inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold bg-orange-600 hover:bg-orange-700 text-white shadow-sm transition"
-          >
-            <Pencil className="w-4 h-4" /> <span>Засах</span>
-          </button>
-        )}
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Миний профайл</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Ажил олгогчдод харагдах таны мэдээлэл. Карт бүрийн «Засах» товчоор тухайн хэсгийг засна.
+        </p>
       </div>
 
-      {message && (
-        <div role="status" className="flex items-start gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">
-          <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" /> {message}
-        </div>
-      )}
-      {error && (
-        <div role="alert" className="flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
-          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-          <span>
-            {error}
-            {errorCount > 0 && ` (${errorCount} талбар)`}
-          </span>
+      {/* Хадгалсан мэдэгдэл */}
+      {toast && (
+        <div
+          role="status"
+          className="fixed z-50 left-1/2 -translate-x-1/2 bottom-5 sm:bottom-8 flex items-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-2xl text-sm shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> {toast}
         </div>
       )}
 
       <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
 
-      <form onSubmit={handleSave} noValidate className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-start">
-        {/* ЗҮҮН: ХУРААНГУЙ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-start">
+        {/* ЗҮҮН: ХУВИЙН МЭДЭЭЛЭЛ */}
         <aside className="lg:sticky lg:top-6 space-y-5 sm:space-y-6">
-          <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <section
+            className={`bg-white rounded-3xl border shadow-sm overflow-hidden ${
+              sectionErrors.personal || sectionErrors.avatar ? "border-red-300" : "border-gray-100"
+            }`}
+          >
             <div className="h-20 bg-linear-to-r from-orange-500 to-amber-400" />
-            <div className="px-5 sm:px-6 pb-6 -mt-12 flex flex-col items-center text-center">
+            <div className="px-5 sm:px-6 pb-5 -mt-12 flex flex-col items-center text-center">
               <div className="relative">
                 <div className="w-24 h-24 rounded-3xl bg-orange-50 ring-4 ring-white dark:ring-(--dk-surface) overflow-hidden flex items-center justify-center shadow-sm">
                   {avatarUrl ? (
@@ -503,17 +527,16 @@ export default function StaffProfilePage() {
                     <User className="w-10 h-10 text-orange-400" strokeWidth={1.5} />
                   )}
                 </div>
-                {isEditMode && (
-                  <button
-                    type="button"
-                    onClick={() => !uploadingAvatar && fileInputRef.current?.click()}
-                    disabled={uploadingAvatar}
-                    aria-label="Зураг солих"
-                    className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-orange-600 hover:bg-orange-700 text-white ring-4 ring-white dark:ring-(--dk-surface) flex items-center justify-center shadow transition disabled:opacity-60"
-                  >
-                    {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={busy}
+                  aria-label="Зураг солих"
+                  title="Зураг солих"
+                  className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-orange-600 hover:bg-orange-700 text-white ring-4 ring-white dark:ring-(--dk-surface) flex items-center justify-center shadow transition disabled:opacity-60"
+                >
+                  {savingSection === "avatar" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                </button>
               </div>
               <h2 className="mt-3 text-lg font-bold text-gray-900 wrap-break-word">{fullName || "Таны нэр"}</h2>
               <p className="text-sm text-gray-500">Ажил хайгч</p>
@@ -526,15 +549,99 @@ export default function StaffProfilePage() {
                 {agreement ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 {agreement ? "Ажил олгогчдод харагдана" : "Ажил олгогчдод нуугдсан"}
               </span>
+              {sectionErrors.avatar && <p role="alert" className="mt-2 text-xs text-red-600">{sectionErrors.avatar}</p>}
             </div>
 
-            {!isEditMode && (
-              <dl className="border-t border-gray-100 px-5 sm:px-6 py-4 space-y-3 text-sm">
-                <InfoLine icon={Phone} label="Утас" value={phone} />
-                <InfoLine icon={Mail} label="Имэйл" value={email} />
-                <InfoLine icon={UserRound} label="Хүйс" value={GENDER_LABELS[gender]} />
-              </dl>
-            )}
+            <div className="border-t border-gray-100 px-5 sm:px-6 py-4">
+              {editing === "personal" ? (
+                <form onSubmit={savePersonal} noValidate className="space-y-4 text-left">
+                  <Field label="Бүтэн нэр" htmlFor="profile-fullname" error={personalErrors.fullName}>
+                    <input
+                      id="profile-fullname"
+                      type="text"
+                      autoComplete="name"
+                      value={personalDraft.fullName}
+                      onChange={(e) => {
+                        setPersonalDraft((d) => ({ ...d, fullName: e.target.value }))
+                        setPersonalErrors((er) => ({ ...er, fullName: undefined }))
+                      }}
+                      className={inputClass(!!personalErrors.fullName)}
+                    />
+                  </Field>
+                  <Field label="Утас" htmlFor="profile-phone" error={personalErrors.phone}>
+                    <input
+                      id="profile-phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={personalDraft.phone}
+                      onChange={(e) => {
+                        setPersonalDraft((d) => ({ ...d, phone: e.target.value }))
+                        setPersonalErrors((er) => ({ ...er, phone: undefined }))
+                      }}
+                      className={inputClass(!!personalErrors.phone)}
+                    />
+                  </Field>
+                  <Field label="Хүйс" htmlFor="profile-gender">
+                    <select
+                      id="profile-gender"
+                      value={personalDraft.gender}
+                      onChange={(e) => setPersonalDraft((d) => ({ ...d, gender: e.target.value }))}
+                      className={inputClass(false)}
+                    >
+                      <option value="">Сонгох...</option>
+                      <option value="male">Эрэгтэй</option>
+                      <option value="female">Эмэгтэй</option>
+                    </select>
+                  </Field>
+                  <Field label="Имэйл" htmlFor="profile-email" hint="Нэвтрэх имэйлийг энд өөрчлөх боломжгүй.">
+                    <input id="profile-email" type="email" value={email} readOnly className={`${inputClass(false)} text-gray-500 cursor-not-allowed`} />
+                  </Field>
+                  <label
+                    htmlFor="profile-agreement"
+                    className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
+                      personalDraft.agreement ? "border-orange-200 bg-orange-50/60" : "border-gray-200 bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      id="profile-agreement"
+                      type="checkbox"
+                      checked={personalDraft.agreement}
+                      onChange={(e) => setPersonalDraft((d) => ({ ...d, agreement: e.target.checked }))}
+                      className="w-5 h-5 mt-0.5 shrink-0 accent-orange-600"
+                    />
+                    <span className="text-sm text-gray-700 leading-relaxed">
+                      Цагийн ажилтан хайж байгаа ажил олгогчдод миний профайлыг ил тод харуулахыг зөвшөөрч байна.
+                    </span>
+                  </label>
+                  {sectionErrors.personal && (
+                    <p role="alert" className="flex items-center gap-1.5 text-sm text-red-600">
+                      <AlertTriangle className="w-4 h-4 shrink-0" /> {sectionErrors.personal}
+                    </p>
+                  )}
+                  <CardActions saving={savingSection === "personal"} onCancel={() => setEditing(null)} />
+                </form>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Хувийн мэдээлэл</h3>
+                    <button
+                      type="button"
+                      onClick={startPersonalEdit}
+                      disabled={editing !== null}
+                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl text-sm font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 transition disabled:opacity-50"
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Засах
+                    </button>
+                  </div>
+                  <dl className="space-y-3 text-sm">
+                    <InfoLine icon={Phone} label="Утас" value={phone} />
+                    <InfoLine icon={Mail} label="Имэйл" value={email} />
+                    <InfoLine icon={UserRound} label="Хүйс" value={GENDER_LABELS[gender]} />
+                  </dl>
+                </>
+              )}
+            </div>
           </section>
 
           {/* ПРОФАЙЛЫН БҮРЭН БАЙДАЛ */}
@@ -552,9 +659,7 @@ export default function StaffProfilePage() {
               />
             </div>
             {completeness.missing.length > 0 ? (
-              <p className="mt-3 text-xs text-gray-500 leading-relaxed">
-                Дутуу: {completeness.missing.join(", ")}
-              </p>
+              <p className="mt-3 text-xs text-gray-500 leading-relaxed">Дутуу: {completeness.missing.join(", ")}</p>
             ) : (
               <p className="mt-3 text-xs text-emerald-600">Профайл бүрэн бөглөгдсөн байна.</p>
             )}
@@ -563,80 +668,12 @@ export default function StaffProfilePage() {
 
         {/* БАРУУН: ДЭЛГЭРЭНГҮЙ */}
         <div className="lg:col-span-2 space-y-5 sm:space-y-6">
-          {/* ХУВИЙН МЭДЭЭЛЭЛ (засах горимд) */}
-          {isEditMode && (
-            <Section icon={User} title="Хувийн мэдээлэл">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Бүтэн нэр" htmlFor="profile-fullname" error={validationErrors.fullName} className="sm:col-span-2">
-                  <input
-                    id="profile-fullname"
-                    type="text"
-                    autoComplete="name"
-                    value={fullName}
-                    onChange={(e) => {
-                      setFullName(e.target.value)
-                      setValidationErrors((prev) => ({ ...prev, fullName: "" }))
-                    }}
-                    className={inputClass(!!validationErrors.fullName)}
-                  />
-                </Field>
-                <Field label="Утас" htmlFor="profile-phone" error={validationErrors.phone}>
-                  <input
-                    id="profile-phone"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value)
-                      setValidationErrors((prev) => ({ ...prev, phone: "" }))
-                    }}
-                    className={inputClass(!!validationErrors.phone)}
-                  />
-                </Field>
-                <Field label="Хүйс" htmlFor="profile-gender">
-                  <select
-                    id="profile-gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className={inputClass(false)}
-                  >
-                    <option value="">Сонгох...</option>
-                    <option value="male">Эрэгтэй</option>
-                    <option value="female">Эмэгтэй</option>
-                  </select>
-                </Field>
-                <Field label="Имэйл" htmlFor="profile-email" hint="Нэвтрэх имэйлийг энд өөрчлөх боломжгүй." className="sm:col-span-2">
-                  <input id="profile-email" type="email" value={email} readOnly className={`${inputClass(false)} text-gray-500 cursor-not-allowed`} />
-                </Field>
-              </div>
-
-              <label
-                htmlFor="profile-agreement"
-                className={`mt-4 flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition ${
-                  agreement ? "border-orange-200 bg-orange-50/60" : "border-gray-200 bg-gray-50"
-                }`}
-              >
-                <input
-                  id="profile-agreement"
-                  type="checkbox"
-                  checked={agreement}
-                  onChange={(e) => setAgreement(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 shrink-0 accent-orange-600"
-                />
-                <span className="text-sm text-gray-700 leading-relaxed">
-                  Цагийн ажилтан хайж байгаа ажил олгогчдод миний профайлыг ил тод харуулахыг зөвшөөрч байна.
-                </span>
-              </label>
-            </Section>
-          )}
-
           {/* ТАНИЛЦУУЛГА */}
           <Section
             icon={UserRound}
             title="Товч танилцуулга"
-            error={validationErrors.bio}
-            action={isEditMode ? { label: bio ? "Засах" : "Нэмэх", onClick: () => setActiveModal("bio") } : undefined}
+            error={sectionErrors.bio}
+            action={{ label: bio ? "Засах" : "Нэмэх", onClick: () => setActiveModal("bio"), busy: savingSection === "bio" }}
           >
             {bio ? (
               <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed whitespace-pre-line wrap-break-word">{bio}</p>
@@ -649,8 +686,8 @@ export default function StaffProfilePage() {
           <Section
             icon={Wrench}
             title="Ур чадвар"
-            error={validationErrors.skills}
-            action={isEditMode ? { label: "Засах", onClick: () => setActiveModal("skills") } : undefined}
+            error={sectionErrors.skills}
+            action={{ label: "Засах", onClick: () => setActiveModal("skills"), busy: savingSection === "skills" }}
           >
             <div className="space-y-4">
               <ChipGroup title="Ур чадвар" items={skills.technical} />
@@ -662,8 +699,8 @@ export default function StaffProfilePage() {
           <Section
             icon={Briefcase}
             title="Ажлын туршлага"
-            error={validationErrors.experience}
-            action={isEditMode ? { label: experience.length ? "Засах" : "Нэмэх", onClick: () => setActiveModal("experience") } : undefined}
+            error={sectionErrors.experience}
+            action={{ label: experience.length ? "Засах" : "Нэмэх", onClick: () => setActiveModal("experience"), busy: savingSection === "experience" }}
           >
             {experience.length > 0 ? (
               <ol className="relative space-y-5 before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-px before:bg-gray-200">
@@ -694,8 +731,8 @@ export default function StaffProfilePage() {
           <Section
             icon={GraduationCap}
             title="Боловсрол"
-            error={validationErrors.education}
-            action={isEditMode ? { label: education.length ? "Засах" : "Нэмэх", onClick: () => setActiveModal("education") } : undefined}
+            error={sectionErrors.education}
+            action={{ label: education.length ? "Засах" : "Нэмэх", onClick: () => setActiveModal("education"), busy: savingSection === "education" }}
           >
             {education.length > 0 ? (
               <ul className="space-y-3">
@@ -730,50 +767,63 @@ export default function StaffProfilePage() {
           <Section
             icon={Clock}
             title="Ажиллах боломжтой цаг"
-            description={isEditMode ? "Ажиллах өдрөө асааж, цагаа оруулна уу." : undefined}
-            error={validationErrors.availability}
+            description={editing === "availability" ? "Ажиллах өдрөө асааж, цагаа оруулна уу." : undefined}
+            error={editing === "availability" ? undefined : sectionErrors.availability}
+            action={
+              editing === "availability"
+                ? undefined
+                : { label: enabledDays.length ? "Засах" : "Нэмэх", onClick: startAvailabilityEdit }
+            }
           >
-            {isEditMode ? (
-              <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 overflow-hidden">
-                {DAYS.map(([key, label]) => {
-                  const day = availability?.[key] || { enabled: false, from: "", to: "" }
-                  return (
-                    <div key={key} className={`p-3 sm:p-4 transition ${day.enabled ? "bg-orange-50/40" : "bg-white"}`}>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div className="flex items-center justify-between sm:w-40 sm:shrink-0">
-                          <span className="font-medium text-gray-800">{label}</span>
-                          <Switch
-                            checked={day.enabled}
-                            label={`${label} гариг ажиллах`}
-                            onChange={(checked) => updateDay(key, { enabled: checked })}
-                          />
-                        </div>
-                        {day.enabled ? (
-                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:gap-3">
-                            <input
-                              type="time"
-                              aria-label={`${label} эхлэх цаг`}
-                              value={day.from}
-                              onChange={(e) => updateDay(key, { from: e.target.value })}
-                              className="w-full sm:w-36 h-11 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:border-orange-500 outline-none"
-                            />
-                            <span className="text-gray-400 text-sm">—</span>
-                            <input
-                              type="time"
-                              aria-label={`${label} дуусах цаг`}
-                              value={day.to}
-                              onChange={(e) => updateDay(key, { to: e.target.value })}
-                              className="w-full sm:w-36 h-11 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:border-orange-500 outline-none"
+            {editing === "availability" ? (
+              <form onSubmit={saveAvailability} noValidate>
+                <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 overflow-hidden">
+                  {DAYS.map(([key, label]) => {
+                    const day = availabilityDraft[key] || EMPTY_DAY
+                    return (
+                      <div key={key} className={`p-3 sm:p-4 transition ${day.enabled ? "bg-orange-50/40" : "bg-white"}`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex items-center justify-between sm:w-40 sm:shrink-0">
+                            <span className="font-medium text-gray-800">{label}</span>
+                            <Switch
+                              checked={day.enabled}
+                              label={`${label} гариг ажиллах`}
+                              onChange={(checked) => updateDay(key, { enabled: checked })}
                             />
                           </div>
-                        ) : (
-                          <span className="text-sm text-gray-400">Амарна</span>
-                        )}
+                          {day.enabled ? (
+                            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:gap-3">
+                              <input
+                                type="time"
+                                aria-label={`${label} эхлэх цаг`}
+                                value={day.from}
+                                onChange={(e) => updateDay(key, { from: e.target.value })}
+                                className="w-full sm:w-36 h-11 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:border-orange-500 outline-none"
+                              />
+                              <span className="text-gray-400 text-sm">—</span>
+                              <input
+                                type="time"
+                                aria-label={`${label} дуусах цаг`}
+                                value={day.to}
+                                onChange={(e) => updateDay(key, { to: e.target.value })}
+                                className="w-full sm:w-36 h-11 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:border-orange-500 outline-none"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">Амарна</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+                {sectionErrors.availability && (
+                  <p role="alert" className="mt-3 flex items-center gap-1.5 text-sm text-red-600">
+                    <AlertTriangle className="w-4 h-4 shrink-0" /> {sectionErrors.availability}
+                  </p>
+                )}
+                <CardActions saving={savingSection === "availability"} onCancel={() => setEditing(null)} />
+              </form>
             ) : enabledDays.length > 0 ? (
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {DAYS.map(([key, label]) => {
@@ -797,76 +847,35 @@ export default function StaffProfilePage() {
               <EmptyHint text="Ажиллах боломжтой цагаа оруулаагүй байна." />
             )}
           </Section>
-
-          {/* ХАДГАЛАХ — утсан дээр доод талд бэхлэгдэнэ */}
-          {isEditMode && (
-            <div
-              data-mobile-bottom-bar
-              className="fixed inset-x-0 bottom-0 z-40 sm:static sm:z-auto bg-white/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-none border-t border-gray-100 sm:border-0 px-4 py-3 sm:p-0 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] sm:shadow-none"
-            >
-              <div className="flex gap-3 sm:justify-end">
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  disabled={saving}
-                  className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-sm font-semibold border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition disabled:opacity-50"
-                >
-                  Болих
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || uploadingAvatar}
-                  className="flex-2 sm:flex-none inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl text-sm font-semibold bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white shadow-sm transition"
-                >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {saving ? "Хадгалж байна..." : "Хадгалах"}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      </form>
+      </div>
 
-      {/* MODALS */}
+      {/* МОДАЛУУД — хадгалах дарахад тухайн хэсгийг шууд хадгална */}
       <BioModal
         open={activeModal === "bio"}
         value={bio}
-        onSave={(value) => {
-          setBio(value)
-          setActiveModal(null)
-        }}
+        onSave={(value) => saveFromModal("bio", { bio: value }, value, bio, setBio)}
         onClose={() => setActiveModal(null)}
       />
 
       <SkillsModal
         open={activeModal === "skills"}
         value={skills}
-        onSave={(data) => {
-          setSkills(data)
-          setActiveModal(null)
-        }}
+        onSave={(data) => saveFromModal("skills", { skills: data }, data, skills, setSkills)}
         onClose={() => setActiveModal(null)}
       />
 
       <ExperienceModal
         open={activeModal === "experience"}
         value={experience}
-        onSave={(updatedList) => {
-          setExperience(updatedList)
-          setValidationErrors((prev) => ({ ...prev, experience: "" }))
-          setActiveModal(null)
-        }}
+        onSave={(list) => saveFromModal("experience", { experience: list }, list, experience, setExperience)}
         onClose={() => setActiveModal(null)}
       />
 
       <EducationModal
         open={activeModal === "education"}
-        value={education} 
-        onSave={(updatedList) => {
-          setEducation(updatedList) 
-          setValidationErrors((prev) => ({ ...prev, education: "" }))
-          setActiveModal(null)
-        }}
+        value={education}
+        onSave={(list) => saveFromModal("education", { education: list }, list, education, setEducation)}
         onClose={() => setActiveModal(null)}
       />
     </div>
