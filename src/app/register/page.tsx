@@ -352,7 +352,7 @@ export default function RegisterPage() {
 
       {/* 6 ОРОНТОЙ КОД БАТАЛГААЖУУЛАХ MODAL */}
       {showModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl border border-orange-50 text-center animate-in fade-in zoom-in-95 duration-200">
             
             <div className="mx-auto w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mb-6">
