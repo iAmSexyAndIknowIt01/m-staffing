@@ -268,7 +268,8 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
               disabled={list.length === 0}
               className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-sm transition-all"
             >
-              Өөрчлөлтийг баталгаажуулж хадгалах
+              <span className="sm:hidden">Хадгалах</span>
+              <span className="hidden sm:inline">Өөрчлөлтийг баталгаажуулж хадгалах</span>
             </button>
           )}
         </div>
