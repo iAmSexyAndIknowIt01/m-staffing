@@ -283,7 +283,7 @@ function SkillsModalContent({ value, onSave, onClose }: Props) {
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
           <SkillPicker
             type="technical"
-            title="Техникийн ур чадвар"
+            title="Ур чадвар"
             hint="Хайгаад жагсаалтаас сонгоно уу."
             placeholder="Жишээ нь: Excel, Касс, Жолоо..."
             icon={Code2}
