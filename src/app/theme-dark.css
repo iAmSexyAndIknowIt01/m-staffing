@@ -28,9 +28,9 @@
   :where(html.dark) .bg-orange-100\/40 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-100\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 12%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-100\/80 { background-color: color-mix(in srgb, var(--color-orange-500) 16%, var(--dk-surface)); }
-  :where(html.dark) .bg-orange-200\/20 { background-color: color-mix(in srgb, var(--color-orange-500) 6%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50 { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/30 { background-color: color-mix(in srgb, var(--color-orange-500) 4%, var(--dk-surface)); }
+  :where(html.dark) .bg-orange-50\/40 { background-color: color-mix(in srgb, var(--color-orange-500) 6%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/50 { background-color: color-mix(in srgb, var(--color-orange-500) 7%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/70 { background-color: color-mix(in srgb, var(--color-orange-500) 10%, var(--dk-surface)); }

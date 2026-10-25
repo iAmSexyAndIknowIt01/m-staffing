@@ -75,11 +75,11 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 sm:p-4">
+      <div className="bg-white w-full max-w-3xl rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
         
         {/* HEADER */}
-        <div className="p-6 border-b flex justify-between items-center bg-white shrink-0">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
             <GraduationCap size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Боловсролын мэдээлэл удирдах
           </h2>
@@ -94,7 +94,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
               <label className="text-xs font-bold text-gray-400 uppercase">Нэмэгдсэн боловсрол ({list.length})</label>
               <div className="grid grid-cols-1 gap-2">
                 {list.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3.5 bg-gray-50 border rounded-xl">
+                  <div key={idx} className="flex justify-between items-center p-3.5 bg-gray-50 border border-gray-200 rounded-xl">
                     <div>
                       <h4 className="font-bold text-sm text-gray-800">{item.school}</h4>
                       <p className="text-xs text-gray-500">
@@ -115,7 +115,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
           )}
 
           {/* ФОРМ ОРУУЛАХ ХЭСЭГ */}
-          <div className="border border-dashed p-5 rounded-2xl bg-gray-50/50 space-y-4">
+          <div className="border border-gray-200 border-dashed p-5 rounded-2xl bg-gray-50/50 space-y-4">
             <h3 className="text-sm font-bold text-gray-700">
               {editingIndex !== null ? "Мэдээлэл засах" : "Шинээр боловсрол нэмэх"}
             </h3>
@@ -190,7 +190,7 @@ function EducationModalContent({ value, onSave, onClose }: Props) {
         </div>
 
         {/* FOOTER */}
-        <div className="border-t p-6 flex justify-end gap-3 bg-gray-50 shrink-0">
+        <div className="border-t border-gray-100 p-6 flex justify-end gap-3 bg-gray-50 shrink-0">
           <button onClick={onClose} className="px-5 py-2.5 border bg-white border-gray-300 text-gray-700 rounded-xl text-sm font-semibold">Цуцлах</button>
           <button
             type="button"
