@@ -62,7 +62,16 @@ export default function JobDetailView({
   handleCompanyClick,
   triggerApplyConfirmation,
   onClose,
-}: JobDetailHelpers & { job: JobDetail; onClose: () => void }) {
+  action,
+  topSection,
+}: JobDetailHelpers & {
+  job: JobDetail
+  onClose: () => void
+  // «Анкет илгээх» товчны оронд харуулах элемент (жишээ нь хүсэлтийн хуудсанд төлөв)
+  action?: (variant: "header" | "mobile") => ReactNode
+  // Толгой хэсгийн шууд доор (үндсэн агуулгаас дээр) харуулах нэмэлт хэсэг
+  topSection?: ReactNode
+}) {
   const isApplied = job.is_applied || (Array.isArray(appliedJobIds) && appliedJobIds.includes(job.id));
   const company = job.mt_company;
   const companyId = company?.id || company?.company_id;
@@ -174,10 +183,12 @@ export default function JobDetailView({
               <p className="text-2xl font-extrabold text-emerald-300">{salaryText}</p>
               {salaryTypeText && <p className="text-xs font-medium text-slate-300/80">{salaryTypeText}</p>}
             </div>
-            {applyButton(isApplied ? "" : "bg-white! text-orange-700! hover:bg-orange-50! shadow-slate-950/30!")}
+            {action ? action("header") : applyButton(isApplied ? "" : "bg-white! text-orange-700! hover:bg-orange-50! shadow-slate-950/30!")}
           </div>
         </div>
       </section>
+
+      {topSection}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* ЗҮҮН: ҮҮРЭГ, ШААРДЛАГА */}
@@ -256,7 +267,7 @@ export default function JobDetailView({
           <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Цалин</p>
           <p className="text-sm font-bold text-emerald-600 truncate">{salaryText}</p>
         </div>
-        {applyButton("shrink-0")}
+        {action ? action("mobile") : applyButton("shrink-0")}
       </div>
     </div>
   );

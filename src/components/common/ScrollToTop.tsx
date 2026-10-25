@@ -57,7 +57,7 @@ export default function ScrollToTop() {
       title="Дээш буцах"
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible}
-      className={`scroll-to-top group fixed right-5 md:right-8 z-30 ${
+      className={`scroll-to-top group fixed right-5 md:right-8 z-45 ${
         // Admin хуудсанд горим солих товч баруун доод буланд байдаг тул түүний дээр байрлана
         pathname.startsWith("/admin") ? "bottom-20" : "bottom-5 md:bottom-8"
       } w-13 h-13 rounded-full bg-white/90 backdrop-blur-md border border-orange-100 shadow-[0_10px_30px_rgba(255,122,0,.18)] grid place-items-center text-orange-600 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(255,122,0,.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 ${

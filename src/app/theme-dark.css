@@ -26,14 +26,12 @@
   :where(html.dark) .bg-orange-100 { background-color: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-100\/40 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-100\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 12%, var(--dk-surface)); }
-  :where(html.dark) .bg-orange-100\/80 { background-color: color-mix(in srgb, var(--color-orange-500) 16%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50 { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/30 { background-color: color-mix(in srgb, var(--color-orange-500) 4%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/40 { background-color: color-mix(in srgb, var(--color-orange-500) 6%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/50 { background-color: color-mix(in srgb, var(--color-orange-500) 7%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/60 { background-color: color-mix(in srgb, var(--color-orange-500) 8%, var(--dk-surface)); }
   :where(html.dark) .bg-orange-50\/70 { background-color: color-mix(in srgb, var(--color-orange-500) 10%, var(--dk-surface)); }
-  :where(html.dark) .bg-orange-50\/80 { background-color: color-mix(in srgb, var(--color-orange-500) 11%, var(--dk-surface)); }
   :where(html.dark) .bg-pink-100 { background-color: color-mix(in srgb, var(--color-pink-500) 20%, var(--dk-surface)); }
   :where(html.dark) .bg-pink-50\/50 { background-color: color-mix(in srgb, var(--color-pink-500) 7%, var(--dk-surface)); }
   :where(html.dark) .bg-purple-50 { background-color: color-mix(in srgb, var(--color-purple-500) 14%, var(--dk-surface)); }
@@ -45,11 +43,8 @@
   :where(html.dark) .bg-slate-100 { background-color: var(--dk-surface-3); }
   :where(html.dark) .bg-slate-200\/60 { background-color: color-mix(in srgb, var(--dk-surface-4) 60%, transparent); }
   :where(html.dark) .bg-slate-50 { background-color: var(--dk-surface-2); }
-  :where(html.dark) .bg-slate-50\/40 { background-color: color-mix(in srgb, var(--dk-surface-2) 40%, transparent); }
   :where(html.dark) .bg-slate-50\/50 { background-color: color-mix(in srgb, var(--dk-surface-2) 50%, transparent); }
   :where(html.dark) .bg-slate-50\/60 { background-color: color-mix(in srgb, var(--dk-surface-2) 60%, transparent); }
-  :where(html.dark) .bg-slate-50\/70 { background-color: color-mix(in srgb, var(--dk-surface-2) 70%, transparent); }
-  :where(html.dark) .bg-slate-800 { background-color: var(--dk-raised-hover); }
   :where(html.dark) .bg-slate-800\/80 { background-color: color-mix(in srgb, var(--dk-raised-hover) 80%, transparent); }
   :where(html.dark) .bg-slate-900 { background-color: var(--dk-raised); }
   :where(html.dark) .bg-slate-900\/50 { background-color: color-mix(in srgb, var(--dk-raised) 50%, transparent); }
@@ -66,19 +61,16 @@
   :where(html.dark) .bg-white\/90 { background-color: color-mix(in srgb, var(--dk-surface) 90%, transparent); }
   :where(html.dark) .bg-white\/95 { background-color: color-mix(in srgb, var(--dk-surface) 95%, transparent); }
   :where(html.dark) .border-amber-100 { border-color: color-mix(in srgb, var(--color-amber-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .border-amber-200 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-amber-200\/50 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-amber-200\/60 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-amber-200\/80 { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-blue-200\/50 { border-color: color-mix(in srgb, var(--color-blue-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-emerald-100 { border-color: color-mix(in srgb, var(--color-emerald-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-emerald-200 { border-color: color-mix(in srgb, var(--color-emerald-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-emerald-200\/50 { border-color: color-mix(in srgb, var(--color-emerald-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-emerald-200\/60 { border-color: color-mix(in srgb, var(--color-emerald-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-gray-100 { border-color: var(--dk-border); }
-  :where(html.dark) .border-gray-100\/50 { border-color: color-mix(in srgb, var(--dk-border) 50%, transparent); }
   :where(html.dark) .border-gray-200 { border-color: var(--dk-border-strong); }
   :where(html.dark) .border-gray-200\/50 { border-color: color-mix(in srgb, var(--dk-border-strong) 50%, transparent); }
-  :where(html.dark) .border-gray-200\/60 { border-color: color-mix(in srgb, var(--dk-border-strong) 60%, transparent); }
   :where(html.dark) .border-gray-200\/80 { border-color: color-mix(in srgb, var(--dk-border-strong) 80%, transparent); }
   :where(html.dark) .border-gray-300 { border-color: var(--dk-border-strong); }
   :where(html.dark) .border-gray-400 { border-color: var(--dk-border-heavy); }
@@ -88,16 +80,15 @@
   :where(html.dark) .border-orange-100\/60 { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-orange-200 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-orange-200\/50 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-orange-200\/60 { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-orange-50 { border-color: color-mix(in srgb, var(--color-orange-500) 22%, var(--dk-surface)); }
   :where(html.dark) .border-pink-200 { border-color: color-mix(in srgb, var(--color-pink-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-red-100 { border-color: color-mix(in srgb, var(--color-red-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-red-200 { border-color: color-mix(in srgb, var(--color-red-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-rose-100 { border-color: color-mix(in srgb, var(--color-rose-500) 28%, var(--dk-surface)); }
+  :where(html.dark) .border-rose-200 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-rose-200\/50 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
-  :where(html.dark) .border-rose-200\/60 { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
+  :where(html.dark) .border-sky-200 { border-color: color-mix(in srgb, var(--color-sky-500) 36%, var(--dk-surface)); }
   :where(html.dark) .border-slate-100 { border-color: var(--dk-border); }
-  :where(html.dark) .border-slate-100\/80 { border-color: color-mix(in srgb, var(--dk-border) 80%, transparent); }
   :where(html.dark) .border-slate-200 { border-color: var(--dk-border-strong); }
   :where(html.dark) .border-slate-200\/40 { border-color: color-mix(in srgb, var(--dk-border-strong) 40%, transparent); }
   :where(html.dark) .border-slate-200\/50 { border-color: color-mix(in srgb, var(--dk-border-strong) 50%, transparent); }
@@ -108,16 +99,15 @@
   :where(html.dark) .border-violet-100\/50 { border-color: color-mix(in srgb, var(--color-violet-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-white { border-color: var(--dk-border); }
   :where(html.dark) .disabled\:bg-gray-100:disabled { background-color: var(--dk-surface-3); }
-  :where(html.dark) .disabled\:bg-gray-300:disabled { background-color: var(--dk-surface-5); }
   :where(html.dark) .divide-gray-100 > :not(:last-child) { border-color: var(--dk-border); }
   :where(html.dark) .divide-gray-50 > :not(:last-child) { border-color: var(--dk-border); }
   :where(html.dark) .divide-slate-100 > :not(:last-child) { border-color: var(--dk-border); }
   :where(html.dark) .focus-visible\:bg-orange-50\/50:focus-visible { background-color: color-mix(in srgb, var(--color-orange-500) 7%, var(--dk-surface)); }
   :where(html.dark) .focus\:bg-white:focus { background-color: var(--dk-surface); }
   :where(html.dark) .focus\:border-slate-400:focus { border-color: var(--dk-border-heavy); }
-  :where(html.dark) .from-amber-50 { --tw-gradient-from: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
   :where(html.dark) .from-orange-100 { --tw-gradient-from: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
   :where(html.dark) .from-white { --tw-gradient-from: var(--dk-surface); }
+  :where(html.dark) .group:hover .group-hover\:text-gray-900 { color: var(--dk-fg); }
   :where(html.dark) .group:hover .group-hover\:text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .hover\:bg-amber-100\/50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 10%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-amber-50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
@@ -129,7 +119,6 @@
   :where(html.dark) .hover\:bg-gray-50\/50:hover { background-color: color-mix(in srgb, var(--dk-surface-2) 50%, transparent); }
   :where(html.dark) .hover\:bg-gray-800:hover { background-color: var(--dk-raised-hover); }
   :where(html.dark) .hover\:bg-orange-100:hover { background-color: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
-  :where(html.dark) .hover\:bg-orange-100\/70:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-orange-100\/80:hover { background-color: color-mix(in srgb, var(--color-orange-500) 16%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-orange-50:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-orange-50\!:hover { background-color: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)) !important; }
@@ -149,10 +138,7 @@
   :where(html.dark) .hover\:bg-slate-800:hover { background-color: var(--dk-raised-hover); }
   :where(html.dark) .hover\:bg-white:hover { background-color: var(--dk-surface); }
   :where(html.dark) .hover\:bg-white\/95:hover { background-color: color-mix(in srgb, var(--dk-surface) 95%, transparent); }
-  :where(html.dark) .hover\:border-blue-100:hover { border-color: color-mix(in srgb, var(--color-blue-500) 28%, var(--dk-surface)); }
-  :where(html.dark) .hover\:border-emerald-100:hover { border-color: color-mix(in srgb, var(--color-emerald-500) 28%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-gray-200:hover { border-color: var(--dk-border-strong); }
-  :where(html.dark) .hover\:border-gray-300:hover { border-color: var(--dk-border-strong); }
   :where(html.dark) .hover\:border-orange-100:hover { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-orange-200:hover { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-rose-200:hover { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
@@ -190,7 +176,9 @@
   :where(html.dark) .text-amber-600 { color: var(--color-amber-400); }
   :where(html.dark) .text-amber-700 { color: var(--color-amber-300); }
   :where(html.dark) .text-amber-800 { color: var(--color-amber-300); }
+  :where(html.dark) .text-amber-800\/80 { color: color-mix(in srgb, var(--color-amber-300) 80%, transparent); }
   :where(html.dark) .text-amber-900 { color: var(--color-amber-200); }
+  :where(html.dark) .text-amber-900\/80 { color: color-mix(in srgb, var(--color-amber-200) 80%, transparent); }
   :where(html.dark) .text-amber-950 { color: var(--color-amber-200); }
   :where(html.dark) .text-blue-600 { color: var(--color-blue-400); }
   :where(html.dark) .text-blue-700 { color: var(--color-blue-300); }
@@ -218,6 +206,8 @@
   :where(html.dark) .text-red-900 { color: var(--color-red-200); }
   :where(html.dark) .text-rose-600 { color: var(--color-rose-400); }
   :where(html.dark) .text-rose-700 { color: var(--color-rose-300); }
+  :where(html.dark) .text-sky-600 { color: var(--color-sky-400); }
+  :where(html.dark) .text-sky-700 { color: var(--color-sky-300); }
   :where(html.dark) .text-slate-300 { color: var(--dk-fg-5); }
   :where(html.dark) .text-slate-300\/80 { color: color-mix(in srgb, var(--dk-fg-5) 80%, transparent); }
   :where(html.dark) .text-slate-300\/90 { color: color-mix(in srgb, var(--dk-fg-5) 90%, transparent); }
@@ -229,6 +219,5 @@
   :where(html.dark) .text-slate-900 { color: var(--dk-fg); }
   :where(html.dark) .text-violet-700 { color: var(--color-violet-300); }
   :where(html.dark) .to-gray-50 { --tw-gradient-to: var(--dk-surface-2); }
-  :where(html.dark) .to-orange-50 { --tw-gradient-to: color-mix(in srgb, var(--color-orange-500) 14%, var(--dk-surface)); }
   :where(html.dark) .to-white { --tw-gradient-to: var(--dk-surface); }
 }
