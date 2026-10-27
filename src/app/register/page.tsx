@@ -3,9 +3,44 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { validateNewPassword } from "@/lib/password"
+import { CheckCircle2, Circle, XCircle } from "lucide-react"
+import { getPasswordStrength, validateNewPassword } from "@/lib/password"
 import { CYRILLIC_NAME_MAX_LENGTH, getNameError, normalizeName } from "@/lib/mongolianName"
 import PasswordInput from "@/components/common/PasswordInput"
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const LAST_NAME_EMPTY = "Овгоо оруулна уу"
+const FIRST_NAME_EMPTY = "Нэрээ оруулна уу"
+
+type Field = "lastName" | "firstName" | "companyName" | "email" | "password"
+
+const STRENGTH_STYLES = ["", "bg-red-500", "bg-amber-500", "bg-lime-500", "bg-emerald-500"]
+const STRENGTH_TEXT = ["", "text-red-500", "text-amber-600", "text-lime-600", "text-emerald-600"]
+
+function inputStateClass(state: "error" | "valid" | "idle") {
+  if (state === "error") return "border-red-400 focus:border-red-500 bg-red-50/30"
+  if (state === "valid") return "border-emerald-300 focus:border-emerald-500"
+  return "border-orange-100 focus:border-orange-500"
+}
+
+// Талбарын доорх мөр: алдаа (улаан), зөв (ногоон) эсвэл зааварчилгаа (саарал)
+function FieldMessage({ id, error, valid, hint }: { id: string; error: string | null; valid?: boolean; hint?: string }) {
+  if (error) {
+    return (
+      <p id={id} role="alert" className="mt-1.5 flex items-start gap-1 text-xs font-medium text-red-500">
+        <XCircle className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" /> {error}
+      </p>
+    )
+  }
+  if (valid) {
+    return (
+      <p id={id} className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
+        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> Зөв байна
+      </p>
+    )
+  }
+  return hint ? <p id={id} className="mt-1.5 text-xs text-gray-400">{hint}</p> : null
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -18,11 +53,14 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
-  // Овог, нэр дээр улаан анхааруулга харуулах state-үүд
-  const [lastNameError, setLastNameError] = useState<string | null>(null)
-  const [firstNameError, setFirstNameError] = useState<string | null>(null)
-  // Талбараас гарсны (blur) дараа л шалгаж эхэлнэ; түүнээс хойш шивэх бүрт дахин шалгана
-  const [touched, setTouched] = useState({ lastName: false, firstName: false })
+  // Талбараас гарсан эсвэл «Бүртгүүлэх» дарсан бол хоосон талбарын алдааг ч харуулна
+  const [touched, setTouched] = useState<Record<Field, boolean>>({
+    lastName: false,
+    firstName: false,
+    companyName: false,
+    email: false,
+    password: false,
+  })
 
   // Баталгаажуулалтын Modal болон Кодны state-үүд
   const [showModal, setShowModal] = useState(false)
@@ -53,54 +91,44 @@ export default function RegisterPage() {
     setAlertModal({ show: true, title, message, type, onConfirm })
   }
 
-  const LAST_NAME_EMPTY = "Овгоо оруулна уу"
-  const FIRST_NAME_EMPTY = "Нэрээ оруулна уу"
-
-  const handleLastNameChange = (val: string) => {
-    setLastName(val)
-    if (touched.lastName) setLastNameError(getNameError(val, LAST_NAME_EMPTY))
+  // Шивэх бүрт (realtime) шалгана
+  const errors: Record<Field, string | null> = {
+    lastName: getNameError(lastName, LAST_NAME_EMPTY),
+    firstName: getNameError(firstName, FIRST_NAME_EMPTY),
+    companyName: !companyName.trim()
+      ? "Компанийн нэрээ оруулна уу"
+      : companyName.trim().length < 2
+        ? "Хамгийн багадаа 2 тэмдэгт байна"
+        : null,
+    email: !email.trim()
+      ? "Имэйлээ оруулна уу"
+      : !EMAIL_RE.test(email.trim())
+        ? "Имэйл хаяг буруу байна. Жишээ: name@email.com"
+        : null,
+    password: password ? validateNewPassword(password) : "Нууц үгээ оруулна уу",
   }
+  const values: Record<Field, string> = { lastName, firstName, companyName, email, password }
+  const activeFields: Field[] = role === "staff" ? ["lastName", "firstName", "email", "password"] : ["companyName", "email", "password"]
 
-  const handleFirstNameChange = (val: string) => {
-    setFirstName(val)
-    if (touched.firstName) setFirstNameError(getNameError(val, FIRST_NAME_EMPTY))
+  // Хоосон бол зөвхөн touched үед; имэйлийг «@» бичсэний дараа эсвэл гарсны дараа шалгана
+  const visibleError = (field: Field): string | null => {
+    const value = values[field]
+    const started = field === "email" ? value.includes("@") : value.length > 0
+    return touched[field] || started ? errors[field] : null
   }
+  const fieldState = (field: Field) =>
+    visibleError(field) ? "error" : values[field] && !errors[field] ? "valid" : "idle"
+  const markTouched = (field: Field) => setTouched((prev) => ({ ...prev, [field]: true }))
 
-  const handleNameBlur = (field: "lastName" | "firstName") => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-    if (field === "lastName") setLastNameError(getNameError(lastName, LAST_NAME_EMPTY))
-    else setFirstNameError(getNameError(firstName, FIRST_NAME_EMPTY))
-  }
+  const strength = getPasswordStrength(password)
 
   // Алхам 1: "Бүртгүүлэх" дарахад код үүсгэж имэйл рүү илгээнэ
   async function handleSendAuthMail() {
-    if (!email || !password) {
-      showAlert("Анхааруулга", "Бүх талбарыг бөглөнө үү", "warning")
-      return
-    }
-
-    if (role === "staff") {
-      // Овог нэр кирилл үсэг эсэхийг баталгаажуулах
-      const lastErr = getNameError(lastName, LAST_NAME_EMPTY)
-      const firstErr = getNameError(firstName, FIRST_NAME_EMPTY)
-      if (lastErr || firstErr) {
-        setTouched({ lastName: true, firstName: true })
-        setLastNameError(lastErr)
-        setFirstNameError(firstErr)
-        showAlert("Анхааруулга", (lastErr || firstErr) as string, "warning")
-        return
-      }
-    }
-
-    if (role === "company" && !companyName) {
-      showAlert("Анхааруулга", "Компанийн нэр оруулна уу", "warning")
-      return
-    }
-
-    // Код илгээхээс өмнө шалгана — эс бөгөөс имэйлээ баталгаажуулсны дараа бүртгэл амжилтгүй болно
-    const passwordError = validateNewPassword(password)
-    if (passwordError) {
-      showAlert("Анхааруулга", passwordError, "warning")
+    // Бүх талбарыг шалгаж, эхний алдаатай талбар руу шилжинэ
+    setTouched({ lastName: true, firstName: true, companyName: true, email: true, password: true })
+    const firstInvalid = activeFields.find((field) => errors[field])
+    if (firstInvalid) {
+      document.getElementById(`register-${firstInvalid}`)?.focus()
       return
     }
 
@@ -256,83 +284,121 @@ export default function RegisterPage() {
 
           {role === "staff" ? (
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* ОВОГ INPUT */}
-              <div>
-                <label className={`transition-colors ${lastNameError ? "text-red-500 font-medium" : ""}`}>Овог</label>
-                <input
-                  value={lastName}
-                  onChange={(e) => handleLastNameChange(e.target.value)}
-                  onBlur={() => handleNameBlur("lastName")}
-                  autoComplete="family-name"
-                  maxLength={CYRILLIC_NAME_MAX_LENGTH}
-                  aria-invalid={!!lastNameError}
-                  aria-describedby="lastName-hint"
-                  placeholder="Жишээ: Батбаяр"
-                  className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
-                    lastNameError 
-                      ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
-                      : "border-orange-100 focus:border-orange-500"
-                  }`}
-                />
-                <p id="lastName-hint" className={`mt-1.5 text-xs font-medium ${lastNameError ? "text-red-500" : "text-gray-400"}`}>
-                  {lastNameError || "Кирилл үсгээр бичнэ"}
-                </p>
-              </div>
-
-              {/* НЭР INPUT */}
-              <div>
-                <label className={`transition-colors ${firstNameError ? "text-red-500 font-medium" : ""}`}>Нэр</label>
-                <input
-                  value={firstName}
-                  onChange={(e) => handleFirstNameChange(e.target.value)}
-                  onBlur={() => handleNameBlur("firstName")}
-                  autoComplete="given-name"
-                  maxLength={CYRILLIC_NAME_MAX_LENGTH}
-                  aria-invalid={!!firstNameError}
-                  aria-describedby="firstName-hint"
-                  placeholder="Жишээ: Сарангэрэл"
-                  className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
-                    firstNameError 
-                      ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
-                      : "border-orange-100 focus:border-orange-500"
-                  }`}
-                />
-                <p id="firstName-hint" className={`mt-1.5 text-xs font-medium ${firstNameError ? "text-red-500" : "text-gray-400"}`}>
-                  {firstNameError || "Кирилл үсгээр бичнэ"}
-                </p>
-              </div>
+              {(
+                [
+                  ["lastName", "Овог", lastName, setLastName, "family-name", "Жишээ: Батбаяр"],
+                  ["firstName", "Нэр", firstName, setFirstName, "given-name", "Жишээ: Сарангэрэл"],
+                ] as const
+              ).map(([field, label, value, setValue, autoComplete, placeholder]) => (
+                <div key={field}>
+                  <label htmlFor={`register-${field}`} className={visibleError(field) ? "text-red-500" : ""}>{label}</label>
+                  <input
+                    id={`register-${field}`}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    onBlur={() => markTouched(field)}
+                    autoComplete={autoComplete}
+                    maxLength={CYRILLIC_NAME_MAX_LENGTH}
+                    aria-invalid={!!visibleError(field)}
+                    aria-describedby={`register-${field}-msg`}
+                    placeholder={placeholder}
+                    className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${inputStateClass(fieldState(field))}`}
+                  />
+                  <FieldMessage
+                    id={`register-${field}-msg`}
+                    error={visibleError(field)}
+                    valid={fieldState(field) === "valid"}
+                    hint="Кирилл үсгээр бичнэ"
+                  />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="mt-8">
-              <label>Компанийн нэр</label>
+              <label htmlFor="register-companyName" className={visibleError("companyName") ? "text-red-500" : ""}>Компанийн нэр</label>
               <input
+                id="register-companyName"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+                onBlur={() => markTouched("companyName")}
+                autoComplete="organization"
+                aria-invalid={!!visibleError("companyName")}
+                aria-describedby="register-companyName-msg"
+                className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${inputStateClass(fieldState("companyName"))}`}
               />
+              <FieldMessage id="register-companyName-msg" error={visibleError("companyName")} valid={fieldState("companyName") === "valid"} />
             </div>
           )}
 
           <div className="mt-6">
-            <label>Имэйл</label>
+            <label htmlFor="register-email" className={visibleError("email") ? "text-red-500" : ""}>Имэйл</label>
             <input
+              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-3 w-full rounded-2xl border border-orange-100 px-5 py-4"
+              onBlur={() => markTouched("email")}
+              autoComplete="email"
+              placeholder="name@email.com"
+              aria-invalid={!!visibleError("email")}
+              aria-describedby="register-email-msg"
+              className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${inputStateClass(fieldState("email"))}`}
             />
+            <FieldMessage id="register-email-msg" error={visibleError("email")} valid={fieldState("email") === "valid"} />
           </div>
 
           <div className="mt-6">
-            <label>Нууц үг</label>
+            <label htmlFor="register-password" className={touched.password && errors.password ? "text-red-500" : ""}>Нууц үг</label>
             <PasswordInput
+              id="register-password"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => markTouched("password")}
+              aria-invalid={touched.password && !!errors.password}
+              aria-describedby="register-password-msg"
               wrapperClassName="mt-3"
-              className="w-full rounded-2xl border border-orange-100 px-5 py-4"
+              className={`w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${inputStateClass(
+                touched.password && errors.password ? "error" : password && !errors.password ? "valid" : "idle"
+              )}`}
             />
-            <p className="mt-2 text-xs text-gray-400">Хамгийн багадаа 8 тэмдэгт, үсэг болон тоо агуулсан байна.</p>
+
+            {/* Нууц үгийн чанар */}
+            <div id="register-password-msg" className="mt-3" aria-live="polite">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 grid grid-cols-4 gap-1.5" aria-hidden="true">
+                  {[1, 2, 3, 4].map((i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 rounded-full transition-colors ${i <= strength.score ? STRENGTH_STYLES[strength.score] : "bg-gray-200"}`}
+                    />
+                  ))}
+                </div>
+                <span className={`w-16 text-right text-xs font-semibold ${STRENGTH_TEXT[strength.score] || "text-gray-400"}`}>
+                  {strength.label || "Чанар"}
+                </span>
+              </div>
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                {strength.checks.map((check) => {
+                  const failed = !check.ok && (touched.password || password.length > 0)
+                  return (
+                    <li
+                      key={check.id}
+                      className={`inline-flex items-center gap-1 ${check.ok ? "text-emerald-600" : failed && touched.password ? "text-red-500" : "text-gray-400"}`}
+                    >
+                      {check.ok ? <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> : <Circle className="w-3.5 h-3.5" aria-hidden="true" />}
+                      {check.label}
+                      <span className="sr-only">{check.ok ? " — хангасан" : " — хангаагүй"}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+              {strength.score >= 2 && strength.score < 4 && (
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Илүү хүчтэй болгохын тулд том, жижиг үсэг, тусгай тэмдэгт (!@#) нэмэх эсвэл 12+ тэмдэгт болгоорой.
+                </p>
+              )}
+            </div>
           </div>
 
           <button
