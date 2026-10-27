@@ -1,4 +1,4 @@
-// Ажил хайгч талын ажлын байрны дэлгэрэнгүй (JobDetailModal, JobDetailView)
+// Ажил хайгч талын ажлын байрны дэлгэрэнгүй (JobDetailView)
 
 export interface JobCompany {
   id?: string

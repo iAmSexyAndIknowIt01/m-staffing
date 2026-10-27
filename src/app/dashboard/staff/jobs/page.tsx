@@ -3,9 +3,9 @@
 import { AlertTriangle, Search } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import AlertModal from "@/components/staff/jobs/AlertModal"
+import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
 import Pagination from "@/components/staff/jobs/Pagination"
-import LoadingLayout from "@/components/staff/common/LoadingLayout"
+import LoadingLayout from "@/components/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
 import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
@@ -70,11 +70,6 @@ export default function StaffJobsPage() {
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
   const [ads, setAds] = useState<Ad[]>([]);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
-  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
-    show: false,
-    message: "",
-    title: "Мэдэгдэл"
-  })
 
   const jobsPerPage = 10
   const jobsTopRef = useRef<HTMLDivElement>(null)
@@ -170,7 +165,7 @@ export default function StaffJobsPage() {
   }
 
   useEffect(() => {
-    if (selectedAd || selectedShareJob || alertModal.show) {
+    if (selectedAd || selectedShareJob) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "unset"
@@ -179,10 +174,10 @@ export default function StaffJobsPage() {
     return () => {
       document.body.style.overflow = "unset"
     }
-  }, [selectedAd, selectedShareJob, alertModal.show])
+  }, [selectedAd, selectedShareJob])
 
-  const showAlert = (message: string, title: string = "Анхааруулга") => {
-    setAlertModal({ show: true, message, title })
+  const showAlert = (message: string, title?: string) => {
+    showDialogAlert(message, { title, tone: title === "Амжилттай" ? "success" : "info" })
   }
 
   const formatSalary = (salaryStr: string | null | undefined) => {
@@ -428,7 +423,7 @@ export default function StaffJobsPage() {
                   isBookmarked={bookmarkedJobIds.includes(job.id)}
                   onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
                   onShare={handleShare}
-                  onClick={() => router.push(`/dashboard/staff/jobs/${job.id}`)}      
+                  href={`/dashboard/staff/jobs/${job.id}`}
                   onCompanyClick={handleCompanyClick}
                   getCompanyLogoUrl={getCompanyLogoUrl}
                   getJobTypeText={getJobTypeText}
@@ -469,11 +464,6 @@ export default function StaffJobsPage() {
           onClose={() => setSelectedAd(null)} 
         />
       )}
-
-      <AlertModal
-        alertModal={alertModal}
-        onClose={() => setAlertModal((prev) => ({ ...prev, show: false }))}
-      />
     </div>
   )
 }

@@ -1,9 +1,11 @@
 "use client"
 
-import { Mail, Phone, User } from "lucide-react"
+import { ArrowLeft, Check, Download, FileWarning, Loader2, Mail, Phone, User } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import LoadingLayout from "@/components/common/LoadingLayout"
+import EmptyState from "@/components/common/EmptyState"
 import type { AvailabilityDay } from "@/types/profile"
-import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import { showAlert } from "@/components/common/AppDialog"
 
@@ -35,13 +37,28 @@ interface ProfileData {
   availability: Record<string, AvailabilityDay | null> | null
 }
 
+const A4_WIDTH_PX = 794
+const A4_HEIGHT_PX = 1123
+
 export default function StaffCVPage() {
-  const router = useRouter()
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const cvTemplateRef = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
+  // A4 (210mm ≈ 794px) хуудсыг дэлгэцийн өргөнд багтаан жижигрүүлэх харьцаа
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el) return
+    const update = () => setScale(Math.min(1, el.clientWidth / A4_WIDTH_PX))
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [profile])
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -107,65 +124,55 @@ export default function StaffCVPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-        <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
-          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-              mstaffing
-            </span>
-          </div>
-        </div>
-        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-          Түр хүлээнэ үү...
-        </p>
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center py-12 px-4">
-        <p className="text-red-500 font-bold mb-4">{error}</p>
-        <button 
-          onClick={() => router.back()} 
-          className="px-5 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold"
-        >
-          &larr; Буцах
-        </button>
-      </div>
+      <EmptyState
+        icon={FileWarning}
+        title="CV-г ачаалж чадсангүй"
+        description={error}
+        action={{ label: "Профайл руу очих", href: "/dashboard/staff/profile" }}
+        className="max-w-lg mx-auto mt-10"
+      />
     )
   }
 
   if (!profile) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4 flex flex-col items-center w-full overflow-x-hidden">
-      
-      {/* УДИРДЛАГЫН ЦЭС */}
-      <div className="w-full max-w-[210mm] flex flex-col sm:flex-row gap-3 sm:gap-0 items-center justify-between mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
-        <button 
-          onClick={() => router.back()} 
-          className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 rounded-lg transition border border-gray-200 flex items-center justify-center gap-1"
-        >
-          &larr; Буцах
-        </button>
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Premium CV хэлбэр</h2>
+    <div className="max-w-[210mm] mx-auto w-full space-y-5">
+      {/* ТОЛГОЙ */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <Link
+            href="/dashboard/staff/profile"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition mb-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Миний профайл
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Миний CV</h1>
+          <p className="text-sm text-gray-500 mt-1">Профайлын мэдээллээс автоматаар үүссэн CV. Өөрчлөхийн тулд профайлаа засна уу.</p>
+        </div>
         <button
+          type="button"
           onClick={handleDownloadPDF}
           disabled={isExporting}
-          className="w-full sm:w-auto px-5 py-2.5 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2"
-          style={{ backgroundColor: "#ea580c" }}
+          className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white text-sm font-semibold shadow-sm transition"
         >
-          {isExporting ? "Бэлдэж байна..." : "PDF-ээр татах"}
+          {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          {isExporting ? "Бэлдэж байна..." : "PDF татах"}
         </button>
       </div>
 
-      {/* А4 ХЭМЖЭЭТЭЙ CV ХЭВЛЭХ ХЭСЭГ */}
-      <div className="w-full max-w-[210mm] overflow-x-auto bg-white rounded-xl shadow-md border border-gray-100 p-1 sm:p-0">
+      {/* А4 ХЭМЖЭЭТЭЙ CV: дэлгэцэнд багтаан жижигрүүлж харуулна (PDF нь бүтэн хэмжээгээр гарна) */}
+      <div ref={previewRef} className="w-full">
+        <div
+          className="mx-auto bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
+          style={{ width: A4_WIDTH_PX * scale, height: A4_HEIGHT_PX * scale }}
+        >
+          <div style={{ width: A4_WIDTH_PX, transform: `scale(${scale})`, transformOrigin: "top left" }}>
         <div 
           ref={cvTemplateRef} 
           style={{ 
@@ -230,7 +237,7 @@ export default function StaffCVPage() {
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {profile.skills.languages.map((lang, index) => (
                         <div key={index} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: "600", color: "#475569" }}>
-                          <span style={{ color: "#ea580c" }}>✓</span> {lang}
+                          <Check size={12} color="#ea580c" strokeWidth={3} aria-hidden="true" /> {lang}
                         </div>
                       ))}
                     </div>
@@ -295,8 +302,9 @@ export default function StaffCVPage() {
             <span style={{ fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.05em", color: "#ea580c" }}>mstaffing</span>
           </div>
         </div>
+          </div>
+        </div>
       </div>
-
     </div>
   )
 }

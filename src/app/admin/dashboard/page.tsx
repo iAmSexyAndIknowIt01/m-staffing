@@ -1,5 +1,6 @@
 "use client"
 
+import LoadingLayout from "@/components/common/LoadingLayout"
 import { Home, Receipt, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
@@ -79,11 +80,7 @@ export default function AdminDashboard() {
   })
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">
-        Админ самбар уншиж байна...
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   return (
@@ -266,7 +263,7 @@ export default function AdminDashboard() {
                               disabled={actionLoading !== null}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl transition shadow-xs text-xs"
                             >
-                              {actionLoading === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin inline-block" aria-label="Түр хүлээнэ үү" /> : "Баталгаажуулах ✓"}
+                              {actionLoading === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin inline-block" aria-label="Түр хүлээнэ үү" /> : "Баталгаажуулах"}
                             </button>
                           ) : (
                             <span className="text-gray-300 text-xs font-bold pr-2">Шийдвэрлэсэн</span>

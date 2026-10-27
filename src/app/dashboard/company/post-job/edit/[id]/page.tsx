@@ -1,8 +1,8 @@
 import { getSession } from "@/lib/session"
 import { getCompanyJob } from "@/lib/companyJobs"
 import { redirect, notFound } from "next/navigation"
-import Link from "next/link"
 import EditJobForm from "./EditJobForm"
+import BackLink from "@/components/common/BackLink"
 
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -34,12 +34,7 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
       
       {/* БУЦАХ ХОЛБООС */}
       <div>
-        <Link 
-          href="/dashboard/company/post-job" 
-          className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-slate-800 transition"
-        >
-          ← Зарын жагсаалт руу буцах
-        </Link>
+        <BackLink href="/dashboard/company/post-job" label="Зарын жагсаалт" />
       </div>
 
       {/* ТОЛГОЙ ХЭСЭГ */}

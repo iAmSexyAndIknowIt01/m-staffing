@@ -9,6 +9,7 @@ import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
 import EducationModal from "@/components/profile/modals/EducationModal"
 import { getErrorMessage } from "@/lib/errors"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 type Experience = {
   company: string
@@ -254,23 +255,7 @@ export default function StaffProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-        <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
-          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-              mstaffing
-            </span>
-          </div>
-        </div>
-        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-          Түр хүлээнэ үү...
-        </p>
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   return (

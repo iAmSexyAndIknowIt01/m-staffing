@@ -7,8 +7,8 @@ export type PlanType = "free" | "standard" | "premium"
 
 export const PLANS: Record<PlanType, { name: string; price: number; jobLimit: number }> = {
   free: { name: "Үнэгүй багц", price: 0, jobLimit: 10 },
-  standard: { name: "Standard Plan", price: 150000, jobLimit: 50 },
-  premium: { name: "Premium Plan", price: 350000, jobLimit: 100 },
+  standard: { name: "Стандарт багц", price: 150000, jobLimit: 50 },
+  premium: { name: "Премиум багц", price: 350000, jobLimit: 100 },
 }
 
 export const PAID_PLAN_DAYS = 30

@@ -90,6 +90,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8">
+      {/* BG — нэвтрэх, бүртгүүлэх хуудастай ижил */}
+      <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
+      <div className="absolute top-[10%] left-[10%] w-175 h-175 rounded-full bg-orange-300/10 blur-[180px]" />
+      <div className="absolute inset-0 opacity-[0.5] bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)] bg-size-[70px_70px]" />
+
       <Link
         href="/login"
         className="fixed top-4 left-4 sm:top-8 sm:left-8 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base flex items-center gap-3 transition hover:-translate-y-1 z-30"
@@ -97,9 +102,34 @@ export default function ForgotPasswordPage() {
         ← Нэвтрэх
       </Link>
 
-      <div className="glass w-full max-w-lg rounded-4xl sm:rounded-4xl p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
+      <div className="relative z-10 glass w-full max-w-lg rounded-4xl p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
         <p className="orange-text font-bold tracking-[6px] text-sm">MSTAFFING</p>
         <h1 className="text-2xl sm:text-3xl font-black mt-4">Нууц үг сэргээх</h1>
+
+        {/* Алхмын заалт */}
+        <ol className="mt-6 flex items-center gap-2 text-xs font-semibold" aria-label="Алхам">
+          {[
+            ["email", "Имэйл"],
+            ["reset", "Шинэ нууц үг"],
+            ["done", "Дууссан"],
+          ].map(([key, label], i, all) => {
+            const current = all.findIndex(([k]) => k === step)
+            const state = i < current ? "done" : i === current ? "current" : "todo"
+            return (
+              <li key={key} className="flex items-center gap-2" aria-current={state === "current" ? "step" : undefined}>
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    state === "todo" ? "bg-gray-100 text-gray-400" : "bg-orange-500 text-white"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                <span className={`whitespace-nowrap ${state === "todo" ? "text-gray-400" : "text-gray-700"} ${state === "current" ? "" : "hidden sm:inline"}`}>{label}</span>
+                {i < all.length - 1 && <span className="w-6 h-px bg-gray-200" aria-hidden="true" />}
+              </li>
+            )
+          })}
+        </ol>
 
         {step === "email" && (
           <form

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
 import { getErrorMessage } from "@/lib/errors"
-import { Pencil } from "lucide-react"
+import { ArrowLeft, Pencil } from "lucide-react"
 import CompanyProfileView from "@/components/company/CompanyProfileView"
 import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
@@ -173,9 +173,9 @@ export default function CompanyProfilePage() {
         <div className="pt-4">
           <button
             onClick={handleBack}
-            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition shadow-xs"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition"
           >
-            ← Буцах
+            <ArrowLeft className="w-4 h-4" /> Буцах
           </button>
         </div>
 

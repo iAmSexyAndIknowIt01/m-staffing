@@ -7,8 +7,8 @@ import type { JobCompany, JobDetail } from "@/types/job";
 import ConfirmModal from "@/components/staff/jobs/ConfirmModal";
 import SuccessModal from "@/components/staff/jobs/SuccessModal";
 import ProfileIncompleteModal from "@/components/staff/common/ProfileIncompleteModal";
-import AlertModal from "@/components/staff/jobs/AlertModal";
-import LoadingLayout from "@/components/staff/common/LoadingLayout";
+import { showAlert as showDialogAlert } from "@/components/common/AppDialog";
+import LoadingLayout from "@/components/common/LoadingLayout";
 import { getErrorMessage } from "@/lib/errors"
 import { SearchX } from "lucide-react"
 import EmptyState from "@/components/common/EmptyState"
@@ -34,11 +34,6 @@ export default function JobDetailPage() {
   const [showProfileIncompleteModal, setShowProfileIncompleteModal] = useState(false);
   const [profileIncompleteMessage, setProfileIncompleteMessage] = useState("");
   
-  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string; title: string }>({
-    show: false,
-    message: "",
-    title: "Мэдэгдэл"
-  });
 
   // Slider & Drag States & Refs
   const [sliderX, setSliderX] = useState(0);
@@ -47,8 +42,8 @@ export default function JobDetailPage() {
   const handleRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
 
-  const showAlert = (message: string, title: string = "Анхааруулга") => {
-    setAlertModal({ show: true, message, title });
+  const showAlert = (message: string, title?: string) => {
+    showDialogAlert(message, { title, tone: "error" });
   };
 
   // Helper functions
@@ -118,7 +113,7 @@ export default function JobDetailPage() {
 
   // Scroll түгжих
   useEffect(() => {
-    if (showConfirmModal || showSuccessModal || showProfileIncompleteModal || alertModal.show) {
+    if (showConfirmModal || showSuccessModal || showProfileIncompleteModal) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -126,7 +121,7 @@ export default function JobDetailPage() {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [showConfirmModal, showSuccessModal, showProfileIncompleteModal, alertModal.show]);
+  }, [showConfirmModal, showSuccessModal, showProfileIncompleteModal]);
 
   // Профайл шалгах болон Confirm модал нээх
   const triggerApplyConfirmation = async (id: string) => {
@@ -316,6 +311,8 @@ export default function JobDetailPage() {
         trackRef={trackRef}
         handleRef={handleRef}
         onDragStart={handleDragStart}
+        onConfirm={handleApplyJob}
+        job={{ title: job.title, company: job.mt_company?.name, logoUrl: job.mt_company?.logo_url }}
         onClose={() => {
           setShowConfirmModal(false);
           setPendingJobId(null);
@@ -326,11 +323,6 @@ export default function JobDetailPage() {
       <SuccessModal
         show={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-      />
-
-      <AlertModal
-        alertModal={alertModal}
-        onClose={() => setAlertModal((prev) => ({ ...prev, show: false }))}
       />
     </div>
   );
