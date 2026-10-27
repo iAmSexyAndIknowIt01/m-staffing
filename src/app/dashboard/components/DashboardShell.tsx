@@ -193,7 +193,7 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
       </aside>
 
       {/* 3. ҮНДСЭН КОНТЕНТ */}
-      <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-12 overflow-y-auto w-full flex flex-col">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-12 overflow-x-clip w-full flex flex-col">
         {children}
       </main>
 
