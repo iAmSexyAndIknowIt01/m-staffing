@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createPortal } from "react-dom"
-import { AlertTriangle, CheckCircle2, Eye, Loader2, MapPin, RotateCcw, Send, X, XCircle } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Eye, Loader2, MapPin, RotateCcw, Send, Sparkles, X, XCircle } from "lucide-react"
 import LocationModal from "@/components/common/LocationModal"
 import Select from "@/components/common/Select"
 import Combobox from "@/components/common/Combobox"
 import JobDetailView from "@/components/staff/jobs/JobDetailView"
+import JobTemplatePicker from "@/components/company/JobTemplatePicker"
+import { getJobTemplates, type JobTemplate } from "@/lib/jobTemplates"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
 import { getErrorMessage } from "@/lib/errors"
@@ -19,6 +21,7 @@ import {
   JOB_TYPE_OPTIONS,
   SALARY_NEGOTIABLE,
   formatSalaryInput,
+  getJobCategoryLabel,
   isJobCategory,
   getJobTypeLabel,
   jobFormErrors,
@@ -152,6 +155,8 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   const [draftRestored, setDraftRestored] = useState(!!draft)
   const [locationOpen, setLocationOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  // Нээлттэй загвар сонгох цонх: эхлээд харуулах загварын id ("" бол эхнийх), null бол хаалттай
+  const [templatePickerId, setTemplatePickerId] = useState<string | null>(null)
   const [company, setCompany] = useState<{ name: string; logo_url: string | null } | null>(null)
   const [limitInfo, setLimitInfo] = useState<{ approved: boolean; reached: boolean; limit: number } | null>(null)
   const doneRef = useRef(false)
@@ -307,6 +312,26 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   // values.category: жагсаалтын утга, «Бусад»-аар бичсэн салбар эсвэл (бичээгүй үед) "other"
   const categoryChoice = isJobCategory(values.category) ? values.category : values.category ? "other" : ""
   const customCategory = categoryChoice === "other" && values.category !== "other" ? values.category : ""
+  const templates = getJobTemplates(categoryChoice)
+  const categoryLabel = categoryChoice && categoryChoice !== "other" ? getJobCategoryLabel(categoryChoice) : "Ерөнхий загварууд"
+
+  // Загвар ашиглах: бичсэн текст байвал солих эсэхийг асууна; нэр хоосон бол загварын нэрийг оруулна
+  const applyTemplate = async (template: JobTemplate) => {
+    setTemplatePickerId(null)
+    if (values.description.trim() || values.requirements.trim()) {
+      const ok = await showConfirm("Одоо бичсэн «Ажлын үүрэг» болон «Тавигдах шаардлага»-ыг загвараар солих уу?", {
+        title: "Загвараар солих",
+        confirmLabel: "Солих",
+      })
+      if (!ok) return
+    }
+    update({
+      description: template.description,
+      requirements: template.requirements,
+      ...(values.title.trim() ? {} : { title: template.title }),
+    })
+    setTouched((prev) => ({ ...prev, description: true, requirements: true }))
+  }
 
   return (
     <>
@@ -524,6 +549,52 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
               ))}
             </Select>
           </div>
+        )}
+
+        {/* Ангилалд тохирох бэлэн загвар */}
+        <div className="rounded-2xl border border-orange-100 bg-orange-50/50 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-start gap-2.5">
+              <Sparkles className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Бэлэн загвараас эхлэх</p>
+                <p className="text-xs text-gray-500">
+                  {categoryChoice && categoryChoice !== "other"
+                    ? `«${categoryLabel}» ангилалд тохирох үүрэг, шаардлагын загвар`
+                    : "Ангиллаа сонговол тухайн салбарт тохирох загварууд гарна"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTemplatePickerId("")}
+              className="shrink-0 self-start sm:self-auto text-sm font-semibold text-orange-700 hover:text-orange-800"
+            >
+              Бүгдийг үзэх
+            </button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {templates.slice(0, 4).map((tpl) => (
+              <button
+                key={tpl.id}
+                type="button"
+                onClick={() => setTemplatePickerId(tpl.id)}
+                className="h-9 px-3.5 rounded-full border border-orange-200 bg-white text-sm font-medium text-gray-700 hover:border-orange-400 hover:text-orange-700 transition"
+              >
+                {tpl.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {templatePickerId !== null && (
+          <JobTemplatePicker
+            templates={templates}
+            categoryLabel={categoryLabel}
+            initialId={templatePickerId || undefined}
+            onClose={() => setTemplatePickerId(null)}
+            onApply={applyTemplate}
+          />
         )}
 
         {/* Тайлбар, шаардлага */}
