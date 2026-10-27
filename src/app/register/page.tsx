@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { validateNewPassword } from "@/lib/password"
-import { CYRILLIC_NAME_MAX_LENGTH, isCyrillicName, normalizeName, stripNonCyrillic } from "@/lib/mongolianName"
+import { CYRILLIC_NAME_MAX_LENGTH, getNameError, normalizeName } from "@/lib/mongolianName"
 import PasswordInput from "@/components/common/PasswordInput"
 
 export default function RegisterPage() {
@@ -19,8 +19,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
 
   // Овог, нэр дээр улаан анхааруулга харуулах state-үүд
-  const [lastNameError, setLastNameError] = useState(false)
-  const [firstNameError, setFirstNameError] = useState(false)
+  const [lastNameError, setLastNameError] = useState<string | null>(null)
+  const [firstNameError, setFirstNameError] = useState<string | null>(null)
+  // Талбараас гарсны (blur) дараа л шалгаж эхэлнэ; түүнээс хойш шивэх бүрт дахин шалгана
+  const [touched, setTouched] = useState({ lastName: false, firstName: false })
 
   // Баталгаажуулалтын Modal болон Кодны state-үүд
   const [showModal, setShowModal] = useState(false)
@@ -51,20 +53,24 @@ export default function RegisterPage() {
     setAlertModal({ show: true, title, message, type, onConfirm })
   }
 
-  // Овог, нэрт зөвхөн кирилл үсэг, зураас, зай оруулна. Латин гэх мэт тэмдэгтийг шууд хасаж,
-  // доор нь «кирилл гарын байрлалаар бичнэ үү» гэж сануулна.
-  const handleNameChange = (
-    val: string,
-    setValue: (v: string) => void,
-    setError: (e: boolean) => void
-  ) => {
-    const { value, removed } = stripNonCyrillic(val)
-    setValue(value)
-    setError(removed)
+  const LAST_NAME_EMPTY = "Овгоо оруулна уу"
+  const FIRST_NAME_EMPTY = "Нэрээ оруулна уу"
+
+  const handleLastNameChange = (val: string) => {
+    setLastName(val)
+    if (touched.lastName) setLastNameError(getNameError(val, LAST_NAME_EMPTY))
   }
 
-  const handleLastNameChange = (val: string) => handleNameChange(val, setLastName, setLastNameError)
-  const handleFirstNameChange = (val: string) => handleNameChange(val, setFirstName, setFirstNameError)
+  const handleFirstNameChange = (val: string) => {
+    setFirstName(val)
+    if (touched.firstName) setFirstNameError(getNameError(val, FIRST_NAME_EMPTY))
+  }
+
+  const handleNameBlur = (field: "lastName" | "firstName") => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    if (field === "lastName") setLastNameError(getNameError(lastName, LAST_NAME_EMPTY))
+    else setFirstNameError(getNameError(firstName, FIRST_NAME_EMPTY))
+  }
 
   // Алхам 1: "Бүртгүүлэх" дарахад код үүсгэж имэйл рүү илгээнэ
   async function handleSendAuthMail() {
@@ -74,18 +80,14 @@ export default function RegisterPage() {
     }
 
     if (role === "staff") {
-      if (!firstName || !lastName) {
-        showAlert("Анхааруулга", "Овог нэрээ оруулна уу", "warning")
-        return
-      }
-
       // Овог нэр кирилл үсэг эсэхийг баталгаажуулах
-      const lastNameValid = isCyrillicName(lastName)
-      const firstNameValid = isCyrillicName(firstName)
-      if (!lastNameValid || !firstNameValid) {
-        setLastNameError(!lastNameValid)
-        setFirstNameError(!firstNameValid)
-        showAlert("Анхааруулга", "Овог, нэрээ зөвхөн Монгол кирилл үсгээр (2-оос дээш үсэг) оруулна уу.", "warning")
+      const lastErr = getNameError(lastName, LAST_NAME_EMPTY)
+      const firstErr = getNameError(firstName, FIRST_NAME_EMPTY)
+      if (lastErr || firstErr) {
+        setTouched({ lastName: true, firstName: true })
+        setLastNameError(lastErr)
+        setFirstNameError(firstErr)
+        showAlert("Анхааруулга", (lastErr || firstErr) as string, "warning")
         return
       }
     }
@@ -260,9 +262,10 @@ export default function RegisterPage() {
                 <input
                   value={lastName}
                   onChange={(e) => handleLastNameChange(e.target.value)}
+                  onBlur={() => handleNameBlur("lastName")}
                   autoComplete="family-name"
                   maxLength={CYRILLIC_NAME_MAX_LENGTH}
-                  aria-invalid={lastNameError}
+                  aria-invalid={!!lastNameError}
                   aria-describedby="lastName-hint"
                   placeholder="Жишээ: Батбаяр"
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
@@ -272,7 +275,7 @@ export default function RegisterPage() {
                   }`}
                 />
                 <p id="lastName-hint" className={`mt-1.5 text-xs font-medium ${lastNameError ? "text-red-500" : "text-gray-400"}`}>
-                  {lastNameError ? "Зөвхөн кирилл үсгээр бичнэ үү. Гарын байрлалаа шалгана уу." : "Кирилл үсгээр бичнэ"}
+                  {lastNameError || "Кирилл үсгээр бичнэ"}
                 </p>
               </div>
 
@@ -282,9 +285,10 @@ export default function RegisterPage() {
                 <input
                   value={firstName}
                   onChange={(e) => handleFirstNameChange(e.target.value)}
+                  onBlur={() => handleNameBlur("firstName")}
                   autoComplete="given-name"
                   maxLength={CYRILLIC_NAME_MAX_LENGTH}
-                  aria-invalid={firstNameError}
+                  aria-invalid={!!firstNameError}
                   aria-describedby="firstName-hint"
                   placeholder="Жишээ: Сарангэрэл"
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
@@ -294,7 +298,7 @@ export default function RegisterPage() {
                   }`}
                 />
                 <p id="firstName-hint" className={`mt-1.5 text-xs font-medium ${firstNameError ? "text-red-500" : "text-gray-400"}`}>
-                  {firstNameError ? "Зөвхөн кирилл үсгээр бичнэ үү. Гарын байрлалаа шалгана уу." : "Кирилл үсгээр бичнэ"}
+                  {firstNameError || "Кирилл үсгээр бичнэ"}
                 </p>
               </div>
             </div>

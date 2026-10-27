@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isCyrillicName, normalizeName, stripNonCyrillic } from "./mongolianName"
+import { getNameError, isCyrillicName, normalizeName } from "./mongolianName"
 
 describe("isCyrillicName", () => {
   it("кирилл нэрийг зөвшөөрнө", () => {
@@ -25,9 +25,16 @@ describe("normalizeName", () => {
   })
 })
 
-describe("stripNonCyrillic", () => {
-  it("кирилл бус тэмдэгтийг хасаж мэдэгдэнэ", () => {
-    expect(stripNonCyrillic("Батbold1")).toEqual({ value: "Бат", removed: true })
-    expect(stripNonCyrillic("Бат-Эрдэнэ")).toEqual({ value: "Бат-Эрдэнэ", removed: false })
+describe("getNameError", () => {
+  it("зөв нэрт алдаа буцаахгүй", () => {
+    expect(getNameError("Бат-Эрдэнэ", "Нэрээ оруулна уу")).toBeNull()
+  })
+
+  it("шалтгаанаас нь хамаарсан тайлбар буцаана", () => {
+    expect(getNameError("  ", "Нэрээ оруулна уу")).toBe("Нэрээ оруулна уу")
+    expect(getNameError("Bat", "")).toMatch(/Латин/)
+    expect(getNameError("Бат1", "")).toMatch(/Тоо/)
+    expect(getNameError("Б", "")).toMatch(/2 үсэг/)
+    expect(getNameError("Бат!", "")).toMatch(/кирилл үсэг/)
   })
 })

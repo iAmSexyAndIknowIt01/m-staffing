@@ -4,7 +4,6 @@ const LETTERS = "А-ЯЁӨҮа-яёөү"
 
 // Үсгээр эхэлж, үсгээр төгссөн; дунд нь ганц зураас эсвэл зай байж болно (жишээ: "Бат-Эрдэнэ")
 const NAME_RE = new RegExp(`^[${LETTERS}]+(?:[- ][${LETTERS}]+)*$`, "u")
-const DISALLOWED_RE = new RegExp(`[^${LETTERS}\\- ]`, "gu")
 
 export const CYRILLIC_NAME_MAX_LENGTH = 50
 
@@ -17,8 +16,16 @@ export function isCyrillicName(value: string): boolean {
   return name.length >= 2 && name.length <= CYRILLIC_NAME_MAX_LENGTH && NAME_RE.test(name)
 }
 
-// Шивэх үед кирилл бус тэмдэгтийг хасна. removed нь хасагдсан эсэх (латинаар бичсэн гэх мэт).
-export function stripNonCyrillic(value: string): { value: string; removed: boolean } {
-  const cleaned = value.replace(DISALLOWED_RE, "")
-  return { value: cleaned, removed: cleaned !== value }
+// Талбарын доор харуулах алдааны тайлбар; зөв бол null
+export function getNameError(value: string, emptyMessage: string): string | null {
+  const name = normalizeName(value)
+  if (!name) return emptyMessage
+  if (/[A-Za-z]/.test(name)) return "Латин үсэг орсон байна. Зөвхөн кирилл үсгээр бичнэ үү."
+  if (/\d/.test(name)) return "Тоо оруулах боломжгүй"
+  if (!isCyrillicName(name)) {
+    if (name.length < 2) return "Хамгийн багадаа 2 үсэг байна"
+    if (name.length > CYRILLIC_NAME_MAX_LENGTH) return `${CYRILLIC_NAME_MAX_LENGTH}-аас ихгүй тэмдэгт байна`
+    return "Зөвхөн кирилл үсэг, зураас (-) ашиглана уу"
+  }
+  return null
 }
