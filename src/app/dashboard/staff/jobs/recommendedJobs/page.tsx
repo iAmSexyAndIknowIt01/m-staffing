@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
+import { getJobCategoryLabel } from "@/lib/jobPost"
 
 interface Job {
   id: string
@@ -97,7 +98,7 @@ export default function RecommendedJobsPage() {
     return <LoadingLayout loading />
   }
 
-  const filters: [string, string, number][] = [["all", "Бүгд", jobs.length], ...categories.map(([c, n]) => [c, c, n] as [string, string, number])]
+  const filters: [string, string, number][] = [["all", "Бүгд", jobs.length], ...categories.map(([c, n]) => [c, getJobCategoryLabel(c), n] as [string, string, number])]
 
   return (
     <div className="max-w-5xl mx-auto w-full space-y-5 sm:space-y-6">
@@ -217,7 +218,7 @@ export default function RecommendedJobsPage() {
                             </span>
                             {job.type && <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">{job.type}</span>}
                             {job.category && (
-                              <span className="px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 font-medium">{job.category}</span>
+                              <span className="px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 font-medium">{getJobCategoryLabel(job.category)}</span>
                             )}
                           </div>
                         </div>

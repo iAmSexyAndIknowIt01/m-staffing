@@ -13,6 +13,7 @@ import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
 import ShareModal from "@/components/staff/jobs/ShareModal"
 import { useSearchParams } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
+import { getJobTypeLabel } from "@/lib/jobPost"
 
 interface Company {
   id?: string
@@ -246,21 +247,11 @@ export default function StaffJobsPage() {
 
     const uniqueLower = Array.from(new Set(lowerCategories))
 
-    return uniqueLower.map((cat) => {
-      if (cat === "it") return "IT" 
-      return cat.charAt(0).toUpperCase() + cat.slice(1) 
-    })
+    // Утгыг (жижиг үсгээр) хадгалж, шүүлтүүр дээр монгол шошгоор харуулна
+    return uniqueLower
   }, [jobs])
 
-  const getJobTypeText = (type: string) => {
-    switch (type) {
-      case "fulltime": return "Бүтэн цаг";
-      case "parttime": return "Хагас цаг";
-      case "intern" : return "Дадлагажигч";
-      case "remote": return "Зайнаас (Remote)";
-      default: return type
-    }
-  }
+  const getJobTypeText = (type: string) => getJobTypeLabel(type)
 
   const getSalaryTypeText = (type: string) => {
     switch (type) {

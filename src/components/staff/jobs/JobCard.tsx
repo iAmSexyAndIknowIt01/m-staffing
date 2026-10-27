@@ -2,6 +2,7 @@
 
 import React, { useState, useSyncExternalStore } from "react"
 import Link from "next/link"
+import { SALARY_NEGOTIABLE } from "@/lib/jobPost"
 import { Check, Heart, Share2, MapPin } from "lucide-react"
 
 const VISITED_JOBS_KEY = "visited_jobs"
@@ -124,6 +125,7 @@ export default function JobCard({
     ((job.job_type === "parttime" || job.salary_type === "hourly") && numericSalary >= 12000)
 
   const isNew = isNewJob(job.created_at)
+  const negotiable = !job.salary || job.salary.trim() === SALARY_NEGOTIABLE || job.salary_type === "negotiable"
 
   // Анкет илгээсэн картын зүүн улаан хүрээ: dark mode-ийн border-gray-100 дүрэм бүх талын
   // өнгийг солидог тул border-l-red-500!-ээр (important) хоёр горимд ижил харагдуулна
@@ -223,10 +225,13 @@ export default function JobCard({
       {/* Дунд хэсэг: Цалин ба Оруулсан хугацаа */}
       <div className="mt-4 pt-1 flex items-baseline justify-between gap-2">
         <div className="text-[15px] font-bold text-slate-800">
-          ₮ {formatSalary(job.salary)}
-          <span className="text-xs font-normal text-gray-400 ml-1">
-            / {getSalaryTypeText(job.salary_type)}
-          </span>
+          {/* formatSalary өөрөө "₮" нэмдэг; «Тохиролцоно» үед хугацааг харуулахгүй */}
+          {negotiable ? SALARY_NEGOTIABLE : formatSalary(job.salary)}
+          {!negotiable && job.salary_type && (
+            <span className="text-xs font-normal text-gray-400 ml-1">
+              / {getSalaryTypeText(job.salary_type)}
+            </span>
+          )}
         </div>
         
         <div className="text-xs text-gray-400 font-medium">

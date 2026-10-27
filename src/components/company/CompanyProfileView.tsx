@@ -270,7 +270,8 @@ export default function CompanyProfileView({ profile, jobs, jobHref, actions }: 
         </div>
 
         {/* БАРУУН: БАЙГУУЛЛАГЫН МЭДЭЭЛЭЛ, ХОЛБОО БАРИХ */}
-        <aside className="space-y-6">
+        {/* Desktop дээр зүүн талын агуулгыг гүйлгэхэд байгууллагын мэдээлэл, холбоо барих картууд дээрээ тогтоно */}
+        <aside className="space-y-6 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto no-scrollbar">
           <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-6">
             <h2 className="text-base font-semibold text-slate-900 pb-1">Байгууллагын мэдээлэл</h2>
             <InfoRow icon={<Briefcase className="w-4 h-4" />} label="Үйл ажиллагааны чиглэл">
