@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { PLANS } from "@/lib/plans"
 import { validateNewPassword } from "@/lib/password"
+import { isCyrillicName, normalizeName } from "@/lib/mongolianName"
 
 // mailAuth PUT-ээр баталгаажсанаас хойш энэ хугацаанд бүртгэлээ дуусгах ёстой
 const VERIFIED_TTL_MS = 15 * 60 * 1000
@@ -9,7 +10,9 @@ const VERIFIED_TTL_MS = 15 * 60 * 1000
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { role, firstName, lastName, companyName, password } = body
+    const { role, companyName, password } = body
+    const firstName = typeof body.firstName === "string" ? normalizeName(body.firstName) : ""
+    const lastName = typeof body.lastName === "string" ? normalizeName(body.lastName) : ""
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
 
     if (!role || !email || !password) {
@@ -22,6 +25,11 @@ export async function POST(req: Request) {
 
     if (role === "staff" && (!firstName || !lastName)) {
       return NextResponse.json({ message: "Овог нэр шаардлагатай" }, { status: 400 })
+    }
+
+    // Клиентийн шалгалтыг алгасаж API-г шууд дуудсан ч кирилл бус нэрээр бүртгэхгүй
+    if (role === "staff" && (!isCyrillicName(firstName) || !isCyrillicName(lastName))) {
+      return NextResponse.json({ message: "Овог, нэрээ зөвхөн Монгол кирилл үсгээр оруулна уу" }, { status: 400 })
     }
 
     if (role === "company" && !companyName) {
