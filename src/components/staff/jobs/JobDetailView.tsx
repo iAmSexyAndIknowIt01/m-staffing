@@ -5,6 +5,7 @@ import {
   Briefcase,
   Building2,
   Calendar,
+  Check,
   CheckCircle2,
   ChevronRight,
   Layers,
@@ -147,7 +148,7 @@ export default function JobDetailView({
                 <span className="px-2.5 py-0.5 text-xs font-medium bg-white/10 text-slate-300 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
               )}
               {isApplied && (
-                <span className="px-2.5 py-0.5 text-xs font-bold bg-emerald-400/15 text-emerald-200 rounded-lg border border-emerald-300/20">Хүсэлт илгээсэн ✓</span>
+                <span className="px-2.5 py-0.5 text-xs font-bold bg-emerald-400/15 text-emerald-200 rounded-lg border border-emerald-300/20 inline-flex items-center gap-1"><Check className="w-3 h-3" aria-hidden="true" />Хүсэлт илгээсэн</span>
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight break-words">{job.title}</h1>

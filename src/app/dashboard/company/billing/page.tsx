@@ -1,9 +1,10 @@
 "use client"
 
-import { AlertTriangle, CheckCircle2, Lightbulb, Receipt, X, Loader2 } from "lucide-react"
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, Lightbulb, Receipt, X, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { showAlert } from "@/components/common/AppDialog"
+import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface SubscriptionInfo {
   plan_type: string
@@ -59,7 +60,7 @@ export default function BillingPage() {
         const resultSub = await resSub.json()
         if (resultSub.success && resultSub.subscription) {
           setSub({
-            plan_type: resultSub.subscription.planName === "Premium Plan" ? "premium" : resultSub.subscription.planName === "Standard Plan" ? "standard" : "free",
+            plan_type: resultSub.subscription.planType || "free",
             status: resultSub.subscription.status === "Идэвхтэй" ? "active" : "expired",
             job_limit: resultSub.subscription.jobLimit,
             expires_at: resultSub.subscription.expiresAt === "Хугацаагүй" ? null : resultSub.subscription.expiresAt
@@ -172,23 +173,7 @@ export default function BillingPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-100 py-24 w-full">
-        <div className="relative flex items-center justify-center h-32 w-32">
-          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
-          <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
-          <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-            <span className="text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-              mstaffing
-            </span>
-          </div>
-        </div>
-        <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse">
-          Түр хүлээнэ үү...
-        </p>
-      </div>
-    )
+    return <LoadingLayout loading />
   }
 
   const plans = [
@@ -203,7 +188,7 @@ export default function BillingPage() {
     },
     {
       id: "standard",
-      name: "Standard Plan",
+      name: "Стандарт багц",
       price: "150,000 ₮",
       period: "сарын",
       features: ["Идэвхтэй 50 ажлын байр зарлах", "Шүүлтүүртэй анкет удирдах", "Зарласан ажлын хандалт үзэх", "24/7 Чат тусламж"],
@@ -212,7 +197,7 @@ export default function BillingPage() {
     },
     {
       id: "premium",
-      name: "Premium Plan",
+      name: "Премиум багц",
       price: "350,000 ₮",
       period: "сарын",
       features: ["Идэвхтэй 100 ажлын байр зарлах", "Мэргэжлийн HR зөвлөгөө", "Зарууд хайлтын эхэнд байрших", "VIP Менежер тусламж", "Ажил горилогчдыг шууд урих эрх"],
@@ -225,8 +210,8 @@ export default function BillingPage() {
     <div className="animate-fade-in space-y-8 p-1 relative">
       {/* Толгой хэсэг */}
       <div className="space-y-2">
-        <Link href="/dashboard" className="text-xs font-bold text-gray-400 hover:text-orange-600 transition flex items-center gap-1">
-          ← Удирдах самбар руу буцах
+        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition">
+          <ArrowLeft className="w-4 h-4" /> Хянах самбар
         </Link>
         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо</h1>
         <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
@@ -236,15 +221,14 @@ export default function BillingPage() {
       <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl overflow-hidden transition-all duration-200">
         <button
           onClick={() => setIsNoticeOpen(!isNoticeOpen)}
+          aria-expanded={isNoticeOpen}
           className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-amber-900 hover:bg-amber-100/50 transition"
         >
           <div className="flex items-center gap-2">
             <span className="text-base"><Lightbulb size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
             <span>Төлбөр төлөлт болон буцаалтын тухай санамж (Анхаарах зүйлс)</span>
           </div>
-          <span className={`transform transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`}>
-            ▼
-          </span>
+          <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
 
         {isNoticeOpen && (
@@ -278,7 +262,7 @@ export default function BillingPage() {
         <div className="space-y-1">
           <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Одоогийн идэвхтэй багц</p>
           <h2 className="text-2xl font-extrabold text-orange-400">
-            {sub?.plan_type === "premium" ? "Premium Plan" : sub?.plan_type === "standard" ? "Standard Plan" : "Үнэгүй багц"}
+            {sub?.plan_type === "premium" ? "Премиум багц" : sub?.plan_type === "standard" ? "Стандарт багц" : "Үнэгүй багц"}
           </h2>
           <p className="text-xs text-slate-300">
             Дуусах хугацаа: <b className="text-white">{sub?.expires_at || "Хугацаагүй"}</b>
@@ -311,7 +295,7 @@ export default function BillingPage() {
                       <h4 className="font-bold text-lg text-gray-900">{plan.name}</h4>
                       {isCurrent && <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">Ашиглаж буй</span>}
                     </div>
-                    {plan.id === "premium" && <span className="text-xs font-bold text-white bg-orange-500 px-2.5 py-1 rounded-full uppercase tracking-wider">Best Choice</span>}
+                    {plan.id === "premium" && <span className="text-xs font-bold text-white bg-orange-500 px-2.5 py-1 rounded-full ">Санал болгох</span>}
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
@@ -321,7 +305,7 @@ export default function BillingPage() {
                   <ul className="space-y-3">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-gray-600 font-medium">
-                        <span className="text-emerald-500 font-bold">✓</span><span>{feature}</span>
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" /><span>{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -458,7 +442,7 @@ export default function BillingPage() {
                           style={{ width: '56px', transform: `translateX(${swipeX}px)` }}
                           onMouseDown={(e) => handleStart(e.clientX)}
                         >
-                          {updatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : "→"}
+                          {updatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                         </div>
                         <span className="text-xs font-bold text-orange-400 tracking-widest uppercase pointer-events-none">
                           Гүйлгэж баталгаажуул
@@ -466,7 +450,7 @@ export default function BillingPage() {
                       </div>
 
                       <button onClick={() => setPaymentStage('initial')} className="w-full text-xs font-bold text-gray-400 hover:text-gray-600">
-                        ← Буцах
+                        <ArrowLeft className="inline-block w-3.5 h-3.5 mr-1 align-[-0.15em]" />Буцах
                       </button>
                     </div>
                   )}

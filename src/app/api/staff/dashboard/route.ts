@@ -133,14 +133,14 @@ export async function GET() {
     // 🌟 Хэрэв дата олдохгүй бол ашиглах default fallback зөвлөгөөнүүд
     const defaultBlogTip = {
       title: "Амжилтын зөвлөгөө",
-      icon: "💡",
+      icon: "lightbulb",
       content: "Технологийн компаниуд анкет шалгахдаа хамгийн түрүүнд хийсэн төслүүд болон ашигласан технологиудын жагсаалтыг хардаг.",
       detail_url: "dashboard/staff/blog/tips"
     };
 
     const defaultInterviewTip = {
       title: "Ярилцлагын бэлтгэл",
-      icon: "🤝",
+      icon: "handshake",
       content: "Ярилцлагад орохоос өмнө тухайн компанийн соёл, үнэ цэнэ болон бүтээгдэхүүний талаар урьдчилан судалсан байх нь давуу тал болно.",
       detail_url: "dashboard/staff/blog/interview-prep"
     };

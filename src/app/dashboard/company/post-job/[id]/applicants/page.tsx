@@ -4,6 +4,7 @@ import { type JobApplicant, getJobApplicants } from "@/lib/companyJobs"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import JobApplicantsList from "./JobApplicantsList"
+import BackLink from "@/components/common/BackLink"
 
 export const dynamic = "force-dynamic"
 
@@ -50,12 +51,7 @@ export default async function JobApplicantsPage({ params }: PageProps) {
           </h1>
         </div>
         
-        <Link
-          href="/dashboard/company/post-job"
-          className="text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition"
-        >
-          ← Буцах
-        </Link>
+        <BackLink href="/dashboard/company/post-job" label="Зарын жагсаалт" className="shrink-0" />
       </div>
 
       {errorMsg ? (

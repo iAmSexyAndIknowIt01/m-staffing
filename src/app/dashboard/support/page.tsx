@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { ArrowLeft, CheckCircle2, Loader2, XCircle } from "lucide-react"
+import Select from "@/components/common/Select"
 
 export default function CompanySupportPage() {
   const [category, setCategory] = useState("system")
@@ -38,78 +40,74 @@ export default function CompanySupportPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-8 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-slate-900 transition">
-          ← Буцах
+    <div className="max-w-2xl mx-auto w-full space-y-5 sm:space-y-6">
+      <div>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition mb-2"
+        >
+          <ArrowLeft className="w-4 h-4" /> Хянах самбар
         </Link>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Тусламж & Дэмжлэг</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Тусламж ба дэмжлэг</h1>
+        <p className="text-sm text-gray-500 mt-1">Тулгарсан бэрхшээл, системийн алдаа эсвэл санал хүсэлтээ энд үлдээнэ үү.</p>
       </div>
 
-      <div className="bg-white border border-gray-100 p-8 rounded-4xl shadow-xs space-y-6">
-        <div>
-          <h3 className="font-bold text-lg text-gray-900">MStaffing-д асуудлаа илгээх</h3>
-          <p className="text-xs text-gray-400 mt-1">Тулгарсан бэрхшээл, системийн алдаа эсвэл санал хүсэлтээ энд үлдээнэ үү.</p>
-        </div>
-
+      <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl shadow-sm space-y-6">
         {statusMsg && (
-          <div className={`p-4 rounded-2xl text-sm font-bold ${
-            statusMsg.type === "success" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-500 border border-red-100"
-          }`}>
+          <div
+            role={statusMsg.type === "error" ? "alert" : "status"}
+            className={`flex items-start gap-2 p-4 rounded-xl text-sm font-medium border ${
+              statusMsg.type === "success" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
+            }`}
+          >
+            {statusMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" /> : <XCircle className="w-4 h-4 mt-0.5 shrink-0" />}
             {statusMsg.text}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Асуудлын ангилал</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
-            >
+            <label htmlFor="support-category" className="block text-sm font-semibold text-gray-700">Асуудлын ангилал</label>
+            <Select id="support-category" value={category} onChange={(e) => setCategory(e.target.value)} className="h-12">
               <option value="system">Системийн алдаа / Ажиллахгүй байна</option>
               <option value="billing">Багц сунгалт / Төлбөр тооцоо</option>
               <option value="job_post">Ажлын зар оруулах / Засах</option>
               <option value="other">Бусад санал хүсэлт</option>
-            </select>
+            </Select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Гарчиг</label>
+            <label htmlFor="support-title" className="block text-sm font-semibold text-gray-700">Гарчиг</label>
             <input
+              id="support-title"
               type="text"
               required
               placeholder="Жишээ нь: Багцын лимит шинэчлэгдсэнгүй"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
+              className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Дэлгэрэнгүй агуулга</label>
+            <label htmlFor="support-message" className="block text-sm font-semibold text-gray-700">Дэлгэрэнгүй агуулга</label>
             <textarea
+              id="support-message"
               required
               rows={5}
               placeholder="Алдаа гарсан алхам эсвэл тусламж авахыг хүссэн асуудлаа тодорхой бичнэ үү..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm font-medium focus:outline-hidden focus:border-orange-500 focus:bg-white transition resize-none leading-relaxed"
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition resize-none leading-relaxed"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-2xl transition shadow-md shadow-orange-600/10 flex items-center justify-center gap-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto sm:px-6 h-12 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition shadow-md shadow-orange-600/15 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {submitting && (
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            )}
+            {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {submitting ? "Илгээж байна..." : "Хүсэлт илгээх"}
           </button>
         </form>

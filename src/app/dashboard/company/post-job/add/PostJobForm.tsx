@@ -1,6 +1,6 @@
 "use client"
 
-import { X } from "lucide-react"
+import { AlertTriangle, Check, X } from "lucide-react"
 import LocationModal from "@/components/common/LocationModal"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -115,7 +115,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
             <div className="flex justify-center mb-5">
               {modal.type === "success" && (
                 <div className="flex items-center justify-center h-16 w-16 bg-green-50 rounded-full text-green-500 text-2xl animate-bounce">
-                  ✓
+                  <Check size="1em" className="inline-block shrink-0" aria-hidden="true" />
                 </div>
               )}
               {modal.type === "error" && (
@@ -125,7 +125,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
               )}
               {modal.type === "warning" && (
                 <div className="flex items-center justify-center h-16 w-16 bg-amber-50 rounded-full text-amber-500 text-2xl font-bold">
-                  !
+                  <AlertTriangle size="1em" className="inline-block shrink-0" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -207,7 +207,7 @@ export default function PostJobForm({ userId }: PostJobFormProps) {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Мэгэжлийн чиглэл <span className="text-red-500">*</span>
+              Мэргэжлийн чиглэл <span className="text-red-500">*</span>
             </label>
             <select
               className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 outline-none focus:border-orange-400 focus:bg-white transition appearance-none"
