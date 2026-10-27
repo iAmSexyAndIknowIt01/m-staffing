@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { ShieldAlert, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import PasswordInput from "@/components/common/PasswordInput"
 
@@ -255,39 +256,56 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* 🛠️ ERROR MODAL БҮТЭЦ */}
+      {/* НЭВТРЭХ АЛДААНЫ ЦОНХ — системийн бусад цонхтой ижил загвар */}
       {errorMessage && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+          onClick={closeErrorModal}
+        >
           <div
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="login-error-title"
             aria-describedby="login-error-message"
-            className="bg-white rounded-4xl p-8 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all scale-100"
+            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
           >
-            
-            {/* Алдааны анхааруулах дүрс (Icon) */}
-            <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 mb-4">
-              <svg className="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-
-            <h3 id="login-error-title" className="text-xl font-bold text-center text-gray-900 mb-2">
-              Алдаа гарлаа
-            </h3>
-            
-            <p id="login-error-message" className="text-gray-500 text-center text-sm leading-relaxed mb-6">
-              {errorMessage}
-            </p>
-
             <button
               type="button"
               onClick={closeErrorModal}
-              className="w-full bg-gray-900 text-white font-medium py-3 px-4 rounded-2xl hover:bg-gray-800 transition active:scale-[0.98]"
+              aria-label="Хаах"
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
             >
-              Хаах
+              <X className="w-4 h-4" />
             </button>
+
+            <div className="p-6 pb-5">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-rose-50 text-rose-600">
+                <ShieldAlert className="w-6 h-6" strokeWidth={1.8} />
+              </div>
+              <h3 id="login-error-title" className="mt-4 pr-8 text-lg font-semibold text-gray-900">
+                Нэвтэрч чадсангүй
+              </h3>
+              <p id="login-error-message" className="mt-1.5 text-sm text-gray-500 leading-relaxed">
+                {errorMessage}
+              </p>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:items-center gap-2 sm:justify-between">
+              <Link
+                href="/forgot-password"
+                className="h-11 inline-flex items-center justify-center text-sm font-semibold text-gray-500 hover:text-orange-600 transition"
+              >
+                Нууц үгээ мартсан уу?
+              </Link>
+              <button
+                type="button"
+                onClick={closeErrorModal}
+                className="h-11 px-5 rounded-xl text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-600/20 transition"
+              >
+                Дахин оролдох
+              </button>
+            </div>
           </div>
         </div>
       )}
