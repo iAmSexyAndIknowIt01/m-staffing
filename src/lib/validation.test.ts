@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { getClientIp } from "./clientIp"
 import { normalizeHttpUrl } from "./url"
 import { canCompanySetStatus } from "./jobRequest"
-import { PAID_PLAN_DAYS, computePaidExpiry, isPlanType } from "./plans"
+import { PAID_PLAN_DAYS, PLANS, computePaidPackage, isPlanType } from "./plans"
 import { parseEducation, parseExperience, parseSkillNames } from "./staffProfile"
 import { parseCompanyProfile } from "./companyProfile"
 import { jobPostError } from "./jobPost"
@@ -68,21 +68,19 @@ describe("canCompanySetStatus", () => {
   })
 })
 
-describe("computePaidExpiry", () => {
+describe("computePaidPackage", () => {
   const now = new Date("2026-10-07T00:00:00Z")
+  const yearLater = now.getTime() + PAID_PLAN_DAYS * DAY_MS
 
-  it("ижил идэвхтэй багцыг сунгавал үлдсэн хоног дээр нэмнэ", () => {
-    const current = { plan_type: "standard", status: "active", expires_at: new Date(now.getTime() + 10 * DAY_MS).toISOString() }
-    expect(computePaidExpiry(current, "standard", now).getTime()).toBe(now.getTime() + (10 + PAID_PLAN_DAYS) * DAY_MS)
+  it("хүчинтэй багцын үлдсэн эрхийг шинэ багц руу шилжүүлж, хугацааг 1 жил болгоно", () => {
+    const pkg = computePaidPackage({ status: "active", remaining: 4 }, "starter", now)
+    expect(pkg.jobLimit).toBe(4 + PLANS.starter.jobLimit)
+    expect(pkg.expiresAt.getTime()).toBe(yearLater)
   })
 
-  it("багц солих, хугацаа дууссан эсвэл багцгүй үед өнөөдрөөс тооцно", () => {
-    const future = new Date(now.getTime() + 10 * DAY_MS).toISOString()
-    const expected = now.getTime() + PAID_PLAN_DAYS * DAY_MS
-    expect(computePaidExpiry({ plan_type: "standard", status: "active", expires_at: future }, "premium", now).getTime()).toBe(expected)
-    expect(computePaidExpiry({ plan_type: "standard", status: "active", expires_at: "2026-01-01T00:00:00Z" }, "standard", now).getTime()).toBe(expected)
-    expect(computePaidExpiry({ plan_type: "free", status: "active", expires_at: null }, "standard", now).getTime()).toBe(expected)
-    expect(computePaidExpiry(null, "standard", now).getTime()).toBe(expected)
+  it("хугацаа дууссан эсвэл багцгүй үед зөвхөн шинэ багцын эрх", () => {
+    expect(computePaidPackage({ status: "expired", remaining: 0 }, "premium", now).jobLimit).toBe(PLANS.premium.jobLimit)
+    expect(computePaidPackage(null, "standard", now)).toEqual({ jobLimit: PLANS.standard.jobLimit, expiresAt: new Date(yearLater) })
   })
 })
 

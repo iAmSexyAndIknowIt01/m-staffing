@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { hasReachedJobLimit } from "@/lib/plans"
+import { getEffectiveSubscription } from "@/lib/plans"
 import { jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 const JOB_STATUSES = ["active", "draft", "closed"]
@@ -106,7 +106,7 @@ export async function PUT(
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // Идэвхгүй зарыг идэвхжүүлэх үед л багцын лимит шалгана
+    // Идэвхгүй зарыг идэвхжүүлэх үед багц хүчинтэй эсэхийг шалгана
     if (status === "active") {
       const { data: current, error: currentError } = await supabase
         .from("mt_openjob")
@@ -120,14 +120,15 @@ export async function PUT(
         return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
       }
 
-      const { reached, limit } = current.status === "active"
-        ? { reached: false, limit: 0 }
-        : await hasReachedJobLimit(userId, id)
-      if (reached) {
-        return NextResponse.json(
-          { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна.` },
-          { status: 403 }
-        )
+      // Хаасан/ноорог зарыг дахин идэвхжүүлэхэд шинэ эрх хасагдахгүй, гэхдээ багц хүчинтэй байх ёстой
+      if (current.status !== "active") {
+        const sub = await getEffectiveSubscription(userId)
+        if (sub.status === "expired") {
+          return NextResponse.json(
+            { error: "Таны багцын хугацаа дууссан байна. Зарыг идэвхжүүлэхийн тулд багц худалдаж авна уу." },
+            { status: 403 }
+          )
+        }
       }
     }
 

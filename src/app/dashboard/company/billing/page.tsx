@@ -5,11 +5,24 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { showAlert } from "@/components/common/AppDialog"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPlanType, pricePerPost, type PaidPlanType } from "@/lib/planCatalog"
 
+// Багцын нэрийг каталогоос (хуучин нэхэмжлэхийн төрөл ч орно)
+const planName = (type: string) => (isPlanType(type) ? PLANS[type].name : type)
+
+// Бүх төлбөртэй багцад нийтлэг боломжууд
+const PLAN_FEATURES = [
+  `Худалдаж авснаас хойш ${PAID_PLAN_DAYS / 365} жил хүчинтэй`,
+  "Ирсэн анкетуудыг шүүж удирдах",
+  "Ажил хайгчдын профайл, CV үзэх",
+  "Зарын хандалт, статистик",
+]
 interface SubscriptionInfo {
   plan_type: string
   status: string
   job_limit: number
+  used: number
+  remaining: number
   expires_at: string | null
 }
 
@@ -63,6 +76,8 @@ export default function BillingPage() {
             plan_type: resultSub.subscription.planType || "free",
             status: resultSub.subscription.status === "Идэвхтэй" ? "active" : "expired",
             job_limit: resultSub.subscription.jobLimit,
+            used: resultSub.subscription.used ?? 0,
+            remaining: resultSub.subscription.remaining ?? 0,
             expires_at: resultSub.subscription.expiresAt === "Хугацаагүй" ? null : resultSub.subscription.expiresAt
           })
         }
@@ -176,35 +191,16 @@ export default function BillingPage() {
     return <LoadingLayout loading />
   }
 
-  const plans = [
-    {
-      id: "free",
-      name: "Үнэгүй багц",
-      price: "0 ₮",
-      period: "анх удаа",
-      features: ["Идэвхтэй 10 ажлын байр зарлах", "Үндсэн анкет хүлээн авах", "Статистик хянах хянах хавтан", "Имэйл тусламж"],
-      buttonText: "Үнэгүй багц",
-      color: "border-gray-200"
-    },
-    {
-      id: "standard",
-      name: "Стандарт багц",
-      price: "150,000 ₮",
-      period: "сарын",
-      features: ["Идэвхтэй 50 ажлын байр зарлах", "Шүүлтүүртэй анкет удирдах", "Зарласан ажлын хандалт үзэх", "24/7 Чат тусламж"],
-      buttonText: "Багц ахиулах",
-      color: "border-orange-100 shadow-md"
-    },
-    {
-      id: "premium",
-      name: "Премиум багц",
-      price: "350,000 ₮",
-      period: "сарын",
-      features: ["Идэвхтэй 100 ажлын байр зарлах", "Мэргэжлийн HR зөвлөгөө", "Зарууд хайлтын эхэнд байрших", "VIP Менежер тусламж", "Ажил горилогчдыг шууд урих эрх"],
-      buttonText: "Багц ахиулах",
-      color: "border-orange-200 shadow-xl"
-    }
-  ]
+  const plans = PAID_PLAN_TYPES.map((id: PaidPlanType) => ({
+    id,
+    name: PLANS[id].name,
+    credits: PLANS[id].jobLimit,
+    price: `${PLANS[id].price.toLocaleString()} ₮`,
+    perPost: pricePerPost(id),
+  }))
+  const basePerPost = pricePerPost("starter")
+  const expired = sub?.status === "expired"
+  const usedPercent = sub && sub.job_limit > 0 ? Math.min(100, Math.round((sub.used / sub.job_limit) * 100)) : 0
 
   return (
     <div className="animate-fade-in space-y-8 p-1 relative">
@@ -226,7 +222,7 @@ export default function BillingPage() {
         >
           <div className="flex items-center gap-2">
             <span className="text-base"><Lightbulb size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-            <span>Төлбөр төлөлт болон буцаалтын тухай санамж (Анхаарах зүйлс)</span>
+            <span>Багц хэрхэн ажилладаг вэ? (Анхаарах зүйлс)</span>
           </div>
           <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
@@ -235,93 +231,137 @@ export default function BillingPage() {
           <div className="px-5 pb-5 pt-1 text-xs text-amber-950 space-y-2.5 border-t border-amber-200/50 leading-relaxed font-medium animate-fade-in">
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Төлбөр шилжүүлэг хийхдээ дансны дугаар болон эзэмшигчийг сайтар шалгана уу.</p>
+              <p>Багц бүр нь тодорхой тооны зар нийтлэх эрх юм. Шинэ зар нийтлэх бүрт 1 эрх хасагдана.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Төлбөр төлөлт баталгаажсан бол буцаалт хийх боломжгүй.</p>
+              <p>Зараа хаасан ч ашигласан эрх буцаж ирэхгүй. Хаасан зараа дахин идэвхжүүлэхэд эрх хасагдахгүй.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Багц ахиулах тохиолдолд зөрүү төлөлтийг хийгээд ахиулах боломжтой.</p>
+              <p>Багц худалдаж авснаас хойш 365 хоног хүчинтэй. Хугацаа дуусахад ашиглаагүй эрх хүчингүй болно.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Багц бууруулах тохиолдолд өмнөх багцын төлбөрийг буцаах боломжгүй.</p>
+              <p>Хүчинтэй багцтай үед шинэ багц авбал үлдсэн эрх шинэ багц дээр нэмэгдэж, хугацаа шинэ багцаас эхэлж тоологдоно.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Багц бууруулах тохиолдолд шинэ багцад ноогдох идэвхтэй ажлын тоо хэтэрсэн үед шинэ багцын хэмжээнд ноогдох хамгийн шинэ заруудыг идэвхтэй болгоно.</p>
+              <p>Төлбөр шилжүүлэхдээ дансны дугаар, гүйлгээний утгыг сайтар шалгана уу. Баталгаажсан төлбөрийг буцаах боломжгүй.</p>
             </div>
           </div>
         )}
       </div>
 
       {/* ОДООГИЙН ТӨЛӨВ */}
-      <div className="bg-slate-900 text-white p-6 rounded-4xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg">
-        <div className="space-y-1">
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Одоогийн идэвхтэй багц</p>
-          <h2 className="text-2xl font-extrabold text-orange-400">
-            {sub?.plan_type === "premium" ? "Премиум багц" : sub?.plan_type === "standard" ? "Стандарт багц" : "Үнэгүй багц"}
-          </h2>
-          <p className="text-xs text-slate-300">
-            Дуусах хугацаа: <b className="text-white">{sub?.expires_at || "Хугацаагүй"}</b>
-          </p>
+      <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg space-y-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Одоогийн багц</p>
+            <h2 className="text-2xl font-extrabold text-orange-400">{planName(sub?.plan_type || "free")}</h2>
+            <p className="text-xs text-slate-300">
+              Дуусах хугацаа: <b className="text-white">{sub?.expires_at || "Хугацаагүй"}</b>
+            </p>
+          </div>
+          <span
+            className={`text-sm font-bold px-3 py-1 rounded-lg ${
+              expired ? "bg-red-500/20 text-red-300" : "bg-emerald-500/20 text-emerald-400"
+            }`}
+          >
+            {expired ? "Хугацаа дууссан" : "Идэвхтэй"}
+          </span>
         </div>
-        <div className="bg-slate-800/80 border border-slate-700/50 p-4 rounded-2xl flex gap-6 text-center">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase">Зарлах лимит</p>
-            <p className="text-lg font-bold text-white">{sub?.job_limit === 999 ? "Хязгааргүй" : `${sub?.job_limit} зар`}</p>
+
+        <div className="bg-slate-800/80 border border-slate-700/50 p-4 rounded-2xl">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase">Үлдсэн нийтлэх эрх</p>
+              <p className="mt-1 text-3xl font-extrabold text-white tabular-nums">
+                {sub?.remaining ?? 0}
+                <span className="text-base font-semibold text-slate-400"> / {sub?.job_limit ?? 0} зар</span>
+              </p>
+            </div>
+            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200">{sub?.used ?? 0}</b></p>
           </div>
-          <div className="w-px bg-slate-700 my-1" />
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase">Системийн төлөв</p>
-            <p className="text-sm font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg mt-0.5">Идэвхтэй</p>
+          <div className="mt-3 h-2 rounded-full bg-slate-700 overflow-hidden" aria-hidden="true">
+            <div
+              className={`h-full rounded-full ${usedPercent >= 90 || expired ? "bg-red-400" : "bg-orange-400"}`}
+              style={{ width: `${expired ? 100 : usedPercent}%` }}
+            />
           </div>
+          {(expired || (sub && sub.remaining <= 0)) && (
+            <p className="mt-3 text-xs text-red-300">
+              {expired ? "Багцын хугацаа дууссан тул шинэ зар нийтлэх боломжгүй." : "Нийтлэх эрх дууссан."} Доорх багцаас сонгоно уу.
+            </p>
+          )}
         </div>
       </div>
 
       {/* БАГЦУУДЫН СОНГОЛТ */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 px-1">Боломжит багцууд</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="px-1">
+          <h3 className="text-xl font-bold text-gray-900">Зар нийтлэх багц</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Шинэ компани {PLANS.free.jobLimit} зар үнэгүй нийтлэх туршилтын эрхтэй. Илүү олон зар нийтлэхэд доорх багцаас сонгоно уу.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan) => {
-            const isCurrent = sub?.plan_type === plan.id;
+            const popular = plan.id === "standard"
+            const saving = Math.round((1 - plan.perPost / basePerPost) * 100)
             return (
-              <div key={plan.id} className={`bg-white border p-6 rounded-4xl flex flex-col justify-between transition-all hover:scale-[1.01] ${plan.color} ${isCurrent ? 'ring-2 ring-slate-900' : ''}`}>
+              <div
+                key={plan.id}
+                className={`relative bg-white border p-6 rounded-3xl flex flex-col justify-between transition ${
+                  popular ? "border-orange-300 shadow-lg ring-1 ring-orange-200" : "border-gray-200 shadow-sm"
+                }`}
+              >
+                {popular && (
+                  <span className="absolute -top-3 left-6 text-xs font-bold text-white bg-orange-500 px-3 py-1 rounded-full shadow">
+                    Түгээмэл сонголт
+                  </span>
+                )}
                 <div className="space-y-5">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-lg text-gray-900">{plan.name}</h4>
-                      {isCurrent && <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md mt-1 inline-block">Ашиглаж буй</span>}
-                    </div>
-                    {plan.id === "premium" && <span className="text-xs font-bold text-white bg-orange-500 px-2.5 py-1 rounded-full ">Санал болгох</span>}
+                  <div className="flex justify-between items-start gap-2">
+                    <h4 className="font-bold text-lg text-gray-900">{plan.name}</h4>
+                    {sub?.plan_type === plan.id && !expired && (
+                      <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">Ашиглаж буй</span>
+                    )}
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-                    <span className="text-xs text-gray-400 font-medium">/ {plan.period}</span>
+                  <div>
+                    <p className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                      {plan.credits}
+                      <span className="text-base font-semibold text-gray-500"> зар</span>
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-orange-600">{plan.price}</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Нэг зар ≈ {plan.perPost.toLocaleString()} ₮
+                      {saving > 0 && <span className="ml-1.5 font-semibold text-emerald-600">{saving}% хэмнэлт</span>}
+                    </p>
                   </div>
                   <hr className="border-gray-100" />
                   <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs text-gray-600 font-medium">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" /><span>{feature}</span>
+                    <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>{plan.credits} ажлын байрны зар нийтлэх эрх</span>
+                    </li>
+                    {PLAN_FEATURES.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                
-                {plan.id !== "free" && (
-                  <button
-                    onClick={() => !isCurrent && handleOpenUpgradeModal(plan)}
-                    disabled={isCurrent}
-                    className={`mt-8 w-full py-3.5 rounded-2xl font-bold text-xs transition duration-200 ${
-                      isCurrent ? "bg-gray-100 text-gray-400 cursor-not-allowed" : plan.id === "premium" ? "bg-orange-500 text-white hover:bg-orange-600 shadow-md" : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                  >
-                    {plan.buttonText}
-                  </button>
-                )}
+
+                <button
+                  onClick={() => handleOpenUpgradeModal({ id: plan.id, name: plan.name, price: plan.price })}
+                  className={`mt-8 w-full h-12 rounded-xl font-semibold text-sm transition ${
+                    popular ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-600/20" : "bg-slate-900 text-white hover:bg-slate-800"
+                  }`}
+                >
+                  Худалдаж авах
+                </button>
               </div>
             )
           })}
@@ -353,7 +393,7 @@ export default function BillingPage() {
                   <tr key={inv.id} className="hover:bg-slate-50/50">
                     <td className="p-4 text-gray-400">{new Date(inv.created_at).toLocaleDateString()}</td>
                     <td className="p-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
-                    <td className="p-4 uppercase">{inv.plan_type}</td>
+                    <td className="p-4">{planName(inv.plan_type)}</td>
                     <td className="p-4 font-bold">{inv.amount.toLocaleString()} ₮</td>
                     <td className="p-4 text-center">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
@@ -475,7 +515,7 @@ export default function BillingPage() {
             <div className="bg-slate-50 p-4 rounded-3xl space-y-3 border border-slate-100 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-400 font-bold">Сонгосон багц:</span>
-                <span className="font-bold text-slate-900 uppercase">{selectedInvoice.plan_type} PLAN</span>
+                <span className="font-bold text-slate-900">{planName(selectedInvoice.plan_type)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400 font-bold">Төлөх дүн:</span>

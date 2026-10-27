@@ -1,6 +1,7 @@
 "use client"
 
 import LoadingLayout from "@/components/common/LoadingLayout"
+import { PLANS, isPlanType } from "@/lib/planCatalog"
 import { Home, Receipt, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
@@ -247,7 +248,7 @@ export default function AdminDashboard() {
                         <td className="p-4 text-gray-400">{new Date(inv.created_at).toLocaleString()}</td>
                         <td className="p-4 font-mono text-gray-400 truncate max-w-30">{inv.user_id}</td>
                         <td className="p-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
-                        <td className="p-4 uppercase font-bold text-orange-600">{inv.plan_type}</td>
+                        <td className="p-4 font-bold text-orange-600">{isPlanType(inv.plan_type) ? PLANS[inv.plan_type].name : inv.plan_type}</td>
                         <td className="p-4 font-bold text-gray-900">{inv.amount.toLocaleString()} ₮</td>
                         <td className="p-4 text-center">
                           <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${

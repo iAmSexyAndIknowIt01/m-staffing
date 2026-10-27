@@ -158,7 +158,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   // Нээлттэй загвар сонгох цонх: эхлээд харуулах загварын id ("" бол эхнийх), null бол хаалттай
   const [templatePickerId, setTemplatePickerId] = useState<string | null>(null)
   const [company, setCompany] = useState<{ name: string; logo_url: string | null } | null>(null)
-  const [limitInfo, setLimitInfo] = useState<{ approved: boolean; reached: boolean; limit: number } | null>(null)
+  const [limitInfo, setLimitInfo] = useState<{ approved: boolean; reached: boolean; limit: number; expired: boolean } | null>(null)
   const doneRef = useRef(false)
 
   const errors = jobFormErrors(values)
@@ -184,6 +184,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
             approved: result.is_approved === "approved",
             reached: !!result.job_limit?.reached,
             limit: result.job_limit?.limit ?? 0,
+            expired: !!result.job_limit?.expired,
           })
         }
       })
@@ -357,11 +358,13 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
             <p className="mt-0.5">
               {!limitInfo.approved
                 ? "Таны компани админаар баталгаажаагүй байна. Баталгаажсаны дараа зар нийтлэх боломжтой болно."
-                : `Таны багцын идэвхтэй зарын лимит (${limitInfo.limit}) дүүрсэн байна. Хуучин зараа хаах эсвэл багцаа ахиулна уу.`}
+                : limitInfo.expired
+                  ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
+                  : `Таны зар нийтлэх эрх (${limitInfo.limit}) дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`}
             </p>
             {limitInfo.approved && (
               <a href="/dashboard/company/billing" className="mt-2 inline-block font-semibold text-amber-900 underline">
-                Багц ахиулах
+                Багц худалдаж авах
               </a>
             )}
           </div>

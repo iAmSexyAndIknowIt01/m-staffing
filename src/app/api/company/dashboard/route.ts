@@ -13,7 +13,7 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    // 1. Компанийн одоо хүчинтэй багц (хугацаа дууссан бол Free лимит)
+    // 1. Компанийн одоогийн багц, ашигласан/үлдсэн нийтлэх эрх
     const subscriptionData = await getEffectiveSubscription(userId)
 
     // 2. Нээлттэй ажлын байрны тоо
@@ -133,6 +133,8 @@ export async function GET() {
         planName: PLANS[subscriptionData.planType].name,
         status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
         jobLimit: subscriptionData.jobLimit,
+        used: subscriptionData.used,
+        remaining: subscriptionData.remaining,
         expiresAt: subscriptionData.expiresAt ? new Date(subscriptionData.expiresAt).toLocaleDateString("mn-MN") : "Хугацаагүй"
       },
       activeJobs,

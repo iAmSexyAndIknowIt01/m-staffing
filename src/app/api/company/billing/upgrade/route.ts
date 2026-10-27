@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { randomInt } from "crypto"
-import { PLANS } from "@/lib/plans"
+import { PLANS, isPaidPlanType } from "@/lib/plans"
 
 const INVOICE_NUMBER_REGEX = /^MSTAFF-\d{6}$/
 
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       invoice_number?: unknown
     }
 
-    if (plan_type !== "standard" && plan_type !== "premium") {
+    if (!isPaidPlanType(plan_type)) {
       return NextResponse.json({ success: false, error: "Багцын төрөл буруу байна." }, { status: 400 })
     }
 

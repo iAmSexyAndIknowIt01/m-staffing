@@ -41,11 +41,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // 4. Багцын идэвхтэй зарын лимит шалгах (хугацаа дууссан бол Free лимит)
-    const { reached, limit } = await hasReachedJobLimit(userId)
+    // 4. Зар нийтлэх эрх шалгах (нийтлэх бүрт 1 эрх хасагдана)
+    const { reached, limit, expired } = await hasReachedJobLimit(userId)
     if (reached) {
       return NextResponse.json(
-        { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна. Багцаа ахиулах эсвэл хуучин зараа хаана уу.` },
+        {
+          error: expired
+            ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
+            : `Таны зар нийтлэх эрх (${limit}) дууссан байна. Шинэ багц худалдаж авна уу.`,
+        },
         { status: 403 }
       )
     }
