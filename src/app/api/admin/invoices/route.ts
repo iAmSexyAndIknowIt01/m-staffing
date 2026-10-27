@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { getSession } from "@/lib/session"
-import { PLANS, type PlanType, computePaidExpiry } from "@/lib/plans"
+import { selectInChunks } from "@/lib/chunk"
+import { computePaidPackage, getEffectiveSubscription, isPaidPlanType } from "@/lib/plans"
 
 const forbidden = () =>
   NextResponse.json({ success: false, error: "Хандах эрхгүй байна." }, { status: 403 })
@@ -20,7 +21,25 @@ export async function GET() {
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, invoices })
+    // UUID-ийн оронд компанийн нэр, холбоо барих мэдээллийг харуулахын тулд нэгтгэнэ
+    const companies = await selectInChunks<{ id: string; company_name: string | null; email: string | null; phone: string | null }>(
+      (invoices ?? []).map((inv) => inv.user_id).filter(Boolean),
+      (ids) => supabase.from("mt_company").select("id, company_name, email, phone").in("id", ids)
+    )
+    const byId = new Map(companies.map((c) => [String(c.id), c]))
+
+    return NextResponse.json({
+      success: true,
+      invoices: (invoices ?? []).map((inv) => {
+        const company = byId.get(String(inv.user_id))
+        return {
+          ...inv,
+          company_name: company?.company_name ?? null,
+          company_email: company?.email ?? null,
+          company_phone: company?.phone ?? null,
+        }
+      }),
+    })
   } catch (error) {
     console.error("Admin Fetch Invoices Error:", error)
     return NextResponse.json({ success: false, error: "Өгөгдөл татахад алдаа гарлаа." }, { status: 500 })
@@ -73,16 +92,17 @@ export async function PUT(req: Request) {
 
     // В. Хэрэв АДМИН ТӨЛБӨРИЙГ БАТАЛГААЖУУЛСАН БОЛ (`paid`) Багцыг нь сунгана
     if (status === "paid") {
-      const planType: PlanType = invoice.plan_type === "premium" ? "premium" : "standard"
+      if (!isPaidPlanType(invoice.plan_type)) {
+        await supabase.from("mt_company_invoices").update({ status: "pending" }).eq("id", invoice_id)
+        return NextResponse.json({ success: false, error: "Нэхэмжлэхийн багцын төрөл буруу байна." }, { status: 400 })
+      }
+      const planType = invoice.plan_type
 
-      // Ижил багцаа хугацаа дуусахаас өмнө сунгавал үлдсэн хоног нь алдагдахгүй
-      const { data: currentSub, error: currentSubError } = await supabase
-        .from("mt_company_subscriptions")
-        .select("plan_type, status, expires_at")
-        .eq("user_id", invoice.user_id)
-        .maybeSingle()
-
-      if (currentSubError) {
+      // Хүчинтэй багцын үлдсэн эрх шинэ багц руу шилжинэ; хугацаа өнөөдрөөс 1 жил
+      let current
+      try {
+        current = await getEffectiveSubscription(invoice.user_id)
+      } catch (currentSubError) {
         console.error("Subscription fetch error:", currentSubError)
         await supabase.from("mt_company_invoices").update({ status: "pending" }).eq("id", invoice_id)
         return NextResponse.json(
@@ -91,7 +111,7 @@ export async function PUT(req: Request) {
         )
       }
 
-      const expiresAt = computePaidExpiry(currentSub, planType)
+      const { jobLimit, expiresAt } = computePaidPackage(current, planType)
 
       // Багцын мөр байхгүй байсан ч үүсгэнэ (user_id нь unique)
       const { error: subError } = await supabase
@@ -101,7 +121,7 @@ export async function PUT(req: Request) {
             user_id: invoice.user_id,
             plan_type: planType,
             status: "active",
-            job_limit: PLANS[planType].jobLimit,
+            job_limit: jobLimit,
             expires_at: expiresAt.toISOString(),
           },
           { onConflict: "user_id" }

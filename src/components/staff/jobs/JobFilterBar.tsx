@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import { Search, X, CheckCircle2, ChevronDown } from "lucide-react"
+import { getJobCategoryLabel, getJobTypeLabel } from "@/lib/jobPost"
 
 interface JobFilterBarProps {
   searchQuery: string
@@ -52,13 +53,6 @@ export default function JobFilterBar({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const getJobTypeLabel = (type: string) => {
-    if (type === "fulltime") return "Бүтэн цаг"
-    if (type === "parttime") return "Хагас цагийн"
-    if(type === "intern") return "Дадлагажигч"
-    if (type === "remote") return "Зайнаас (Remote)"
-    return type
-  }
 
   const getFilterAppliedLabel = (status: string) => {
     if (status === "applied") return "Хүсэлт илгээсэн"
@@ -141,7 +135,7 @@ export default function JobFilterBar({
       {/* Шүүлтүүрийн Тагууд */}
       <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-1.5 py-0.5">
         {/* Ажлын төрлүүд */}
-        {["fulltime", "parttime", "remote"].map((type) => (
+        {["fulltime", "parttime", "contract", "remote"].map((type) => (
           <button
             key={type}
             onClick={() => setSelectedJobType(selectedJobType === type ? "" : type)}
@@ -169,7 +163,7 @@ export default function JobFilterBar({
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
               }`}
             >
-              {cat}
+              {getJobCategoryLabel(cat)}
             </button>
           )
         })}
@@ -190,7 +184,7 @@ export default function JobFilterBar({
 
           {selectedCategory && (
             <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-xs text-slate-800 font-medium">
-              <span>{selectedCategory === "it" || selectedCategory === "IT" ? "IT" : selectedCategory}</span>
+              <span>{getJobCategoryLabel(selectedCategory)}</span>
               <button onClick={() => setSelectedCategory("")} className="text-slate-400 hover:text-slate-600 ml-0.5">
                 <X className="w-3 h-3" />
               </button>

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { hasReachedJobLimit } from "@/lib/plans"
-import { jobPostError } from "@/lib/jobPost"
+import { getEffectiveSubscription } from "@/lib/plans"
+import { jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 const JOB_STATUSES = ["active", "draft", "closed"]
 
@@ -83,12 +83,15 @@ export async function PUT(
     // Формоос salary_type болон salaryType-ийн аль алинаар ирж болохыг тооцов
     const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements } = body
 
-    // Баталгаажуулалт
-    if (!title || !category || !salary) {
-      return NextResponse.json(
-        { error: "Заавал бөглөх талбаруудыг (Гарчиг, Категори, Цалин) бөглөнө үү." },
-        { status: 400 }
-      )
+    // Баталгаажуулалт — шинэ зар нэмэхтэй ижил дүрэм (хуучин зарын ангиллыг хэвээр зөвшөөрнө)
+    const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
+    const fieldErrors = jobFormErrors({
+      title: str(title), category: str(category), jobType: str(jobType), location: str(location),
+      salary: str(salary), salaryType: str(salary_type || salaryType), description: str(description), requirements: str(requirements),
+    })
+    const firstError = Object.values(fieldErrors)[0]
+    if (firstError) {
+      return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
     }
 
     if (status !== undefined && !JOB_STATUSES.includes(status)) {
@@ -103,7 +106,7 @@ export async function PUT(
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // Идэвхгүй зарыг идэвхжүүлэх үед л багцын лимит шалгана
+    // Идэвхгүй зарыг идэвхжүүлэх үед багц хүчинтэй эсэхийг шалгана
     if (status === "active") {
       const { data: current, error: currentError } = await supabase
         .from("mt_openjob")
@@ -117,14 +120,15 @@ export async function PUT(
         return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
       }
 
-      const { reached, limit } = current.status === "active"
-        ? { reached: false, limit: 0 }
-        : await hasReachedJobLimit(userId, id)
-      if (reached) {
-        return NextResponse.json(
-          { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна.` },
-          { status: 403 }
-        )
+      // Хаасан/ноорог зарыг дахин идэвхжүүлэхэд шинэ эрх хасагдахгүй, гэхдээ багц хүчинтэй байх ёстой
+      if (current.status !== "active") {
+        const sub = await getEffectiveSubscription(userId)
+        if (sub.status === "expired") {
+          return NextResponse.json(
+            { error: "Таны багцын хугацаа дууссан байна. Зарыг идэвхжүүлэхийн тулд багц худалдаж авна уу." },
+            { status: 403 }
+          )
+        }
       }
     }
 

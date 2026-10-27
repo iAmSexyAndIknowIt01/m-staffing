@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
-import { jobPostError } from "@/lib/jobPost"
+import { jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -25,12 +25,15 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, category, jobType, location, salary, salaryType, description, requirements } = body
 
-    // 3. Шаардлагатай талбарууд бүрэн эсэхийг шалгах
-    if (!title || !category || !description || !requirements || !salary) {
-      return NextResponse.json(
-        { error: "Заавал бөглөх талбаруудыг бөглөнө үү." },
-        { status: 400 }
-      )
+    // 3. Талбаруудыг формтой ижил дүрмээр шалгана (заавал, урт, цалин, байршил)
+    const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
+    const fieldErrors = jobFormErrors({
+      title: str(title), category: str(category), jobType: str(jobType), location: str(location),
+      salary: str(salary), salaryType: str(salaryType), description: str(description), requirements: str(requirements),
+    })
+    const firstError = Object.values(fieldErrors)[0]
+    if (firstError) {
+      return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
     }
 
     const inputError = jobPostError({ title, category, jobType, location, salary, salaryType, description, requirements })
@@ -38,11 +41,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // 4. Багцын идэвхтэй зарын лимит шалгах (хугацаа дууссан бол Free лимит)
-    const { reached, limit } = await hasReachedJobLimit(userId)
+    // 4. Зар нийтлэх эрх шалгах (нийтлэх бүрт 1 эрх хасагдана)
+    const { reached, limit, expired } = await hasReachedJobLimit(userId)
     if (reached) {
       return NextResponse.json(
-        { error: `Таны багцын идэвхтэй зарын лимит (${limit}) дүүрсэн байна. Багцаа ахиулах эсвэл хуучин зараа хаана уу.` },
+        {
+          error: expired
+            ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
+            : `Таны зар нийтлэх эрх (${limit}) дууссан байна. Шинэ багц худалдаж авна уу.`,
+        },
         { status: 403 }
       )
     }
@@ -53,14 +60,14 @@ export async function POST(request: Request) {
       .insert([
         {
           user_id: userId,
-          title,
-          category,
+          title: title.trim(),
+          category: category.trim(),
           job_type: jobType,
-          location,
-          salary,                    // Жишээ нь: "2500000"
+          location: location.trim(),
+          salary,                    // Жишээ нь: "2500000" эсвэл "Тохиролцоно"
           salary_type: salaryType || "monthly", // 'monthly' эсвэл 'hourly'
-          description,
-          requirements,
+          description: description.trim(),
+          requirements: requirements.trim(),
           status: "active"
         }
       ])

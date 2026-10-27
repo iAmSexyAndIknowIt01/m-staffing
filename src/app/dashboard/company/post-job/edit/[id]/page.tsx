@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/session"
 import { getCompanyJob } from "@/lib/companyJobs"
 import { redirect, notFound } from "next/navigation"
-import EditJobForm from "./EditJobForm"
+import JobPostForm from "@/components/company/JobPostForm"
 import BackLink from "@/components/common/BackLink"
 
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,27 +30,16 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in space-y-6">
-      
-      {/* БУЦАХ ХОЛБООС */}
+    <div className="max-w-4xl mx-auto w-full space-y-5 sm:space-y-6">
       <div>
-        <BackLink href="/dashboard/company/post-job" label="Зарын жагсаалт" />
+        <BackLink href="/dashboard/company/post-job" label="Зарын жагсаалт" className="mb-2" />
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Ажлын байрны зар засах</h1>
+        <p className="text-sm text-gray-500 mt-1">Хадгалсан өөрчлөлт ажил хайгчдад шууд харагдана.</p>
       </div>
 
-      {/* ТОЛГОЙ ХЭСЭГ */}
-      <div className="border-b border-gray-100 pb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Ажлын байрны зар засах</h1>
-        <p className="text-gray-500 mt-2 text-sm md:text-base leading-relaxed">
-          Та өөрийн зарласан ажлын байрны мэдээллийг шинэчлэн үнэн зөв бөглөнө үү.<br /> 
-          Таны оруулсан өөрчлөлт шууд баазад шинэчлэгдэн хадгалагдах болно.
-        </p>
+      <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl shadow-sm">
+        <JobPostForm mode="edit" jobId={id} initial={initialData} />
       </div>
-
-      {/* ФОРМ БАЙРЛАХ КАРТ */}
-      <div className="bg-white border border-gray-100 p-8 md:p-10 rounded-4xl shadow-sm">
-        <EditJobForm jobId={id} initialData={initialData} />
-      </div>
-
     </div>
   )
 }

@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jobPost"
 
 interface JobItem {
   id: string
@@ -19,16 +20,7 @@ interface JobItem {
   applicants_count: number
 }
 
-const getJobTypeLabel = (type?: string) => {
-  switch (type) {
-    case "fulltime": return "Бүтэн цагийн"
-    case "parttime": return "Хагас цагийн"
-    case "contract": return "Гэрээт"
-    case "intern": return "Дадлагажигч"
-    case "remote": return "Зайнаас"
-    default: return "Бүтэн цагийн"
-  }
-}
+const getJobTypeLabel = (type?: string) => getJobTypeText(type) || "Бүтэн цаг"
 
 // Шүүлтүүрийг tab-ын session-д хадгалж, хуудас руу буцаж ирэхэд сэргээнэ
 const FILTERS_KEY = "mstaffing:company-post-job-filters"
@@ -398,7 +390,7 @@ export default function PostJobPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs md:text-xs text-gray-400 font-medium">
-                      <span><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.category || "Ерөнхий"}</span>
+                      <span><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {getJobCategoryLabel(job.category) || "Ерөнхий"}</span>
                       <span className="text-slate-800 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">
                         <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
                       </span>

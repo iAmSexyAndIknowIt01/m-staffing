@@ -41,6 +41,8 @@ interface DashboardData {
     planName: string
     status: string
     jobLimit: number
+    used: number
+    remaining: number
     expiresAt: string
   }
   activeJobs: Array<{
@@ -184,9 +186,13 @@ export default function CompanyView() {
   }
 
   const { stats, activeJobs, recentApplicants, subscription, tips = [] } = data
+  // Багц нь «зар нийтлэх эрх»: нийтлэх бүрт 1 эрх хасагдана
   const limit = Math.max(subscription.jobLimit, 0)
-  const isLimitReached = stats.openJobsCount >= limit
-  const limitPercent = limit > 0 ? Math.min((stats.openJobsCount / limit) * 100, 100) : 100
+  const used = subscription.used ?? 0
+  const remaining = subscription.remaining ?? 0
+  const isExpired = subscription.status !== "Идэвхтэй"
+  const isLimitReached = remaining <= 0
+  const limitPercent = limit > 0 && !isExpired ? Math.min((used / limit) * 100, 100) : 100
   const currentTip = tips[activeTipIndex]
   const newApplicantsTotal = activeJobs.reduce((sum, job) => sum + (job.newApplicants || 0), 0)
 
@@ -194,14 +200,16 @@ export default function CompanyView() {
     <button
       type="button"
       onClick={() =>
-        showAlert(`Таны ажлын байрны лимит (${subscription.jobLimit}) дүүрсэн байна. Шинэ зар оруулахын тулд багцаа ахиулна уу.`, {
-          tone: "warning",
-          title: "Лимит дүүрсэн",
-        })
+        showAlert(
+          isExpired
+            ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
+            : `Таны зар нийтлэх эрх (${limit}) дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`,
+          { tone: "warning", title: isExpired ? "Багцын хугацаа дууссан" : "Нийтлэх эрх дууссан" }
+        )
       }
       className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-white/10 border border-white/15 text-slate-300 text-sm font-semibold"
     >
-      <Lock className="w-4 h-4" /> Лимит дүүрсэн
+      <Lock className="w-4 h-4" /> {isExpired ? "Багц дууссан" : "Эрх дууссан"}
     </button>
   ) : (
     <button
@@ -236,16 +244,18 @@ export default function CompanyView() {
       {isLimitReached && (
         <section className="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h2 className="font-semibold text-amber-900">Зарын лимит дүүрсэн байна</h2>
+            <h2 className="font-semibold text-amber-900">{isExpired ? "Багцын хугацаа дууссан" : "Зар нийтлэх эрх дууссан"}</h2>
             <p className="text-sm text-amber-800/80 mt-0.5">
-              Таны багцын {subscription.jobLimit} зарын лимит бүрэн ашиглагдсан. Шинэ зар нэмэхийн тулд багцаа ахиулна уу.
+              {isExpired
+                ? "Шинэ зар нийтлэхийн тулд багц худалдаж авна уу. Одоо байгаа зарууд хэвээр харагдана."
+                : `Таны ${limit} зар нийтлэх эрх бүрэн ашиглагдсан. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`}
             </p>
           </div>
           <Link
             href="/dashboard/company/billing"
             className="shrink-0 inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition"
           >
-            <CreditCard className="w-4 h-4" /> Багц ахиулах
+            <CreditCard className="w-4 h-4" /> Багц авах
           </Link>
         </section>
       )}
@@ -257,7 +267,7 @@ export default function CompanyView() {
           tone="bg-orange-50 text-orange-600"
           label="Нээлттэй ажлын байр"
           value={stats.openJobsCount}
-          hint={`${limit} зарын лимитээс`}
+          hint={`Нийтлэх эрх ${remaining} үлдсэн`}
           href="/dashboard/company/post-job"
         />
         <StatCard
@@ -390,9 +400,9 @@ export default function CompanyView() {
 
             <div className="mt-5">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Зарын лимит</span>
+                <span className="text-gray-500">Үлдсэн нийтлэх эрх</span>
                 <span className="font-semibold text-gray-900 tabular-nums">
-                  {stats.openJobsCount} / {limit}
+                  {remaining} / {limit}
                 </span>
               </div>
               <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
