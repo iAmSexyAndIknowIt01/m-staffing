@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useSyncExternalStore } from "react"
-import { Heart, Share2, MapPin } from "lucide-react"
+import Link from "next/link"
+import { Check, Heart, Share2, MapPin } from "lucide-react"
 
 const VISITED_JOBS_KEY = "visited_jobs"
 const VISITED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй
@@ -47,7 +48,8 @@ interface JobCardProps {
   isJobApplied: boolean
   isBookmarked: boolean 
   onToggleBookmark: (e: React.MouseEvent) => void 
-  onClick: () => void
+  href: string
+  onClick?: () => void
   onCompanyClick: (e: React.MouseEvent, company: Company | undefined) => void
   getCompanyLogoUrl: (url: string | null | undefined) => string | null
   getJobTypeText: (type: string) => string
@@ -58,6 +60,7 @@ interface JobCardProps {
 
 function getDaysAgo(dateString: string) {
   const created = new Date(dateString)
+  if (!dateString || isNaN(created.getTime())) return ""
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - created.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -69,6 +72,7 @@ function getDaysAgo(dateString: string) {
 
 function isNewJob(dateString: string) {
   const created = new Date(dateString)
+  if (!dateString || isNaN(created.getTime())) return false
   const now = new Date()
   const diffTime = now.getTime() - created.getTime()
   const diffDays = diffTime / (1000 * 60 * 60 * 24)
@@ -82,6 +86,7 @@ export default function JobCard({
   isBookmarked,
   onToggleBookmark,
   onShare,
+  href,
   onClick,
   getCompanyLogoUrl,
   getJobTypeText,
@@ -110,7 +115,7 @@ export default function JobCard({
       // localStorage хаалттай (private горим гэх мэт) үед өнгө л өөрчлөгдөхгүй
     }
 
-    onClick()
+    onClick?.()
   }
 
   const numericSalary = Number(job.salary?.replace(/[^0-9.-]+/g, "")) || 0
@@ -124,11 +129,17 @@ export default function JobCard({
   // өнгийг солидог тул border-l-red-500!-ээр (important) хоёр горимд ижил харагдуулна
   return (
     <div
-      onClick={handleClick}
-      className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-all duration-200 cursor-pointer ${
+      className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md hover:border-orange-200 transition-all duration-200 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-orange-400 ${
         isJobApplied ? "border-l-4 border-l-red-500!" : ""
       }`}
     >
+      {/* Карт бүхэлдээ холбоос: шинэ tab-д нээх, гараар (Tab/Enter) ажиллах боломжтой */}
+      <Link
+        href={href}
+        onClick={handleClick}
+        aria-label={`${job.title}${job.mt_company ? ` — ${job.mt_company.name}` : ""}`}
+        className="absolute inset-0 rounded-2xl outline-none"
+      />
       {/* Дээд хэсэг: Лого, Гарчиг, Үйлдэлүүд */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3.5">
@@ -179,9 +190,13 @@ export default function JobCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="relative z-10 flex items-center gap-1.5 shrink-0">
           <button
+            type="button"
             onClick={onToggleBookmark}
+            aria-label={isBookmarked ? "Хадгалснаас хасах" : "Хадгалах"}
+            aria-pressed={isBookmarked}
+            title={isBookmarked ? "Хадгалснаас хасах" : "Хадгалах"}
             className={`p-2 rounded-lg transition ${
               isBookmarked 
                 ? "text-red-500 bg-red-50 hover:bg-red-100" 
@@ -191,10 +206,12 @@ export default function JobCard({
             <Heart className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
           </button>
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();       
               onShare(e, job);
             }}
+            aria-label="Хуваалцах"
             className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
             title="Хуваалцах"
           >
@@ -238,7 +255,7 @@ export default function JobCard({
 
           {isJobApplied && (
             <span className="px-2.5 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-full border border-red-100">
-              ✓ Илгээсэн
+              <Check className="inline-block w-3 h-3 mr-0.5 align-[-0.1em]" aria-hidden="true" />Илгээсэн
             </span>
           )}
         </div>

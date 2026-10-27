@@ -129,6 +129,7 @@ export async function GET() {
         interviewCount: interviewCount || 0
       },
       subscription: {
+        planType: subscriptionData.planType,
         planName: PLANS[subscriptionData.planType].name,
         status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
         jobLimit: subscriptionData.jobLimit,

@@ -2,9 +2,9 @@
 
 import { Handshake } from "lucide-react"
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import BackLink from "@/components/common/BackLink"
 
 interface Prep {
   id: string
@@ -46,10 +46,8 @@ export default function InterviewPrepPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-6 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition">
-          ← Буцах
-        </Link>
+      <div className="space-y-2">
+        <BackLink href="/dashboard" label="Хянах самбар" />
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Ажлын бэлтгэл</h1>
       </div>
 

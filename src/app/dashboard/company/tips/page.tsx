@@ -2,7 +2,7 @@
 
 import { Handshake, PenLine, Lightbulb } from "lucide-react"
 import { useState, useEffect } from "react"
-import Link from "next/link"
+import BackLink from "@/components/common/BackLink"
 
 interface Tip {
   id: number
@@ -44,10 +44,8 @@ export default function CompanyTipsPage() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8 animate-fade-in">
       {/* Толгой хэсэг */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-slate-900 transition">
-          ← Буцах
-        </Link>
+      <div className="space-y-2">
+        <BackLink href="/dashboard" label="Хянах самбар" />
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">HR хөтөч & Зөвлөмж</h1>
       </div>
 

@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck, Clock, SearchX } from "lucide-react"
+import { Search, MapPin, Briefcase, User, UserCheck, SearchX, SlidersHorizontal, X } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import Select from "@/components/common/Select"
 
 interface Staff {
   id: string
@@ -32,6 +33,12 @@ const DAYS_OF_WEEK = [
   { label: "Ням", value: "sunday" },
 ]
 
+// Ажиллах цагийн сонголт (06:00–22:00); API "HH:MM" хэлбэрээр хүлээж авна
+const HOURS = Array.from({ length: 17 }, (_, i) => `${String(i + 6).padStart(2, "0")}:00`)
+
+const inputClass =
+  "w-full h-11 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition"
+
 export default function SearchStaffPage() {
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,6 +55,20 @@ export default function SearchStaffPage() {
   // Шинэ: Цаг болон өдрийн шүүлтүүр
   const [selectedDay, setSelectedDay] = useState("")
   const [filterTime, setFilterTime] = useState("") // Жишээ нь: "10:00"
+  const [showFilters, setShowFilters] = useState(false)
+
+  const activeFilterCount = [skillQuery, positionQuery, fieldQuery, selectedDay, filterTime].filter(Boolean).length +
+    (genderFilter !== "Бүгд" ? 1 : 0) + (minExp > 0 ? 1 : 0)
+
+  const resetFilters = () => {
+    setSkillQuery("")
+    setPositionQuery("")
+    setFieldQuery("")
+    setGenderFilter("Бүгд")
+    setMinExp(0)
+    setSelectedDay("")
+    setFilterTime("")
+  }
 
   useEffect(() => {
     async function fetchStaffs() {
@@ -93,14 +114,14 @@ export default function SearchStaffPage() {
 
   if (isInitialLoad) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 bg-slate-50 min-h-screen relative">
+      <div className="max-w-6xl mx-auto w-full">
         <LoadingLayout loading={true} />
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 bg-slate-50 min-h-screen relative">
+    <div className="max-w-6xl mx-auto w-full">
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
@@ -111,102 +132,92 @@ export default function SearchStaffPage() {
         </div>
       </div>
 
-      {/* Filter Grid */}
-      <div className="bg-white p-3 sm:p-4 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Нэрээр хайх..." 
-            value={nameQuery}
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm transition-all"
-            onChange={(e) => setNameQuery(e.target.value)}
-          />
+      {/* ШҮҮЛТҮҮР: нэрийн хайлт үргэлж харагдана, бусад нь mobile дээр нугалагдана */}
+      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm mb-6 space-y-3">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="search"
+              placeholder="Нэрээр хайх..."
+              value={nameQuery}
+              aria-label="Нэрээр хайх"
+              className={`${inputClass} pl-10`}
+              onChange={(e) => setNameQuery(e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            aria-expanded={showFilters}
+            aria-controls="staff-filters"
+            className="lg:hidden shrink-0 inline-flex items-center gap-2 h-11 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-orange-300 transition"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Шүүлтүүр
+            {activeFilterCount > 0 && (
+              <span className="min-w-5 h-5 px-1 rounded-full bg-orange-600 text-white text-xs font-bold inline-flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Ур чадвараар хайх (Жишээ: React)..." 
+        <div id="staff-filters" className={`${showFilters ? "grid" : "hidden"} lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3`}>
+          <input
+            type="text"
+            placeholder="Ур чадвар (жишээ: React)"
             value={skillQuery}
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm transition-all"
+            aria-label="Ур чадвараар хайх"
+            className={`${inputClass} px-4`}
             onChange={(e) => setSkillQuery(e.target.value)}
           />
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Ажиллаж байсан албан тушаал..." 
+          <input
+            type="text"
+            placeholder="Ажиллаж байсан албан тушаал"
             value={positionQuery}
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm transition-all"
+            aria-label="Албан тушаалаар хайх"
+            className={`${inputClass} px-4`}
             onChange={(e) => setPositionQuery(e.target.value)}
           />
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Сургуулийн мэргэжил (field)..." 
+          <input
+            type="text"
+            placeholder="Сургуулийн мэргэжил"
             value={fieldQuery}
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm transition-all"
+            aria-label="Мэргэжлээр хайх"
+            className={`${inputClass} px-4`}
             onChange={(e) => setFieldQuery(e.target.value)}
           />
-        </div>
-        
-        <select 
-          value={genderFilter}
-          className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
-          onChange={(e) => setGenderFilter(e.target.value)}
-        >
-          <option value="Бүгд">Бүх хүйс</option>
-          <option value="Эрэгтэй">Эрэгтэй</option>
-          <option value="Эмэгтэй">Эмэгтэй</option>
-        </select>
-
-        <select 
-          value={minExp}
-          className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
-          onChange={(e) => setMinExp(Number(e.target.value))}
-        >
-          <option value={0}>Бүх туршлага</option>
-          <option value={1}>1+ жил</option>
-          <option value={3}>3+ жил</option>
-          <option value={5}>5+ жил</option>
-        </select>
-
-        {/* ШИНЭ: Өдрөөр шүүх */}
-        <select 
-          value={selectedDay}
-          className="px-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all cursor-pointer" 
-          onChange={(e) => setSelectedDay(e.target.value)}
-        >
-          <option value="">Бүх өдөр (Ажиллах боломжтой)</option>
-          {DAYS_OF_WEEK.map((d) => (
-            <option key={d.value} value={d.value}>{d.label} гариг</option>
-          ))}
-        </select>
-
-        {/* ШИНЭ: Цагаар шүүх (Тухайн өдөр сонгогдсон үед эсвэл цаг оруулсан үед ажиллана) */}
-        <div className="relative flex items-center">
-          <Clock className="absolute left-3.5 text-gray-400" size={18} />
-          <input 
-            type="time" 
-            value={filterTime}
-            onChange={(e) => setFilterTime(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm text-gray-600 transition-all"
-            placeholder="Цаг сонгох"
-          />
-          {filterTime && (
-            <button 
-              type="button" 
-              onClick={() => setFilterTime("")}
-              className="absolute right-3 text-xs text-gray-400 hover:text-gray-600 font-bold"
+          <Select value={genderFilter} aria-label="Хүйс" onChange={(e) => setGenderFilter(e.target.value)}>
+            <option value="Бүгд">Бүх хүйс</option>
+            <option value="Эрэгтэй">Эрэгтэй</option>
+            <option value="Эмэгтэй">Эмэгтэй</option>
+          </Select>
+          <Select value={minExp} aria-label="Туршлага" onChange={(e) => setMinExp(Number(e.target.value))}>
+            <option value={0}>Бүх туршлага</option>
+            <option value={1}>1+ жил</option>
+            <option value={3}>3+ жил</option>
+            <option value={5}>5+ жил</option>
+          </Select>
+          <Select value={selectedDay} aria-label="Ажиллах өдөр" onChange={(e) => setSelectedDay(e.target.value)}>
+            <option value="">Ажиллах өдөр: бүгд</option>
+            {DAYS_OF_WEEK.map((d) => (
+              <option key={d.value} value={d.value}>{d.label} гариг</option>
+            ))}
+          </Select>
+          <Select value={filterTime} aria-label="Ажиллах цаг" onChange={(e) => setFilterTime(e.target.value)}>
+            <option value="">Ажиллах цаг: бүгд</option>
+            {HOURS.map((h) => (
+              <option key={h} value={h}>{h}-д ажиллах боломжтой</option>
+            ))}
+          </Select>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="h-11 inline-flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition"
             >
-              Цэвэрлэх
+              <X className="w-4 h-4" /> Шүүлтүүр цэвэрлэх
             </button>
           )}
         </div>
@@ -220,7 +231,7 @@ export default function SearchStaffPage() {
       </div>
 
       {/* List Container */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden min-h-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden min-h-50">
         {loading ? (
           <LoadingLayout loading={true} />
         ) : staffList.length > 0 ? (

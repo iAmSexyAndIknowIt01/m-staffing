@@ -1,8 +1,10 @@
 "use client"
 
-import React from "react"
-import { useRouter } from "next/navigation"
-import { AlertCircle, ArrowRight, X } from "lucide-react"
+import React, { useEffect } from "react"
+import Link from "next/link"
+import { createPortal } from "react-dom"
+import { ArrowRight, UserRoundPen, X } from "lucide-react"
+import { useIsClient } from "@/lib/useIsClient"
 
 interface ProfileIncompleteModalProps {
   show: boolean
@@ -10,60 +12,71 @@ interface ProfileIncompleteModalProps {
   message?: string
 }
 
-export default function ProfileIncompleteModal({
-  show,
-  onClose,
-  message
-}: ProfileIncompleteModalProps) {
-  const router = useRouter()
+export default function ProfileIncompleteModal({ show, onClose, message }: ProfileIncompleteModalProps) {
+  const mounted = useIsClient()
 
-  if (!show) return null
+  useEffect(() => {
+    if (!show) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [show, onClose])
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative text-center space-y-4 animate-in zoom-in-95 duration-200">
-        
-        {/* Хаах товч */}
+  if (!show || !mounted) return null
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-100000 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-incomplete-title"
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition"
+          aria-label="Хаах"
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        {/* Икон */}
-        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-          <AlertCircle className="w-8 h-8" />
-        </div>
-
-        {/* Гарчиг болон мессеж */}
-        <div className="space-y-1">
-          <h3 className="text-xl font-bold text-gray-900">Профайл мэдээлэл дутуу</h3>
-          <p className="text-sm text-gray-500 leading-relaxed px-4">
-            {message || "Ажилд анкетаа илгээхийн тулд та профайл мэдээллээ бүрэн бөглөх шаардлагатай байна."}
+        <div className="p-6 pb-5">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600">
+            <UserRoundPen className="w-6 h-6" strokeWidth={1.8} />
+          </div>
+          <h3 id="profile-incomplete-title" className="mt-4 pr-8 text-lg font-semibold text-gray-900">
+            Профайлаа бөглөнө үү
+          </h3>
+          <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
+            {message || "Анкет илгээхийн тулд профайл мэдээллээ бүрэн бөглөх шаардлагатай."}
           </p>
         </div>
 
-        {/* Үйлдлийн товчлуурууд */}
-        <div className="pt-2 flex gap-3">
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
           <button
+            type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-3 rounded-2xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+            className="h-11 px-5 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-100 transition"
           >
             Болих
           </button>
-          <button
-            onClick={() => {
-              onClose()
-              router.push("/dashboard/staff/profile")
-            }}
-            className="flex-1 px-4 py-3 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-orange-500 to-amber-500 hover:opacity-95 transition shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
+          <Link
+            href="/dashboard/staff/profile"
+            onClick={onClose}
+            className="h-11 px-5 rounded-xl text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-600/20 inline-flex items-center justify-center gap-2 transition"
           >
-            Профайл засах <ArrowRight className="w-4 h-4" />
-          </button>
+            Профайл бөглөх <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
-
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
