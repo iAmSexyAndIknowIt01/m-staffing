@@ -1,4 +1,5 @@
 "use client";
+import { SALARY_NEGOTIABLE, getJobCategoryLabel } from "@/lib/jobPost";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,
@@ -80,7 +81,7 @@ export default function JobDetailView({
   const companyName = company?.name || "Байгууллагын нэр нууцалсан";
 
   // formatSalary нь өөрөө "₮" нэмдэг тул дахин нэмэхгүй
-  const negotiable = !job.salary || job.salary_type === "negotiable";
+  const negotiable = !job.salary || job.salary.trim() === SALARY_NEGOTIABLE || job.salary_type === "negotiable";
   const salaryText = negotiable ? "Тохиролцоно" : formatSalary(job.salary);
   const salaryTypeText = !negotiable && job.salary_type ? getSalaryTypeText(job.salary_type) : null;
 
@@ -142,7 +143,7 @@ export default function JobDetailView({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {job.category && (
-                <span className="px-2.5 py-0.5 text-xs font-bold bg-white/10 text-slate-300 rounded-lg uppercase border border-white/10">{job.category}</span>
+                <span className="px-2.5 py-0.5 text-xs font-bold bg-white/10 text-slate-300 rounded-lg uppercase border border-white/10">{getJobCategoryLabel(job.category)}</span>
               )}
               {job.job_type && (
                 <span className="px-2.5 py-0.5 text-xs font-medium bg-white/10 text-slate-300 rounded-lg border border-white/10">{getJobTypeText(job.job_type)}</span>
@@ -210,7 +211,7 @@ export default function JobDetailView({
               {job.job_type ? getJobTypeText(job.job_type) : "—"}
             </InfoRow>
             <InfoRow icon={<Layers className="w-4 h-4" />} label="Ангилал">
-              {job.category || "—"}
+              {getJobCategoryLabel(job.category) || "—"}
             </InfoRow>
             <InfoRow icon={<MapPin className="w-4 h-4" />} label="Байршил">
               {job.location || "—"}

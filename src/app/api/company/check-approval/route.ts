@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
+import { hasReachedJobLimit } from "@/lib/plans"
 
 export async function GET() {
   try {
@@ -23,7 +24,10 @@ export async function GET() {
       return NextResponse.json({ error: "Компанийн мэдээлэл олдсонгүй." }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, is_approved: company.is_approved }, { status: 200 })
+    // Зар нэмэх хуудсанд урьдчилан анхааруулахын тулд багцын лимитийг хамт буцаана
+    const jobLimit = await hasReachedJobLimit(userId)
+
+    return NextResponse.json({ success: true, is_approved: company.is_approved, job_limit: jobLimit }, { status: 200 })
   } catch (error) {
     console.error("Компанийн төлөв шалгахад алдаа гарлаа:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })

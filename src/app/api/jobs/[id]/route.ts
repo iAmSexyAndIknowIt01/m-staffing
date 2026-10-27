@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
-import { jobPostError } from "@/lib/jobPost"
+import { jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 const JOB_STATUSES = ["active", "draft", "closed"]
 
@@ -83,12 +83,15 @@ export async function PUT(
     // Формоос salary_type болон salaryType-ийн аль алинаар ирж болохыг тооцов
     const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements } = body
 
-    // Баталгаажуулалт
-    if (!title || !category || !salary) {
-      return NextResponse.json(
-        { error: "Заавал бөглөх талбаруудыг (Гарчиг, Категори, Цалин) бөглөнө үү." },
-        { status: 400 }
-      )
+    // Баталгаажуулалт — шинэ зар нэмэхтэй ижил дүрэм (хуучин зарын ангиллыг хэвээр зөвшөөрнө)
+    const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
+    const fieldErrors = jobFormErrors({
+      title: str(title), category: str(category), jobType: str(jobType), location: str(location),
+      salary: str(salary), salaryType: str(salary_type || salaryType), description: str(description), requirements: str(requirements),
+    })
+    const firstError = Object.values(fieldErrors)[0]
+    if (firstError) {
+      return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
     }
 
     if (status !== undefined && !JOB_STATUSES.includes(status)) {

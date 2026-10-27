@@ -12,6 +12,7 @@ import LoadingLayout from "@/components/common/LoadingLayout";
 import { getErrorMessage } from "@/lib/errors"
 import { SearchX } from "lucide-react"
 import EmptyState from "@/components/common/EmptyState"
+import { getJobTypeLabel } from "@/lib/jobPost";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -61,15 +62,7 @@ export default function JobDetailPage() {
     return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/company-logos/${logoUrl}`;
   };
 
-  const getJobTypeText = (type: string) => {
-    switch (type) {
-      case "fulltime": return "Бүтэн цаг";
-      case "parttime": return "Хагас цаг";
-      case "intern" : return "Дадлагажигч";
-      case "remote": return "Зайнаас (Remote)";
-      default: return type;
-    }
-  };
+  const getJobTypeText = (type: string) => getJobTypeLabel(type);
 
   const getSalaryTypeText = (type: string) => {
     switch (type) {

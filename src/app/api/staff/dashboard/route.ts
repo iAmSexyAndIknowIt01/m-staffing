@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { selectInChunks } from "@/lib/chunk";
+import { getJobTypeLabel } from "@/lib/jobPost";
 
 export const revalidate = 0;
 
@@ -175,7 +176,7 @@ export async function GET() {
           title: job.title,
           company: companyMap[companyIdStr] || "Ажил олгогч", 
           company_logo: logoMap[companyIdStr] || null,
-          type: job.job_type === "fulltime" ? "Бүтэн цаг" : job.job_type, 
+          type: getJobTypeLabel(job.job_type), 
           location: job.location || "Улаанбаатар",
           salary: job.salary ? `${job.salary}` : "Тохиролцоно",
           category: job.category,

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
-import { jobPostError } from "@/lib/jobPost"
+import { isJobCategory, jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -25,12 +25,18 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, category, jobType, location, salary, salaryType, description, requirements } = body
 
-    // 3. Шаардлагатай талбарууд бүрэн эсэхийг шалгах
-    if (!title || !category || !description || !requirements || !salary) {
-      return NextResponse.json(
-        { error: "Заавал бөглөх талбаруудыг бөглөнө үү." },
-        { status: 400 }
-      )
+    // 3. Талбаруудыг формтой ижил дүрмээр шалгана (заавал, урт, цалин, байршил)
+    const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
+    const fieldErrors = jobFormErrors({
+      title: str(title), category: str(category), jobType: str(jobType), location: str(location),
+      salary: str(salary), salaryType: str(salaryType), description: str(description), requirements: str(requirements),
+    })
+    const firstError = Object.values(fieldErrors)[0]
+    if (firstError) {
+      return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
+    }
+    if (!isJobCategory(category)) {
+      return NextResponse.json({ error: "Ангилал буруу байна." }, { status: 400 })
     }
 
     const inputError = jobPostError({ title, category, jobType, location, salary, salaryType, description, requirements })
@@ -53,14 +59,14 @@ export async function POST(request: Request) {
       .insert([
         {
           user_id: userId,
-          title,
+          title: title.trim(),
           category,
           job_type: jobType,
-          location,
-          salary,                    // Жишээ нь: "2500000"
+          location: location.trim(),
+          salary,                    // Жишээ нь: "2500000" эсвэл "Тохиролцоно"
           salary_type: salaryType || "monthly", // 'monthly' эсвэл 'hourly'
-          description,
-          requirements,
+          description: description.trim(),
+          requirements: requirements.trim(),
           status: "active"
         }
       ])
