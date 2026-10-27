@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
-import { isJobCategory, jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { jobFormErrors, jobPostError } from "@/lib/jobPost"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -35,9 +35,6 @@ export async function POST(request: Request) {
     if (firstError) {
       return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
     }
-    if (!isJobCategory(category)) {
-      return NextResponse.json({ error: "Ангилал буруу байна." }, { status: 400 })
-    }
 
     const inputError = jobPostError({ title, category, jobType, location, salary, salaryType, description, requirements })
     if (inputError) {
@@ -60,7 +57,7 @@ export async function POST(request: Request) {
         {
           user_id: userId,
           title: title.trim(),
-          category,
+          category: category.trim(),
           job_type: jobType,
           location: location.trim(),
           salary,                    // Жишээ нь: "2500000" эсвэл "Тохиролцоно"

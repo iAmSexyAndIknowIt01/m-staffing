@@ -6,18 +6,20 @@ import { createPortal } from "react-dom"
 import { AlertTriangle, CheckCircle2, Eye, Loader2, MapPin, RotateCcw, Send, X, XCircle } from "lucide-react"
 import LocationModal from "@/components/common/LocationModal"
 import Select from "@/components/common/Select"
+import Combobox from "@/components/common/Combobox"
 import JobDetailView from "@/components/staff/jobs/JobDetailView"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
 import { getErrorMessage } from "@/lib/errors"
 import { useIsClient } from "@/lib/useIsClient"
 import {
+  CUSTOM_CATEGORY_MAX,
   JOB_CATEGORIES,
   JOB_FIELD_LIMITS,
   JOB_TYPE_OPTIONS,
   SALARY_NEGOTIABLE,
   formatSalaryInput,
-  getJobCategoryLabel,
+  isJobCategory,
   getJobTypeLabel,
   jobFormErrors,
   salaryDigits,
@@ -254,7 +256,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
     if (hasErrors) {
       const order: Field[] = ["title", "category", "location", "salary", "description", "requirements"]
       const first = order.find((f) => errors[f])
-      if (first) document.getElementById(`job-${first}`)?.focus()
+      if (first) document.getElementById(first === "category" && categoryChoice === "other" ? "job-category-custom" : `job-${first}`)?.focus()
       return
     }
     if (blocked) return
@@ -264,6 +266,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
       const payload = {
         ...values,
         title: values.title.trim(),
+        category: values.category.trim(),
         location: values.location.trim(),
         description: values.description.trim(),
         requirements: values.requirements.trim(),
@@ -301,16 +304,15 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   // Ноорог localStorage-оос уншдаг тул серверт зурахгүй (hydration зөрөхөөс сэргийлнэ)
   if (!isClient) return <div className="min-h-96" aria-busy="true" />
 
-  const categoryOptions = [...JOB_CATEGORIES] as { value: string; label: string }[]
-  if (values.category && !categoryOptions.some((c) => c.value === values.category)) {
-    // Хуучин зарын жагсаалтад байхгүй ангиллыг сонголтод үлдээнэ
-    categoryOptions.push({ value: values.category, label: getJobCategoryLabel(values.category) })
-  }
+  // values.category: жагсаалтын утга, «Бусад»-аар бичсэн салбар эсвэл (бичээгүй үед) "other"
+  const categoryChoice = isJobCategory(values.category) ? values.category : values.category ? "other" : ""
+  const customCategory = categoryChoice === "other" && values.category !== "other" ? values.category : ""
 
   return (
     <>
       <LocationModal
         isOpen={locationOpen}
+        value={values.location}
         onClose={() => {
           setLocationOpen(false)
           blur("location")
@@ -377,20 +379,38 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
         {/* Ангилал */}
         <div>
           <Label htmlFor="job-category" required>Ангилал</Label>
-          <Select
+          <Combobox
             id="job-category"
-            value={values.category}
-            onChange={(e) => update({ category: e.target.value })}
-            onBlur={() => blur("category")}
-            aria-invalid={!!visible("category")}
-            aria-describedby="job-category-error"
-            className={`h-12 ${state("category") === "error" ? "border-red-300!" : state("category") === "valid" ? "border-emerald-300!" : ""}`}
-          >
-            <option value="">Ангилал сонгох...</option>
-            {categoryOptions.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </Select>
+            options={[...JOB_CATEGORIES]}
+            value={categoryChoice}
+            onChange={(choice) => update({ category: choice === "other" ? customCategory || "other" : choice })}
+            onBlur={() => {
+              if (categoryChoice !== "other") blur("category")
+            }}
+            placeholder="Ангилал сонгох..."
+            searchPlaceholder="Ангилал эсвэл албан тушаалаар хайх (жишээ: кассчин)"
+            emptyText="Олдсонгүй. «Бусад»-ыг сонгоод салбараа бичнэ үү."
+            invalid={!!visible("category") && categoryChoice !== "other"}
+            describedBy="job-category-error"
+          />
+          {categoryChoice === "other" && (
+            <div className="mt-3">
+              <label htmlFor="job-category-custom" className="sr-only">Салбарын нэр</label>
+              <input
+                id="job-category-custom"
+                type="text"
+                autoFocus={!customCategory}
+                value={customCategory}
+                maxLength={CUSTOM_CATEGORY_MAX}
+                onChange={(e) => update({ category: e.target.value || "other" })}
+                onBlur={() => blur("category")}
+                placeholder="Салбараа бичнэ үү (жишээ: Хөдөө аж ахуй, Уул уурхай)"
+                aria-invalid={!!visible("category")}
+                aria-describedby="job-category-error"
+                className={`${fieldClass(state("category"))} h-12`}
+              />
+            </div>
+          )}
           <FieldError id="job-category-error" error={visible("category")} />
         </div>
 

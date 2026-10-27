@@ -51,21 +51,21 @@ export const JOB_FIELD_LIMITS = {
 
 // Ангилал. Утгыг DB-д хадгална; хуучин зарын "it", "finance" ... кодуудыг хэвээр үлдээсэн.
 export const JOB_CATEGORIES = [
-  { value: "retail", label: "Худалдаа, үйлчилгээ" },
-  { value: "food", label: "Хоол үйлдвэрлэл, ресторан" },
-  { value: "hospitality", label: "Зочид буудал, аялал жуулчлал" },
-  { value: "logistics", label: "Тээвэр, логистик, агуулах" },
-  { value: "construction", label: "Барилга, үйлдвэрлэл" },
-  { value: "customer_service", label: "Харилцагчийн үйлчилгээ" },
-  { value: "admin", label: "Захиргаа, оффисын ажил" },
-  { value: "it", label: "Мэдээллийн технологи (IT)" },
-  { value: "finance", label: "Санхүү, нягтлан бодох" },
-  { value: "marketing", label: "Маркетинг, борлуулалт" },
-  { value: "hr", label: "Хүний нөөц, удирдлага" },
-  { value: "design", label: "Дизайн, бүтээлч ажил" },
-  { value: "education", label: "Боловсрол, сургалт" },
-  { value: "health", label: "Эрүүл мэнд, гоо сайхан" },
-  { value: "other", label: "Бусад" },
+  { value: "retail", label: "Худалдаа, үйлчилгээ", hint: "Кассчин, худалдагч, борлуулагч, барааны зөвлөх" },
+  { value: "food", label: "Хоол үйлдвэрлэл, ресторан", hint: "Тогооч, бариста, зөөгч, гал тогооны туслах" },
+  { value: "hospitality", label: "Зочид буудал, аялал жуулчлал", hint: "Ресепшн, өрөө үйлчлэгч, хөтөч" },
+  { value: "logistics", label: "Тээвэр, логистик, агуулах", hint: "Жолооч, хүргэлт, агуулахын ажилтан, нярав" },
+  { value: "construction", label: "Барилга, үйлдвэрлэл", hint: "Барилгачин, гагнуурчин, оператор, засварчин" },
+  { value: "customer_service", label: "Харилцагчийн үйлчилгээ", hint: "Call center, операторын ажил, мэдээлэл лавлагаа" },
+  { value: "admin", label: "Захиргаа, оффисын ажил", hint: "Нарийн бичиг, оффисын туслах, бичиг хэрэг" },
+  { value: "it", label: "Мэдээллийн технологи (IT)", hint: "Программист, системийн инженер, техник туслах" },
+  { value: "finance", label: "Санхүү, нягтлан бодох", hint: "Нягтлан, касс, санхүүч, эдийн засагч" },
+  { value: "marketing", label: "Маркетинг, борлуулалт", hint: "Маркетер, SMM, борлуулалтын менежер" },
+  { value: "hr", label: "Хүний нөөц, удирдлага", hint: "Хүний нөөцийн ажилтан, менежер, удирдлага" },
+  { value: "design", label: "Дизайн, бүтээлч ажил", hint: "График дизайн, гэрэл зураг, контент" },
+  { value: "education", label: "Боловсрол, сургалт", hint: "Багш, сургагч, туслах багш" },
+  { value: "health", label: "Эрүүл мэнд, гоо сайхан", hint: "Сувилагч, эмч, үсчин, гоо сайханч" },
+  { value: "other", label: "Бусад", hint: "Жагсаалтад байхгүй бол салбараа өөрөө бичнэ" },
 ] as const
 
 export function isJobCategory(value: unknown): boolean {
@@ -76,7 +76,24 @@ export function isJobCategory(value: unknown): boolean {
 export function getJobCategoryLabel(value: string | null | undefined): string {
   if (!value) return ""
   const key = value.trim().toLowerCase()
-  return JOB_CATEGORIES.find((c) => c.value === key)?.label ?? value
+  const known = JOB_CATEGORIES.find((c) => c.value === key)?.label
+  if (known) return known
+  // «Бусад»-аар гараар бичсэн салбар (шүүлтүүрт жижиг үсгээр ирж болно)
+  const text = value.trim()
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+export const CUSTOM_CATEGORY_MAX = 100
+
+// Ангиллын шалгалт: жагсаалтын утга эсвэл «Бусад» үед гараар бичсэн салбар (2–100 тэмдэгт)
+export function jobCategoryError(category: string): string | null {
+  const value = category.trim()
+  if (!value) return "Ангиллаа сонгоно уу."
+  if (value === "other") return "Салбараа бичнэ үү."
+  if (isJobCategory(value)) return null
+  if (value.length < 2) return "Салбарын нэр хамгийн багадаа 2 тэмдэгт байна."
+  if (value.length > CUSTOM_CATEGORY_MAX) return `Салбарын нэр ${CUSTOM_CATEGORY_MAX}-аас ихгүй тэмдэгт байна.`
+  return null
 }
 
 export const JOB_TYPE_OPTIONS: { value: (typeof JOB_TYPES)[number]; label: string }[] = [
@@ -148,7 +165,8 @@ export function jobFormErrors(v: JobFormValues): JobFormErrors {
   else if (title.length < 3) errors.title = "Хамгийн багадаа 3 тэмдэгт байна."
   else if (title.length > JOB_FIELD_LIMITS.title) errors.title = `${JOB_FIELD_LIMITS.title}-аас ихгүй тэмдэгт байна.`
 
-  if (!v.category) errors.category = "Ангиллаа сонгоно уу."
+  const category = jobCategoryError(v.category)
+  if (category) errors.category = category
   if (!v.location.trim()) errors.location = "Ажиллах байршлаа сонгоно уу."
 
   const salary = salaryError(v.salary)

@@ -5,6 +5,7 @@ import {
   getJobCategoryLabel,
   getJobTypeLabel,
   isJobCategory,
+  jobCategoryError,
   jobFormErrors,
   salaryDigits,
   salaryError,
@@ -26,6 +27,7 @@ describe("ангилал, ажлын төрөл", () => {
     expect(getJobCategoryLabel("it")).toBe("Мэдээллийн технологи (IT)")
     expect(getJobCategoryLabel("IT")).toBe("Мэдээллийн технологи (IT)")
     expect(getJobCategoryLabel("Худалдаа")).toBe("Худалдаа")
+    expect(getJobCategoryLabel("хөдөө аж ахуй")).toBe("Хөдөө аж ахуй")
     expect(isJobCategory("food")).toBe(true)
     expect(isJobCategory("x")).toBe(false)
   })
@@ -33,6 +35,20 @@ describe("ангилал, ажлын төрөл", () => {
   it("гэрээт болон хуучин нэршлийг орчуулна", () => {
     expect(getJobTypeLabel("contract")).toBe("Гэрээт")
     expect(getJobTypeLabel("full_time")).toBe("Бүтэн цаг")
+  })
+})
+
+describe("jobCategoryError", () => {
+  it("жагсаалтын утга болон гараар бичсэн салбарыг зөвшөөрнө", () => {
+    expect(jobCategoryError("retail")).toBeNull()
+    expect(jobCategoryError("Хөдөө аж ахуй")).toBeNull()
+  })
+
+  it("хоосон, «Бусад» (бичээгүй), хэт богино/уртыг татгалзана", () => {
+    expect(jobCategoryError("")).toBe("Ангиллаа сонгоно уу.")
+    expect(jobCategoryError("other")).toBe("Салбараа бичнэ үү.")
+    expect(jobCategoryError("А")).not.toBeNull()
+    expect(jobCategoryError("А".repeat(101))).not.toBeNull()
   })
 })
 
