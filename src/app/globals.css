@@ -485,3 +485,11 @@ select:not([multiple]):not([size]) {
   background-size: 1rem;
   padding-right: 2.5rem;
 }
+
+/* Гүйлгэх боломжтой боловч scrollbar-ийг нууна (chip мөр, наалддаг багана г.м.) */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

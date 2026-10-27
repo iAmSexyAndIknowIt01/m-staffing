@@ -509,7 +509,9 @@ export default function StaffProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-start">
         {/* ЗҮҮН: ХУВИЙН МЭДЭЭЛЭЛ */}
-        <aside className="lg:sticky lg:top-6 space-y-5 sm:space-y-6">
+        {/* Desktop дээр баруун талын картуудыг гүйлгэхэд зүүн багана дээрээ тогтоно.
+            Дэлгэцээс өндөр болбол (засах горим) өөрөө дотроо гүйлгэгдэнэ. */}
+        <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto no-scrollbar space-y-5 sm:space-y-6">
           <section
             className={`bg-white rounded-3xl border shadow-sm overflow-hidden ${
               sectionErrors.personal || sectionErrors.avatar ? "border-red-300" : "border-gray-100"
