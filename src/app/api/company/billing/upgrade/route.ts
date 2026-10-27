@@ -37,7 +37,8 @@ export async function GET() {
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, invoices })
+    // Төлбөрийн түүхийн «Дэлгэрэнгүй» цонхонд харуулах данс (тохируулаагүй бол null)
+    return NextResponse.json({ success: true, invoices, bank: getBankAccount() })
   } catch (error) {
     console.error("Fetch Invoices Error:", error)
     return NextResponse.json({ success: false, error: "Түүх татахад алдаа гарлаа." }, { status: 500 })

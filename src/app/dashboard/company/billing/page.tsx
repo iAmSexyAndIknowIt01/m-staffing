@@ -1,10 +1,17 @@
 "use client"
 
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, Lightbulb, Receipt, X, Loader2 } from "lucide-react"
+import { ArrowLeft, Check, ChevronDown, Lightbulb, Receipt } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { showAlert } from "@/components/common/AppDialog"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import {
+  INVOICE_STATUS,
+  InvoiceDetailModal,
+  PurchaseModal,
+  type BankAccount,
+  type InvoiceRow,
+  type PurchasePlan,
+} from "@/components/company/billing/BillingModals"
 import { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPlanType, pricePerPost, type PaidPlanType } from "@/lib/planCatalog"
 
 // Багцын нэрийг каталогоос (хуучин нэхэмжлэхийн төрөл ч орно)
@@ -26,41 +33,16 @@ interface SubscriptionInfo {
   expires_at: string | null
 }
 
-interface InvoiceInfo {
-  id: string
-  invoice_number: string
-  plan_type: string
-  amount: number
-  status: string
-  created_at: string
-}
-
 export default function BillingPage() {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null)
-  const [invoices, setInvoices] = useState<InvoiceInfo[]>([])
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [updatingPlan, setUpdatingPlan] = useState<string | null>(null)
-  
-  // 1. Нэхэмжлэх шинээр үүсгэх Swipe Modal-ийн төлөвүүд
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<{ id: string; name: string; price: string } | null>(null)
-  const [invoiceDetails, setInvoiceDetails] = useState<{ invoiceNumber: string; amount: number; bankName: string; accountNumber: string; accountName: string } | null>(null)
-  const [isSwiped, setIsSwiped] = useState(false)
-  const [swipeX, setSwipeX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-
-  // 🔥 ШИНЭ ТӨЛӨВ: Түүхээс сонгож харах Дэлгэрэнгүй Модал
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInfo | null>(null)
-
-  // 🔥 ШИНЭ ТӨЛӨВ: Төлбөр төлөлтийн санамж Dropdown нээгдэж хаагдах төлөв
+  // Худалдаж авах цонх (сонгосон багц) болон түүхийн дэлгэрэнгүй цонх
+  const [purchasePlan, setPurchasePlan] = useState<PurchasePlan | null>(null)
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null)
+  const [bank, setBank] = useState<BankAccount | null>(null)
   const [isNoticeOpen, setIsNoticeOpen] = useState(false)
-  
-  const sliderRef = useRef<HTMLDivElement>(null)
-  const startX = useRef(0)
   const isFetched = useRef(false)
-  // BillingPage дотор
-  const [paymentStage, setPaymentStage] = useState<'initial' | 'confirm'>('initial');
 
   // 1. Өгөгдөл татах (Багц болон Төлбөрийн түүх)
   useEffect(() => {
@@ -86,6 +68,7 @@ export default function BillingPage() {
         const resultInv = await resInv.json()
         if (resultInv.success) {
           setInvoices(resultInv.invoices)
+          setBank(resultInv.bank ?? null)
         }
       } catch (err) {
         console.error("Дата татахад алдаа гарлаа:", err)
@@ -95,97 +78,6 @@ export default function BillingPage() {
     }
     fetchData()
   }, [])
-
-  // 2. Багц сонгох үед Түр зуурын нэхэмжлэх үүсгэх (Данс харуулахын тулд бэкенд дуудна)
-  const handleOpenUpgradeModal = async (plan: { id: string; name: string; price: string }) => {
-    setSelectedPlan(plan)
-    setInvoiceDetails(null)
-    setPaymentStage('initial');
-    setIsSwiped(false)
-    setSwipeX(0)
-    setIsModalOpen(true)
-
-    try {
-      const res = await fetch("/api/company/billing/upgrade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan_type: plan.id, init_only: true })
-      })
-      const result = await res.json()
-      if (result.success) {
-        setInvoiceDetails(result.invoice)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  // 🔥 ШИНЭ ФУНКЦ: Түүхэн дээрээс "Дэлгэрэнгүй" товч дарах үед ажиллана
-  const handleOpenDetailModal = (invoice: InvoiceInfo) => {
-    setSelectedInvoice(invoice)
-    setIsDetailModalOpen(true)
-  }
-
-  // 3. Төлбөр шилжүүлсэн баталгаажуулах үйлдэл (Товч эсвэл Слайдаар дуудагдана)
-  const confirmInvoiceCreation = async () => {
-    if (!selectedPlan) return
-    setUpdatingPlan(selectedPlan.id)
-
-    try {
-      const res = await fetch("/api/company/billing/upgrade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Модал дээр харуулсан гүйлгээний утгыг хадгална (шинээр үүсгэвэл хэрэглэгчийн шилжүүлсэн утгатай таарахгүй)
-        body: JSON.stringify({ plan_type: selectedPlan.id, invoice_number: invoiceDetails?.invoiceNumber })
-      })
-      const result = await res.json()
-      if (result.success) {
-        setIsModalOpen(false)
-        window.location.reload()
-      } else {
-        showAlert(result.error || "Алдаа гарлаа.", { tone: "error" })
-        resetSwipe()
-      }
-    } catch {
-      showAlert("Серверийн алдаа гарлаа.", { tone: "error" })
-      resetSwipe()
-    } finally {
-      setUpdatingPlan(null)
-    }
-  }
-
-  // --- SWIPE LOGIC ---
-  const handleStart = (clientX: number) => {
-    if (isSwiped || !invoiceDetails) return
-    setIsDragging(true)
-    startX.current = clientX
-  }
-
-  const handleMove = (clientX: number) => {
-    if (!isDragging || !sliderRef.current) return
-    const width = sliderRef.current.clientWidth - 56
-    let moveX = clientX - startX.current
-    if (moveX < 0) moveX = 0
-    if (moveX > width) moveX = width
-    setSwipeX(moveX)
-
-    if (moveX >= width) {
-      setIsDragging(false)
-      setIsSwiped(true)
-      confirmInvoiceCreation()
-    }
-  }
-
-  const handleEnd = () => {
-    if (isSwiped) return
-    setIsDragging(false)
-    resetSwipe()
-  }
-
-  const resetSwipe = () => {
-    setSwipeX(0)
-    setIsSwiped(false)
-  }
 
   if (loading) {
     return <LoadingLayout loading />
@@ -355,7 +247,7 @@ export default function BillingPage() {
                 </div>
 
                 <button
-                  onClick={() => handleOpenUpgradeModal({ id: plan.id, name: plan.name, price: plan.price })}
+                  onClick={() => setPurchasePlan({ id: plan.id, name: plan.name, credits: plan.credits, price: plan.price })}
                   className={`mt-8 w-full h-12 rounded-xl font-semibold text-sm transition ${
                     popular ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-600/20" : "bg-slate-900 text-white hover:bg-slate-800"
                   }`}
@@ -396,15 +288,13 @@ export default function BillingPage() {
                     <td className="p-4">{planName(inv.plan_type)}</td>
                     <td className="p-4 font-bold">{inv.amount.toLocaleString()} ₮</td>
                     <td className="p-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                        inv.status === "paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600 animate-pulse"
-                      }`}>
-                        {inv.status === "paid" ? "Төлөгдсөн" : "Хүлээгдэж буй"}
+                      <span className={`px-2.5 py-1 rounded-full border text-xs font-semibold ${(INVOICE_STATUS[inv.status] ?? INVOICE_STATUS.pending).className}`}>
+                        {(INVOICE_STATUS[inv.status] ?? INVOICE_STATUS.pending).label}
                       </span>
                     </td>
                     <td className="p-4 text-right">
                       <button 
-                        onClick={() => handleOpenDetailModal(inv)}
+                        onClick={() => setSelectedInvoice(inv)}
                         className="text-xs font-bold text-orange-600 bg-orange-50/60 hover:bg-orange-600 hover:text-white px-3 py-1.5 rounded-xl transition duration-150"
                       >
                         Дэлгэрэнгүй
@@ -418,146 +308,22 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* SWIPE-TO-CONFIRM MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-gray-100 shadow-2xl space-y-5">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">Нэхэмжлэх үүсгэх</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-3xl space-y-2.5 border border-slate-100 text-xs">
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Сонгосон багц:</span><span className="font-bold text-slate-900">{selectedPlan?.name}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Төлбөрийн дүн:</span><span className="font-bold text-orange-600 text-sm">{selectedPlan?.price}</span></div>
-              <hr className="border-slate-200/60 my-1" />
-              
-              {invoiceDetails ? (
-                <>
-                  <div className="flex justify-between"><span className="text-gray-400 font-bold">Хүлээн авагч банк:</span><span className="font-bold text-gray-800">{invoiceDetails.bankName}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны дугаар:</span><span className="font-bold text-slate-900 tracking-wider bg-white px-2 py-0.5 rounded border border-gray-100">{invoiceDetails.accountNumber}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны нэр:</span><span className="font-bold text-gray-800">{invoiceDetails.accountName}</span></div>
-                  <div className="flex justify-between items-center bg-orange-50 p-2.5 rounded-2xl border border-orange-100/60 mt-2">
-                    <span className="text-orange-800 font-bold">Гүйлгээний утга:</span>
-                    <span className="font-mono font-bold text-orange-950 bg-white px-3 py-1 rounded-xl shadow-xs border border-orange-200">{invoiceDetails.invoiceNumber}</span>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4 text-gray-400 font-bold animate-pulse">Дансны мэдээлэл уншиж байна...</div>
-              )}
-            </div>
-
-            <div className="bg-amber-50/70 border border-amber-100 text-amber-800 p-3.5 rounded-2xl text-xs leading-relaxed font-medium">
-              <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> <b>Анхаар:</b> Та шилжүүлэг хийхдээ <b>Гүйлгээний утга</b>-ыг огт алдалгүй <span className="font-bold text-red-600">том үсгээр</span>, яг дээрх хэлбэрээр бичнэ үү. Утга буруу орсон тохиолдолд багц автоматаар идэвхжих боломжгүй болно.
-            </div>
-
-            {/* 🔥 ШИНЭ НЭМСЭН ТОВЧ болон Слайд хэсэг */}
-            {/* DYNAMIC CONTENT */}
-                  {paymentStage === 'initial' ? (
-                    <div className="space-y-4">
-                      <button
-                        onClick={() => setPaymentStage('confirm')} // Дараагийн шат руу шилжих
-                        className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-2xl transition"
-                      >
-                        Төлбөр амжилттай шилжүүлсэн
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                      <div className="text-center space-y-2 py-4">
-                        <div className="text-4xl"><CheckCircle2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
-                        <p className="text-sm font-bold text-gray-800">Шилжүүлгээ хийсэн бол баруун тийш гүйлгэж эцсийн баталгаажуулалт хийнэ үү.</p>
-                      </div>
-                      
-                      {/* Slider хэсэг */}
-                      <div 
-                        ref={sliderRef}
-                        className="relative h-16 bg-slate-100 border-2 border-dashed border-orange-200 rounded-2xl select-none overflow-hidden p-1 flex items-center justify-center"
-                        onMouseMove={(e) => handleMove(e.clientX)}
-                        onMouseUp={handleEnd}
-                        // ... бусад event handlers
-                      >
-                        <div 
-                          className={`absolute left-1 top-1 bottom-1 bg-orange-600 rounded-xl flex items-center justify-center text-white font-bold cursor-grab shadow-lg transition-all`}
-                          style={{ width: '56px', transform: `translateX(${swipeX}px)` }}
-                          onMouseDown={(e) => handleStart(e.clientX)}
-                        >
-                          {updatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-                        </div>
-                        <span className="text-xs font-bold text-orange-400 tracking-widest uppercase pointer-events-none">
-                          Гүйлгэж баталгаажуул
-                        </span>
-                      </div>
-
-                      <button onClick={() => setPaymentStage('initial')} className="w-full text-xs font-bold text-gray-400 hover:text-gray-600">
-                        <ArrowLeft className="inline-block w-3.5 h-3.5 mr-1 align-[-0.15em]" />Буцах
-                      </button>
-                    </div>
-                  )}
-
-          </div>
-        </div>
+      {purchasePlan && (
+        <PurchaseModal
+          plan={purchasePlan}
+          validityText={`${PAID_PLAN_DAYS / 365} жил хүчинтэй`}
+          onClose={() => setPurchasePlan(null)}
+          onCreated={() => window.location.reload()}
+        />
       )}
 
-      {/* DETAIL MODAL */}
-      {isDetailModalOpen && selectedInvoice && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-4xl p-6 max-w-md w-full border border-gray-100 shadow-2xl space-y-5">
-            
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-base font-bold text-gray-900">Гүйлгээний дэлгэрэнгүй</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Огноо: {new Date(selectedInvoice.created_at).toLocaleString()}</p>
-              </div>
-              <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg"><X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></button>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-3xl space-y-3 border border-slate-100 text-xs">
-              <div className="flex justify-between">
-                <span className="text-gray-400 font-bold">Сонгосон багц:</span>
-                <span className="font-bold text-slate-900">{planName(selectedInvoice.plan_type)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400 font-bold">Төлөх дүн:</span>
-                <span className="font-bold text-orange-600 text-sm">{selectedInvoice.amount.toLocaleString()} ₮</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 font-bold">Төлбөрийн төлөв:</span>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  selectedInvoice.status === "paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600 animate-pulse"
-                }`}>
-                  {selectedInvoice.status === "paid" ? "Төлөгдсөн" : "Хүлээгдэж буй"}
-                </span>
-              </div>
-
-              <hr className="border-slate-200/60 my-1" />
-
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Хүлээн авагч банк:</span><span className="font-bold text-gray-800">Хаан Банк</span></div>
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны дугаар:</span><span className="font-bold text-slate-900 tracking-wider bg-white px-2 py-0.5 rounded border border-gray-100">5011XXXXXX</span></div>
-              <div className="flex justify-between"><span className="text-gray-400 font-bold">Дансны нэр:</span><span className="font-bold text-gray-800">Эм СТАФФИНГ ХХК</span></div>
-              
-              <div className="flex justify-between items-center bg-orange-50 p-2.5 rounded-2xl border border-orange-100/60 mt-2">
-                <span className="text-orange-800 font-bold">Гүйлгээний утга:</span>
-                <span className="font-mono font-bold text-orange-950 bg-white px-3 py-1 rounded-xl shadow-xs border border-orange-200">
-                  {selectedInvoice.invoice_number}
-                </span>
-              </div>
-            </div>
-
-            {selectedInvoice.status !== "paid" && (
-              <div className="bg-amber-50/70 border border-amber-100 text-amber-800 p-3.5 rounded-2xl text-xs leading-relaxed font-medium">
-                ℹ️ <b>Мэдэгдэл:</b> Та төлбөрөө дээрх данс руу шилжүүлсний дараа админ таны гүйлгээний утгыг шалгаж 5-15 минутын дотор багцыг идэвхжүүлэх болно.
-              </div>
-            )}
-
-            <button 
-              onClick={() => setIsDetailModalOpen(false)}
-              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-2xl transition duration-150"
-            >
-              Хаах
-            </button>
-          </div>
-        </div>
+      {selectedInvoice && (
+        <InvoiceDetailModal
+          invoice={selectedInvoice}
+          planLabel={planName(selectedInvoice.plan_type)}
+          bank={bank}
+          onClose={() => setSelectedInvoice(null)}
+        />
       )}
     </div>
   )
