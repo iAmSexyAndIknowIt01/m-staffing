@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { validateNewPassword } from "@/lib/password"
+import { CYRILLIC_NAME_MAX_LENGTH, isCyrillicName, normalizeName, stripNonCyrillic } from "@/lib/mongolianName"
 import PasswordInput from "@/components/common/PasswordInput"
 
 export default function RegisterPage() {
@@ -50,31 +51,20 @@ export default function RegisterPage() {
     setAlertModal({ show: true, title, message, type, onConfirm })
   }
 
-  // Монгол кирил үсэг шалгах туслах функц (Зөвхөн үсэг, хасах зураас, сул зай зөвшөөрнө)
-  const validateMongolianName = (name: string) => {
-    const mongolianRegex = /^[А-ЯӨҮа-яөүЁё\- ]+$/
-    return mongolianRegex.test(name)
+  // Овог, нэрт зөвхөн кирилл үсэг, зураас, зай оруулна. Латин гэх мэт тэмдэгтийг шууд хасаж,
+  // доор нь «кирилл гарын байрлалаар бичнэ үү» гэж сануулна.
+  const handleNameChange = (
+    val: string,
+    setValue: (v: string) => void,
+    setError: (e: boolean) => void
+  ) => {
+    const { value, removed } = stripNonCyrillic(val)
+    setValue(value)
+    setError(removed)
   }
 
-  // Овог шивэх үед шалгах функц
-  const handleLastNameChange = (val: string) => {
-    setLastName(val)
-    if (val && !validateMongolianName(val)) {
-      setLastNameError(true)
-    } else {
-      setLastNameError(false)
-    }
-  }
-
-  // Нэр шивэх үед шалгах функц
-  const handleFirstNameChange = (val: string) => {
-    setFirstName(val)
-    if (val && !validateMongolianName(val)) {
-      setFirstNameError(true)
-    } else {
-      setFirstNameError(false)
-    }
-  }
+  const handleLastNameChange = (val: string) => handleNameChange(val, setLastName, setLastNameError)
+  const handleFirstNameChange = (val: string) => handleNameChange(val, setFirstName, setFirstNameError)
 
   // Алхам 1: "Бүртгүүлэх" дарахад код үүсгэж имэйл рүү илгээнэ
   async function handleSendAuthMail() {
@@ -89,9 +79,13 @@ export default function RegisterPage() {
         return
       }
 
-      // Овог нэр кирил үсэг эсэхийг баталгаажуулах
-      if (!validateMongolianName(lastName) || !validateMongolianName(firstName)) {
-        showAlert("Анхааруулга", "Овог нэрээ зөвхөн Монгол кирил үсгээр оруулна уу.", "warning")
+      // Овог нэр кирилл үсэг эсэхийг баталгаажуулах
+      const lastNameValid = isCyrillicName(lastName)
+      const firstNameValid = isCyrillicName(firstName)
+      if (!lastNameValid || !firstNameValid) {
+        setLastNameError(!lastNameValid)
+        setFirstNameError(!firstNameValid)
+        showAlert("Анхааруулга", "Овог, нэрээ зөвхөн Монгол кирилл үсгээр (2-оос дээш үсэг) оруулна уу.", "warning")
         return
       }
     }
@@ -163,8 +157,8 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role,
-          firstName,
-          lastName,
+          firstName: normalizeName(firstName),
+          lastName: normalizeName(lastName),
           companyName,
           email,
           password,
@@ -266,18 +260,20 @@ export default function RegisterPage() {
                 <input
                   value={lastName}
                   onChange={(e) => handleLastNameChange(e.target.value)}
-                  placeholder="Овог"
+                  autoComplete="family-name"
+                  maxLength={CYRILLIC_NAME_MAX_LENGTH}
+                  aria-invalid={lastNameError}
+                  aria-describedby="lastName-hint"
+                  placeholder="Жишээ: Батбаяр"
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
                     lastNameError 
                       ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
                       : "border-orange-100 focus:border-orange-500"
                   }`}
                 />
-                {lastNameError && (
-                  <p className="mt-1.5 text-xs text-red-500 font-medium animate-in fade-in duration-200">
-                    Зөвхөн Монгол кирил үсгээр оруулна уу
-                  </p>
-                )}
+                <p id="lastName-hint" className={`mt-1.5 text-xs font-medium ${lastNameError ? "text-red-500" : "text-gray-400"}`}>
+                  {lastNameError ? "Зөвхөн кирилл үсгээр бичнэ үү. Гарын байрлалаа шалгана уу." : "Кирилл үсгээр бичнэ"}
+                </p>
               </div>
 
               {/* НЭР INPUT */}
@@ -286,18 +282,20 @@ export default function RegisterPage() {
                 <input
                   value={firstName}
                   onChange={(e) => handleFirstNameChange(e.target.value)}
-                  placeholder="Нэр"
+                  autoComplete="given-name"
+                  maxLength={CYRILLIC_NAME_MAX_LENGTH}
+                  aria-invalid={firstNameError}
+                  aria-describedby="firstName-hint"
+                  placeholder="Жишээ: Сарангэрэл"
                   className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${
                     firstNameError 
                       ? "border-red-500 focus:border-red-600 bg-red-50/10 text-red-900 placeholder-red-300" 
                       : "border-orange-100 focus:border-orange-500"
                   }`}
                 />
-                {firstNameError && (
-                  <p className="mt-1.5 text-xs text-red-500 font-medium animate-in fade-in duration-200">
-                    Зөвхөн Монгол кирил үсгээр оруулна уу
-                  </p>
-                )}
+                <p id="firstName-hint" className={`mt-1.5 text-xs font-medium ${firstNameError ? "text-red-500" : "text-gray-400"}`}>
+                  {firstNameError ? "Зөвхөн кирилл үсгээр бичнэ үү. Гарын байрлалаа шалгана уу." : "Кирилл үсгээр бичнэ"}
+                </p>
               </div>
             </div>
           ) : (
