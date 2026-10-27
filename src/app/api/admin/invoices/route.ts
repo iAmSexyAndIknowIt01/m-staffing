@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { getSession } from "@/lib/session"
+import { selectInChunks } from "@/lib/chunk"
 import { computePaidPackage, getEffectiveSubscription, isPaidPlanType } from "@/lib/plans"
 
 const forbidden = () =>
@@ -20,7 +21,25 @@ export async function GET() {
 
     if (error) throw error
 
-    return NextResponse.json({ success: true, invoices })
+    // UUID-ийн оронд компанийн нэр, холбоо барих мэдээллийг харуулахын тулд нэгтгэнэ
+    const companies = await selectInChunks<{ id: string; company_name: string | null; email: string | null; phone: string | null }>(
+      (invoices ?? []).map((inv) => inv.user_id).filter(Boolean),
+      (ids) => supabase.from("mt_company").select("id, company_name, email, phone").in("id", ids)
+    )
+    const byId = new Map(companies.map((c) => [String(c.id), c]))
+
+    return NextResponse.json({
+      success: true,
+      invoices: (invoices ?? []).map((inv) => {
+        const company = byId.get(String(inv.user_id))
+        return {
+          ...inv,
+          company_name: company?.company_name ?? null,
+          company_email: company?.email ?? null,
+          company_phone: company?.phone ?? null,
+        }
+      }),
+    })
   } catch (error) {
     console.error("Admin Fetch Invoices Error:", error)
     return NextResponse.json({ success: false, error: "Өгөгдөл татахад алдаа гарлаа." }, { status: 500 })
