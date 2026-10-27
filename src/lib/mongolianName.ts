@@ -20,7 +20,7 @@ export function isCyrillicName(value: string): boolean {
 export function getNameError(value: string, emptyMessage: string): string | null {
   const name = normalizeName(value)
   if (!name) return emptyMessage
-  if (/[A-Za-z]/.test(name)) return "Латин үсэг орсон байна. Зөвхөн кирилл үсгээр бичнэ үү."
+  if (/[A-Za-z]/.test(name)) return "Зөвхөн кирилл үсгээр бичнэ үү."
   if (/\d/.test(name)) return "Тоо оруулах боломжгүй"
   if (!isCyrillicName(name)) {
     if (name.length < 2) return "Хамгийн багадаа 2 үсэг байна"

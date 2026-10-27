@@ -32,7 +32,7 @@ describe("getNameError", () => {
 
   it("шалтгаанаас нь хамаарсан тайлбар буцаана", () => {
     expect(getNameError("  ", "Нэрээ оруулна уу")).toBe("Нэрээ оруулна уу")
-    expect(getNameError("Bat", "")).toMatch(/Латин/)
+    expect(getNameError("Bat", "")).toBe("Зөвхөн кирилл үсгээр бичнэ үү.")
     expect(getNameError("Бат1", "")).toMatch(/Тоо/)
     expect(getNameError("Б", "")).toMatch(/2 үсэг/)
     expect(getNameError("Бат!", "")).toMatch(/кирилл үсэг/)
