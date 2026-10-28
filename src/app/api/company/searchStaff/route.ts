@@ -5,6 +5,8 @@ import { one } from "@/lib/relation"
 import { selectInChunks } from "@/lib/chunk"
 import type { AvailabilityDay } from "@/types/profile"
 
+const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
 export async function GET(request: Request) {
   try {
     const session = await getSession()
@@ -23,7 +25,9 @@ export async function GET(request: Request) {
     const skillSearch = searchParams.get("skill")?.trim().toLowerCase() || ""
     const positionSearch = searchParams.get("position")?.trim().toLowerCase() || ""
     const fieldSearch = searchParams.get("field")?.trim().toLowerCase() || ""
-    const genderFilter = searchParams.get("gender") || "Бүгд"
+    // DB-д "male" / "female" хэлбэрээр хадгалагдана
+    const genderParam = searchParams.get("gender") || ""
+    const genderFilter = genderParam === "male" || genderParam === "female" ? genderParam : ""
     const minExp = Number(searchParams.get("minExp")) || 0
 
     // Өдөр болон цагийн шүүлтүүр
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
       `)
       .eq("agreement", true)
 
-    if (genderFilter && genderFilter !== "Бүгд") {
+    if (genderFilter) {
       query = query.eq("gender", genderFilter)
     }
 
@@ -100,9 +104,9 @@ export async function GET(request: Request) {
 
     // 3. Туршлага, боловсролыг хэсэгчлэн татах (олон ID-г нэг URL-д багтаахгүй)
     const [expData, eduData] = await Promise.all([
-      selectInChunks<{ staff_id: string; position: string | null; start_date: string; end_date: string | null }>(
+      selectInChunks<{ staff_id: string; position: string | null; company: string | null; start_date: string; end_date: string | null }>(
         staffIds,
-        (ids) => supabase.from("tr_staff_experience").select("staff_id, position, start_date, end_date").in("staff_id", ids)
+        (ids) => supabase.from("tr_staff_experience").select("staff_id, position, company, start_date, end_date").in("staff_id", ids)
       ),
       selectInChunks<{ staff_id: string; field: string | null }>(
         staffIds,
@@ -129,7 +133,13 @@ export async function GET(request: Request) {
           }
         })
 
-        const technicalSkills = skills.technical || []
+        // Хамгийн сүүлийн (эсвэл одоо ажиллаж буй) туршлага — картын гарчигт харуулна
+        const latestExp = [...staffExp]
+          .filter((e) => e.position?.trim())
+          .sort((a, b) => (b.end_date ? 0 : 1) - (a.end_date ? 0 : 1) || String(b.start_date).localeCompare(String(a.start_date)))[0]
+
+        // Ажиллах боломжтой өдрүүд (Даваа → Ням дарааллаар)
+        const availableDays = WEEK_DAYS.filter((day) => Object.hasOwn(availability, day) && availability[day]?.enabled)
 
         return {
           id: profile.user_id,
@@ -137,16 +147,19 @@ export async function GET(request: Request) {
           email: profile.email,
           phone: profile.phone,
           bio: profile.bio,
-          gender: profile.gender,
+          gender: profile.gender === "male" || profile.gender === "female" ? profile.gender : null,
           agreement: profile.agreement,
           avatarUrl: profile.photo_url || "",
-          role: technicalSkills[0] || "Мэргэжилтэй ажилтан",
+          headline: latestExp?.position?.trim() || null,
+          headlineCompany: latestExp?.company?.trim() || null,
+          isCurrent: !!latestExp && !latestExp.end_date,
           experienceYears: totalExperienceYears,
+          hasExperience: staffExp.length > 0,
+          availableDays,
           skills,
           availability,
           positions: staffExp.map((e) => e.position || ""),
           fields: staffEdu.map((e) => e.field || ""),
-          location: "Улаанбаатар",
         }
       })
       .filter((staff) => {
