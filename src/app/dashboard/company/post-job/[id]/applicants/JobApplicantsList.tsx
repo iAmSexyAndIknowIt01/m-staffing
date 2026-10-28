@@ -2,6 +2,7 @@
 
 import { Calendar, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useState, useMemo } from "react"
 import { showAlert } from "@/components/common/AppDialog"
 import { confirmStatusChange } from "@/components/company/confirmApplicantAction"
@@ -22,6 +23,7 @@ interface ListProps {
 }
 
 export default function JobApplicantsList({ initialApplicants }: ListProps) {
+  const pathname = usePathname()
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
@@ -151,7 +153,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                         {currentStatus === "rejected" && <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-600">Татгалзсан</span>}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <Link href={`/dashboard/company/applicants/profile?id=${app.id}`} className="text-xs font-bold bg-gray-990 text-white px-3 py-2 rounded-lg transition inline-block">
+                        <Link href={`/dashboard/company/applicants/profile?${new URLSearchParams({ id: app.id, back: pathname })}`} className="text-xs font-bold bg-gray-990 text-white px-3 py-2 rounded-lg transition inline-block">
                           Дэлгэрэнгүй
                         </Link>
                         {["new", "pending", ""].includes(currentStatus) && (
@@ -192,7 +194,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Link href={`/dashboard/company/applicants/profile?id=${app.id}`} className="flex-1 text-center text-xs font-bold bg-gray-950 text-white py-2 rounded-lg">
+                    <Link href={`/dashboard/company/applicants/profile?${new URLSearchParams({ id: app.id, back: pathname })}`} className="flex-1 text-center text-xs font-bold bg-gray-950 text-white py-2 rounded-lg">
                       Үзэх
                     </Link>
                     {["new", "pending", ""].includes(currentStatus) && (

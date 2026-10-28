@@ -1,37 +1,137 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck, SlidersHorizontal, X } from "lucide-react"
+import { useState, useEffect, useMemo, useRef } from "react"
+import { useSearchParams } from "next/navigation"
+import { AlertCircle, Briefcase, CalendarDays, ChevronRight, Loader2, RotateCw, Search, SlidersHorizontal, User, X } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import Select from "@/components/common/Select"
+import Pagination from "@/components/staff/jobs/Pagination"
 
 interface Staff {
   id: string
   fullName: string
-  gender: string
+  gender: "male" | "female" | null
   experienceYears: number
-  role: string
-  location: string
+  hasExperience: boolean
+  headline: string | null
+  headlineCompany: string | null
+  isCurrent: boolean
+  availableDays: string[]
   skills?: {
     technical?: string[]
     languages?: string[]
   }
   avatarUrl: string
-  agreement: boolean
 }
+
+const GENDER_LABELS: Record<string, string> = { male: "Эрэгтэй", female: "Эмэгтэй" }
+const MAX_SKILLS = 4
+const PAGE_SIZE = 10
+const MIN_EXP_OPTIONS = [0, 1, 3, 5]
 
 // Долоо хоногийн өдрүүд (API рүү англи нэрээр нь явуулна)
 const DAYS_OF_WEEK = [
-  { label: "Даваа", value: "monday" },
-  { label: "Мягмар", value: "tuesday" },
-  { label: "Лхагва", value: "wednesday" },
-  { label: "Пүрэв", value: "thursday" },
-  { label: "Баасан", value: "friday" },
-  { label: "Бямба", value: "saturday" },
-  { label: "Ням", value: "sunday" },
+  { label: "Даваа", short: "Да", value: "monday" },
+  { label: "Мягмар", short: "Мя", value: "tuesday" },
+  { label: "Лхагва", short: "Лх", value: "wednesday" },
+  { label: "Пүрэв", short: "Пү", value: "thursday" },
+  { label: "Баасан", short: "Ба", value: "friday" },
+  { label: "Бямба", short: "Бя", value: "saturday" },
+  { label: "Ням", short: "Ня", value: "sunday" },
 ]
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  return (parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0]?.slice(0, 2) || "?").toUpperCase()
+}
+
+function experienceLabel(staff: Staff) {
+  if (staff.experienceYears > 0) return `${staff.experienceYears} жил туршлага`
+  return staff.hasExperience ? "1 жилээс бага туршлага" : null
+}
+
+function StaffRow({ staff, backQuery }: { staff: Staff; backQuery: string }) {
+  const technical = staff.skills?.technical?.filter(Boolean) ?? []
+  const experience = experienceLabel(staff)
+  const gender = staff.gender ? GENDER_LABELS[staff.gender] : null
+  const available = new Set(staff.availableDays)
+  const isSparse = !staff.headline && !gender && !experience && technical.length === 0 && available.size === 0
+
+  return (
+    <Link
+      href={`/dashboard/company/search-staff/profile?${new URLSearchParams({ id: staff.id, ...(backQuery ? { back: backQuery } : {}) })}`}
+      className="group flex items-start md:items-center gap-3.5 sm:gap-4 px-4 sm:px-5 py-4 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:bg-orange-50/60 transition-colors"
+    >
+      <div className="w-12 h-12 shrink-0 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden">
+        {staff.avatarUrl ? (
+          <img src={staff.avatarUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-base font-bold text-orange-600">{initials(staff.fullName)}</span>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1 md:flex md:items-center md:gap-6">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-base text-gray-900 truncate group-hover:text-orange-700 transition-colors">
+            {staff.fullName || "Нэргүй"}
+          </h3>
+          {staff.headline && (
+            <p className="text-sm text-gray-600 truncate">
+              {staff.headline}
+              {staff.headlineCompany && <span className="text-gray-400"> · {staff.headlineCompany}</span>}
+              {staff.isCurrent && <span className="ml-1.5 text-xs font-semibold text-emerald-600">Одоо</span>}
+            </p>
+          )}
+          {isSparse && <p className="text-sm text-gray-400">Профайлын дэлгэрэнгүй мэдээллээ оруулаагүй байна.</p>}
+
+          {(gender || experience || technical.length > 0) && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-gray-600">
+              {gender && (
+                <span className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md">
+                  <User className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {gender}
+                </span>
+              )}
+              {experience && (
+                <span className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md">
+                  <Briefcase className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {experience}
+                </span>
+              )}
+              {technical.slice(0, MAX_SKILLS).map((tech) => (
+                <span key={tech} className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-md font-medium">{tech}</span>
+              ))}
+              {technical.length > MAX_SKILLS && (
+                <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md font-medium">+{technical.length - MAX_SKILLS}</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {available.size > 0 && (
+          <div className="mt-2.5 md:mt-0 shrink-0 flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 shrink-0 text-gray-400 md:hidden" aria-hidden="true" />
+            <span className="sr-only">Ажиллах боломжтой өдөр: {DAYS_OF_WEEK.filter((d) => available.has(d.value)).map((d) => d.label).join(", ")}</span>
+            <div className="flex gap-1" aria-hidden="true">
+              {DAYS_OF_WEEK.map((d) => (
+                <span
+                  key={d.value}
+                  className={`w-7 h-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
+                    available.has(d.value) ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-300"
+                  }`}
+                >
+                  {d.short}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <ChevronRight className="w-5 h-5 shrink-0 self-center text-gray-300 group-hover:text-orange-500 transition-colors" aria-hidden="true" />
+    </Link>
+  )
+}
 
 // Ажиллах цагийн сонголт (06:00–22:00); API "HH:MM" хэлбэрээр хүлээж авна
 const HOURS = Array.from({ length: 17 }, (_, i) => `${String(i + 6).padStart(2, "0")}:00`)
@@ -43,74 +143,128 @@ export default function SearchStaffPage() {
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   
-  // Хайлтын төлөвүүд
-  const [nameQuery, setNameQuery] = useState("")
-  const [skillQuery, setSkillQuery] = useState("")
-  const [positionQuery, setPositionQuery] = useState("")
-  const [fieldQuery, setFieldQuery] = useState("")
-  const [genderFilter, setGenderFilter] = useState("Бүгд")
-  const [minExp, setMinExp] = useState(0)
+  // Шүүлтүүр, хуудсыг URL-д хадгална — профайл руу ороод буцахад (эсвэл хуудсаа шинэчлэхэд) хэвээр үлдэнэ
+  const searchParams = useSearchParams()
+  const param = (key: string) => searchParams.get(key) ?? ""
 
-  // Шинэ: Цаг болон өдрийн шүүлтүүр
-  const [selectedDay, setSelectedDay] = useState("")
-  const [filterTime, setFilterTime] = useState("") // Жишээ нь: "10:00"
+  const [nameQuery, setNameQuery] = useState(() => param("name"))
+  const [skillQuery, setSkillQuery] = useState(() => param("skill"))
+  const [positionQuery, setPositionQuery] = useState(() => param("position"))
+  const [fieldQuery, setFieldQuery] = useState(() => param("field"))
+  const [genderFilter, setGenderFilter] = useState(() => (["male", "female"].includes(param("gender")) ? param("gender") : ""))
+  const [minExp, setMinExp] = useState(() => (MIN_EXP_OPTIONS.includes(Number(param("minExp"))) ? Number(param("minExp")) : 0))
+  const [selectedDay, setSelectedDay] = useState(() => (DAYS_OF_WEEK.some((d) => d.value === param("day")) ? param("day") : ""))
+  const [filterTime, setFilterTime] = useState(() => (HOURS.includes(param("time")) ? param("time") : ""))
+  const [page, setPage] = useState(() => Math.max(1, Math.floor(Number(param("page"))) || 1))
   const [showFilters, setShowFilters] = useState(false)
+  const listTopRef = useRef<HTMLDivElement>(null)
+
+  // Шүүлтүүр өөрчлөгдөхөд эхний хуудас руу буцна
+  const withPageReset = <T,>(set: (value: T) => void) => (value: T) => {
+    set(value)
+    setPage(1)
+  }
 
   const activeFilterCount = [skillQuery, positionQuery, fieldQuery, selectedDay, filterTime].filter(Boolean).length +
-    (genderFilter !== "Бүгд" ? 1 : 0) + (minExp > 0 ? 1 : 0)
+    (genderFilter ? 1 : 0) + (minExp > 0 ? 1 : 0)
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams()
+    if (nameQuery) params.set("name", nameQuery)
+    if (skillQuery) params.set("skill", skillQuery)
+    if (positionQuery) params.set("position", positionQuery)
+    if (fieldQuery) params.set("field", fieldQuery)
+    if (genderFilter) params.set("gender", genderFilter)
+    if (minExp > 0) params.set("minExp", String(minExp))
+    if (selectedDay) params.set("day", selectedDay)
+    if (filterTime) params.set("time", filterTime)
+    if (page > 1) params.set("page", String(page))
+    return params.toString()
+  }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp, selectedDay, filterTime, page])
+
+  // router.replace нь шүүлтүүр солих бүрт серверээс хуудсыг дахин татдаг тул зөвхөн URL-ийг шинэчилнэ
+  useEffect(() => {
+    if (queryString === window.location.search.replace(/^\?/, "")) return
+    window.history.replaceState(null, "", queryString ? `?${queryString}` : window.location.pathname)
+  }, [queryString])
 
   const resetFilters = () => {
+    setPage(1)
     setSkillQuery("")
     setPositionQuery("")
     setFieldQuery("")
-    setGenderFilter("Бүгд")
+    setGenderFilter("")
     setMinExp(0)
     setSelectedDay("")
     setFilterTime("")
   }
 
   useEffect(() => {
-    async function fetchStaffs() {
-      try {
-        setLoading(true)
-        
-        const params = new URLSearchParams()
-        if (nameQuery) params.append("name", nameQuery)
-        if (skillQuery) params.append("skill", skillQuery)
-        if (positionQuery) params.append("position", positionQuery)
-        if (fieldQuery) params.append("field", fieldQuery)
-        if (genderFilter !== "Бүгд") params.append("gender", genderFilter)
-        if (minExp > 0) params.append("minExp", minExp.toString())
-        
-        // Шинэ параметрүүдийг нэмэх
-        if (selectedDay) params.append("day", selectedDay)
-        if (filterTime) params.append("time", filterTime)
+    let cancelled = false
+    const params = new URLSearchParams()
+    if (nameQuery) params.append("name", nameQuery)
+    if (skillQuery) params.append("skill", skillQuery)
+    if (positionQuery) params.append("position", positionQuery)
+    if (fieldQuery) params.append("field", fieldQuery)
+    if (genderFilter) params.append("gender", genderFilter)
+    if (minExp > 0) params.append("minExp", minExp.toString())
+    if (selectedDay) params.append("day", selectedDay)
+    if (filterTime) params.append("time", filterTime)
 
+    // Бичих бүрт биш, 300ms зогссоны дараа хайна. Өмнөх үр дүнг хайлтын үеэр харуулсаар байна.
+    const timer = setTimeout(async () => {
+      setLoading(true)
+      try {
         const res = await fetch(`/api/company/searchStaff?${params.toString()}`)
         const data = await res.json()
-
-        if (data.success) {
-          setStaffList(data.staff || [])
-        } else {
-          console.error("Мэдээлэл авахад алдаа гарлаа:", data.error)
-          setStaffList([])
-        }
+        if (cancelled) return
+        if (!res.ok || !data.success) throw new Error(data.error || "Мэдээлэл авахад алдаа гарлаа.")
+        setStaffList(data.staff || [])
+        setError(null)
       } catch (err) {
-        console.error("API дуудахад алдаа гарлаа:", err)
-        setStaffList([])
+        if (!cancelled) setError(err instanceof Error ? err.message : "Сүлжээний алдаа гарлаа.")
       } finally {
-        setLoading(false)
-        setIsInitialLoad(false)
+        if (!cancelled) {
+          setLoading(false)
+          setIsInitialLoad(false)
+        }
       }
-    }
-
-    const timer = setTimeout(() => {
-      fetchStaffs()
     }, 300)
 
-    return () => clearTimeout(timer)
-  }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp, selectedDay, filterTime])
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp, selectedDay, filterTime, reloadKey])
+
+  const totalPages = Math.max(1, Math.ceil(staffList.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pagedStaff = staffList.slice(pageStart, pageStart + PAGE_SIZE)
+  const visiblePages = (() => {
+    const maxVisible = 5
+    let start = Math.max(currentPage - Math.floor(maxVisible / 2), 1)
+    const end = Math.min(start + maxVisible - 1, totalPages)
+    start = Math.max(end - maxVisible + 1, 1)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  })()
+
+  // Pagination өмнөх/дараах товч функц (prev => prev ± 1) дамжуулдаг
+  const changePage = (next: number | ((prev: number) => number)) => {
+    setPage((prev) => (typeof next === "function" ? next(Math.min(prev, totalPages)) : next))
+    listTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  // Профайлаас буцахад сэргээх хайлт (хуудасны дугаар бодит хуудсаар)
+  const backQuery = (() => {
+    const params = new URLSearchParams(queryString)
+    if (currentPage > 1) params.set("page", String(currentPage))
+    else params.delete("page")
+    return params.toString()
+  })()
 
   if (isInitialLoad) {
     return (
@@ -143,7 +297,7 @@ export default function SearchStaffPage() {
               value={nameQuery}
               aria-label="Нэрээр хайх"
               className={`${inputClass} pl-10`}
-              onChange={(e) => setNameQuery(e.target.value)}
+              onChange={(e) => withPageReset(setNameQuery)(e.target.value)}
             />
           </div>
           <button
@@ -170,7 +324,7 @@ export default function SearchStaffPage() {
             value={skillQuery}
             aria-label="Ур чадвараар хайх"
             className={`${inputClass} px-4`}
-            onChange={(e) => setSkillQuery(e.target.value)}
+            onChange={(e) => withPageReset(setSkillQuery)(e.target.value)}
           />
           <input
             type="text"
@@ -178,7 +332,7 @@ export default function SearchStaffPage() {
             value={positionQuery}
             aria-label="Албан тушаалаар хайх"
             className={`${inputClass} px-4`}
-            onChange={(e) => setPositionQuery(e.target.value)}
+            onChange={(e) => withPageReset(setPositionQuery)(e.target.value)}
           />
           <input
             type="text"
@@ -186,26 +340,26 @@ export default function SearchStaffPage() {
             value={fieldQuery}
             aria-label="Мэргэжлээр хайх"
             className={`${inputClass} px-4`}
-            onChange={(e) => setFieldQuery(e.target.value)}
+            onChange={(e) => withPageReset(setFieldQuery)(e.target.value)}
           />
-          <Select value={genderFilter} aria-label="Хүйс" onChange={(e) => setGenderFilter(e.target.value)}>
-            <option value="Бүгд">Бүх хүйс</option>
-            <option value="Эрэгтэй">Эрэгтэй</option>
-            <option value="Эмэгтэй">Эмэгтэй</option>
+          <Select value={genderFilter} aria-label="Хүйс" onChange={(e) => withPageReset(setGenderFilter)(e.target.value)}>
+            <option value="">Бүх хүйс</option>
+            <option value="male">Эрэгтэй</option>
+            <option value="female">Эмэгтэй</option>
           </Select>
-          <Select value={minExp} aria-label="Туршлага" onChange={(e) => setMinExp(Number(e.target.value))}>
+          <Select value={minExp} aria-label="Туршлага" onChange={(e) => withPageReset(setMinExp)(Number(e.target.value))}>
             <option value={0}>Бүх туршлага</option>
             <option value={1}>1+ жил</option>
             <option value={3}>3+ жил</option>
             <option value={5}>5+ жил</option>
           </Select>
-          <Select value={selectedDay} aria-label="Ажиллах өдөр" onChange={(e) => setSelectedDay(e.target.value)}>
+          <Select value={selectedDay} aria-label="Ажиллах өдөр" onChange={(e) => withPageReset(setSelectedDay)(e.target.value)}>
             <option value="">Ажиллах өдөр: бүгд</option>
             {DAYS_OF_WEEK.map((d) => (
               <option key={d.value} value={d.value}>{d.label} гариг</option>
             ))}
           </Select>
-          <Select value={filterTime} aria-label="Ажиллах цаг" onChange={(e) => setFilterTime(e.target.value)}>
+          <Select value={filterTime} aria-label="Ажиллах цаг" onChange={(e) => withPageReset(setFilterTime)(e.target.value)}>
             <option value="">Ажиллах цаг: бүгд</option>
             {HOURS.map((h) => (
               <option key={h} value={h}>{h}-д ажиллах боломжтой</option>
@@ -224,83 +378,73 @@ export default function SearchStaffPage() {
       </div>
 
       {/* Нийт илэрц хэсэг */}
-      <div className="mb-4">
-        <h2 className="font-bold text-gray-800 text-base sm:text-lg">
-          Илэрсэн ажилчид <span className="text-orange-500 font-bold">({staffList.length})</span>
+      <div ref={listTopRef} className="mb-4 flex items-center justify-between gap-3 scroll-mt-24">
+        <h2 className="font-bold text-gray-800 text-base sm:text-lg" aria-live="polite">
+          Илэрсэн ажилчид {!error && <span className="text-orange-500 font-bold">({staffList.length})</span>}
+          {!error && totalPages > 1 && (
+            <span className="ml-2 text-sm font-medium text-gray-400">
+              {pageStart + 1}–{pageStart + pagedStaff.length} харуулж байна
+            </span>
+          )}
         </h2>
+        {loading && (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Хайж байна…
+          </span>
+        )}
       </div>
 
-      {/* List Container */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden min-h-50">
-        {loading ? (
-          <LoadingLayout loading={true} />
-        ) : staffList.length > 0 ? (
-          staffList.map((staff) => (
-            <div key={staff.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
-              <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-gray-100">
-                  {staff.avatarUrl ? (
-                    <img src={staff.avatarUrl} alt={staff.fullName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-base sm:text-lg font-bold text-orange-600">{staff.fullName?.charAt(0) || "?"}</span>
-                  )}
-                </div>
+      {error ? (
+        <div role="alert" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-700">
+          <span className="flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" /> {error}</span>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="self-start inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-red-200 bg-white font-semibold hover:bg-red-50"
+          >
+            <RotateCw className="w-4 h-4" /> Дахин оролдох
+          </button>
+        </div>
+      ) : staffList.length > 0 ? (
+        <ul className={`bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden transition-opacity ${loading ? "opacity-60" : ""}`}>
+          {pagedStaff.map((staff) => (
+            <li key={staff.id}>
+              <StaffRow staff={staff} backQuery={backQuery} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
-                <div className="space-y-2 w-full overflow-hidden">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                    <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate max-w-full">{staff.fullName}</h3>
-                    <span className="text-xs sm:text-xs font-semibold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-50 text-amber-700 rounded-full">
-                      {staff.role}
-                    </span>
-                    <span className="text-xs sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 bg-emerald-50 text-emerald-600 rounded-full">
-                      Идэвхтэй
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 flex-wrap pt-0.5">
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-gray-100">
-                      <MapPin size={14} className="text-gray-400 shrink-0" /> 
-                      <span className="truncate">{staff.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-gray-100">
-                      <User size={14} className="text-gray-400 shrink-0" /> 
-                      <span>{staff.gender}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-gray-100">
-                      <Briefcase size={14} className="text-gray-400 shrink-0" /> 
-                      <span>{staff.experienceYears} жил</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {staff.skills?.technical?.map((tech, idx) => (
-                      <span key={idx} className="text-xs sm:text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-md font-medium">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 self-end sm:self-center w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                <Link 
-                  href={`/dashboard/company/search-staff/profile?id=${staff.id}`}
-                  className="w-full sm:w-auto justify-center px-5 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <UserCheck size={16} /> Профайл үзэх
-                </Link>
-              </div>
-            </div>
-          ))
-        ) : (
+      {!error && (staffList.length > 0 ? (
+        <Pagination
+          filteredJobsCount={staffList.length}
+          totalPages={totalPages}
+          isFiltering={false}
+          currentPage={currentPage}
+          visiblePages={visiblePages}
+          setCurrentPage={changePage}
+        />
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
           <EmptyState
             illustration="search"
             title="Хайлтад тохирох ажилтан олдсонгүй"
-            description="Шүүлтүүрээ өөрчилж эсвэл хайлтын үгээ товчилж дахин оролдоно уу."
+            description={activeFilterCount > 0 || nameQuery ? "Шүүлтүүрээ өөрчилж эсвэл хайлтын үгээ товчилж дахин оролдоно уу." : "Профайлаа нээлттэй болгосон ажил хайгч одоогоор алга."}
             className="border-0"
           />
-        )}
-      </div>
+          {activeFilterCount > 0 && (
+            <div className="flex justify-center pb-8 -mt-2">
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold"
+              >
+                <X className="w-4 h-4" /> Шүүлтүүр цэвэрлэх
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

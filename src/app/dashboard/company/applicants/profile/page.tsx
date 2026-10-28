@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import BackLink from "@/components/common/BackLink"
 
 type Experience = {
   company: string
@@ -83,6 +84,10 @@ export default function ApplicantProfilePage() {
 function ApplicantProfileContent() {
   const searchParams = useSearchParams()
   const applicantId = searchParams.get("id")
+  // Аль жагсаалтаас ирснийг (шүүлтүүртэйгээ) back параметрээр хүлээн авна. Зөвхөн компанийн самбарын дотоод зам зөвшөөрнө.
+  const backParam = searchParams.get("back") ?? ""
+  const backHref = /^\/dashboard\/company\/[^/]/.test(backParam) && !backParam.includes("//") ? backParam : "/dashboard/company/applicants"
+  const backLabel = backHref.startsWith("/dashboard/company/post-job/") ? "Зарын анкетууд" : "Ирсэн анкетууд"
 
 
   const [loading, setLoading] = useState(true)
@@ -155,8 +160,11 @@ function ApplicantProfileContent() {
 
   if (error) {
     return (
-      <div className="max-w-5xl mx-auto mt-8 bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
-        <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
+      <div className="max-w-5xl mx-auto space-y-4">
+        <BackLink href={backHref} label={backLabel} />
+        <div role="alert" className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm">
+          <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
+        </div>
       </div>
     )
   }
@@ -164,6 +172,7 @@ function ApplicantProfileContent() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div>
+        <BackLink href={backHref} label={backLabel} className="mb-2" />
         <h1 className="text-3xl font-extrabold text-gray-900">Ажил горилогчийн профайл</h1>
         <p className="text-sm text-gray-400 mt-1">Ирүүлсэн анкетын дэлгэрэнгүй мэдээлэл</p>
       </div>
