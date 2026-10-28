@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { AlertCircle, Briefcase, CalendarDays, ChevronRight, Loader2, RotateCw, Search, SlidersHorizontal, User, X } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -147,7 +147,6 @@ export default function SearchStaffPage() {
   const [reloadKey, setReloadKey] = useState(0)
   
   // Шүүлтүүр, хуудсыг URL-д хадгална — профайл руу ороод буцахад (эсвэл хуудсаа шинэчлэхэд) хэвээр үлдэнэ
-  const router = useRouter()
   const searchParams = useSearchParams()
   const param = (key: string) => searchParams.get(key) ?? ""
 
@@ -186,10 +185,11 @@ export default function SearchStaffPage() {
     return params.toString()
   }, [nameQuery, skillQuery, positionQuery, fieldQuery, genderFilter, minExp, selectedDay, filterTime, page])
 
+  // router.replace нь шүүлтүүр солих бүрт серверээс хуудсыг дахин татдаг тул зөвхөн URL-ийг шинэчилнэ
   useEffect(() => {
     if (queryString === window.location.search.replace(/^\?/, "")) return
-    router.replace(queryString ? `?${queryString}` : window.location.pathname, { scroll: false })
-  }, [queryString, router])
+    window.history.replaceState(null, "", queryString ? `?${queryString}` : window.location.pathname)
+  }, [queryString])
 
   const resetFilters = () => {
     setPage(1)

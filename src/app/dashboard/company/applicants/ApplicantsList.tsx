@@ -78,7 +78,9 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
   const jobOptions = useMemo(() => {
     const counts = new Map<string, number>()
     for (const app of applicants) counts.set(app.job_title, (counts.get(app.job_title) ?? 0) + 1)
-    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "mn"))
+    // localeCompare нь server (Node) болон хөтөч дээр өөр дараалал гаргаж hydration алдаа үүсгэдэг тул
+    // хоёр талд ижил үр дүнтэй code point-оор эрэмбэлнэ
+    return [...counts.entries()].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
   }, [applicants])
 
   // Зар устсан г.м. шалтгаанаар URL дахь ажлын байр жагсаалтад байхгүй бол шүүлтүүрийг үл тооцно
@@ -139,10 +141,11 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
     return params.toString()
   }, [searchQuery, statusFilter, activeJob, sortOrder, currentPage])
 
+  // router.replace нь шүүлтүүр солих бүрт серверээс хуудсыг дахин татдаг тул зөвхөн URL-ийг шинэчилнэ
   useEffect(() => {
     if (queryString === window.location.search.replace(/^\?/, "")) return
-    router.replace(queryString ? `?${queryString}` : window.location.pathname, { scroll: false })
-  }, [queryString, router])
+    window.history.replaceState(null, "", queryString ? `?${queryString}` : window.location.pathname)
+  }, [queryString])
 
   const backHref = `/dashboard/company/applicants${queryString ? `?${queryString}` : ""}`
   const profileHref = (id: string) => `/dashboard/company/applicants/profile?${new URLSearchParams({ id, back: backHref })}`
