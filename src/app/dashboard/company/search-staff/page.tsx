@@ -48,7 +48,7 @@ function experienceLabel(staff: Staff) {
   return staff.hasExperience ? "1 жилээс бага туршлага" : null
 }
 
-function StaffCard({ staff }: { staff: Staff }) {
+function StaffRow({ staff }: { staff: Staff }) {
   const technical = staff.skills?.technical?.filter(Boolean) ?? []
   const experience = experienceLabel(staff)
   const gender = staff.gender ? GENDER_LABELS[staff.gender] : null
@@ -58,77 +58,73 @@ function StaffCard({ staff }: { staff: Staff }) {
   return (
     <Link
       href={`/dashboard/company/search-staff/profile?id=${staff.id}`}
-      className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition"
+      className="group flex items-start md:items-center gap-3.5 sm:gap-4 px-4 sm:px-5 py-4 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:bg-orange-50/60 transition-colors"
     >
-      <div className="flex items-start gap-3.5">
-        <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden">
-          {staff.avatarUrl ? (
-            <img src={staff.avatarUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-base font-bold text-orange-600">{initials(staff.fullName)}</span>
-          )}
-        </div>
+      <div className="w-12 h-12 shrink-0 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden">
+        {staff.avatarUrl ? (
+          <img src={staff.avatarUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-base font-bold text-orange-600">{initials(staff.fullName)}</span>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1 md:flex md:items-center md:gap-6">
         <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate group-hover:text-orange-700 transition-colors">
+          <h3 className="font-bold text-base text-gray-900 truncate group-hover:text-orange-700 transition-colors">
             {staff.fullName || "Нэргүй"}
           </h3>
           {staff.headline && (
-            <p className="mt-0.5 text-sm text-gray-600 truncate">
+            <p className="text-sm text-gray-600 truncate">
               {staff.headline}
               {staff.headlineCompany && <span className="text-gray-400"> · {staff.headlineCompany}</span>}
               {staff.isCurrent && <span className="ml-1.5 text-xs font-semibold text-emerald-600">Одоо</span>}
             </p>
           )}
+          {isSparse && <p className="text-sm text-gray-400">Профайлын дэлгэрэнгүй мэдээллээ оруулаагүй байна.</p>}
+
+          {(gender || experience || technical.length > 0) && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-gray-600">
+              {gender && (
+                <span className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md">
+                  <User className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {gender}
+                </span>
+              )}
+              {experience && (
+                <span className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md">
+                  <Briefcase className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {experience}
+                </span>
+              )}
+              {technical.slice(0, MAX_SKILLS).map((tech) => (
+                <span key={tech} className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-md font-medium">{tech}</span>
+              ))}
+              {technical.length > MAX_SKILLS && (
+                <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md font-medium">+{technical.length - MAX_SKILLS}</span>
+              )}
+            </div>
+          )}
         </div>
-        <ChevronRight className="w-5 h-5 shrink-0 text-gray-300 group-hover:text-orange-500 transition-colors" aria-hidden="true" />
+
+        {available.size > 0 && (
+          <div className="mt-2.5 md:mt-0 shrink-0 flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 shrink-0 text-gray-400 md:hidden" aria-hidden="true" />
+            <span className="sr-only">Ажиллах боломжтой өдөр: {DAYS_OF_WEEK.filter((d) => available.has(d.value)).map((d) => d.label).join(", ")}</span>
+            <div className="flex gap-1" aria-hidden="true">
+              {DAYS_OF_WEEK.map((d) => (
+                <span
+                  key={d.value}
+                  className={`w-7 h-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
+                    available.has(d.value) ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-300"
+                  }`}
+                >
+                  {d.short}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {isSparse && <p className="mt-3 text-sm text-gray-400">Профайлын дэлгэрэнгүй мэдээллээ оруулаагүй байна.</p>}
-
-      {(gender || experience) && (
-        <div className="mt-3 flex flex-wrap gap-2 text-xs sm:text-sm text-gray-600">
-          {gender && (
-            <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">
-              <User className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {gender}
-            </span>
-          )}
-          {experience && (
-            <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">
-              <Briefcase className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {experience}
-            </span>
-          )}
-        </div>
-      )}
-
-      {technical.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Ур чадвар">
-          {technical.slice(0, MAX_SKILLS).map((tech) => (
-            <li key={tech} className="text-xs bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md font-medium">{tech}</li>
-          ))}
-          {technical.length > MAX_SKILLS && (
-            <li className="text-xs bg-gray-100 text-gray-500 px-2.5 py-1 rounded-md font-medium">+{technical.length - MAX_SKILLS}</li>
-          )}
-        </ul>
-      )}
-
-      {available.size > 0 && (
-        <div className="mt-auto pt-4 flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 shrink-0 text-gray-400" aria-hidden="true" />
-          <span className="sr-only">Ажиллах боломжтой өдөр: {DAYS_OF_WEEK.filter((d) => available.has(d.value)).map((d) => d.label).join(", ")}</span>
-          <div className="flex gap-1" aria-hidden="true">
-            {DAYS_OF_WEEK.map((d) => (
-              <span
-                key={d.value}
-                className={`w-7 h-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
-                  available.has(d.value) ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-300"
-                }`}
-              >
-                {d.short}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      <ChevronRight className="w-5 h-5 shrink-0 self-center text-gray-300 group-hover:text-orange-500 transition-colors" aria-hidden="true" />
     </Link>
   )
 }
@@ -345,10 +341,10 @@ export default function SearchStaffPage() {
           </button>
         </div>
       ) : staffList.length > 0 ? (
-        <ul className={`grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 transition-opacity ${loading ? "opacity-60" : ""}`}>
+        <ul className={`bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden transition-opacity ${loading ? "opacity-60" : ""}`}>
           {staffList.map((staff) => (
             <li key={staff.id}>
-              <StaffCard staff={staff} />
+              <StaffRow staff={staff} />
             </li>
           ))}
         </ul>
