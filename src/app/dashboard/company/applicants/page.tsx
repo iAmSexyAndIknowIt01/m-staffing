@@ -47,8 +47,8 @@ export default async function ApplicantsPage() {
       id: req.id,
       user_name: req.applicant_name || "Нэргүй ажил горилогч",
       job_title: one(req.mt_openjob)?.title || "Тодорхойгүй ажлын байр",
-      email: req.applicant_email || "Хоосон",
-      phone: req.applicant_phone || "Хоосон",
+      email: req.applicant_email || "",
+      phone: req.applicant_phone || "",
       created_at: req.created_at,
       status: req.status || "new",
     })) || []
@@ -59,7 +59,7 @@ export default async function ApplicantsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-in px-4 sm:px-0 pb-6">
+    <div className="max-w-6xl w-full min-w-0 mx-auto animate-fade-in pb-6">
       <div className="mb-6 md:mb-8 pt-2">
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Ирсэн анкетууд</h1>
         <p className="text-gray-500 mt-1 text-xs md:text-sm">

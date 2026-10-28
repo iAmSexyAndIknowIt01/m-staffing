@@ -1,18 +1,20 @@
 "use client"
 
-import { Briefcase, Calendar, FileText, Mail, Phone, Search, X } from "lucide-react"
+import { Briefcase, Calendar, FileText, Loader2, Mail, Phone, Search, X } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
 import { showAlert } from "@/components/common/AppDialog"
 import { confirmCreateContract, confirmStatusChange } from "@/components/company/confirmApplicantAction"
-import FoalIllustration from "@/components/common/FoalIllustration"
+import EmptyState from "@/components/common/EmptyState"
+import Select from "@/components/common/Select"
+import Pagination from "@/components/staff/jobs/Pagination"
 
 interface Applicant {
   id: string
-  user_name: string 
-  job_title: string 
+  user_name: string
+  job_title: string
   email: string
   phone: string
   created_at: string
@@ -23,57 +25,143 @@ interface ApplicantsListProps {
   initialApplicants: Applicant[]
 }
 
+type StatusKey = "all" | "pending" | "interview" | "accepted" | "approved" | "not-approved" | "rejected"
+
+const STATUS_META: Record<Exclude<StatusKey, "all">, { label: string; className: string }> = {
+  pending: { label: "Хүлээгдэж буй", className: "bg-amber-50 text-amber-700 border-amber-200/60" },
+  interview: { label: "Ярилцлага", className: "bg-orange-50 text-orange-700 border-orange-200/60" },
+  accepted: { label: "Баталгаажсан", className: "bg-blue-50 text-blue-700 border-blue-200/60" },
+  approved: { label: "Тэнцсэн", className: "bg-emerald-50 text-emerald-700 border-emerald-200/60" },
+  "not-approved": { label: "Тэнцээгүй", className: "bg-gray-100 text-gray-600 border-gray-200/60" },
+  rejected: { label: "Татгалзсан", className: "bg-rose-50 text-rose-600 border-rose-200/60" },
+}
+
+const STATUS_TABS: StatusKey[] = ["all", "pending", "interview", "accepted", "approved", "not-approved", "rejected"]
+const PAGE_SIZE = 10
+
+// "new", "pending", хоосон төлөвийг «Хүлээгдэж буй» гэж нэгтгэнэ
+function normalizeStatus(status: string): Exclude<StatusKey, "all"> | "unknown" {
+  const s = (status || "").toLowerCase()
+  if (s === "" || s === "new" || s === "pending") return "pending"
+  return s in STATUS_META ? (s as Exclude<StatusKey, "all">) : "unknown"
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const key = normalizeStatus(status)
+  const meta = key === "unknown" ? { label: "Тодорхойгүй", className: "bg-gray-50 text-gray-600 border-gray-200/60" } : STATUS_META[key]
+  return <span className={`inline-block whitespace-nowrap px-2.5 py-1 rounded-lg text-xs font-bold border ${meta.className}`}>{meta.label}</span>
+}
+
 export default function ApplicantsList({ initialApplicants }: ApplicantsListProps) {
-  const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants)
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [searchQuery, setSearchQuery] = useState<string>("")
-  const [selectedJobFilter, setSelectedJobFilter] = useState<string>("all")
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const param = (key: string) => searchParams.get(key) ?? ""
 
-  const uniqueJobs = useMemo(() => {
-    const jobs = applicants.map((app) => app.job_title)
-    return ["all", ...Array.from(new Set(jobs))]
+  const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+
+  // Шүүлтүүр, эрэмбэ, хуудсыг URL-д хадгална — профайл руу ороод буцахад хэвээр үлдэнэ
+  const [searchQuery, setSearchQuery] = useState(() => param("q"))
+  const [statusFilter, setStatusFilter] = useState<StatusKey>(() =>
+    STATUS_TABS.includes(param("status") as StatusKey) ? (param("status") as StatusKey) : "all"
+  )
+  const [jobFilter, setJobFilter] = useState(() => param("job"))
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">(() => (param("sort") === "oldest" ? "oldest" : "newest"))
+  const [page, setPage] = useState(() => Math.max(1, Math.floor(Number(param("page"))) || 1))
+  const listTopRef = useRef<HTMLDivElement>(null)
+
+  const withPageReset = <T,>(set: (value: T) => void) => (value: T) => {
+    set(value)
+    setPage(1)
+  }
+
+  const jobOptions = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const app of applicants) counts.set(app.job_title, (counts.get(app.job_title) ?? 0) + 1)
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "mn"))
   }, [applicants])
 
-  const statusCounts = useMemo(() => {
-    return {
-      all: applicants.length,
-      pending: applicants.filter(a => ["new", "pending", ""].includes(a.status ? a.status.toLowerCase() : "")).length,
-      interview: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "interview").length,
-      accepted: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "accepted").length,
-      approved: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "approved").length,
-      "not-approved": applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "not-approved").length,
-      rejected: applicants.filter(a => (a.status ? a.status.toLowerCase() : "") === "rejected").length,
-    }
-  }, [applicants])
+  // Зар устсан г.м. шалтгаанаар URL дахь ажлын байр жагсаалтад байхгүй бол шүүлтүүрийг үл тооцно
+  const activeJob = jobOptions.some(([title]) => title === jobFilter) ? jobFilter : ""
 
-  const filteredApplicants = useMemo(() => {
+  // Төлөвийн тоо: ажлын байр, хайлтын шүүлтүүрийг тооцсон (сонгосон төлөвөөс бусад)
+  const baseFiltered = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim()
     return applicants.filter((app) => {
-      const currentStatus = app.status ? app.status.toLowerCase() : "";
-      let matchesStatus = false;
-
-      if (statusFilter === "all") {
-        matchesStatus = true;
-      } else if (statusFilter === "pending") {
-        matchesStatus = ["new", "pending", ""].includes(currentStatus);
-      } else {
-        matchesStatus = currentStatus === statusFilter;
-      }
-
-      const matchesJob = selectedJobFilter === "all" || app.job_title === selectedJobFilter
-
-      const query = searchQuery.toLowerCase().trim()
-      const matchesSearch = 
-        !query ||
+      if (activeJob && app.job_title !== activeJob) return false
+      if (!query) return true
+      return (
         app.user_name.toLowerCase().includes(query) ||
         app.email.toLowerCase().includes(query) ||
         app.phone.includes(query) ||
         app.job_title.toLowerCase().includes(query)
-
-      return matchesStatus && matchesJob && matchesSearch
+      )
     })
-  }, [applicants, statusFilter, selectedJobFilter, searchQuery])
+  }, [applicants, activeJob, searchQuery])
+
+  const statusCounts = useMemo(() => {
+    const counts = Object.fromEntries(STATUS_TABS.map((s) => [s, 0])) as Record<StatusKey, number>
+    counts.all = baseFiltered.length
+    for (const app of baseFiltered) {
+      const key = normalizeStatus(app.status)
+      if (key !== "unknown") counts[key]++
+    }
+    return counts
+  }, [baseFiltered])
+
+  const filteredApplicants = useMemo(() => {
+    const list = statusFilter === "all" ? baseFiltered : baseFiltered.filter((app) => normalizeStatus(app.status) === statusFilter)
+    return [...list].sort((a, b) => {
+      const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      return sortOrder === "newest" ? diff : -diff
+    })
+  }, [baseFiltered, statusFilter, sortOrder])
+
+  const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pagedApplicants = filteredApplicants.slice(pageStart, pageStart + PAGE_SIZE)
+  const visiblePages = (() => {
+    const maxVisible = 5
+    let start = Math.max(currentPage - Math.floor(maxVisible / 2), 1)
+    const end = Math.min(start + maxVisible - 1, totalPages)
+    start = Math.max(end - maxVisible + 1, 1)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  })()
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("q", searchQuery)
+    if (statusFilter !== "all") params.set("status", statusFilter)
+    if (activeJob) params.set("job", activeJob)
+    if (sortOrder === "oldest") params.set("sort", "oldest")
+    if (currentPage > 1) params.set("page", String(currentPage))
+    return params.toString()
+  }, [searchQuery, statusFilter, activeJob, sortOrder, currentPage])
+
+  useEffect(() => {
+    if (queryString === window.location.search.replace(/^\?/, "")) return
+    router.replace(queryString ? `?${queryString}` : window.location.pathname, { scroll: false })
+  }, [queryString, router])
+
+  const backHref = `/dashboard/company/applicants${queryString ? `?${queryString}` : ""}`
+  const profileHref = (id: string) => `/dashboard/company/applicants/profile?${new URLSearchParams({ id, back: backHref })}`
+
+  const hasActiveFilters = !!searchQuery || statusFilter !== "all" || !!activeJob || sortOrder !== "newest"
+
+  const resetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("all")
+    setJobFilter("")
+    setSortOrder("newest")
+    setPage(1)
+  }
+
+  // Pagination өмнөх/дараах товч функц (prev => prev ± 1) дамжуулдаг
+  const changePage = (next: number | ((prev: number) => number)) => {
+    setPage((prev) => (typeof next === "function" ? next(Math.min(prev, totalPages)) : next))
+    listTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     if (!(await confirmStatusChange(newStatus, applicants.find((a) => a.id === id)))) return
@@ -85,14 +173,12 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: newStatus }),
       })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || "Алдаа гарлаа. Дахин оролдоно уу.")
 
-      if (!response.ok) throw new Error("Амжилтгүй боллоо")
-
-      setApplicants(
-        applicants.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-      )
-    } catch {
-      showAlert("Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
+      setApplicants((prev) => prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app)))
+    } catch (err) {
+      showAlert(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу.", { tone: "error" })
     } finally {
       setUpdatingId(null)
     }
@@ -119,275 +205,264 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    const currentStatus = status ? status.toLowerCase() : ""
-    
-    switch (currentStatus) {
-      case "pending":
-      case "new":
-      case "":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200/50">Хүлээгдэж буй</span>
-      case "interview":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Ярилцлага</span>
-      case "accepted":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/50">Баталгаажсан</span>
-      case "approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">Тэнцсэн</span>
-      case "not-approved":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/50">Тэнцээгүй</span>
-      case "rejected":
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/50">Татгалзсан</span>
-      default:
-        return <span className="inline-block whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs sm:text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200/50">Тодорхойгүй</span>
-    }
+  // Мөр бүрийн үйлдлийн товчнууд (desktop, mobile хоёуланд)
+  const renderActions = (app: Applicant, mobile: boolean) => {
+    const status = normalizeStatus(app.status)
+    const busy = updatingId === app.id
+    const disabled = updatingId !== null
+    const base = `text-xs font-bold rounded-xl transition disabled:opacity-50 inline-flex items-center justify-center gap-1.5 ${mobile ? "py-2.5" : "px-3 py-2"}`
+    const primary = `${base} bg-emerald-600 hover:bg-emerald-700 text-white ${mobile ? "flex-1" : ""}`
+    const secondary = (tone: string) => `${base} ${tone} ${mobile ? "px-3.5" : ""}`
+
+    return (
+      <>
+        <Link
+          href={profileHref(app.id)}
+          className={`${base} bg-gray-900 hover:bg-gray-800 text-white ${mobile ? "flex-1" : ""}`}
+        >
+          Дэлгэрэнгүй
+        </Link>
+        {status === "pending" && (
+          <>
+            <button type="button" disabled={disabled} onClick={() => handleStatusChange(app.id, "interview")} className={primary}>
+              {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Урих
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => handleStatusChange(app.id, "rejected")}
+              className={secondary("bg-rose-50 hover:bg-rose-100 text-rose-600")}
+              aria-label="Татгалзах"
+            >
+              {mobile ? <X className="w-4 h-4" /> : "Татгалзах"}
+            </button>
+          </>
+        )}
+        {status === "accepted" && (
+          <>
+            <button type="button" disabled={disabled} onClick={() => handleStatusChange(app.id, "approved")} className={primary}>
+              {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Тэнцсэн
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => handleStatusChange(app.id, "not-approved")}
+              className={secondary("bg-orange-50 hover:bg-orange-100 text-orange-600")}
+              aria-label="Тэнцээгүй"
+            >
+              {mobile ? <X className="w-4 h-4" /> : "Тэнцээгүй"}
+            </button>
+          </>
+        )}
+        {CONTRACTS_ENABLED && status === "approved" && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => handleCreateContract(app.id)}
+            className={`${base} bg-orange-500 hover:bg-orange-600 text-white ${mobile ? "flex-1" : ""}`}
+          >
+            {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />} Гэрээ
+          </button>
+        )}
+      </>
+    )
   }
 
-  const showLoader = updatingId !== null;
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString("mn-MN")
+
+  if (applicants.length === 0) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm">
+        <EmptyState
+          illustration="folder"
+          title="Одоогоор анкет ирээгүй байна"
+          description="Ажлын зар нийтлэхэд ажил хайгчдын илгээсэн анкет энд харагдана."
+          action={{ label: "Зар нийтлэх", href: "/dashboard/company/post-job" }}
+          className="border-0"
+        />
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      
-      {/* 🔄 LOADER ДЭЛГЭЦ */}
-      {showLoader && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/85 backdrop-blur-xs px-4">
-          <div className="relative flex items-center justify-center h-28 w-28 sm:h-32 sm:w-32">
-            <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute inset-0 border-2 border-dashed border-orange-200 rounded-full animate-[spin_8s_linear_infinite]" />
-            <div className="absolute inset-2 border-t-2 border-b-2 border-orange-600 rounded-full animate-spin" />
-            <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center border border-gray-50 shadow-xs">
-              <span className="text-xs sm:text-xs font-bold tracking-widest text-slate-900 uppercase animate-[pulse_1.5s_ease-in-out_infinite]">
-                mstaffing
-              </span>
-            </div>
+    <div className="space-y-4 sm:space-y-5">
+      {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮР */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:p-4 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_minmax(0,16rem)_minmax(0,11rem)] gap-2.5">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="search"
+              placeholder="Нэр, имэйл, утас, ажлын байраар хайх..."
+              value={searchQuery}
+              aria-label="Анкет хайх"
+              onChange={(e) => withPageReset(setSearchQuery)(e.target.value)}
+              className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition"
+            />
           </div>
-          <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-6 animate-pulse text-center">
-            Төлөв шинэчилж байна...
-          </p>
-        </div>
-      )}
-      
-      {/* ХАЙЛТ БОЛОН ШҮҮЛТҮҮРИЙН ХЭСЭГ */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-50/50 p-3 sm:p-4 border border-gray-100 rounded-2xl sm:rounded-3xl">
-        <div className="relative w-full">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><Search size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-          <input
-            type="text"
-            placeholder="Нэр, имэйл, утас..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white border border-gray-200/80 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all text-gray-800"
-          />
-        </div>
-
-        <div className="w-full">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-4 py-2.5 sm:py-3 bg-white border border-gray-200/80 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all cursor-pointer"
-          >
-            <option value="all">Бүх төлөв ({statusCounts.all})</option>
-            <option value="pending">Хүлээгдэж буй ({statusCounts.pending})</option>
-            <option value="interview">Ярилцлага ({statusCounts.interview})</option>
-            <option value="accepted">Баталгаажсан ({statusCounts.accepted})</option>
-            <option value="approved">Тэнцсэн ({statusCounts.approved})</option>
-            <option value="not-approved">Тэнцээгүй ({statusCounts["not-approved"]})</option>
-            <option value="rejected">Татгалзсан ({statusCounts.rejected})</option>
-          </select>
-        </div>
-
-        <div className="w-full">
-          <select
-            value={selectedJobFilter}
-            onChange={(e) => setSelectedJobFilter(e.target.value)}
-            className="w-full px-4 py-2.5 sm:py-3 bg-white border border-gray-200/80 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all cursor-pointer"
-          >
-            <option value="all">Бүх ажлын байр</option>
-            {uniqueJobs.filter(job => job !== "all").map((job) => (
-              <option key={job} value={job}>{job}</option>
+          <Select value={activeJob} aria-label="Ажлын байраар шүүх" onChange={(e) => withPageReset(setJobFilter)(e.target.value)}>
+            <option value="">Бүх ажлын байр ({applicants.length})</option>
+            {jobOptions.map(([title, count]) => (
+              <option key={title} value={title}>
+                {title} ({count})
+              </option>
             ))}
-          </select>
+          </Select>
+          <Select
+            value={sortOrder}
+            aria-label="Эрэмбэлэх"
+            onChange={(e) => withPageReset(setSortOrder)(e.target.value === "oldest" ? "oldest" : "newest")}
+          >
+            <option value="newest">Шинэ нь эхэндээ</option>
+            <option value="oldest">Хуучин нь эхэндээ</option>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1" role="tablist" aria-label="Төлөвөөр шүүх">
+          {STATUS_TABS.map((key) => {
+            const selected = statusFilter === key
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => withPageReset(setStatusFilter)(key)}
+                className={`shrink-0 inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-sm font-medium border transition ${
+                  selected
+                    ? "bg-orange-600 border-orange-600 text-white"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600"
+                }`}
+              >
+                {key === "all" ? "Бүгд" : STATUS_META[key].label}
+                <span className={`text-xs tabular-nums ${selected ? "text-orange-100" : "text-gray-400"}`}>{statusCounts[key]}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* ИЛЭРЦҮҮД */}
+      {/* ИЛЭРЦИЙН ТОО */}
+      <div ref={listTopRef} className="flex flex-wrap items-center justify-between gap-2 scroll-mt-24">
+        <p className="text-sm text-gray-600" aria-live="polite">
+          <span className="font-bold text-gray-900">{filteredApplicants.length}</span> анкет
+          {totalPages > 1 && (
+            <span className="text-gray-400"> · {pageStart + 1}–{pageStart + pagedApplicants.length} харуулж байна</span>
+          )}
+        </p>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-semibold text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition"
+          >
+            <X className="w-4 h-4" /> Шүүлтүүр цэвэрлэх
+          </button>
+        )}
+      </div>
+
       {filteredApplicants.length === 0 ? (
-        <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-          <FoalIllustration variant="search" size={140} className="mx-auto mb-2" />
-          <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Илэрц олдсонгүй</div>
-          <p className="text-xs sm:text-sm text-gray-400">Таны сонгосон шүүлтүүрт тохирох анкет байхгүй байна.</p>
+        <div className="bg-white border border-gray-100 rounded-3xl shadow-sm">
+          <EmptyState
+            illustration="search"
+            title="Илэрц олдсонгүй"
+            description="Таны сонгосон шүүлтүүрт тохирох анкет байхгүй байна. Шүүлтүүрээ өөрчилж эсвэл цэвэрлээд дахин оролдоно уу."
+            className="border-0"
+          />
         </div>
       ) : (
-        <div className="space-y-4">
-          
-          {/* 🖥️ КОМПЬЮТЕР ДЭЭРХ ХҮСНЭГТ */}
-          <div className="hidden md:block bg-white border border-gray-100 rounded-4xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-225">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <th className="px-6 py-5">Ажил хайгч & Илгээсэн ажлын байр</th>
-                    <th className="px-5 py-5">Холбоо барих</th>
-                    <th className="px-5 py-5">Ирүүлсэн огноо</th>
-                    <th className="px-5 py-5">Төлөв</th>
-                    <th className="px-6 py-5 text-right">Үйлдэл</th>
+        <>
+          {/* КОМПЬЮТЕР: хүснэгт */}
+          <div className="hidden md:block bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60 text-xs font-semibold text-gray-500">
+                  <th className="px-5 py-3.5">Ажил хайгч, ажлын байр</th>
+                  <th className="px-4 py-3.5">Холбоо барих</th>
+                  <th className="px-4 py-3.5">Ирүүлсэн</th>
+                  <th className="px-4 py-3.5">Төлөв</th>
+                  <th className="px-5 py-3.5 text-right">Үйлдэл</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 text-sm">
+                {pagedApplicants.map((app) => (
+                  <tr key={app.id} className="hover:bg-gray-50/60 transition">
+                    <td className="px-5 py-4 max-w-xs">
+                      <Link href={profileHref(app.id)} className="font-bold text-gray-900 hover:text-orange-700 transition block truncate">
+                        {app.user_name}
+                      </Link>
+                      <div className="mt-1 inline-flex max-w-full items-center gap-1.5 text-xs font-medium text-gray-500">
+                        <Briefcase className="w-3.5 h-3.5 shrink-0 text-gray-400" aria-hidden="true" />
+                        <span className="truncate">{app.job_title}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {app.phone && <div className="text-gray-700 font-medium">{app.phone}</div>}
+                      {app.email && <div className="text-xs text-gray-400 mt-0.5">{app.email}</div>}
+                      {!app.phone && !app.email && <span className="text-gray-300">—</span>}
+                    </td>
+                    <td className="px-4 py-4 text-gray-500 whitespace-nowrap" suppressHydrationWarning>
+                      {formatDate(app.created_at)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <StatusBadge status={app.status} />
+                    </td>
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">{renderActions(app, false)}</div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 text-sm">
-                  {filteredApplicants.map((app) => {
-                    const currentStatus = app.status ? app.status.toLowerCase() : "";
-                    const isPending = ["new", "pending", ""].includes(currentStatus);
-                    const isAccepted = currentStatus === "accepted";
-                    const isApproved = currentStatus === "approved";
-
-                    return (
-                      <tr key={app.id} className="hover:bg-gray-50/50 transition">
-                        <td className="px-6 py-5 max-w-xs">
-                          <div className="font-bold text-gray-900 text-base mb-1.5">{app.user_name}</div>
-                          <div className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-violet-100/50">
-                            <span className="text-sm"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> {app.job_title}
-                          </div>
-                        </td>
-                        <td className="px-5 py-5 whitespace-nowrap">
-                          <div className="text-gray-700 font-medium">{app.phone}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{app.email}</div>
-                        </td>
-                        <td className="px-5 py-5 text-gray-500 font-medium whitespace-nowrap" suppressHydrationWarning>
-                          {new Date(app.created_at).toLocaleDateString("mn-MN")}
-                        </td>
-                        <td className="px-5 py-5 whitespace-nowrap">
-                          {getStatusBadge(app.status)}
-                        </td>
-                        <td className="px-6 py-5 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Link href={`/dashboard/company/applicants/profile?id=${app.id}`} className="text-xs font-bold bg-gray-900 hover:bg-gray-800 text-white px-3 py-2 rounded-xl transition inline-block">
-                              Дэлгэрэнгүй
-                            </Link>
-                            {isPending && (
-                              <>
-                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "interview")} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">Урих</button>
-                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "rejected")} className="text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Татгалзах</button>
-                              </>
-                            )}
-                            {isAccepted && (
-                              <>
-                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "approved")} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцсэн</button>
-                                <button disabled={showLoader} onClick={() => handleStatusChange(app.id, "not-approved")} className="text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-2 rounded-xl transition disabled:opacity-50">Тэнцээгүй</button>
-                              </>
-                            )}
-                            {CONTRACTS_ENABLED && isApproved && (
-                              <button disabled={showLoader} onClick={() => handleCreateContract(app.id)} className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl transition disabled:opacity-50"><FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ</button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* 📱 УТАСНЫ ДЭЛГЭЦЭНД ЗОРИУЛСАН КАРТЫН ЖАГСААЛТ */}
-          <div className="block md:hidden space-y-3">
-            {filteredApplicants.map((app) => {
-              const currentStatus = app.status ? app.status.toLowerCase() : "";
-              const isPending = ["new", "pending", ""].includes(currentStatus);
-              const isAccepted = currentStatus === "accepted";
-              const isApproved = currentStatus === "approved";
-
-              return (
-                <div key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <div className="font-bold text-gray-900 text-sm sm:text-base truncate">{app.user_name}</div>
-                      <div className="text-xs text-gray-400 mt-0.5" suppressHydrationWarning>
-                        <Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(app.created_at).toLocaleDateString("mn-MN")}
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      {getStatusBadge(app.status)}
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 border border-gray-100 px-3 py-2 rounded-xl">
-                    <div className="text-xs font-semibold text-gray-600 flex items-center gap-1.5 truncate">
-                      <span className="shrink-0"><Briefcase size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="truncate">{app.job_title}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs space-y-1 text-gray-600 font-medium pt-1 border-t border-gray-50">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-gray-400"><Phone size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <a href={`tel:${app.phone}`} className="hover:underline">{app.phone}</a>
-                    </div>
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-gray-400"><Mail size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span> <span className="text-gray-500 truncate">{app.email}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                    <Link 
-                      href={`/dashboard/company/applicants/profile?id=${app.id}`} 
-                      className="flex-1 text-center text-xs font-bold bg-gray-950 hover:bg-gray-800 text-white py-2.5 rounded-xl transition"
-                    >
-                      Дэлгэрэнгүй
+          {/* УТАС: карт */}
+          <ul className="md:hidden space-y-3">
+            {pagedApplicants.map((app) => (
+              <li key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <Link href={profileHref(app.id)} className="font-bold text-gray-900 truncate block">
+                      {app.user_name}
                     </Link>
-                    
-                    {isPending && (
-                      <>
-                        <button 
-                          disabled={showLoader} 
-                          onClick={() => handleStatusChange(app.id, "interview")} 
-                          className="flex-1 text-xs font-bold bg-emerald-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
-                        >
-                          Урих
-                        </button>
-                        <button 
-                          disabled={showLoader} 
-                          onClick={() => handleStatusChange(app.id, "rejected")} 
-                          className="px-3.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 py-2.5 rounded-xl transition disabled:opacity-50"
-                          title="Татгалзах"
-                        >
-                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
-                        </button>
-                      </>
-                    )}
+                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-500 min-w-0">
+                      <Briefcase className="w-3.5 h-3.5 shrink-0 text-gray-400" aria-hidden="true" />
+                      <span className="truncate">{app.job_title}</span>
+                    </div>
+                  </div>
+                  <StatusBadge status={app.status} />
+                </div>
 
-                    {isAccepted && (
-                      <>
-                        <button 
-                          disabled={showLoader} 
-                          onClick={() => handleStatusChange(app.id, "approved")} 
-                          className="flex-1 text-xs font-bold bg-emerald-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
-                        >
-                          Тэнцсэн
-                        </button>
-                        <button 
-                          disabled={showLoader} 
-                          onClick={() => handleStatusChange(app.id, "not-approved")} 
-                          className="px-3.5 text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-600 py-2.5 rounded-xl transition disabled:opacity-50"
-                          title="Тэнцээгүй"
-                        >
-                          <X size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" />
-                        </button>
-                      </>
-                    )}
-
-                    {CONTRACTS_ENABLED && isApproved && (
-                      <button
-                        disabled={showLoader}
-                        onClick={() => handleCreateContract(app.id)}
-                        className="flex-1 text-xs font-bold bg-orange-500 text-white py-2.5 rounded-xl transition disabled:opacity-50"
-                      >
-                        <FileText size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Гэрээ
-                      </button>
-                    )}
+                <div className="text-xs space-y-1 text-gray-600">
+                  {app.phone && (
+                    <a href={`tel:${app.phone}`} className="flex items-center gap-1.5 hover:underline w-fit">
+                      <Phone className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {app.phone}
+                    </a>
+                  )}
+                  {app.email && (
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Mail className="w-3.5 h-3.5 shrink-0 text-gray-400" aria-hidden="true" /> <span className="truncate">{app.email}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5 text-gray-400" suppressHydrationWarning>
+                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" /> {formatDate(app.created_at)}
                   </div>
                 </div>
-              )
-            })}
-          </div>
 
-        </div>
+                <div className="flex items-center gap-2 pt-3 border-t border-gray-50">{renderActions(app, true)}</div>
+              </li>
+            ))}
+          </ul>
+
+          <Pagination
+            filteredJobsCount={filteredApplicants.length}
+            totalPages={totalPages}
+            isFiltering={false}
+            currentPage={currentPage}
+            visiblePages={visiblePages}
+            setCurrentPage={changePage}
+          />
+        </>
       )}
     </div>
   )
