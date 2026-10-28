@@ -10,6 +10,7 @@ import ExperienceModal from "@/components/profile/modals/ExperienceModal"
 import EducationModal from "@/components/profile/modals/EducationModal"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import BackLink from "@/components/common/BackLink"
 
 type Experience = {
   company: string
@@ -40,6 +41,9 @@ const initialAvailability = {
 export default function StaffProfilePage() {
   const searchParams = useSearchParams()
   const staffId = searchParams.get("id")
+  // Хайлтын хуудасны шүүлтүүр, хуудас (back=...) — буцахад сэргээнэ. Зөвхөн query болгон дахин угсарна.
+  const backQuery = new URLSearchParams(searchParams.get("back") ?? "").toString()
+  const backHref = `/dashboard/company/search-staff${backQuery ? `?${backQuery}` : ""}`
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bioRef = useRef<HTMLTextAreaElement>(null)
@@ -263,6 +267,7 @@ export default function StaffProfilePage() {
       {/* HEADER */}
       <div className="flex items-start justify-between">
         <div>
+          <BackLink href={backHref} label="Ажилтан хайх" className="mb-2" />
           <h1 className="text-3xl font-extrabold text-gray-900">Ажилтны профайл</h1>
           <p className="text-sm text-gray-400 mt-1">Ажил олгогчийн харах горим</p>
         </div>
