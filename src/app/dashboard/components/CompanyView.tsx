@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import { showAlert } from "@/components/common/AppDialog"
 import EmptyState from "@/components/common/EmptyState"
+import FoalLean from "@/components/common/FoalLean"
 import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface TipData {
@@ -237,7 +238,7 @@ export default function CompanyView() {
               : "Зар, анкет, багцаа эндээс удирдана."}
           </p>
         </div>
-        {addJobButton}
+        <FoalLean>{addJobButton}</FoalLean>
       </section>
 
       {/* ЛИМИТ ДҮҮРСЭН АНХААРУУЛГА */}

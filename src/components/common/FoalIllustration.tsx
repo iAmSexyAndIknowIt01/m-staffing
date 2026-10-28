@@ -1,8 +1,9 @@
 // MStaffing-ийн «Унага» маскот — хоосон төлөв, алдааны дэлгэцүүдэд харуулна.
 // walk: утсаар ярьж цүнхтэй алхаж буй (мэдээлэл бүртгэгдээгүй), search: томруулдаг шилтэй (хайлт олдсонгүй),
-// folder: хоосон хавтастай (жагсаалт хоосон), error: сүлжээгүй утастай (алдаа, ачаалж чадсангүй)
+// folder: хоосон хавтастай (жагсаалт хоосон), error: сүлжээгүй утастай (алдаа, ачаалж чадсангүй),
+// lean: тохойгоороо товч түшиж, хөлөө ачсан зогсож буй (FoalLean-д ашиглана)
 
-export type FoalVariant = "walk" | "search" | "folder" | "error"
+export type FoalVariant = "walk" | "search" | "folder" | "error" | "lean"
 
 const COAT = "#c97a45"
 const MANE = "#6b3a1f"
@@ -26,13 +27,20 @@ function Arm({ points, hand }: { points: [number, number][]; hand: [number, numb
   )
 }
 
-function Body({ walking }: { walking?: boolean }) {
+function Body({ walking, crossed }: { walking?: boolean; crossed?: boolean }) {
   return (
     <>
       <circle cx={88} cy={160} r={9} fill={MANE} />
       <circle cx={80} cy={172} r={8} fill={MANE} />
       <circle cx={84} cy={183} r={6.5} fill={MANE} />
-      {walking ? (
+      {crossed ? (
+        <>
+          <path d="M112 168 L120 210" stroke={PANTS} strokeWidth={17} strokeLinecap="round" />
+          <ellipse cx={123} cy={216} rx={11} ry={6.5} fill={HOOF} />
+          <path d="M134 168 Q124 192 104 206" stroke={PANTS} strokeWidth={17} fill="none" strokeLinecap="round" />
+          <ellipse cx={99} cy={211} rx={11} ry={6.5} fill={HOOF} transform="rotate(-24 99 211)" />
+        </>
+      ) : walking ? (
         <>
           <path d="M110 168 L98 210" stroke={PANTS} strokeWidth={17} strokeLinecap="round" />
           <path d="M132 168 L146 208" stroke={PANTS} strokeWidth={17} strokeLinecap="round" />
@@ -61,8 +69,10 @@ function Head({ eyes = "normal", mouth = "smile", brows }: { eyes?: "normal" | "
     <>
       <path d="M94 46 Q86 16 110 28 Q110 40 104 50 Z" fill={COAT} />
       <path d="M97 42 Q93 25 107 32 Q106 40 103 46 Z" fill="#f9b4b4" />
-      <path d="M146 42 Q154 12 170 34 Q164 44 156 50 Z" fill={COAT} />
-      <path d="M150 40 Q156 22 165 35 Q161 41 156 45 Z" fill="#f9b4b4" />
+      <g className="foal-ear">
+        <path d="M146 42 Q154 12 170 34 Q164 44 156 50 Z" fill={COAT} />
+        <path d="M150 40 Q156 22 165 35 Q161 41 156 45 Z" fill="#f9b4b4" />
+      </g>
       <ellipse cx={126} cy={70} rx={40} ry={35} fill={COAT} />
       <circle cx={88} cy={62} r={8.5} fill={MANE} />
       <circle cx={86} cy={76} r={7.5} fill={MANE} />
@@ -74,14 +84,14 @@ function Head({ eyes = "normal", mouth = "smile", brows }: { eyes?: "normal" | "
       <ellipse cx={128} cy={86} rx={2.4} ry={1.8} fill={HOOF} />
       <ellipse cx={142} cy={86} rx={2.4} ry={1.8} fill={HOOF} />
       {eyes === "normal" ? (
-        <>
+        <g className="foal-eyes">
           <ellipse cx={112} cy={66} rx={7.5} ry={9} fill={EYE} />
           <circle cx={114.5} cy={62.5} r={3} fill="#ffffff" />
           <circle cx={110} cy={69.5} r={1.4} fill="#ffffff" />
           <ellipse cx={141} cy={64} rx={7.5} ry={9} fill={EYE} />
           <circle cx={143.5} cy={60.5} r={3} fill="#ffffff" />
           <circle cx={139} cy={67.5} r={1.4} fill="#ffffff" />
-        </>
+        </g>
       ) : (
         <>
           <ellipse cx={112} cy={69} rx={7.5} ry={8} fill={EYE} />
@@ -119,6 +129,7 @@ const LABELS: Record<FoalVariant, string> = {
   search: "Томруулдаг шил барьсан унага",
   folder: "Хоосон хавтас барьсан унага",
   error: "Сүлжээгүй утас барьсан унага",
+  lean: "Товч түшээд зогсож буй унага",
 }
 
 export default function FoalIllustration({
@@ -140,7 +151,7 @@ export default function FoalIllustration({
       aria-label={LABELS[variant]}
     >
       {/* Газрын сүүдэр: хагас тунгалаг тул цайвар, бараан горимд хоёуланд нь зохино */}
-      <ellipse cx={122} cy={222} rx={54} ry={6} fill="#0f172a" opacity={0.08} />
+      {variant !== "lean" && <ellipse cx={122} cy={222} rx={54} ry={6} fill="#0f172a" opacity={0.08} />}
 
       {variant === "walk" && (
         <>
@@ -205,6 +216,20 @@ export default function FoalIllustration({
             <path d="M162 108 L174 120 M174 108 L162 120" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" />
           </g>
         </>
+      )}
+      {variant === "lean" && (
+        <g transform="translate(26 0) rotate(4 122 216)">
+          <g className="foal-breathe">
+            <Body crossed />
+            <g className="foal-wave">
+              <Arm points={[[98, 120], [80, 140], [94, 158]]} hand={[96, 158]} />
+            </g>
+            <g transform="rotate(8 126 104)">
+              <Head />
+            </g>
+            <Arm points={[[146, 120], [190, 112], [172, 98]]} hand={[170, 96]} />
+          </g>
+        </g>
       )}
     </svg>
   )
