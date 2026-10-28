@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MapPin, Briefcase, User, UserCheck, SearchX, SlidersHorizontal, X } from "lucide-react"
+import { Search, MapPin, Briefcase, User, UserCheck, SlidersHorizontal, X } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
@@ -294,7 +294,7 @@ export default function SearchStaffPage() {
           ))
         ) : (
           <EmptyState
-            icon={SearchX}
+            illustration="search"
             title="Хайлтад тохирох ажилтан олдсонгүй"
             description="Шүүлтүүрээ өөрчилж эсвэл хайлтын үгээ товчилж дахин оролдоно уу."
             className="border-0"

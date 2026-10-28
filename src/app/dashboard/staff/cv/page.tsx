@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Check, Download, FileWarning, Loader2, Mail, Phone, User } from "lucide-react"
+import { ArrowLeft, Check, Download, Loader2, Mail, Phone, User } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -130,7 +130,7 @@ export default function StaffCVPage() {
   if (error) {
     return (
       <EmptyState
-        icon={FileWarning}
+        illustration="error"
         title="CV-г ачаалж чадсангүй"
         description={error}
         action={{ label: "Профайл руу очих", href: "/dashboard/staff/profile" }}

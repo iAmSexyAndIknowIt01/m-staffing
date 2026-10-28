@@ -2,7 +2,6 @@
 
 import {
   ArrowRight,
-  Briefcase,
   Building2,
   ChevronRight,
   Eye,
@@ -257,7 +256,8 @@ export default function StaffView({ userId }: StaffViewProps) {
             />
             {recommendedJobs.length === 0 ? (
               <EmptyState
-                icon={Briefcase}
+                compact
+                illustration="walk"
                 title="Санал болгох ажлын байр одоогоор алга"
                 description="Шинэ ажлын байр нэмэгдэхэд энд харагдана."
                 action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
@@ -301,7 +301,8 @@ export default function StaffView({ userId }: StaffViewProps) {
             />
             {recentApplications.length === 0 ? (
               <EmptyState
-                icon={Send}
+                compact
+                illustration="folder"
                 title="Илгээсэн анкет алга"
                 description="Сонирхсон ажлын байрандаа анкет илгээхэд явц нь энд харагдана."
               />

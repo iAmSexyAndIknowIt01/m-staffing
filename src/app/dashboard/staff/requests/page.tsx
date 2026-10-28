@@ -7,9 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  FolderOpen,
   Search,
-  SearchX,
   Send,
   XCircle,
 } from "lucide-react"
@@ -152,7 +150,7 @@ export default function StaffRequestsPage() {
         </div>
       ) : requests.length === 0 ? (
         <EmptyState
-          icon={FolderOpen}
+          illustration="folder"
           title="Та одоогоор анкет илгээгээгүй байна"
           description="Нээлттэй ажлын байраас сонгоод анкетаа илгээхэд явц нь энд харагдана."
           action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
@@ -275,7 +273,7 @@ export default function StaffRequestsPage() {
             </ul>
           ) : (
             <EmptyState
-              icon={SearchX}
+              illustration="search"
               title="Хайлтад тохирох хүсэлт олдсонгүй"
               description="Хайлтын үг эсвэл статусын шүүлтүүрээ өөрчилж үзнэ үү."
             />

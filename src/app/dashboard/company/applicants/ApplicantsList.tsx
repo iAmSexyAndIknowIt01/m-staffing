@@ -1,12 +1,13 @@
 "use client"
 
-import { Briefcase, Calendar, FileText, Folder, Mail, Phone, Search, X } from "lucide-react"
+import { Briefcase, Calendar, FileText, Mail, Phone, Search, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
 import { showAlert } from "@/components/common/AppDialog"
 import { confirmCreateContract, confirmStatusChange } from "@/components/company/confirmApplicantAction"
+import FoalIllustration from "@/components/common/FoalIllustration"
 
 interface Applicant {
   id: string
@@ -211,7 +212,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
       {/* ИЛЭРЦҮҮД */}
       {filteredApplicants.length === 0 ? (
         <div className="p-10 sm:p-16 bg-white border border-gray-100 rounded-3xl sm:rounded-4xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl sm:text-4xl block mb-3"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
+          <FoalIllustration variant="search" size={140} className="mx-auto mb-2" />
           <div className="font-bold text-gray-700 mb-1 text-sm sm:text-base">Илэрц олдсонгүй</div>
           <p className="text-xs sm:text-sm text-gray-400">Таны сонгосон шүүлтүүрт тохирох анкет байхгүй байна.</p>
         </div>

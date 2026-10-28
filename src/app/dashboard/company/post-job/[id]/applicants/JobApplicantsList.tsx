@@ -1,10 +1,11 @@
 "use client"
 
-import { Calendar, Folder, Mail, Phone, XCircle } from "lucide-react"
+import { Calendar, Mail, Phone, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo } from "react"
 import { showAlert } from "@/components/common/AppDialog"
 import { confirmStatusChange } from "@/components/company/confirmApplicantAction"
+import FoalIllustration from "@/components/common/FoalIllustration"
 
 interface Applicant {
   id: string
@@ -114,7 +115,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
 
       {filteredApplicants.length === 0 ? (
         <div className="p-12 bg-white border border-gray-100 rounded-3xl text-center text-gray-400 shadow-sm">
-          <span className="text-3xl block mb-2"><Folder size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
+          <FoalIllustration variant="folder" size={140} className="mx-auto mb-2" />
           <div className="font-bold text-gray-700 text-sm">Илэрц олдсонгүй</div>
         </div>
       ) : (
