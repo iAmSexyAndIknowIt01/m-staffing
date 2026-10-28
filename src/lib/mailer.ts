@@ -21,7 +21,13 @@ export function escapeHtml(value: string): string {
 }
 
 // Мэдэгдлийн нийтлэг имэйл загвар (гэрээ г.м.). lines-ийг escape хийнэ.
-export function noticeEmailHtml(title: string, lines: string[], link?: { href: string; label: string }): string {
+// settingsHref өгвөл доор нь «мэдэгдлийн тохиргоо» холбоос гарна (хэрэглэгч өөрөө унтраах боломжтой).
+export function noticeEmailHtml(
+  title: string,
+  lines: string[],
+  link?: { href: string; label: string },
+  settingsHref?: string
+): string {
   const body = lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")
   const button = link
     ? `<div style="text-align: center; margin: 24px 0;">
@@ -34,6 +40,11 @@ export function noticeEmailHtml(title: string, lines: string[], link?: { href: s
       <h3 style="color: #111827;">${escapeHtml(title)}</h3>
       ${body}
       ${button}
+      ${
+        settingsHref
+          ? `<p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 28px;">Энэ имэйлийг MStaffing автоматаар илгээв. Имэйл мэдэгдлээ <a href="${escapeHtml(settingsHref)}" style="color: #ea580c;">тохиргоо</a> хэсгээс өөрчилж болно.</p>`
+          : ""
+      }
     </div>
   `
 }

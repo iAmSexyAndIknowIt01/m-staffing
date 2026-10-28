@@ -1,8 +1,17 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase" // Supabase client импортлох
 import { one } from "@/lib/relation"
-import { canCompanySetStatus } from "@/lib/jobRequest"
+import { canCompanySetStatus, type JobRequestStatus } from "@/lib/jobRequest"
+import { appLink, sendNotice } from "@/lib/notifications"
+
+// Ажил хайгчид илгээх имэйлийн агуулга (төлөв бүрээр)
+const STATUS_NOTICE: Partial<Record<JobRequestStatus, { subject: string; line: string }>> = {
+  interview: { subject: "Таныг ярилцлагад урьлаа", line: "таныг ярилцлагад урьж байна. Урилгаа хүлээж авч, дэлгэрэнгүйг «Миний хүсэлт» хэсгээс харна уу." },
+  approved: { subject: "Баяр хүргэе! Та тэнцлээ", line: "таныг сонгон шалгаруулалтад тэнцсэнийг мэдэгдэж байна." },
+  "not-approved": { subject: "Сонгон шалгаруулалтын хариу", line: "энэ удаад таныг сонгоогүй байна. Бусад ажлын байранд амжилт хүсье." },
+  rejected: { subject: "Анкетын хариу", line: "таны анкетыг энэ удаад хүлээж аваагүй байна. Бусад ажлын байранд амжилт хүсье." },
+}
 
 export async function GET() {
   try {
@@ -78,7 +87,7 @@ export async function PUT(request: Request) {
     // шалгаж байж статусыг шинэчилнэ.
     const { data: checkData } = await supabase
       .from("tr_job_request")
-      .select("id, status, mt_openjob!inner(user_id)")
+      .select("id, status, job_id, applicant_id, applicant_email, mt_openjob!inner(user_id, title)")
       .eq("id", id)
       .eq("mt_openjob.user_id", companyId)
       .maybeSingle()
@@ -102,6 +111,25 @@ export async function PUT(request: Request) {
     if (updateError) throw new Error(updateError.message)
     if (!updated || updated.length === 0) {
       return NextResponse.json({ error: "Анкетын төлөв өөрчлөгдсөн байна. Хуудсаа шинэчилнэ үү." }, { status: 409 })
+    }
+
+    // Ажил хайгчид имэйлээр мэдэгдэнэ (тохиргоогоор унтраасан бол илгээхгүй). Хариуг хүлээлгэхгүй.
+    const notice = STATUS_NOTICE[status as JobRequestStatus]
+    if (notice && checkData.applicant_id) {
+      after(async () => {
+        const { data: company } = await supabase.from("mt_company").select("company_name").eq("id", companyId).maybeSingle()
+        const jobTitle = one(checkData.mt_openjob)?.title || "ажлын байр"
+        await sendNotice({
+          req: request,
+          userId: String(checkData.applicant_id),
+          role: "staff",
+          type: "application_status",
+          to: checkData.applicant_email,
+          subject: `${notice.subject} — ${jobTitle}`,
+          lines: [`${company?.company_name || "Ажил олгогч"} "${jobTitle}" ажлын байрны хувьд ${notice.line}`],
+          link: appLink(request, `/dashboard/staff/requests/${checkData.id}`, "Хүсэлтээ харах"),
+        })
+      })
     }
 
     return NextResponse.json({ success: true, message: "Төлөв амжилттай шинэчлэгдлээ" })

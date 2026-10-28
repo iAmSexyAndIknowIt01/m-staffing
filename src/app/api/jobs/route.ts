@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
 import { jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { notifyJobOffer } from "@/lib/notifications"
 
 // ==========================================
 // 1. ШИНЭ АЖИЛ НЭМЭХ (POST)
@@ -76,7 +77,20 @@ export async function POST(request: Request) {
     if (error) {
       throw error
     }
-    
+
+    // Энэ ангиллын «Шинэ ажлын санал» авахаар тохируулсан ажил хайгчдад хариуны дараа имэйлээр мэдэгдэнэ
+    const created = data?.[0]
+    if (created) {
+      after(() =>
+        notifyJobOffer(request, {
+          id: String(created.id),
+          title: created.title,
+          category: created.category,
+          location: created.location,
+          companyId: userId,
+        })
+      )
+    }
 
     return NextResponse.json(
       { success: true, message: "Ажлын байр амжилттай зарлагдлаа.", data },

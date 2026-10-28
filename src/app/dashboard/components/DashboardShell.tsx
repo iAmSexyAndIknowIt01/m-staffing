@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { usePathname } from "next/navigation"
 import LinkNext from "next/link"
-import { Briefcase, Building2, ChevronLeft, FileSignature, FileText, LayoutDashboard, LogOut, Menu, PlusCircle, Search, Send, User, Users, X, type LucideIcon } from "lucide-react"
+import { Briefcase, Building2, ChevronLeft, FileSignature, FileText, LayoutDashboard, LogOut, Menu, PlusCircle, Search, Send, Settings, User, Users, X, type LucideIcon } from "lucide-react"
 import { CONTRACTS_ENABLED } from "@/lib/features"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 
@@ -26,6 +26,7 @@ const STAFF_NAV: NavItem[] = [
   { href: "/dashboard/staff/cv", label: "Миний CV", icon: FileText },
   { href: "/dashboard/staff/requests", label: "Миний хүсэлт", icon: Send },
   ...(CONTRACTS_ENABLED ? [{ href: "/dashboard/staff/contracts", label: "Миний гэрээ", icon: FileSignature }] : []),
+  { href: "/dashboard/staff/settings", label: "Тохиргоо", icon: Settings },
 ]
 
 const COMPANY_NAV: NavItem[] = [
@@ -34,6 +35,7 @@ const COMPANY_NAV: NavItem[] = [
   { href: "/dashboard/company/applicants", label: "Анкетууд", icon: Users },
   { href: "/dashboard/company/profile", label: "Компанийн профайл", icon: Building2 },
   ...(CONTRACTS_ENABLED ? [{ href: "/dashboard/company/contracts", label: "Гэрээ", icon: FileSignature }] : []),
+  { href: "/dashboard/company/settings", label: "Тохиргоо", icon: Settings },
 ]
 
 export default function DashboardShell({ userId, userRole, onLogout, children }: DashboardShellProps) {
