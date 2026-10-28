@@ -180,7 +180,7 @@ export async function logContractEvent(
   if (error) console.error("CONTRACT_EVENT_LOG_ERROR:", error)
 }
 
-// Мэйл дэх "Гэрээг харах" линк. APP_URL тохируулаагүй production орчинд линкгүй явна.
+// Мэйл дэх "Гэрээг харах" линк. Үндсэн хаяг тодорхойгүй production орчинд линкгүй явна (getAppOrigin).
 export function contractLink(req: Request, path: string): { href: string; label: string } | undefined {
   const origin = getAppOrigin(req)
   return origin ? { href: `${origin}${path}`, label: "Гэрээг харах" } : undefined

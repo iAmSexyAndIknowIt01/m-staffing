@@ -18,6 +18,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import FoalLean from "@/components/common/FoalLean"
 import { getErrorMessage } from "@/lib/errors"
 import { Progress, STATUS, toRequestStatus } from "@/components/staff/requests/requestStatus"
 import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
@@ -188,12 +189,14 @@ export default function StaffView({ userId }: StaffViewProps) {
               : "Шинэ ажлын байр нэмэгдэхэд энд харагдана."}
           </p>
         </div>
-        <Link
-          href="/dashboard/staff/jobs"
-          className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition"
-        >
-          <Search className="w-4 h-4" /> Ажил хайх
-        </Link>
+        <FoalLean>
+          <Link
+            href="/dashboard/staff/jobs"
+            className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition"
+          >
+            <Search className="w-4 h-4" /> Ажил хайх
+          </Link>
+        </FoalLean>
       </section>
 
       {/* ПРОФАЙЛ ДУУСГАХ САНАЛ */}

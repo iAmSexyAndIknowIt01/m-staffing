@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
+import PendingCompanies from "@/components/admin/PendingCompanies"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { PLANS, isPlanType } from "@/lib/planCatalog"
 
@@ -255,8 +256,8 @@ export default function AdminDashboard() {
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Төлбөрийн хяналт</h1>
-          <p className="text-sm text-gray-500 mt-1">Компаниудын багц худалдан авалтын нэхэмжлэхийг шалгаж баталгаажуулна.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Админ самбар</h1>
+          <p className="text-sm text-gray-500 mt-1">Байгууллага болон багц худалдан авалтын нэхэмжлэхийг шалгаж баталгаажуулна.</p>
         </div>
         <button
           type="button"
@@ -273,6 +274,8 @@ export default function AdminDashboard() {
           <XCircle className="w-4 h-4 shrink-0" /> {error}
         </p>
       )}
+
+      <PendingCompanies reloadKey={reloadKey} />
 
       {/* ТОЙМ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

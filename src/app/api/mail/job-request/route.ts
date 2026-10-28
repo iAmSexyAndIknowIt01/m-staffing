@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session"; // 🔥 Күүки уншихад а
 import { supabase } from "@/lib/supabase"; 
 import { one } from "@/lib/relation";
 import { MAIL_FROM, escapeHtml, transporter } from "@/lib/mailer";
+import { getNotificationSettings, settingsUrl } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
       .from("mt_openjob")
       .select(`
         title,
+        user_id,
         mt_company (
           company_name,
           email 
@@ -81,6 +83,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Ажил олгогчийн мэйл хаяг бүртгэлгүй байна" }, { status: 400 });
     }
 
+    // Ажил олгогч «Шинэ анкет ирэх» мэдэгдлийг тохиргооноосоо унтраасан бол илгээхгүй
+    const companySettings = await getNotificationSettings(String(jobData.user_id));
+    if (!companySettings.new_application) {
+      return NextResponse.json({ success: true, message: "Ажил олгогч имэйл мэдэгдлээ унтраасан байна." });
+    }
+    const settingsHref = settingsUrl(req, "company");
+
     // 4. Gmail-ээр ажил олгогч руу мэйл илгээх
     await transporter.sendMail({
       from: MAIL_FROM,
@@ -104,6 +113,7 @@ export async function POST(req: Request) {
           
           <p style="color: #666; font-size: 12px; text-align: center; margin-top: 30px;">
             Энэхүү мэйл нь системээс автоматаар илгээгдсэн тул хариу бичих шаардлагагүй.
+            ${settingsHref ? `<br/>Имэйл мэдэгдлээ <a href="${escapeHtml(settingsHref)}" style="color: #ea580c;">тохиргоо</a> хэсгээс өөрчилж болно.` : ""}
           </p>
         </div>
       `,
