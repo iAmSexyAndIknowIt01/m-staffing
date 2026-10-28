@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Briefcase, ChevronLeft, ChevronRight, MapPin, Search, SearchX, Sparkles, Wallet, XCircle } from "lucide-react"
+import { ArrowLeft, Briefcase, ChevronLeft, ChevronRight, MapPin, Search, Wallet, XCircle } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { getErrorMessage } from "@/lib/errors"
@@ -132,7 +132,7 @@ export default function RecommendedJobsPage() {
         </div>
       ) : jobs.length === 0 ? (
         <EmptyState
-          icon={Sparkles}
+          illustration="walk"
           title="Санал болгох ажлын байр одоогоор алга"
           description="Шинэ ажлын байр нэмэгдэхэд энд харагдана."
           action={{ label: "Ажлын байр үзэх", href: "/dashboard/staff/jobs" }}
@@ -230,7 +230,7 @@ export default function RecommendedJobsPage() {
             </ul>
           ) : (
             <EmptyState
-              icon={SearchX}
+              illustration="search"
               title="Хайлтад тохирох ажлын байр олдсонгүй"
               description="Хайлтын үг эсвэл ангиллын шүүлтүүрээ өөрчилж үзнэ үү."
             />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarCheck, Loader2, SearchX, Send } from "lucide-react"
+import { CalendarCheck, Loader2, Send } from "lucide-react"
 import { getErrorMessage } from "@/lib/errors"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -163,7 +163,7 @@ export default function StaffRequestDetailPage({ params }: { params: Promise<{ j
   if (error || !job) {
     return (
       <EmptyState
-        icon={SearchX}
+        illustration="search"
         title="Хүсэлт олдсонгүй"
         description={error || "Энэ хүсэлт устгагдсан эсвэл танд харагдах эрхгүй байж болно."}
         action={{ label: "Миний хүсэлтүүд", href: "/dashboard/staff/requests" }}

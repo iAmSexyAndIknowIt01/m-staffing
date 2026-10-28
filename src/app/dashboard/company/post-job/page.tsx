@@ -1,12 +1,13 @@
 "use client"
 
-import { Building2, Calendar, Inbox, RefreshCw, Search, Wallet, XCircle } from "lucide-react"
+import { Building2, Calendar, RefreshCw, Search, Wallet, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jobPost"
+import FoalIllustration from "@/components/common/FoalIllustration"
 
 interface JobItem {
   id: string
@@ -492,7 +493,7 @@ export default function PostJobPage() {
         ) : (
           !loading && (
             <div className="bg-white border border-gray-100 rounded-2xl md:rounded-4xl p-8 md:p-12 text-center shadow-sm space-y-4 pb-6">
-              <div className="text-3xl md:text-4xl"><Inbox size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></div>
+              <FoalIllustration variant={isFilterActive ? "search" : "folder"} size={150} className="mx-auto" />
               <div className="max-w-sm mx-auto space-y-1">
                 <h3 className="font-bold text-gray-800 text-base md:text-lg">
                   {isFilterActive ? "Ийм илэрц олдсонгүй" : "Одоогоор зарласан ажил байхгүй байна"}
