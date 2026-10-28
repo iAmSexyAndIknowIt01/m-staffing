@@ -26,9 +26,13 @@ export function normalizeHttpUrl(value: unknown): string | null | undefined {
 }
 
 // Имэйл дэх линкийн үндсэн хаяг. Host header-ийг хуурч phishing линк явуулахаас сэргийлж
-// production-д зөвхөн APP_URL-ийг ашиглана. Тохируулаагүй бол null (линкгүй мэйл явна).
+// production-д хүсэлтийн хаягийг биш, серверийн тохиргоог ашиглана:
+//   1. APP_URL (заавал биш)
+//   2. VERCEL_PROJECT_PRODUCTION_URL — Vercel автоматаар өгдөг production домэйн
+//      (өөрийн домэйнгүй бол xxx.vercel.app, домэйн холбосны дараа тэр домэйн)
+// Аль нь ч байхгүй бол null (линкгүй мэйл явна).
 export function getAppOrigin(req: Request): string | null {
-  const configured = normalizeHttpUrl(process.env.APP_URL)
+  const configured = normalizeHttpUrl(process.env.APP_URL) ?? normalizeHttpUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL)
   if (configured) return new URL(configured).origin
   if (process.env.NODE_ENV !== "production") return new URL(req.url).origin
   return null
