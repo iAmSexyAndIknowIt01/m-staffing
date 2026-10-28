@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { getSession } from "@/lib/session"
 import { selectInChunks } from "@/lib/chunk"
 import { computePaidPackage, getEffectiveSubscription, isPaidPlanType } from "@/lib/plans"
+import { PLANS, isPlanType } from "@/lib/planCatalog"
+import { appLink, sendNotice } from "@/lib/notifications"
 
 const forbidden = () =>
   NextResponse.json({ success: false, error: "Хандах эрхгүй байна." }, { status: 403 })
@@ -63,7 +65,7 @@ export async function PUT(req: Request) {
     // А. Нэхэмжлэхийг олох
     const { data: invoice, error: findError } = await supabase
       .from("mt_company_invoices")
-      .select("id, user_id, plan_type, status")
+      .select("id, user_id, plan_type, status, invoice_number, amount")
       .eq("id", invoice_id)
       .single()
 
@@ -137,6 +139,29 @@ export async function PUT(req: Request) {
         )
       }
     }
+
+    // Компанид имэйлээр мэдэгдэнэ (тохиргоогоор унтраасан бол илгээхгүй)
+    after(async () => {
+      const { data: company } = await supabase.from("mt_company").select("email").eq("id", invoice.user_id).maybeSingle()
+      const planName = isPlanType(invoice.plan_type) ? PLANS[invoice.plan_type].name : invoice.plan_type
+      const amount = `${Number(invoice.amount || 0).toLocaleString()} ₮`
+      await sendNotice({
+        req,
+        userId: String(invoice.user_id),
+        role: "company",
+        type: "payment",
+        to: company?.email,
+        subject: status === "paid" ? "Төлбөр баталгаажиж, багц идэвхжлээ" : "Нэхэмжлэх цуцлагдлаа",
+        lines:
+          status === "paid"
+            ? [`${invoice.invoice_number} гүйлгээний утгатай ${amount} төлбөр баталгаажлаа.`, `${planName} идэвхжиж, зар нийтлэх эрх нэмэгдлээ.`]
+            : [
+                `${invoice.invoice_number} гүйлгээний утгатай ${amount} нэхэмжлэх цуцлагдлаа.`,
+                "Төлбөр шилжүүлсэн бол гүйлгээний баримттайгаа бидэнтэй холбогдоно уу.",
+              ],
+        link: appLink(req, "/dashboard/company/billing", "Багцаа харах"),
+      })
+    })
 
     return NextResponse.json({ 
       success: true, 
