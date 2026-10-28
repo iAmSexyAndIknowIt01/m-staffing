@@ -9,8 +9,9 @@
 --   job_offer            — (ажил хайгч) сонгосон ангилалд шинэ ажлын санал нэмэгдэх
 --   job_offer_categories — job_offer-ийн ангилал (хоосон = бүх ангилал)
 --   new_application      — (ажил олгогч) шинэ анкет ирэх
---   company_approval     — (ажил олгогч) байгууллага баталгаажих
 --   payment              — (ажил олгогч) төлбөр баталгаажих / цуцлагдах
+--
+-- Байгууллага баталгаажих имэйл тохиргоогүй — админ баталгаажуулахад үргэлж илгээгдэнэ.
 --
 -- Зөвхөн service_role (API route) хандана: RLS асаалттай, policy байхгүй.
 -- =====================================================================
@@ -24,7 +25,6 @@ create table if not exists public.mt_notification_settings (
   job_offer boolean not null default false,
   job_offer_categories text[] not null default '{}',
   new_application boolean not null default true,
-  company_approval boolean not null default true,
   payment boolean not null default true,
   updated_at timestamptz not null default now()
 );

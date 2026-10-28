@@ -14,7 +14,7 @@ import {
 // Имэйл мэдэгдэл (nodemailer + Gmail SMTP). Хэрэглэгчийн тохиргоог (mt_notification_settings) шалгаж илгээнэ.
 // Мэйл илгээж чадаагүй ч үндсэн үйлдлийг (анкетын төлөв, төлбөр г.м.) буцаахгүй — зөвхөн лог бичнэ.
 
-const SETTINGS_COLUMNS = "application_status, job_offer, job_offer_categories, new_application, company_approval, payment"
+const SETTINGS_COLUMNS = "application_status, job_offer, job_offer_categories, new_application, payment"
 
 // Gmail өдөрт ~500 хүлээн авагч зөвшөөрдөг тул нэг зарын санал хэт олон хүнд явахаас сэргийлнэ
 const JOB_OFFER_MAX_RECIPIENTS = 200
@@ -52,19 +52,22 @@ interface NoticeInput {
   req: Request
   userId: string
   role: NotificationRole
-  type: NotificationKey
+  // Тохиргоогоор унтрааж болох төрөл. Өгөөгүй бол (жишээ нь байгууллага баталгаажих) үргэлж илгээнэ.
+  type?: NotificationKey
   to: string | null | undefined
   subject: string
   lines: string[]
   link?: { href: string; label: string }
 }
 
-// Хэрэглэгч тухайн төрлийн мэдэгдлийг асаасан бол нэг имэйл илгээнэ. Илгээсэн эсэхийг буцаана.
+// Хэрэглэгч тухайн төрлийн мэдэгдлийг асаасан бол (type өгөөгүй бол шууд) нэг имэйл илгээнэ. Илгээсэн эсэхийг буцаана.
 export async function sendNotice({ req, userId, role, type, to, subject, lines, link }: NoticeInput): Promise<boolean> {
   if (!to) return false
   try {
-    const settings = await getNotificationSettings(userId)
-    if (!settings[type]) return false
+    if (type) {
+      const settings = await getNotificationSettings(userId)
+      if (!settings[type]) return false
+    }
     await transporter.sendMail({
       from: MAIL_FROM,
       to,
@@ -73,7 +76,7 @@ export async function sendNotice({ req, userId, role, type, to, subject, lines, 
     })
     return true
   } catch (err) {
-    console.error(`NOTICE_MAIL_ERROR(${type}):`, err)
+    console.error(`NOTICE_MAIL_ERROR(${type ?? "always"}):`, err)
     return false
   }
 }

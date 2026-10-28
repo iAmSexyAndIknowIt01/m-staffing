@@ -26,7 +26,7 @@ export async function GET() {
   }
 }
 
-// Байгууллагыг баталгаажуулж, имэйлээр мэдэгдэнэ
+// Байгууллагыг баталгаажуулж, имэйлээр мэдэгдэнэ (тохиргооноос үл хамааран үргэлж илгээнэ)
 export async function PUT(req: Request) {
   try {
     const session = await getSession()
@@ -56,7 +56,6 @@ export async function PUT(req: Request) {
         req,
         userId: String(updated.id),
         role: "company",
-        type: "company_approval",
         to: updated.email,
         subject: "Танай байгууллага баталгаажлаа",
         lines: [

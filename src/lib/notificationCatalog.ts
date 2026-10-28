@@ -5,7 +5,7 @@ import { JOB_CATEGORIES } from "@/lib/jobPost"
 
 export type NotificationRole = "staff" | "company"
 
-export type NotificationKey = "application_status" | "job_offer" | "new_application" | "company_approval" | "payment"
+export type NotificationKey = "application_status" | "job_offer" | "new_application" | "payment"
 
 export type NotificationSettings = Record<NotificationKey, boolean> & {
   // job_offer-ийн ангилал (JOB_CATEGORIES-ийн value). Хоосон бол бүх ангилал.
@@ -38,11 +38,6 @@ export const NOTIFICATION_OPTIONS: Record<NotificationRole, NotificationOption[]
       description: "Танай зарт ажил хайгч анкет илгээх үед.",
     },
     {
-      key: "company_approval",
-      title: "Байгууллага баталгаажих",
-      description: "Админ танай байгууллагыг баталгаажуулж, зар нийтлэх боломжтой болох үед.",
-    },
-    {
       key: "payment",
       title: "Төлбөрийн мэдэгдэл",
       description: "Багцын төлбөр баталгаажих эсвэл нэхэмжлэх цуцлагдах үед.",
@@ -56,7 +51,6 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   job_offer: false,
   job_offer_categories: [],
   new_application: true,
-  company_approval: true,
   payment: true,
 }
 
