@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import BackLink from "@/components/common/BackLink"
+import EmptyState from "@/components/common/EmptyState"
 
 interface Tip {
   id: string
@@ -68,7 +69,7 @@ export default function TipsPage() {
         ))}
 
         {tips.length === 0 && (
-          <p className="text-center text-gray-400 py-12">Одоогоор зөвлөгөө оруулаагүй байна.</p>
+          <EmptyState title="Одоогоор зөвлөгөө алга" description="Шинэ зөвлөгөө нэмэгдэхэд энд харагдана." />
         )}
       </div>
     </div>

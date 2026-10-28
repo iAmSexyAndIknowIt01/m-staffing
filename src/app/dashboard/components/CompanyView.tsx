@@ -300,7 +300,8 @@ export default function CompanyView() {
             />
             {activeJobs.length === 0 ? (
               <EmptyState
-                icon={Briefcase}
+                compact
+                illustration="walk"
                 title="Идэвхтэй ажлын байр алга"
                 description="Ажлын зар нийтэлснээр тохирох ажилтнуудаас анкет хүлээн авч эхэлнэ."
               />
@@ -350,7 +351,8 @@ export default function CompanyView() {
               linkLabel="Бүгдийг үзэх"
             />
             {recentApplicants.length === 0 ? (
-              <EmptyState icon={Inbox} title="Ирсэн анкет алга" description="Шинэ анкет ирэхэд энд харагдана." />
+              <EmptyState
+                compact illustration="folder" title="Ирсэн анкет алга" description="Шинэ анкет ирэхэд энд харагдана." />
             ) : (
               <ul className="bg-white border border-gray-100 rounded-2xl shadow-sm divide-y divide-gray-100 overflow-hidden">
                 {recentApplicants.map((applicant) => (

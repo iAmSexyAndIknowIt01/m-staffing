@@ -7,12 +7,10 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-  Inbox,
   Loader2,
   Receipt,
   RotateCw,
   Search,
-  SearchX,
   TrendingUp,
   XCircle,
   type LucideIcon,
@@ -334,10 +332,10 @@ export default function AdminDashboard() {
 
       {/* ЖАГСААЛТ */}
       {invoices.length === 0 ? (
-        <EmptyState icon={Inbox} title="Нэхэмжлэх алга" description="Компани багц худалдаж авахад энд харагдана." />
+        <EmptyState illustration="folder" title="Нэхэмжлэх алга" description="Компани багц худалдаж авахад энд харагдана." />
       ) : visible.length === 0 ? (
         <EmptyState
-          icon={SearchX}
+          illustration="search"
           title={query ? "Хайлтад тохирох нэхэмжлэх олдсонгүй" : "Энэ төлөвт нэхэмжлэх алга"}
           description={query ? "Хайлтын үг эсвэл төлөвийн шүүлтүүрээ өөрчилнө үү." : filter === "pending" ? "Бүх төлбөрийг шийдвэрлэсэн байна." : undefined}
         />

@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Check, ChevronDown, Lightbulb, Receipt } from "lucide-react"
+import { ArrowLeft, Check, ChevronDown, Lightbulb } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -13,6 +13,7 @@ import {
   type PurchasePlan,
 } from "@/components/company/billing/BillingModals"
 import { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPlanType, pricePerPost, type PaidPlanType } from "@/lib/planCatalog"
+import EmptyState from "@/components/common/EmptyState"
 
 // Багцын нэрийг каталогоос (хуучин нэхэмжлэхийн төрөл ч орно)
 const planName = (type: string) => (isPlanType(type) ? PLANS[type].name : type)
@@ -264,9 +265,12 @@ export default function BillingPage() {
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-gray-900 px-1">Төлбөр төлөлтийн түүх</h3>
         {invoices.length === 0 ? (
-          <div className="bg-white border border-gray-100 rounded-4xl p-6 text-center text-gray-400 font-medium text-xs">
-            <Receipt size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Одоогоор төлбөрийн түүх байхгүй байна.
-          </div>
+          <EmptyState
+            compact
+            illustration="folder"
+            title="Төлбөрийн түүх алга"
+            description="Багц худалдаж авахад нэхэмжлэх, төлбөрийн явц энд харагдана."
+          />
         ) : (
           <div className="bg-white border border-gray-100 rounded-4xl overflow-x-auto shadow-sm">
             <table className="w-full min-w-140 text-left text-xs">
