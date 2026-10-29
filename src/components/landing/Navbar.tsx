@@ -2,9 +2,21 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 
+// Landing хуудасны section-ууд руу шилжих цэс. «Ажил хайх», «Ажилтан хайх» нь Hero/CTA-д товчоор байгаа тул энд оруулахгүй.
+// id-тай нь landing дээрх section (идэвхтэйг тодруулна); «Бидний тухай» нь тусдаа /about хуудас.
+const NAV_ITEMS: { label: string; href: string; id?: string }[] = [
+  { label: "Яагаад MStaffing", href: "/#features", id: "features" },
+  { label: "Тоон үзүүлэлт", href: "/#stats", id: "stats" },
+  { label: "Хэрхэн ажилладаг", href: "/#howitworks", id: "howitworks" },
+  { label: "Бидний тухай", href: "/about" },
+]
+
 export default function Navbar() {
+  const pathname = usePathname()
+  const [activeId, setActiveId] = useState<string | null>(null)
   // Доош scroll хийсэн үед navbar нарийсч "island" хэлбэртэй болно
   const [scrolled, setScrolled] = useState(false)
 
@@ -14,6 +26,26 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
+
+  // Landing дээр дэлгэцийн дунд байгаа section-ийг цэсэнд тодруулна
+  useEffect(() => {
+    if (pathname !== "/") return
+    const sections = NAV_ITEMS.flatMap((item) => (item.id ? [document.getElementById(item.id)] : [])).filter(
+      (el): el is HTMLElement => !!el
+    )
+    if (sections.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveId(entry.target.id)
+          else setActiveId((current) => (current === entry.target.id ? null : current))
+        }
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    )
+    sections.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [pathname])
 
   return (
     <header
@@ -55,33 +87,22 @@ export default function Navbar() {
           <nav
             className="hidden lg:flex items-center gap-8"
           >
-            {[
-              {
-                label: "Ажил хайх",
-                href: "/dashboard/staff/jobs",
-              },
-              {
-                label: "Ажилтан хайх",
-                href: "/dashboard/company/search-staff",
-              },
-              {
-                label: "Яагаад MStaffing",
-                href: "/#features",
-              },
-              {
-                label: "Бидний тухай",
-                href: "/about",
-              },
-            ].map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                scroll={true}
-                className="relative text-[15px] text-gray-700 hover:text-orange-500 transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-orange-500 hover:after:w-full after:transition-all"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const active = item.id ? pathname === "/" && activeId === item.id : pathname === item.href
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  scroll={true}
+                  aria-current={active ? (item.id ? "location" : "page") : undefined}
+                  className={`relative text-[15px] transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-orange-500 after:transition-all hover:text-orange-500 hover:after:w-full ${
+                    active ? "text-orange-500 after:w-full" : "text-gray-700 after:w-0"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
           </nav>
 
           {/* RIGHT */}
