@@ -27,6 +27,7 @@ const data = [
 export default function Stats() {
   return (
     <section
+      id="stats"
       className="
         relative
         overflow-hidden
