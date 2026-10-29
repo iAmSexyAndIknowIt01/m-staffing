@@ -1,6 +1,7 @@
 import Navbar from "@/components/landing/Navbar"
 import Hero from "@/components/landing/Hero"
 import Features from "@/components/landing/Features"
+import About from "@/components/landing/About"
 import Stats from "@/components/landing/Stats"
 import CTA from "@/components/landing/CTA"
 import Footer from "@/components/landing/Footer"
@@ -16,6 +17,8 @@ export default function Home() {
       <Hero />
 
       <Features />
+
+      <About />
 
       <Stats />
 
