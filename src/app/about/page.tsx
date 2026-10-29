@@ -19,28 +19,6 @@ const PILLARS = [
   { icon: ShieldCheck, title: "Найдвартай орчин", text: "Бүртгэлийг имэйлээр баталгаажуулж, хувийн мэдээллийг зөвхөн ажилд зуучлах зорилгоор ашиглана." },
 ]
 
-const FAQ = [
-  {
-    q: "Бүртгүүлэхэд төлбөр шаардлагатай юу?",
-    a: "Ажил хайгчийн бүртгэл, анкет илгээх үйлчилгээ үнэгүй. Ажил олгогч үнэгүй багцаар эхэлж, илүү олон зар нийтлэх шаардлагатай бол багцаа ахиулна.",
-  },
-  {
-    q: "Анкет илгээсний дараа юу болох вэ?",
-    a: "Ажил олгогч таны профайл, CV-г хянаж үзнэ. Анкетын төлөв өөрчлөгдөхөд «Миний хүсэлт» хэсгээс харах боломжтой.",
-  },
-  {
-    q: "Миний хувийн мэдээллийг хэн харах вэ?",
-    a: "Таны профайлыг зөвхөн таны анкет илгээсэн, эсвэл ажилтан хайж буй бүртгэлтэй ажил олгогчид харна. Дэлгэрэнгүйг Нууцлалын бодлогоос үзнэ үү.",
-  },
-  {
-    q: "Нууц үгээ мартсан бол яах вэ?",
-    a: "Нэвтрэх хуудасны «Нууц үгээ мартсан уу?» холбоосоор бүртгэлтэй имэйл хаягтаа 6 оронтой сэргээх код авч, шинэ нууц үг тохируулна.",
-  },
-  {
-    q: "Ажлын зарыг хэрхэн нийтлэх вэ?",
-    a: "Ажил олгогчоор бүртгүүлж нэвтрээд «Зар нэмэх» хэсгээс ажлын байрны мэдээллээ оруулж нийтэлнэ.",
-  },
-]
 
 export default function AboutPage() {
   const contacts = [
@@ -69,17 +47,10 @@ export default function AboutPage() {
 
       <div className="mt-14">
         <LegalSection id="faq" title="Түгээмэл асуулт">
-          <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100">
-            {FAQ.map(({ q, a }) => (
-              <details key={q} className="group p-5">
-                <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-gray-900">
-                  {q}
-                  <span className="text-orange-600 transition group-open:rotate-45 text-xl leading-none" aria-hidden="true">+</span>
-                </summary>
-                <p className="mt-3 text-sm leading-6 text-gray-500">{a}</p>
-              </details>
-            ))}
-          </div>
+          <p>
+            Бүртгэл, анкет, зар нийтлэх, багц, мэдэгдлийн талаарх асуултын хариултыг{" "}
+            <Link href="/faq" className="font-semibold text-orange-600 hover:underline">Түгээмэл асуулт</Link> хуудаснаас үзнэ үү.
+          </p>
         </LegalSection>
 
         <LegalSection id="contact" title="Холбоо барих">

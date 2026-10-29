@@ -207,7 +207,7 @@ export default function Footer() {
                 <Link href="/about#contact" className="hover:text-orange-400 transition">
                   Холбоо барих
                 </Link>
-                <Link href="/about#faq" className="hover:text-orange-400 transition">
+                <Link href="/faq" className="hover:text-orange-400 transition">
                   Түгээмэл асуулт
                 </Link>
               </div>

@@ -6,12 +6,13 @@ import { usePathname } from "next/navigation"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 
 // Landing хуудасны section-ууд руу шилжих цэс. «Ажил хайх», «Ажилтан хайх» нь Hero/CTA-д товчоор байгаа тул энд оруулахгүй.
-// id-тай нь landing дээрх section (идэвхтэйг тодруулна); «Бидний тухай» нь тусдаа /about хуудас.
+// id-тай нь landing дээрх section (идэвхтэйг тодруулна); «Түгээмэл асуулт» нь тусдаа /faq хуудас.
 const NAV_ITEMS: { label: string; href: string; id?: string }[] = [
   { label: "Яагаад MStaffing", href: "/#features", id: "features" },
+  { label: "Бидний тухай", href: "/#about", id: "about" },
   { label: "Тоон үзүүлэлт", href: "/#stats", id: "stats" },
   { label: "Хэрхэн ажилладаг", href: "/#howitworks", id: "howitworks" },
-  { label: "Бидний тухай", href: "/about" },
+  { label: "Түгээмэл асуулт", href: "/faq" },
 ]
 
 export default function Navbar() {
@@ -55,7 +56,7 @@ export default function Navbar() {
         className={`mx-auto px-4 md:px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${scrolled ? "max-w-275 pt-3" : "max-w-350 pt-4 md:pt-5"}`}
       >
         <div
-          className={`${scrolled ? "md:shadow-[0_20px_60px_rgba(0,0,0,.12)]! md:bg-white/80!" : ""} transition-all duration-500 h-16 rounded-full px-5 md:px-6 flex items-center justify-between border border-gray-100 md:border-white/20 bg-white/95 md:bg-white/65 md:backdrop-blur-xl shadow-sm md:shadow-[0_20px_60px_rgba(255,120,0,.08)] will-change-transform`}
+          className={`${scrolled ? "md:shadow-[0_20px_60px_rgba(0,0,0,.12)]! md:bg-white/80!" : ""} transition-all duration-500 h-16 rounded-full px-5 md:px-6 flex items-center justify-between gap-4 border border-gray-100 md:border-white/20 bg-white/95 md:bg-white/65 md:backdrop-blur-xl shadow-sm md:shadow-[0_20px_60px_rgba(255,120,0,.08)] will-change-transform`}
         >
           {/* LEFT */}
           <Link
@@ -85,7 +86,7 @@ export default function Navbar() {
 
           {/* CENTER - Компьютер дээр харагдана */}
           <nav
-            className="hidden lg:flex items-center gap-8"
+            className="hidden lg:flex items-center gap-4 xl:gap-6"
           >
             {NAV_ITEMS.map((item) => {
               const active = item.id ? pathname === "/" && activeId === item.id : pathname === item.href
@@ -95,7 +96,7 @@ export default function Navbar() {
                   href={item.href}
                   scroll={true}
                   aria-current={active ? (item.id ? "location" : "page") : undefined}
-                  className={`relative text-[15px] transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-orange-500 after:transition-all hover:text-orange-500 hover:after:w-full ${
+                  className={`relative whitespace-nowrap text-sm transition after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-orange-500 after:transition-all hover:text-orange-500 hover:after:w-full ${
                     active ? "text-orange-500 after:w-full" : "text-gray-700 after:w-0"
                   }`}
                 >
