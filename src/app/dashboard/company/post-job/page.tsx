@@ -24,8 +24,16 @@ interface JobItem {
   applicants_count: number
 }
 
-// Хугацаа дуусахад ойртсон (сануулах) хоног
-const EXPIRY_WARNING_DAYS = 3
+// Хугацаа дуусахад ойртсон гэж үзэх хоног — шар шошго, «Сунгах» товч зөвхөн энэ үед гарна
+const EXPIRY_WARNING_DAYS = 5
+
+// «Сунгах» (идэвхтэй, дуусахад ойртсон) эсвэл «Дахин нээх» (хаагдсан/хугацаа дууссан) товч харуулах эсэх
+function canRenew(job: JobItem): boolean {
+  if (job.status === "closed" || job.status === "expired") return true
+  if (job.status !== "active") return false
+  const left = daysLeft(job.expires_at)
+  return left !== null && left <= EXPIRY_WARNING_DAYS
+}
 
 const getJobTypeLabel = (type?: string) => getJobTypeText(type) || "Бүтэн цаг"
 
@@ -488,7 +496,7 @@ export default function PostJobPage() {
                           Анкет үзэх
                         </button>
                       )}
-                      {job.status !== "draft" && (
+                      {canRenew(job) && (
                         <button
                           type="button"
                           onClick={() => handleRenew(job)}

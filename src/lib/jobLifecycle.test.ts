@@ -75,6 +75,10 @@ describe("planRenewal", () => {
     })
   })
 
+  it("хугацаагүй идэвхтэй зарыг сунгахгүй (эрх хасахгүй)", () => {
+    expect(planRenewal(job("active", null), now)).toHaveProperty("error")
+  })
+
   it("ноорог зарыг сунгахгүй", () => {
     expect(planRenewal(job("draft"), now)).toHaveProperty("error")
   })

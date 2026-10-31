@@ -83,6 +83,8 @@ export function planRenewal(job: JobTiming, now: Date = new Date()): JobPlan {
   if (current === "draft") return { error: "Ноорог зарыг эхлээд нийтэлнэ үү." }
 
   if (current === "active") {
+    // Хугацаа тогтоогоогүй (migration-аас өмнөх) идэвхтэй зарыг сунгах шаардлагагүй
+    if (!job.expires_at) return { error: "Энэ зарын хугацаа тогтоогоогүй байна." }
     const base = job.expires_at && new Date(job.expires_at).getTime() > now.getTime() ? new Date(job.expires_at) : now
     return { update: { status: "active", expires_at: plusDays(base, JOB_POST_DAYS), paused_remaining_seconds: null }, chargesCredit: true }
   }
