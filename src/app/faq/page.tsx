@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import PublicPageShell, { LegalSection } from "@/components/landing/PublicPageShell"
-import { SITE_NAME } from "@/lib/siteInfo"
+import { HAS_CONTACT_INFO, SITE_NAME } from "@/lib/siteInfo"
 import { PAID_PLAN_TYPES, PLANS } from "@/lib/planCatalog"
 
 export const metadata: Metadata = {
@@ -113,13 +113,17 @@ export default function FaqPage() {
       <div className="mt-10 rounded-2xl bg-orange-50/70 border border-orange-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="font-semibold text-gray-900">Хариултаа олсонгүй юу?</p>
-          <p className="mt-1 text-sm text-gray-600">Бидэнтэй холбогдвол ажлын өдрүүдэд хариу өгнө.</p>
+          <p className="mt-1 text-sm text-gray-600">
+            {HAS_CONTACT_INFO
+              ? "Бидэнтэй холбогдвол ажлын өдрүүдэд хариу өгнө."
+              : "Нэвтэрч «Тусламж» хэсгээс асуултаа илгээвэл ажлын өдрүүдэд хариу өгнө."}
+          </p>
         </div>
         <Link
-          href="/about#contact"
+          href={HAS_CONTACT_INFO ? "/about#contact" : "/dashboard/support"}
           className="shrink-0 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-5 text-sm font-semibold text-white hover:bg-orange-700 transition"
         >
-          Холбоо барих
+          {HAS_CONTACT_INFO ? "Холбоо барих" : "Тусламж хүсэх"}
         </Link>
       </div>
     </PublicPageShell>
