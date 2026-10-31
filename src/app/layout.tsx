@@ -5,6 +5,7 @@ import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
 import AppDialogHost from "@/components/common/AppDialog";
 import ScrollToTop from "@/components/common/ScrollToTop";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { getSiteOrigin } from "@/lib/url";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,9 +31,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const baseUrl = process.env.NODE_ENV === "production" 
-  ? "https://m-staffing.mn" 
-  : "http://localhost:3000";
+// APP_URL → Vercel production домэйн → localhost (домэйн авсны дараа APP_URL эсвэл Vercel-д холбоход автоматаар солигдоно)
+const baseUrl = getSiteOrigin();
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -41,16 +41,17 @@ export const metadata: Metadata = {
     template: "%s | MStaffing",
   },
   description: "Монголын шилдэг компаниудад ажилд зуучлах нэгдсэн платформ.",
-  keywords: ["ажил", "ажлын байр", "CV илгээх", "Японд ажиллах", "MStaffing", "ажилд орох"],
+  keywords: ["ажил", "ажлын байр", "цагийн ажил", "ажилтан хайх", "CV илгээх", "ажилд орох", "MStaffing"],
   authors: [{ name: "MStaffing Team" }],
   icons: {
-    icon: "/favicon.ico",
+    // src/app/favicon.ico (16/32/48px)-г Next.js автоматаар нэмнэ; өндөр нягтралтай дэлгэцэд PNG
+    icon: [{ url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
     type: "website",
     locale: "mn_MN",
-    url: "https://m-staffing.mn",
+    url: "/",
     title: "MStaffing | Ажлын байрны нэгдсэн систем",
     description: "Танд тохирох нээлттэй ажлын байрууд.",
     siteName: "MStaffing",

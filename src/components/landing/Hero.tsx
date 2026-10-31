@@ -17,7 +17,7 @@ const headlineLines = [
 let wordCount = 0
 const headline = headlineLines.map((line) => ({
   ...line,
-  words: line.words.map((text) => ({ text, delay: 200 + wordCount++ * 90 })),
+  words: line.words.map((text) => ({ text, index: wordCount, delay: 200 + wordCount++ * 90 })),
 }))
 
 export default function Hero() {
@@ -114,7 +114,7 @@ export default function Hero() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-orange-400" />
             </span>
-            MONGOLIA • FUTURE OF WORK
+            МОНГОЛ • АЖЛЫН ШИНЭ ОРЧИН
           </p>
 
           <h1
@@ -125,10 +125,16 @@ export default function Hero() {
                 {line.words.map((word) => (
                   <span
                     key={word.text}
-                    className={`inline-block mx-[0.12em] animate-word-in ${line.accent ? "text-orange-400" : ""}`}
+                    className="inline-block mx-[0.12em] animate-word-in"
                     style={{ animationDelay: `${word.delay}ms` }}
                   >
-                    {word.text}
+                    {/* Гэрэлтэлт үгээс үгэд дамжиж гүйх мэт харагдахаар үг бүрийн хөдөлгөөнийг хоцрооно */}
+                    <span
+                      className={line.accent ? "text-shimmer" : "text-shimmer-light"}
+                      style={{ animationDelay: `${word.index * 160}ms` }}
+                    >
+                      {word.text}
+                    </span>
                   </span>
                 ))}
               </span>
@@ -151,7 +157,7 @@ export default function Hero() {
                 <button
                   className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base"
                 >
-                  Ажил Хайх
+                  Ажил хайх
                 </button>
               </Link>
             </Magnetic>
@@ -161,7 +167,7 @@ export default function Hero() {
                 <button
                   className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/30 border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
                 >
-                  Staff Хайх
+                  Ажилтан хайх
                 </button>
               </Link>
             </Magnetic>

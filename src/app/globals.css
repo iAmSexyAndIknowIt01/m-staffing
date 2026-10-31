@@ -267,6 +267,45 @@ body {
   animation: shimmer 5s linear infinite;
 }
 
+/* Бараан текст дээрх гэрэлтэлт («Бидний тухай» гарчиг) — бараан горимд цайвар текст болно */
+.text-shimmer-ink {
+  --shimmer-base: #111827;
+  background: linear-gradient(
+    110deg,
+    var(--shimmer-base) 0%,
+    var(--shimmer-base) 40%,
+    #fb923c 50%,
+    var(--shimmer-base) 60%,
+    var(--shimmer-base) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
+html.dark .text-shimmer-ink {
+  --shimmer-base: #f3f4f6;
+}
+
+/* Цагаан текст дээрх гэрэлтэлт (Hero гарчиг) — .text-shimmer-тэй ижил хөдөлгөөн */
+.text-shimmer-light {
+  background: linear-gradient(
+    110deg,
+    #ffffff 0%,
+    #ffffff 40%,
+    #ffd29a 50%,
+    #ffffff 60%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
 /* Hero дээр хулганыг дагах гэрэл (--mx/--my-г JS тохируулна) */
 .hero-spotlight {
   background: radial-gradient(
@@ -328,6 +367,8 @@ body {
   .animate-scroll-dot,
   .animate-nav-in,
   .text-shimmer,
+  .text-shimmer-light,
+  .text-shimmer-ink,
   .animate-ken-burns,
   .animate-float,
   .animate-float-slow,

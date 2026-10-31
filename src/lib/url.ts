@@ -32,8 +32,20 @@ export function normalizeHttpUrl(value: unknown): string | null | undefined {
 //      (өөрийн домэйнгүй бол xxx.vercel.app, домэйн холбосны дараа тэр домэйн)
 // Аль нь ч байхгүй бол null (линкгүй мэйл явна).
 export function getAppOrigin(req: Request): string | null {
-  const configured = normalizeHttpUrl(process.env.APP_URL) ?? normalizeHttpUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL)
-  if (configured) return new URL(configured).origin
+  const configured = getConfiguredOrigin()
+  if (configured) return configured
   if (process.env.NODE_ENV !== "production") return new URL(req.url).origin
   return null
+}
+
+// APP_URL эсвэл Vercel-ийн production домэйн (тохируулаагүй бол null)
+function getConfiguredOrigin(): string | null {
+  const configured = normalizeHttpUrl(process.env.APP_URL) ?? normalizeHttpUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL)
+  return configured ? new URL(configured).origin : null
+}
+
+// Metadata, sitemap, robots-д ашиглах сайтын үндсэн хаяг. Хүсэлтгүй (build үед) ч ажиллана.
+// Тохиргоо байхгүй бол локал хөгжүүлэлтийн хаяг.
+export function getSiteOrigin(): string {
+  return getConfiguredOrigin() ?? "http://localhost:3000"
 }
