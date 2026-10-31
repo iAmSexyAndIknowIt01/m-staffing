@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
 import { jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { JOB_POST_DAYS } from "@/lib/jobLifecycle"
 import { notifyJobOffer } from "@/lib/notifications"
 
 // ==========================================
@@ -69,7 +70,9 @@ export async function POST(request: Request) {
           salary_type: salaryType || "monthly", // 'monthly' эсвэл 'hourly'
           description: description.trim(),
           requirements: requirements.trim(),
-          status: "active"
+          status: "active",
+          // Нийтэлснээс хойш JOB_POST_DAYS хоног идэвхтэй (pg_cron дараа нь expired болгоно)
+          expires_at: new Date(Date.now() + JOB_POST_DAYS * 24 * 60 * 60 * 1000).toISOString(),
         }
       ])
       .select()

@@ -10,7 +10,8 @@ const DAY_MS = 24 * 60 * 60 * 1000
 // Zangia маягийн «зар нийтлэх эрх»:
 // - Төлбөртэй багц: худалдаж авснаас хойш PAID_PLAN_DAYS хоногт job_limit ширхэг зар нийтэлнэ.
 // - Туршилтын (free) эрх: хугацаагүй, нийт job_limit ширхэг зар.
-// Ашигласан эрх = тухайн хугацаанд үүсгэсэн зарын тоо (зар хаагдсан ч эрх буцаж ирэхгүй).
+// Ашигласан эрх = тухайн хугацаанд үүсгэсэн зарын тоо + зар дахин нээсэн/сунгасан тоо (tr_job_credit_usage).
+// Зар хаагдсан ч эрх буцаж ирэхгүй.
 
 export interface EffectiveSubscription {
   planType: PlanType
@@ -30,11 +31,31 @@ function periodStart(expiresAt: string | null): string | null {
 }
 
 async function countPostedJobs(userId: string, since: string | null): Promise<number> {
-  let query = supabase.from("mt_openjob").select("id", { count: "exact", head: true }).eq("user_id", userId)
-  if (since) query = query.gte("created_at", since)
-  const { count, error } = await query
+  let jobs = supabase.from("mt_openjob").select("id", { count: "exact", head: true }).eq("user_id", userId)
+  let renewals = supabase.from("tr_job_credit_usage").select("id", { count: "exact", head: true }).eq("user_id", userId)
+  if (since) {
+    jobs = jobs.gte("created_at", since)
+    renewals = renewals.gte("created_at", since)
+  }
+  const [jobResult, renewalResult] = await Promise.all([jobs, renewals])
+  if (jobResult.error) throw jobResult.error
+  // Migration (20261101000000_job_post_expiry) ажиллаагүй бол хүснэгт байхгүй — зөвхөн зарын тоогоор тооцно
+  if (renewalResult.error && !isMissingTable(renewalResult.error)) throw renewalResult.error
+  return (jobResult.count ?? 0) + (renewalResult.count ?? 0)
+}
+
+function isMissingTable(error: { code?: string }): boolean {
+  return error.code === "42P01" || error.code === "PGRST205"
+}
+
+// Зар дахин нээх / сунгахад 1 эрх хасна. Эрх үлдээгүй эсвэл багц дууссан бол алдааны мессеж буцаана.
+export async function chargeJobCredit(userId: string, jobId: string, reason: "reopen" | "extend"): Promise<string | null> {
+  const sub = await getEffectiveSubscription(userId)
+  if (sub.status === "expired") return "Таны багцын хугацаа дууссан байна. Шинэ багц худалдаж авна уу."
+  if (sub.remaining <= 0) return `Таны зар нийтлэх эрх (${sub.jobLimit}) дууссан байна. Шинэ багц худалдаж авна уу.`
+  const { error } = await supabase.from("tr_job_credit_usage").insert({ user_id: userId, job_id: jobId, reason })
   if (error) throw error
-  return count ?? 0
+  return null
 }
 
 // Компанийн одоогийн багц, ашигласан/үлдсэн эрх. Төлбөртэй багцын хугацаа дууссан бол үлдсэн эрх 0.
