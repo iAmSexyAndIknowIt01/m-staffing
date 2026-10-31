@@ -79,7 +79,7 @@ export default function Navbar() {
               <p
                 className="text-xs md:text-xs text-gray-400 mt-0.5"
               >
-                Ажлын нэгдсэн платформ
+                Цаг бүр үнэ цэнэтэй
               </p>
             </div>
           </Link>
