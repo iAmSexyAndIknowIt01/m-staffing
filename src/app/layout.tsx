@@ -44,7 +44,8 @@ export const metadata: Metadata = {
   keywords: ["ажил", "ажлын байр", "цагийн ажил", "ажилтан хайх", "CV илгээх", "ажилд орох", "MStaffing"],
   authors: [{ name: "MStaffing Team" }],
   icons: {
-    icon: "/favicon.ico",
+    // src/app/favicon.ico (16/32/48px)-г Next.js автоматаар нэмнэ; өндөр нягтралтай дэлгэцэд PNG
+    icon: [{ url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
     apple: "/apple-touch-icon.png",
   },
   openGraph: {

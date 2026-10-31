@@ -8,7 +8,7 @@ const items = [
     desc: "Хэдхэн алхмаар бүртгүүлж ажлын боломжтой холбогдоно.",
   },
   {
-    icon: "AI",
+    icon: "⇄",
     title: "Шууд холболт",
     desc: "Ажил хайгч болон ажил олгогчийг нэг дор холбодог.",
   },
@@ -323,7 +323,7 @@ export default function Features() {
                     text-gray-800
                   "
                 >
-                  Explore
+                  Танилцах
                   <div
                     className="
                       w-7

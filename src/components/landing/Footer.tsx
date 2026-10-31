@@ -101,27 +101,7 @@ export default function Footer() {
                   gap-4
                 "
               >
-                <div
-                  className="
-                    w-12
-                    h-12
-                    md:w-13
-                    md:h-13
-                    rounded-2xl
-                    bg-linear-to-br
-                    from-orange-500
-                    to-orange-400
-                    text-white
-                    flex
-                    items-center
-                    justify-center
-                    font-black
-                    text-lg
-                    md:text-xl
-                  "
-                >
-                  M
-                </div>
+                <img src="/logo.png" alt="" width={52} height={52} className="w-12 h-12 md:w-13 md:h-13 shrink-0" />
 
                 <div>
                   <h2
@@ -135,7 +115,7 @@ export default function Footer() {
                     MStaffing
                   </h2>
                   <div className="text-orange-400 text-xs md:text-sm">
-                    Future of Work
+                    Цаг бүр үнэ цэнэтэй
                   </div>
                 </div>
               </div>
