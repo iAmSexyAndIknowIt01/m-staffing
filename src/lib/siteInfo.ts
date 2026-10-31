@@ -3,8 +3,9 @@
 export const SITE_NAME = "MStaffing"
 
 export const SITE_CONTACT = {
-  email: "",
-  phone: "",
+  email: "hotinfo@mstaffing.mn",
+  phone: "99448977",
+  // Одоогоор хаяг харуулахгүй
   address: "",
 }
 
