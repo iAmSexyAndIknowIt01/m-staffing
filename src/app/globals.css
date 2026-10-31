@@ -267,6 +267,23 @@ body {
   animation: shimmer 5s linear infinite;
 }
 
+/* Цагаан текст дээрх гэрэлтэлт (Hero гарчиг) — .text-shimmer-тэй ижил хөдөлгөөн */
+.text-shimmer-light {
+  background: linear-gradient(
+    110deg,
+    #ffffff 0%,
+    #ffffff 40%,
+    #ffd29a 50%,
+    #ffffff 60%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
 /* Hero дээр хулганыг дагах гэрэл (--mx/--my-г JS тохируулна) */
 .hero-spotlight {
   background: radial-gradient(
@@ -328,6 +345,7 @@ body {
   .animate-scroll-dot,
   .animate-nav-in,
   .text-shimmer,
+  .text-shimmer-light,
   .animate-ken-burns,
   .animate-float,
   .animate-float-slow,

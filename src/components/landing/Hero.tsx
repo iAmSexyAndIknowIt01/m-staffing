@@ -17,7 +17,7 @@ const headlineLines = [
 let wordCount = 0
 const headline = headlineLines.map((line) => ({
   ...line,
-  words: line.words.map((text) => ({ text, delay: 200 + wordCount++ * 90 })),
+  words: line.words.map((text) => ({ text, index: wordCount, delay: 200 + wordCount++ * 90 })),
 }))
 
 export default function Hero() {
@@ -125,10 +125,16 @@ export default function Hero() {
                 {line.words.map((word) => (
                   <span
                     key={word.text}
-                    className={`inline-block mx-[0.12em] animate-word-in ${line.accent ? "text-orange-400" : ""}`}
+                    className="inline-block mx-[0.12em] animate-word-in"
                     style={{ animationDelay: `${word.delay}ms` }}
                   >
-                    {word.text}
+                    {/* Гэрэлтэлт үгээс үгэд дамжиж гүйх мэт харагдахаар үг бүрийн хөдөлгөөнийг хоцрооно */}
+                    <span
+                      className={line.accent ? "text-shimmer" : "text-shimmer-light"}
+                      style={{ animationDelay: `${word.index * 160}ms` }}
+                    >
+                      {word.text}
+                    </span>
                   </span>
                 ))}
               </span>
