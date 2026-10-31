@@ -38,7 +38,7 @@ const employerSteps = [
   },
   {
     no: "02",
-    title: "Staff хайх & Сонгох",
+    title: "Ажилтан хайж, сонгох",
     desc: "Системийн санал болгосон эсвэл хайлтаар илэрсэн ажилтныг сонгоно.",
   },
   {
@@ -77,7 +77,7 @@ export default function CTA() {
           {/* HEADER */}
           <div className="text-center">
             <div className="inline-flex rounded-full bg-gray-50 md:bg-white px-5 py-2 text-xs md:text-sm font-semibold shadow-xs border border-gray-100 uppercase">
-              How MStaffing Works
+              Ажиллах зарчим
             </div>
 
             <h2 className="mt-5 text-3xl md:text-6xl font-black leading-tight">
@@ -101,7 +101,7 @@ export default function CTA() {
                     activeRole === "staff" ? "text-orange-600" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажилтан (Staff)
+                  <UserRound size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Ажилтан
                 </button>
                 
                 {/* Ажил олгогчийн товчлуур */}
@@ -157,13 +157,13 @@ export default function CTA() {
           <div className="mt-10 md:mt-14 flex justify-center gap-4 flex-wrap">
             <Link href="/dashboard/staff/jobs" className="w-full sm:w-auto">
               <button className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base">
-                Ажил Хайх
+                Ажил хайх
               </button>
             </Link>
 
             <Link href="/dashboard/company/applicants" className="w-full sm:w-auto">
               <button className="w-full sm:w-55 h-13.5 rounded-2xl text-gray-800 bg-gray-50 border border-gray-200 flex items-center justify-center text-sm md:text-base font-semibold backdrop-blur-none active:translate-y-0 hover:bg-white hover:text-gray-900 hover:border-orange-400/50 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] transition-all duration-300">
-                Staff Хайх
+                Ажилтан хайх
               </button>
             </Link>
           </div>

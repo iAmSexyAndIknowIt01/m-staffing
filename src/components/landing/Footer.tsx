@@ -135,7 +135,7 @@ export default function Footer() {
                     MStaffing
                   </h2>
                   <div className="text-orange-400 text-xs md:text-sm">
-                    Future of Work
+                    Ажлын нэгдсэн платформ
                   </div>
                 </div>
               </div>

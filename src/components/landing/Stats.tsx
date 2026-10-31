@@ -309,7 +309,7 @@ export default function Stats() {
                     text-white/40
                   "
                 >
-                  Live Data
+                  Тоон мэдээлэл
                 </span>
 
                 <div
