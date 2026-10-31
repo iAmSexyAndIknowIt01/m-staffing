@@ -63,11 +63,7 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2 md:gap-3"
           >
-            <div
-              className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-linear-to-br from-orange-500 to-orange-300 flex items-center justify-center text-white font-black text-sm md:text-xl"
-            >
-              M
-            </div>
+            <img src="/logo.png" alt="" width={40} height={40} className="w-9 h-9 md:w-10 md:h-10 shrink-0" />
 
             <div>
               <h1
