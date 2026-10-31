@@ -39,9 +39,10 @@ export default function About() {
             Бидний тухай
           </span>
           <h2 id="about-title" className="mt-6 text-3xl md:text-5xl font-black leading-tight tracking-tight text-gray-900">
-            Ажил хайгч, ажил олгогчийг
-            <span className="text-orange-500"> нэг дор </span>
-            холбоно
+            {/* Hero гарчигтай ижил гэрэлтэлт — үгийн бүлэг бүрийг дараалан хоцрооно */}
+            <span className="text-shimmer-ink">Ажил хайгч, ажил олгогчийг</span>{" "}
+            <span className="text-shimmer [animation-delay:320ms]">нэг дор</span>{" "}
+            <span className="text-shimmer-ink [animation-delay:480ms]">холбоно</span>
           </h2>
           <p className="mt-5 text-base md:text-lg leading-8 text-gray-500">
             Цагийн болон бүтэн цагийн ажлыг хайх, нийтлэх, шалгаруулах бүх алхмыг нэг платформд нэгтгэж, хоёр талын цагийг хэмнэнэ.
