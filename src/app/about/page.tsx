@@ -55,7 +55,7 @@ export default function AboutPage() {
 
         <LegalSection id="contact" title="Холбоо барих">
           {contacts.length > 0 && (
-            <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {contacts.map((c) => (
                 <div key={c.label} className="rounded-2xl border border-gray-100 p-5">
                   <dt className="text-xs font-semibold uppercase tracking-wider text-gray-400">{c.label}</dt>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { getAppOrigin } from "./url"
+import { getAppOrigin, getSiteOrigin } from "./url"
 
 const req = new Request("https://evil.example.com/api/x")
 
@@ -32,5 +32,21 @@ describe("getAppOrigin", () => {
     vi.stubEnv("APP_URL", "")
     vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "")
     expect(getAppOrigin(new Request("http://localhost:3000/x"))).toBe("http://localhost:3000")
+  })
+})
+
+describe("getSiteOrigin", () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it("APP_URL, дараа нь Vercel-ийн домэйн, эцэст нь localhost", () => {
+    vi.stubEnv("APP_URL", "https://mstaffing.mn/path")
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "mstaffing.vercel.app")
+    expect(getSiteOrigin()).toBe("https://mstaffing.mn")
+
+    vi.stubEnv("APP_URL", "")
+    expect(getSiteOrigin()).toBe("https://mstaffing.vercel.app")
+
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "")
+    expect(getSiteOrigin()).toBe("http://localhost:3000")
   })
 })
