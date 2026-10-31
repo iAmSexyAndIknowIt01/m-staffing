@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, Calendar, RefreshCw, Search, Wallet, XCircle } from "lucide-react"
+import { Building2, Calendar, Clock, Loader2, RefreshCw, RotateCcw, Search, Wallet, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -8,6 +8,8 @@ import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jobPost"
 import FoalIllustration from "@/components/common/FoalIllustration"
+import { showAlert, showConfirm } from "@/components/common/AppDialog"
+import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
 
 interface JobItem {
   id: string
@@ -18,8 +20,12 @@ interface JobItem {
   job_type?: string
   status: string
   created_at: string
+  expires_at?: string | null
   applicants_count: number
 }
+
+// Хугацаа дуусахад ойртсон (сануулах) хоног
+const EXPIRY_WARNING_DAYS = 3
 
 const getJobTypeLabel = (type?: string) => getJobTypeText(type) || "Бүтэн цаг"
 
@@ -128,6 +134,54 @@ export default function PostJobPage() {
       controller.abort()
     }
   }, [])
+
+  // «Сунгах» / «Дахин нээх» — 1 нийтлэх эрх хасагдахыг анхааруулж, зөвшөөрвөл хийнэ
+  const [renewingId, setRenewingId] = useState<string | null>(null)
+  const handleRenew = async (job: JobItem) => {
+    if (renewingId) return
+    const extend = job.status === "active"
+
+    let remaining: number | null = null
+    try {
+      const res = await fetch("/api/company/check-approval")
+      const data = await res.json()
+      if (res.ok && data.job_limit) remaining = data.job_limit.expired ? 0 : data.job_limit.remaining
+    } catch {}
+
+    if (remaining === 0) {
+      showAlert("Зар нийтлэх эрх дууссан эсвэл багцын хугацаа дууссан байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.", {
+        tone: "warning",
+        title: extend ? "Сунгах боломжгүй" : "Дахин нээх боломжгүй",
+      })
+      return
+    }
+
+    const ok = await showConfirm(
+      `${extend ? "Зарын хугацааг" : "Зарыг дахин нээж"} ${JOB_POST_DAYS} хоногоор ${extend ? "сунгахад" : "идэвхжүүлэхэд"} 1 нийтлэх эрх хасагдана.${
+        remaining !== null ? ` Үлдэх эрх: ${remaining - 1}.` : ""
+      }`,
+      {
+        title: extend ? "Зарын хугацааг сунгах уу?" : "Зарыг дахин нээх үү?",
+        confirmLabel: extend ? "Сунгах" : "Дахин нээх",
+        icon: RotateCcw,
+        subject: { name: job.title, details: [getJobCategoryLabel(job.category) || "Ерөнхий"] },
+      }
+    )
+    if (!ok) return
+
+    setRenewingId(job.id)
+    try {
+      const res = await fetch(`/api/jobs/${job.id}/renew`, { method: "POST" })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Алдаа гарлаа.")
+      setJobs((prev) => prev.map((j) => (j.id === job.id ? { ...j, status: result.data.status, expires_at: result.data.expires_at } : j)))
+      showAlert(extend ? "Зарын хугацаа сунгагдлаа." : "Зар дахин нээгдэж, ажил хайгчдад харагдаж эхэллээ.", { tone: "success" })
+    } catch (err) {
+      showAlert(getErrorMessage(err, "Сүлжээний алдаа гарлаа. Дахин оролдоно уу."), { tone: "error" })
+    } finally {
+      setRenewingId(null)
+    }
+  }
 
   // Шинэ зар нэмэх товч дарах үед is_approved шалгах функц
   const handleAddNewJobClick = async () => {
@@ -251,7 +305,7 @@ export default function PostJobPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto animate-fade-in space-y-6 md:space-y-8 px-4 sm:px-0 pb-6">
+    <div className="max-w-5xl w-full min-w-0 mx-auto animate-fade-in space-y-6 md:space-y-8 pb-6">
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
@@ -296,6 +350,7 @@ export default function PostJobPage() {
                 <option value="active">Идэвхтэй</option>
                 <option value="draft">Ноорог</option>
                 <option value="closed">Хаагдсан</option>
+                <option value="expired">Хугацаа дууссан</option>
               </select>
             </div>
 
@@ -385,9 +440,28 @@ export default function PostJobPage() {
                         <span className="px-2 py-0.5 text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg">Идэвхтэй</span>
                       ) : job.status === "draft" ? (
                         <span className="px-2 py-0.5 text-xs font-bold bg-gray-100 text-gray-600 rounded-lg">Ноорог</span>
+                      ) : job.status === "expired" ? (
+                        <span className="px-2 py-0.5 text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-lg">Хугацаа дууссан</span>
                       ) : (
                         <span className="px-2 py-0.5 text-xs font-bold bg-red-50 text-red-500 border border-red-100 rounded-lg">Хаагдсан</span>
                       )}
+
+                      {job.status === "active" && (() => {
+                        const left = daysLeft(job.expires_at)
+                        if (left === null) return null
+                        const soon = left <= EXPIRY_WARNING_DAYS
+                        return (
+                          <span
+                            title={job.expires_at ? `${new Date(job.expires_at).toLocaleDateString("mn-MN")} хүртэл` : undefined}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-lg ${
+                              soon ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-slate-50 text-slate-500"
+                            }`}
+                          >
+                            <Clock className="w-3 h-3" aria-hidden="true" />
+                            {left === 0 ? "Өнөөдөр хаагдана" : `${left} хоног үлдсэн`}
+                          </span>
+                        )
+                      })()}
                     </div>
 
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs md:text-xs text-gray-400 font-medium">
@@ -405,13 +479,28 @@ export default function PostJobPage() {
                       <p className="text-lg md:text-xl font-bold text-gray-800 mt-0.5">{job.applicants_count}</p>
                     </div>
                     
-                    <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
                       {job.applicants_count > 0 && (
                         <button
                           onClick={() => handleViewApplicants(job.id)}
                           className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100/80 rounded-xl transition text-center whitespace-nowrap cursor-pointer"
                         >
                           Анкет үзэх
+                        </button>
+                      )}
+                      {job.status !== "draft" && (
+                        <button
+                          type="button"
+                          onClick={() => handleRenew(job)}
+                          disabled={renewingId !== null}
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold rounded-xl transition whitespace-nowrap disabled:opacity-50 cursor-pointer ${
+                            job.status === "active"
+                              ? "bg-white border border-gray-200 text-gray-700 hover:border-orange-300 hover:text-orange-600"
+                              : "bg-orange-600 text-white hover:bg-orange-700"
+                          }`}
+                        >
+                          {renewingId === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                          {job.status === "active" ? "Сунгах" : "Дахин нээх"}
                         </button>
                       )}
                       <Link

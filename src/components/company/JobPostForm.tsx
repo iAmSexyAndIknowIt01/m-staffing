@@ -13,6 +13,7 @@ import { getJobTemplates, type JobTemplate } from "@/lib/jobTemplates"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
 import { getErrorMessage } from "@/lib/errors"
+import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
 import { useIsClient } from "@/lib/useIsClient"
 import {
   CUSTOM_CATEGORY_MAX,
@@ -47,9 +48,11 @@ const EMPTY: JobFormValues = {
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Идэвхтэй — ажил хайгчдад харагдана" },
-  { value: "draft", label: "Ноорог — түр хадгална, харагдахгүй" },
+  { value: "draft", label: "Ноорог — түр хадгална, харагдахгүй, хугацаа тоологдохгүй" },
   { value: "closed", label: "Хаагдсан — анкет хүлээж авахгүй" },
 ]
+// Систем автоматаар тогтоодог тул зөвхөн тухайн зар энэ төлөвтэй үед харуулна
+const EXPIRED_OPTION = { value: "expired", label: "Хугацаа дууссан — анкет хүлээж авахгүй" }
 
 function fieldClass(state: "error" | "valid" | "idle") {
   const base = "w-full rounded-xl border bg-gray-50 px-4 text-sm text-gray-900 outline-none transition focus:bg-white focus:ring-2"
@@ -98,6 +101,7 @@ interface JobPostFormProps {
     description?: string | null
     requirements?: string | null
     status?: string | null
+    expires_at?: string | null
   }
 }
 
@@ -278,12 +282,27 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
         requirements: values.requirements.trim(),
         salaryType: values.salaryType,
       }
-      const response = await fetch(mode === "create" ? "/api/jobs" : `/api/jobs/${jobId}`, {
-        method: mode === "create" ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mode === "create" ? payload : { ...payload, salary_type: payload.salaryType, status }),
-      })
-      const result = await response.json()
+      const send = (confirmCredit?: boolean) =>
+        fetch(mode === "create" ? "/api/jobs" : `/api/jobs/${jobId}`, {
+          method: mode === "create" ? "POST" : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mode === "create" ? payload : { ...payload, salary_type: payload.salaryType, status, confirmCredit }),
+        })
+      let response = await send()
+      let result = await response.json()
+
+      // Хаагдсан/хугацаа дууссан зарыг дахин нээх — 1 нийтлэх эрх хасагдахыг зөвшөөрүүлнэ
+      if (response.status === 409 && result.requiresCredit) {
+        const remaining = typeof result.remaining === "number" ? result.remaining : null
+        if (remaining === 0) throw new Error("Зар нийтлэх эрх дууссан байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.")
+        const ok = await showConfirm(
+          `Зарыг дахин нээж ${JOB_POST_DAYS} хоногоор идэвхжүүлэхэд 1 нийтлэх эрх хасагдана.${remaining !== null ? ` Үлдэх эрх: ${remaining - 1}.` : ""}`,
+          { title: "Зарыг дахин нээх үү?", confirmLabel: "Дахин нээх" }
+        )
+        if (!ok) return
+        response = await send(true)
+        result = await response.json()
+      }
       if (!response.ok) throw new Error(result.error || "Хадгалж чадсангүй")
 
       doneRef.current = true
@@ -547,10 +566,26 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
           <div>
             <Label htmlFor="job-status">Зарын төлөв</Label>
             <Select id="job-status" value={status} onChange={(e) => { setStatus(e.target.value); setDirty(true) }} className="h-12">
-              {STATUS_OPTIONS.map((s) => (
+              {(initial?.status === "expired" ? [...STATUS_OPTIONS, EXPIRED_OPTION] : STATUS_OPTIONS).map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </Select>
+            {(() => {
+              const reopening = status === "active" && (initial?.status === "closed" || initial?.status === "expired")
+              if (reopening) {
+                return (
+                  <p className="mt-1.5 text-xs text-amber-700">
+                    Дахин нээхэд 1 нийтлэх эрх хасагдаж, зар {JOB_POST_DAYS} хоног идэвхтэй болно.
+                  </p>
+                )
+              }
+              const left = initial?.status === "active" && status === "active" ? daysLeft(initial.expires_at) : null
+              return left !== null && initial?.expires_at ? (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  {new Date(initial.expires_at).toLocaleDateString("mn-MN")} хүртэл идэвхтэй ({left} хоног үлдсэн). Хугацааг жагсаалтын «Сунгах» товчоор сунгана.
+                </p>
+              ) : null
+            })()}
           </div>
         )}
 
