@@ -134,10 +134,9 @@ export default function Stats() {
               text-white
             "
           >
-            Тоогоор
-            <span className="text-orange-400">
-              {" "}харвал
-            </span>
+            {/* Hero, «Бидний тухай»-тай ижил гэрэлтэлт (section үргэлж бараан тул цагаан хувилбар) */}
+            <span className="text-shimmer-light">Тоогоор</span>{" "}
+            <span className="text-shimmer [animation-delay:240ms]">харвал</span>
           </h2>
 
           <p
