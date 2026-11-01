@@ -4,6 +4,8 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session"
 import { CONTRACTS_ENABLED } from "@/lib/features"
 
 const CONTRACT_PATH = /^\/dashboard\/(company|staff)\/contracts(\/|$)/
+// Ажил хайгч / ажил олгогчийн тусдаа хэсгүүд
+const ROLE_PATH = /^\/dashboard\/(company|staff)(\/|$)/
 
 // Нэвтрээгүй хэрэглэгчийг dashboard, admin хуудас руу оруулахгүй.
 // Эрхийн нарийн шалгалтыг API болон layout тус бүр өөрөө хийнэ.
@@ -16,6 +18,15 @@ export async function proxy(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith("/admin") && !session.isAdmin) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
+
+  // Өөр төрлийн бүртгэлийн хэсэгт (ж: ажил олгогч «Ажил хайх») орвол өөрийн самбар руу шилжүүлж,
+  // яагаад шилжсэнийг тайлбарлах мэдэгдэл харуулна (dashboard-ын RoleNotice)
+  const rolePath = request.nextUrl.pathname.match(ROLE_PATH)
+  if (rolePath && rolePath[1] !== session.role) {
+    const url = new URL("/dashboard", request.url)
+    url.searchParams.set("notice", rolePath[1] === "staff" ? "staff-only" : "company-only")
+    return NextResponse.redirect(url)
   }
 
   // Гэрээний функц түр нуугдсан үед хуудсанд шууд хандахыг хаана.

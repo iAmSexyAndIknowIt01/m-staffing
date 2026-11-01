@@ -188,7 +188,6 @@
   :where(html.dark) .text-gray-700 { color: var(--dk-fg-2); }
   :where(html.dark) .text-gray-800 { color: var(--dk-fg-2); }
   :where(html.dark) .text-gray-900 { color: var(--dk-fg); }
-  :where(html.dark) .text-gray-950 { color: var(--dk-fg); }
   :where(html.dark) .text-lime-600 { color: var(--color-lime-400); }
   :where(html.dark) .text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .text-orange-700 { color: var(--color-orange-300); }

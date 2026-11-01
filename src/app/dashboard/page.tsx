@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/session"
 import StaffView from "./components/StaffView"
 import CompanyView from "./components/CompanyView"
+import RoleNotice from "./components/RoleNotice"
 
 export default async function DashboardPage() {
   const session = await getSession()
@@ -10,9 +11,10 @@ export default async function DashboardPage() {
   if (!userId) return null
 
   // Зөвхөн үндсэн нүүрний контентийг буцаана, Sidemenu-г layout өөрөө шийднэ
-  return userRole === "staff" ? (
-    <StaffView userId={userId} />
-  ) : (
-    <CompanyView />
+  return (
+    <>
+      <RoleNotice />
+      {userRole === "staff" ? <StaffView userId={userId} /> : <CompanyView />}
+    </>
   )
 }
