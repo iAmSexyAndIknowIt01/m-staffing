@@ -66,6 +66,9 @@ export default function RegisterPage() {
 
   // Баталгаажуулах кодын цонх
   const [showModal, setShowModal] = useState(false)
+  // Сервер «бүртгэлтэй» гэж хариулсан имэйл — талбарын доор шууд харуулна (код илгээхгүй)
+  const [takenEmail, setTakenEmail] = useState<string | null>(null)
+  const emailTaken = takenEmail !== null && email.trim().toLowerCase() === takenEmail
 
   // Системийн нийтлэг цонхоор (AppDialog) мэдэгдэл харуулна; хаагдсаны дараа onConfirm ажиллана
   const showAlert = (
@@ -90,7 +93,9 @@ export default function RegisterPage() {
       ? "Имэйлээ оруулна уу"
       : !EMAIL_RE.test(email.trim())
         ? "Имэйл хаяг буруу байна. Жишээ: name@email.com"
-        : null,
+        : emailTaken
+          ? "Энэ имэйл хаягаар бүртгэл үүссэн байна."
+          : null,
     password: password ? validateNewPassword(password) : "Нууц үгээ оруулна уу",
   }
   const values: Record<Field, string> = { lastName, firstName, companyName, email, password }
@@ -119,14 +124,18 @@ export default function RegisterPage() {
     }
 
     setLoading(true)
-    const error = await requestCode()
+    const result = await sendCode()
     setLoading(false)
-    if (error) showAlert("Алдаа гарлаа", error, "error")
+    if (result.taken) {
+      // Бүртгэлтэй имэйл — код илгээхгүй, цонх нээхгүй, талбар дээр нь заана
+      setTakenEmail(email.trim().toLowerCase())
+      document.getElementById("register-email")?.focus()
+    } else if (result.error) showAlert("Алдаа гарлаа", result.error, "error")
     else setShowModal(true)
   }
 
-  // Имэйл рүү код илгээнэ (дахин илгээхэд ч ашиглана). Алдаа гарвал мессежийг буцаана.
-  async function requestCode(): Promise<string | null> {
+  // Имэйл рүү код илгээнэ. Сервер код илгээхээс өмнө имэйл бүртгэлтэй эсэхийг (ажилтан, ажил олгогч) шалгана.
+  async function sendCode(): Promise<{ error: string | null; taken?: boolean }> {
     try {
       const res = await fetch("/api/auth/register/mailAuth", {
         method: "POST",
@@ -134,11 +143,15 @@ export default function RegisterPage() {
         body: JSON.stringify({ email }),
       })
       const data = await res.json()
-      return res.ok ? null : data.message || "Код илгээхэд алдаа гарлаа"
+      if (res.ok) return { error: null }
+      return { error: data.message || "Код илгээхэд алдаа гарлаа", taken: data.code === "email_taken" }
     } catch {
-      return "Системийн алдаа гарлаа. Дараа дахин оролдоно уу."
+      return { error: "Системийн алдаа гарлаа. Дараа дахин оролдоно уу." }
     }
   }
+
+  // Цонхны «Дахин илгээх»
+  const requestCode = async (): Promise<string | null> => (await sendCode()).error
 
   // Алхам 2: Кодоо оруулаад «Баталгаажуулах» дарахад. Алдааг цонхон дотор нь харуулна.
   async function handleVerifyAndRegister(code: string): Promise<string | null> {
@@ -302,6 +315,13 @@ export default function RegisterPage() {
               className={`mt-3 w-full rounded-2xl border px-5 py-4 transition-colors outline-none ${inputStateClass(fieldState("email"))}`}
             />
             <FieldMessage id="register-email-msg" error={visibleError("email")} valid={fieldState("email") === "valid"} />
+            {emailTaken && (
+              <p className="mt-1.5 text-sm text-gray-600">
+                <Link href="/login" className="font-semibold text-orange-600 hover:underline">Нэвтрэх</Link>
+                {" "}эсвэл{" "}
+                <Link href="/forgot-password" className="font-semibold text-orange-600 hover:underline">нууц үгээ сэргээх</Link>
+              </p>
+            )}
           </div>
 
           <div className="mt-6">
