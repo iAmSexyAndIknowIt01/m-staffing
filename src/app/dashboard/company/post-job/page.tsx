@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, Calendar, RefreshCw, Search, Wallet, XCircle } from "lucide-react"
+import { Calendar, Clock, Loader2, RefreshCw, RotateCcw, Search, Wallet, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -8,6 +8,8 @@ import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jobPost"
 import FoalIllustration from "@/components/common/FoalIllustration"
+import { showAlert, showConfirm } from "@/components/common/AppDialog"
+import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
 
 interface JobItem {
   id: string
@@ -18,7 +20,19 @@ interface JobItem {
   job_type?: string
   status: string
   created_at: string
+  expires_at?: string | null
   applicants_count: number
+}
+
+// Хугацаа дуусахад ойртсон гэж үзэх хоног — шар шошго, «Сунгах» товч зөвхөн энэ үед гарна
+const EXPIRY_WARNING_DAYS = 5
+
+// «Сунгах» (идэвхтэй, дуусахад ойртсон) эсвэл «Дахин нээх» (хаагдсан/хугацаа дууссан) товч харуулах эсэх
+function canRenew(job: JobItem): boolean {
+  if (job.status === "closed" || job.status === "expired") return true
+  if (job.status !== "active") return false
+  const left = daysLeft(job.expires_at)
+  return left !== null && left <= EXPIRY_WARNING_DAYS
 }
 
 const getJobTypeLabel = (type?: string) => getJobTypeText(type) || "Бүтэн цаг"
@@ -128,6 +142,54 @@ export default function PostJobPage() {
       controller.abort()
     }
   }, [])
+
+  // «Сунгах» / «Дахин нээх» — 1 нийтлэх эрх хасагдахыг анхааруулж, зөвшөөрвөл хийнэ
+  const [renewingId, setRenewingId] = useState<string | null>(null)
+  const handleRenew = async (job: JobItem) => {
+    if (renewingId) return
+    const extend = job.status === "active"
+
+    let remaining: number | null = null
+    try {
+      const res = await fetch("/api/company/check-approval")
+      const data = await res.json()
+      if (res.ok && data.job_limit) remaining = data.job_limit.expired ? 0 : data.job_limit.remaining
+    } catch {}
+
+    if (remaining === 0) {
+      showAlert("Зар нийтлэх эрх дууссан эсвэл багцын хугацаа дууссан байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.", {
+        tone: "warning",
+        title: extend ? "Сунгах боломжгүй" : "Дахин нээх боломжгүй",
+      })
+      return
+    }
+
+    const ok = await showConfirm(
+      `${extend ? "Зарын хугацааг" : "Зарыг дахин нээж"} ${JOB_POST_DAYS} хоногоор ${extend ? "сунгахад" : "идэвхжүүлэхэд"} 1 нийтлэх эрх хасагдана.${
+        remaining !== null ? ` Үлдэх эрх: ${remaining - 1}.` : ""
+      }`,
+      {
+        title: extend ? "Зарын хугацааг сунгах уу?" : "Зарыг дахин нээх үү?",
+        confirmLabel: extend ? "Сунгах" : "Дахин нээх",
+        icon: RotateCcw,
+        subject: { name: job.title, details: [getJobCategoryLabel(job.category) || "Ерөнхий"] },
+      }
+    )
+    if (!ok) return
+
+    setRenewingId(job.id)
+    try {
+      const res = await fetch(`/api/jobs/${job.id}/renew`, { method: "POST" })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Алдаа гарлаа.")
+      setJobs((prev) => prev.map((j) => (j.id === job.id ? { ...j, status: result.data.status, expires_at: result.data.expires_at } : j)))
+      showAlert(extend ? "Зарын хугацаа сунгагдлаа." : "Зар дахин нээгдэж, ажил хайгчдад харагдаж эхэллээ.", { tone: "success" })
+    } catch (err) {
+      showAlert(getErrorMessage(err, "Сүлжээний алдаа гарлаа. Дахин оролдоно уу."), { tone: "error" })
+    } finally {
+      setRenewingId(null)
+    }
+  }
 
   // Шинэ зар нэмэх товч дарах үед is_approved шалгах функц
   const handleAddNewJobClick = async () => {
@@ -250,8 +312,76 @@ export default function PostJobPage() {
     return <LoadingLayout loading />
   }
 
+  const salaryText = (job: JobItem) =>
+    job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"
+
+  const statusBadge = (job: JobItem) =>
+    job.status === "active" ? (
+      <span className="px-2 py-0.5 text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg whitespace-nowrap">Идэвхтэй</span>
+    ) : job.status === "draft" ? (
+      <span className="px-2 py-0.5 text-xs font-bold bg-gray-100 text-gray-600 rounded-lg whitespace-nowrap">Ноорог</span>
+    ) : job.status === "expired" ? (
+      <span className="px-2 py-0.5 text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-lg whitespace-nowrap">Хугацаа дууссан</span>
+    ) : (
+      <span className="px-2 py-0.5 text-xs font-bold bg-red-50 text-red-500 border border-red-100 rounded-lg whitespace-nowrap">Хаагдсан</span>
+    )
+
+  const daysLeftChip = (job: JobItem) => {
+    if (job.status !== "active") return null
+    const left = daysLeft(job.expires_at)
+    if (left === null) return null
+    const soon = left <= EXPIRY_WARNING_DAYS
+    return (
+      <span
+        title={job.expires_at ? `${new Date(job.expires_at).toLocaleDateString("mn-MN")} хүртэл` : undefined}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-lg whitespace-nowrap ${
+          soon ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-slate-50 text-slate-500"
+        }`}
+      >
+        <Clock className="w-3 h-3" aria-hidden="true" />
+        {left === 0 ? "Өнөөдөр хаагдана" : `${left} хоног үлдсэн`}
+      </span>
+    )
+  }
+
+  // Мөр бүрийн үйлдлийн товчнууд (хүснэгт, карт хоёуланд)
+  const jobActions = (job: JobItem) => (
+    <>
+      {job.applicants_count > 0 && (
+        <button
+          type="button"
+          onClick={() => handleViewApplicants(job.id)}
+          className="px-3.5 py-2 text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100/80 rounded-xl transition whitespace-nowrap cursor-pointer"
+        >
+          Анкет үзэх
+        </button>
+      )}
+      {canRenew(job) && (
+        <button
+          type="button"
+          onClick={() => handleRenew(job)}
+          disabled={renewingId !== null}
+          className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition whitespace-nowrap disabled:opacity-50 cursor-pointer ${
+            job.status === "active"
+              ? "bg-white border border-gray-200 text-gray-700 hover:border-orange-300 hover:text-orange-600"
+              : "bg-orange-600 text-white hover:bg-orange-700"
+          }`}
+        >
+          {renewingId === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+          {job.status === "active" ? "Сунгах" : "Дахин нээх"}
+        </button>
+      )}
+      <Link
+        href={`/dashboard/company/post-job/edit/${job.id}`}
+        className="px-3.5 py-2 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition whitespace-nowrap"
+      >
+        Засах
+      </Link>
+    </>
+  )
+
   return (
-    <div className="max-w-5xl mx-auto animate-fade-in space-y-6 md:space-y-8 px-4 sm:px-0 pb-6">
+    <div className="w-full min-w-0 animate-fade-in space-y-6 md:space-y-8 pb-6">
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-6 pt-2">
         <div>
@@ -296,6 +426,7 @@ export default function PostJobPage() {
                 <option value="active">Идэвхтэй</option>
                 <option value="draft">Ноорог</option>
                 <option value="closed">Хаагдсан</option>
+                <option value="expired">Хугацаа дууссан</option>
               </select>
             </div>
 
@@ -368,63 +499,77 @@ export default function PostJobPage() {
           </div>
         ) : filteredAndSortedJobs.length > 0 ? (
           <>
-            <div className="bg-white border border-gray-100 rounded-2xl md:rounded-4xl shadow-sm overflow-hidden divide-y divide-gray-50">
-              {currentJobs.map((job) => (
-                <div 
-                  key={job.id} 
-                  className="p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-slate-50/50 transition-all"
-                >
-                  <div className="space-y-2 w-full md:w-auto">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base md:text-lg font-bold text-gray-950 wrap-break-word">{job.title}</h3>
-                      <span className="px-2 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">
-                        {getJobTypeLabel(job.job_type)}
-                      </span>
-
-                      {job.status === "active" ? (
-                        <span className="px-2 py-0.5 text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg">Идэвхтэй</span>
-                      ) : job.status === "draft" ? (
-                        <span className="px-2 py-0.5 text-xs font-bold bg-gray-100 text-gray-600 rounded-lg">Ноорог</span>
-                      ) : (
-                        <span className="px-2 py-0.5 text-xs font-bold bg-red-50 text-red-500 border border-red-100 rounded-lg">Хаагдсан</span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs md:text-xs text-gray-400 font-medium">
-                      <span><Building2 size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {getJobCategoryLabel(job.category) || "Ерөнхий"}</span>
-                      <span className="text-slate-800 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">
-                        <Wallet size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {job.salary ? `${formatSalary(job.salary)} ₮ / ${job.salary_type === "hourly" ? "цаг" : "сар"}` : "Тохиролцоно"}
-                      </span>
-                      <span><Calendar size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-row md:flex-row items-center justify-between md:justify-end gap-4 md:gap-6 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-50">
-                    <div className="text-left md:text-right min-w-17.5">
-                      <p className="text-xs md:text-xs text-gray-400 font-medium">Ирсэн анкет</p>
-                      <p className="text-lg md:text-xl font-bold text-gray-800 mt-0.5">{job.applicants_count}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-                      {job.applicants_count > 0 && (
-                        <button
-                          onClick={() => handleViewApplicants(job.id)}
-                          className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100/80 rounded-xl transition text-center whitespace-nowrap cursor-pointer"
-                        >
-                          Анкет үзэх
-                        </button>
-                      )}
-                      <Link
-                        href={`/dashboard/company/post-job/edit/${job.id}`}
-                        className="px-3.5 py-2 md:px-4 md:py-2.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition text-center whitespace-nowrap"
-                      >
-                        Засах
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            {/* КОМПЬЮТЕР: баганатай хүснэгт */}
+            <div className="hidden lg:block bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50/60 border-b border-gray-100 text-xs font-semibold text-gray-500">
+                  <tr>
+                    <th className="px-5 py-3.5">Зарын нэр</th>
+                    <th className="px-4 py-3.5">Ажлын төрөл</th>
+                    <th className="px-4 py-3.5">Төлөв</th>
+                    <th className="px-4 py-3.5">Цалин</th>
+                    <th className="px-4 py-3.5">Үүсгэсэн</th>
+                    <th className="px-4 py-3.5 text-right">Анкет</th>
+                    <th className="px-5 py-3.5 text-right">Үйлдэл</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {currentJobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-gray-50/60 transition-colors align-middle">
+                      <td className="px-5 py-4 max-w-80">
+                        <Link href={`/dashboard/company/post-job/edit/${job.id}`} className="block font-bold text-gray-900 hover:text-orange-700 truncate">
+                          {job.title}
+                        </Link>
+                        <p className="mt-0.5 text-xs text-gray-400 truncate">{getJobCategoryLabel(job.category) || "Ерөнхий"}</p>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="px-2 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">{getJobTypeLabel(job.job_type)}</span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col items-start gap-1">
+                          {statusBadge(job)}
+                          {daysLeftChip(job)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap font-semibold text-gray-800 tabular-nums">{salaryText(job)}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-gray-500 tabular-nums">{new Date(job.created_at).toLocaleDateString("mn-MN")}</td>
+                      <td className="px-4 py-4 text-right font-bold text-gray-900 tabular-nums">{job.applicants_count}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-2">{jobActions(job)}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+
+            {/* УТАС, ТАБЛЕТ: карт */}
+            <ul className="lg:hidden bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
+              {currentJobs.map((job) => (
+                <li key={job.id} className="p-4 sm:p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-gray-900 wrap-break-word">{job.title}</h3>
+                      <p className="mt-0.5 text-xs text-gray-400">{getJobCategoryLabel(job.category) || "Ерөнхий"}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs text-gray-400">Анкет</p>
+                      <p className="text-lg font-bold text-gray-900 tabular-nums">{job.applicants_count}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2 py-0.5 text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100 rounded-lg">{getJobTypeLabel(job.job_type)}</span>
+                    {statusBadge(job)}
+                    {daysLeftChip(job)}
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                    <span className="inline-flex items-center gap-1 font-semibold text-gray-800"><Wallet className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {salaryText(job)}</span>
+                    <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" /> {new Date(job.created_at).toLocaleDateString("mn-MN")}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-gray-50">{jobActions(job)}</div>
+                </li>
+              ))}
+            </ul>
 
             {/* ХУУДАСЛАЛТ */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 md:pt-6 animate-fade-in pb-4">

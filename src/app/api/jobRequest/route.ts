@@ -32,13 +32,15 @@ export async function POST(request: Request) {
     // Хаагдсан эсвэл ноорог зарт анкет илгээхгүй
     const { data: job, error: jobError } = await supabase
       .from("mt_openjob")
-      .select("id")
+      .select("id, expires_at")
       .eq("id", job_id)
       .eq("status", "active")
       .maybeSingle()
 
     if (jobError) throw jobError
-    if (!job) {
+    // Хугацаа дууссан ч cron хараахан хаагаагүй зар (цаг тутам ажилладаг)
+    const expired = job?.expires_at ? new Date(job.expires_at).getTime() <= Date.now() : false
+    if (!job || expired) {
       return NextResponse.json({ error: "Ажлын байр олдсонгүй эсвэл зар хаагдсан байна." }, { status: 404 })
     }
 

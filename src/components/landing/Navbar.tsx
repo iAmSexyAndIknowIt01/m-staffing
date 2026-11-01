@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useViewerRole } from "./useViewerRole"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 
 // Landing хуудасны section-ууд руу шилжих цэс. «Ажил хайх», «Ажилтан хайх» нь Hero/CTA-д товчоор байгаа тул энд оруулахгүй.
@@ -17,6 +18,7 @@ const NAV_ITEMS: { label: string; href: string; id?: string }[] = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const viewer = useViewerRole()
   const [activeId, setActiveId] = useState<string | null>(null)
   // Доош scroll хийсэн үед navbar нарийсч "island" хэлбэртэй болно
   const [scrolled, setScrolled] = useState(false)
@@ -107,11 +109,11 @@ export default function Navbar() {
             className="flex items-center gap-3"
           >
             <ThemeToggle className="w-10 h-10 md:w-11 md:h-11 rounded-full grid place-items-center text-gray-700 hover:text-orange-500 hover:bg-gray-100 transition" />
-            <Link href="/login">
+            <Link href={viewer ? "/dashboard" : "/login"}>
               <button
-                className="orange-btn btn-shine h-10 md:h-11 px-5 md:px-7 text-xs md:text-sm flex items-center justify-center active:scale-100 md:hover:scale-[1.03] transition"
+                className="orange-btn btn-shine h-10 md:h-11 px-5 md:px-7 text-xs md:text-sm flex items-center justify-center active:scale-100 md:hover:scale-[1.03] transition whitespace-nowrap"
               >
-                Нэвтрэх
+                {viewer ? "Хянах самбар" : "Нэвтрэх"}
               </button>
             </Link>
           </div>

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { getEffectiveSubscription } from "@/lib/plans"
+import { chargeJobCredit, getEffectiveSubscription } from "@/lib/plans"
 import { jobFormErrors, jobPostError } from "@/lib/jobPost"
-
-const JOB_STATUSES = ["active", "draft", "closed"]
+import { isJobStatus, planStatusChange } from "@/lib/jobLifecycle"
 
 // ==========================================
 // 1. СҮДЭРЛЭХ / ХАРАХ ХЭСЭГ (GET)
@@ -81,7 +80,7 @@ export async function PUT(
 
     const body = await request.json()
     // Формоос salary_type болон salaryType-ийн аль алинаар ирж болохыг тооцов
-    const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements } = body
+    const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements, confirmCredit } = body
 
     // Баталгаажуулалт — шинэ зар нэмэхтэй ижил дүрэм (хуучин зарын ангиллыг хэвээр зөвшөөрнө)
     const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
@@ -94,7 +93,7 @@ export async function PUT(
       return NextResponse.json({ error: firstError, fieldErrors }, { status: 400 })
     }
 
-    if (status !== undefined && !JOB_STATUSES.includes(status)) {
+    if (status !== undefined && !isJobStatus(status)) {
       return NextResponse.json({ error: "Төлөв буруу байна." }, { status: 400 })
     }
 
@@ -106,36 +105,54 @@ export async function PUT(
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // Идэвхгүй зарыг идэвхжүүлэх үед багц хүчинтэй эсэхийг шалгана
-    if (status === "active") {
-      const { data: current, error: currentError } = await supabase
-        .from("mt_openjob")
-        .select("status")
-        .eq("id", id)
-        .eq("user_id", userId)
-        .maybeSingle()
+    const { data: current, error: currentError } = await supabase
+      .from("mt_openjob")
+      .select("status, expires_at, paused_remaining_seconds")
+      .eq("id", id)
+      .eq("user_id", userId)
+      .maybeSingle()
 
-      if (currentError) throw currentError
-      if (!current) {
-        return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
-      }
+    if (currentError) throw currentError
+    if (!current) {
+      return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
+    }
 
-      // Хаасан/ноорог зарыг дахин идэвхжүүлэхэд шинэ эрх хасагдахгүй, гэхдээ багц хүчинтэй байх ёстой
-      if (current.status !== "active") {
+    // Төлөвийн шилжилт: хугацааг тооцож, хаагдсан/хугацаа дууссан зарыг дахин нээхэд 1 эрх хасна
+    const plan = planStatusChange(current, status ?? current.status)
+    if ("error" in plan) {
+      return NextResponse.json({ error: plan.error }, { status: 400 })
+    }
+
+    if (plan.chargesCredit) {
+      // Хэрэглэгч эрх хасагдахыг зөвшөөрөөгүй бол хадгалахгүй — клиент баталгаажуулах цонх харуулна
+      if (confirmCredit !== true) {
         const sub = await getEffectiveSubscription(userId)
-        if (sub.status === "expired") {
-          return NextResponse.json(
-            { error: "Таны багцын хугацаа дууссан байна. Зарыг идэвхжүүлэхийн тулд багц худалдаж авна уу." },
-            { status: 403 }
-          )
-        }
+        return NextResponse.json(
+          {
+            error: "Зарыг дахин нээхэд 1 нийтлэх эрх хасагдана.",
+            requiresCredit: true,
+            remaining: sub.status === "expired" ? 0 : sub.remaining,
+          },
+          { status: 409 }
+        )
+      }
+      const creditError = await chargeJobCredit(userId, id, "reopen")
+      if (creditError) return NextResponse.json({ error: creditError }, { status: 403 })
+    } else if (plan.update.status === "active" && current.status !== "active") {
+      // Түр ноорог болгосон зарыг үргэлжлүүлэхэд эрх хасагдахгүй, гэхдээ багц хүчинтэй байх ёстой
+      const sub = await getEffectiveSubscription(userId)
+      if (sub.status === "expired") {
+        return NextResponse.json(
+          { error: "Таны багцын хугацаа дууссан байна. Зарыг идэвхжүүлэхийн тулд багц худалдаж авна уу." },
+          { status: 403 }
+        )
       }
     }
 
     // Баазад байгаа датаг шинэчлэх
     const { data, error } = await supabase
-    .from("mt_openjob")
-    .update({
+      .from("mt_openjob")
+      .update({
         title,
         category,
         job_type: jobType,
@@ -144,11 +161,11 @@ export async function PUT(
         salary_type: salary_type || salaryType || "monthly", // Сонгосон цалингийн төрлийг хадгалах
         description,
         requirements,
-        status,
-    })
-    .eq("id", id)
-    .eq("user_id", userId)
-    .select()
+        ...plan.update,
+      })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .select()
 
     if (error) {
       throw error
