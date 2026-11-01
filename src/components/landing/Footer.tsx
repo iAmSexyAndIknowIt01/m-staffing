@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react"
 import Link from "next/link"
+import FooterPlatformLinks from "./FooterPlatformLinks"
 
 export default function Footer() {
   return (
@@ -152,15 +153,7 @@ export default function Footer() {
                   text-gray-400
                 "
               >
-                <Link href="/dashboard/staff/jobs" className="hover:text-orange-400 transition">
-                  Ажил хайх
-                </Link>
-                <Link href="/dashboard/company/search-staff" className="hover:text-orange-400 transition">
-                  Ажилтан хайх
-                </Link>
-                <Link href="/register" className="hover:text-orange-400 transition">
-                  Бүртгүүлэх
-                </Link>
+                <FooterPlatformLinks />
               </div>
             </div>
 
