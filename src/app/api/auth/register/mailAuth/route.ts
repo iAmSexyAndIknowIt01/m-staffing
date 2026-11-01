@@ -24,13 +24,18 @@ export async function POST(req: Request) {
     // Хэрэглэгч бүртгэгдсэн эсэхийг шалгах (ажилтан болон компани).
     // ilike нь хуучин том үсэгтэй хадгалсан имэйлийг ч олно; %, _ тэмдэгтийг escape хийнэ.
     const emailPattern = escapeLikePattern(email)
-    const [{ data: existingStaff }, { data: existingCompany }] = await Promise.all([
+    // auth.users-ийг ч шалгана: профайлгүй үлдсэн нэвтрэлтийн бүртгэлтэй имэйлд код явуулаад
+    // эцсийн алхамд «бүртгэгдсэн байна» гэж гацахаас сэргийлнэ
+    const [{ data: existingStaff }, { data: existingCompany }, authCheck] = await Promise.all([
       supabase.from("mt_staff").select("id").ilike("email", emailPattern).limit(1).maybeSingle(),
       supabase.from("mt_company").select("id").ilike("email", emailPattern).limit(1).maybeSingle(),
+      supabase.rpc("auth_email_exists", { p_email: email }),
     ])
+    // Migration (20261102000000_auth_email_exists) ажиллаагүй бол энэ шалгалтыг алгасна
+    if (authCheck.error) console.error("AUTH_EMAIL_EXISTS_ERROR:", authCheck.error)
 
-    if (existingStaff || existingCompany) {
-      return NextResponse.json({ message: "Энэ имэйл хаяг бүртгэгдсэн байна." }, { status: 400 });
+    if (existingStaff || existingCompany || authCheck.data === true) {
+      return NextResponse.json({ message: "Энэ имэйл хаяг бүртгэгдсэн байна.", code: "email_taken" }, { status: 409 });
     }
 
     // Давтан илгээлтийг хязгаарлах (Gmail-ээр spam явуулахаас сэргийлнэ)
