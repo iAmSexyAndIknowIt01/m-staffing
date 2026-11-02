@@ -9,8 +9,6 @@
 // closed/expired зарыг дахин нээх, идэвхтэй зарыг «Сунгах» нь 1 нийтлэх эрх хасч, JOB_POST_DAYS хоног нэмнэ.
 
 export const JOB_POST_DAYS = 30
-// expired болсноос хойш энэ хоногийн дараа зарыг бүрмөсөн устгана (pg_cron: public.purge_expired_job_posts)
-export const JOB_PURGE_DAYS = 14
 const DAY_MS = 24 * 60 * 60 * 1000
 
 export type JobStatus = "active" | "draft" | "closed" | "expired"
@@ -98,12 +96,6 @@ export function planRenewal(job: JobTiming, now: Date = new Date()): JobPlan {
 export function daysLeft(expiresAt: string | null | undefined, now: Date = new Date()): number | null {
   if (!expiresAt) return null
   return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now.getTime()) / DAY_MS))
-}
-
-// Хугацаа дууссан зар устгагдах хүртэл үлдсэн хоног. expired_at байхгүй бол null.
-export function purgeDaysLeft(expiredAt: string | null | undefined, now: Date = new Date()): number | null {
-  if (!expiredAt) return null
-  return daysLeft(new Date(new Date(expiredAt).getTime() + JOB_PURGE_DAYS * DAY_MS).toISOString(), now)
 }
 
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
