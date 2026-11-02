@@ -35,6 +35,16 @@ function canRenew(job: JobItem): boolean {
   return left !== null && left <= EXPIRY_WARNING_DAYS
 }
 
+// Хугацаа дууссан зарыг supabase cron (purge_expired_job_posts) expires_at-аас хойш энэ хоногийн дараа устгана
+const JOB_PURGE_DAYS = 14
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// expires_at-аас хойш өнгөрсөн бүтэн хоног (хугацаа дууссан зарт)
+function daysSinceExpiry(job: JobItem): number | null {
+  if (job.status !== "expired" || !job.expires_at) return null
+  return Math.max(0, Math.floor((Date.now() - new Date(job.expires_at).getTime()) / DAY_MS))
+}
+
 const getJobTypeLabel = (type?: string) => getJobTypeText(type) || "Бүтэн цаг"
 
 // Шүүлтүүрийг tab-ын session-д хадгалж, хуудас руу буцаж ирэхэд сэргээнэ
@@ -345,6 +355,31 @@ export default function PostJobPage() {
   }
 
   // Мөр бүрийн үйлдлийн товчнууд (хүснэгт, карт хоёуланд)
+  // «Дахин нээх» товч дээр хугацаа дууссанаас хойш өнгөрсөн хоног
+  const expiredBadge = (job: JobItem) => {
+    const passed = daysSinceExpiry(job)
+    if (passed === null) return null
+    const urgent = JOB_PURGE_DAYS - passed <= 3
+    return (
+      <span
+        className={`ml-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold leading-none tabular-nums ${
+          urgent ? "bg-red-100 text-red-700" : "bg-white/20 text-white"
+        }`}
+      >
+        {passed === 0 ? "Өнөөдөр дууссан" : `${passed} хоног өнгөрсөн`}
+      </span>
+    )
+  }
+
+  const expiryTitle = (job: JobItem) => {
+    const passed = daysSinceExpiry(job)
+    if (passed === null) return undefined
+    const left = Math.max(0, JOB_PURGE_DAYS - passed)
+    return `Хугацаа дууссанаас хойш ${passed} хоног өнгөрсөн. ${
+      left === 0 ? "Удахгүй" : `${left} хоногийн дараа`
+    } зар анкетуудтайгаа хамт бүрмөсөн устгагдана.`
+  }
+
   const jobActions = (job: JobItem) => (
     <>
       {job.applicants_count > 0 && (
@@ -360,6 +395,7 @@ export default function PostJobPage() {
         <button
           type="button"
           onClick={() => handleRenew(job)}
+          title={expiryTitle(job)}
           disabled={renewingId !== null}
           className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition whitespace-nowrap disabled:opacity-50 cursor-pointer ${
             job.status === "active"
@@ -369,6 +405,7 @@ export default function PostJobPage() {
         >
           {renewingId === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
           {job.status === "active" ? "Сунгах" : "Дахин нээх"}
+          {expiredBadge(job)}
         </button>
       )}
       <Link
