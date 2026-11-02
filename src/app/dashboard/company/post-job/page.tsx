@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Clock, Loader2, RefreshCw, RotateCcw, Search, Wallet, XCircle } from "lucide-react"
+import { Calendar, Clock, Loader2, RefreshCw, RotateCcw, Search, Trash2, Wallet, XCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -9,7 +9,7 @@ import LoadingLayout from "@/components/common/LoadingLayout"
 import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jobPost"
 import FoalIllustration from "@/components/common/FoalIllustration"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
-import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
+import { daysLeft, JOB_POST_DAYS, JOB_PURGE_DAYS, purgeDaysLeft } from "@/lib/jobLifecycle"
 
 interface JobItem {
   id: string
@@ -21,6 +21,7 @@ interface JobItem {
   status: string
   created_at: string
   expires_at?: string | null
+  expired_at?: string | null
   applicants_count: number
 }
 
@@ -327,6 +328,19 @@ export default function PostJobPage() {
     )
 
   const daysLeftChip = (job: JobItem) => {
+    if (job.status === "expired") {
+      const purge = purgeDaysLeft(job.expired_at)
+      if (purge === null) return null
+      return (
+        <span
+          title={`Хугацаа дууссанаас хойш ${JOB_PURGE_DAYS} хоногийн дараа зар анкетуудтайгаа хамт бүрмөсөн устгагдана. «Дахин нээх»-ээр хадгална уу.`}
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-lg whitespace-nowrap bg-red-50 text-red-600 border border-red-100"
+        >
+          <Trash2 className="w-3 h-3" aria-hidden="true" />
+          {purge === 0 ? "Өнөөдөр устгагдана" : `${purge} хоногийн дараа устгагдана`}
+        </span>
+      )
+    }
     if (job.status !== "active") return null
     const left = daysLeft(job.expires_at)
     if (left === null) return null

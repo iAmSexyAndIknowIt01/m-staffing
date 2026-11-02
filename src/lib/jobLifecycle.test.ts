@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { daysLeft, JOB_POST_DAYS, planRenewal, planStatusChange, type JobTiming } from "./jobLifecycle"
+import { daysLeft, JOB_POST_DAYS, purgeDaysLeft, planRenewal, planStatusChange, type JobTiming } from "./jobLifecycle"
 
 const now = new Date("2026-11-01T00:00:00Z")
 const DAY = 24 * 60 * 60 * 1000
@@ -89,5 +89,14 @@ describe("daysLeft", () => {
     expect(daysLeft(at(2.2), now)).toBe(3)
     expect(daysLeft(at(-1), now)).toBe(0)
     expect(daysLeft(null, now)).toBeNull()
+  })
+})
+
+describe("purgeDaysLeft", () => {
+  it("expired болсноос хойш 14 хоногоор тоолно", () => {
+    expect(purgeDaysLeft(at(0), now)).toBe(14)
+    expect(purgeDaysLeft(at(-13.5), now)).toBe(1)
+    expect(purgeDaysLeft(at(-20), now)).toBe(0)
+    expect(purgeDaysLeft(null, now)).toBeNull()
   })
 })
