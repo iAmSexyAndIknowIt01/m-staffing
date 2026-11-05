@@ -406,7 +406,7 @@ export default function SearchStaffPage() {
           </button>
         </div>
       ) : staffList.length > 0 ? (
-        <ul className={`bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden transition-opacity ${loading ? "opacity-60" : ""}`}>
+        <ul className={`stagger-in bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden transition-opacity ${loading ? "opacity-60" : ""}`}>
           {pagedStaff.map((staff) => (
             <li key={staff.id}>
               <StaffRow staff={staff} backQuery={backQuery} />

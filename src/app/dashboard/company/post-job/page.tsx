@@ -513,7 +513,7 @@ export default function PostJobPage() {
                     <th className="px-5 py-3.5 text-right">Үйлдэл</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="stagger-in divide-y divide-gray-50">
                   {currentJobs.map((job) => (
                     <tr key={job.id} className="hover:bg-gray-50/60 transition-colors align-middle">
                       <td className="px-5 py-4 max-w-80">
@@ -544,7 +544,7 @@ export default function PostJobPage() {
             </div>
 
             {/* УТАС, ТАБЛЕТ: карт */}
-            <ul className="lg:hidden bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
+            <ul className="stagger-in lg:hidden bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
               {currentJobs.map((job) => (
                 <li key={job.id} className="p-4 sm:p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">

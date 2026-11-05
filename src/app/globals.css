@@ -761,37 +761,37 @@ select:not([multiple]):not([size]) {
   }
 }
 
-/* ===== Ажил хайгчийн хуудсууд: хэсгүүд, жагсаалтын мөрүүд дараалан гарна =====
-   .staff-page — /dashboard/staff/template.tsx; хуудасны үндсэн хэсгүүд (ачаалж дуусаад гарсан ч)
+/* ===== Ажил хайгч, компанийн хуудсууд: хэсгүүд, жагсаалтын мөрүүд дараалан гарна =====
+   .page-stagger — /dashboard/staff, /dashboard/company template.tsx; хуудасны үндсэн хэсгүүд (ачаалж дуусаад гарсан ч)
    .stagger-in — жагсаалтын мөрүүд. Цонх (.fixed), өөрийн animation-тэй (animate-*, .dash-in) элементэд хүрэхгүй. */
-.staff-page > * > :not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :not(.fixed, [class*="animate-"], .dash-in) {
   animation: dashIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.staff-page > * > :nth-child(2):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(2):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(2):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 70ms; }
-.staff-page > * > :nth-child(3):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(3):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(3):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 140ms; }
-.staff-page > * > :nth-child(4):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(4):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(4):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 210ms; }
-.staff-page > * > :nth-child(5):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(5):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(5):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 280ms; }
-.staff-page > * > :nth-child(6):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(6):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(6):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 350ms; }
-.staff-page > * > :nth-child(7):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(7):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(7):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 420ms; }
-.staff-page > * > :nth-child(8):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(8):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(8):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 490ms; }
-.staff-page > * > :nth-child(9):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(9):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(9):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 560ms; }
-.staff-page > * > :nth-child(10):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(10):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(10):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 630ms; }
-.staff-page > * > :nth-child(n + 11):not(.fixed, [class*="animate-"], .dash-in),
+.page-stagger > * > :nth-child(n + 11):not(.fixed, [class*="animate-"], .dash-in),
 .stagger-in > :nth-child(n + 11):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 700ms; }
 
 @media (prefers-reduced-motion: reduce) {
-  .staff-page > * > *,
+  .page-stagger > * > *,
   .stagger-in > * {
     animation: none !important;
   }
