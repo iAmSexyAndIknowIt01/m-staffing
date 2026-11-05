@@ -137,7 +137,7 @@ export default function JobFilterSidebar({
   }
 
   return (
-    <aside aria-label="Шүүлтүүр" className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto overscroll-contain rounded-3xl border border-gray-100 bg-white shadow-sm">
+    <aside aria-label="Шүүлтүүр" className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <h2 className="flex items-center gap-2 text-base font-bold text-gray-900">
           <SlidersHorizontal className="w-4 h-4 text-orange-600" aria-hidden="true" /> Шүүлтүүр

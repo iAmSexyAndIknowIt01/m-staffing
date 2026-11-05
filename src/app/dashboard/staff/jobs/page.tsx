@@ -428,7 +428,7 @@ export default function StaffJobsPage() {
       </div>
 
       {/* Том дэлгэцэд шүүлтүүр зүүн талд, утсан дээр жагсаалтын дээр */}
-      <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] xl:grid-cols-[19rem_minmax(0,1fr)] lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[21rem_minmax(0,1fr)] lg:gap-6">
         <div className="hidden lg:block">
           <JobFilterSidebar
             jobs={jobs}
