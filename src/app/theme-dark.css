@@ -107,9 +107,12 @@
   :where(html.dark) .focus\:border-slate-400:focus { border-color: var(--dk-border-heavy); }
   :where(html.dark) .from-orange-100 { --tw-gradient-from: color-mix(in srgb, var(--color-orange-500) 20%, var(--dk-surface)); }
   :where(html.dark) .from-white { --tw-gradient-from: var(--dk-surface); }
+  :where(html.dark) .group:hover .group-hover\:text-emerald-600 { color: var(--color-emerald-400); }
+  :where(html.dark) .group:hover .group-hover\:text-gray-500 { color: var(--dk-fg-4); }
   :where(html.dark) .group:hover .group-hover\:text-gray-900 { color: var(--dk-fg); }
   :where(html.dark) .group:hover .group-hover\:text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .group:hover .group-hover\:text-orange-700 { color: var(--color-orange-300); }
+  :where(html.dark) .group:hover .group-hover\:text-sky-600 { color: var(--color-sky-400); }
   :where(html.dark) .hover\:bg-amber-100\/50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 10%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-amber-100\/70:hover { background-color: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
   :where(html.dark) .hover\:bg-amber-50:hover { background-color: color-mix(in srgb, var(--color-amber-500) 14%, var(--dk-surface)); }
@@ -139,10 +142,12 @@
   :where(html.dark) .hover\:bg-slate-800:hover { background-color: var(--dk-raised-hover); }
   :where(html.dark) .hover\:bg-white:hover { background-color: var(--dk-surface); }
   :where(html.dark) .hover\:bg-white\/95:hover { background-color: color-mix(in srgb, var(--dk-surface) 95%, transparent); }
+  :where(html.dark) .hover\:border-emerald-200:hover { border-color: color-mix(in srgb, var(--color-emerald-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-gray-200:hover { border-color: var(--dk-border-strong); }
   :where(html.dark) .hover\:border-orange-100:hover { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-orange-200:hover { border-color: color-mix(in srgb, var(--color-orange-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-rose-200:hover { border-color: color-mix(in srgb, var(--color-rose-500) 36%, var(--dk-surface)); }
+  :where(html.dark) .hover\:border-sky-200:hover { border-color: color-mix(in srgb, var(--color-sky-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-slate-300:hover { border-color: var(--dk-border-strong); }
   :where(html.dark) .hover\:border-white:hover { border-color: var(--dk-border); }
   :where(html.dark) .hover\:border-white\/80:hover { border-color: var(--dk-border); }

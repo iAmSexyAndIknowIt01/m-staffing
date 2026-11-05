@@ -82,9 +82,16 @@ function formatSalary(salaryStr: string) {
   return `${Number(numericValue).toLocaleString()} ₮`
 }
 
+// Картын өнгө: хулганаар очиход хүрээ, гэрэлтэлт энэ өнгөөр тодорно
+const STAT_ACCENTS = {
+  orange: { icon: "bg-orange-50 text-orange-600", hover: "hover:border-orange-200 hover:shadow-orange-500/10", glow: "bg-orange-400/20", value: "group-hover:text-orange-600" },
+  sky: { icon: "bg-sky-50 text-sky-600", hover: "hover:border-sky-200 hover:shadow-sky-500/10", glow: "bg-sky-400/20", value: "group-hover:text-sky-600" },
+  emerald: { icon: "bg-emerald-50 text-emerald-600", hover: "hover:border-emerald-200 hover:shadow-emerald-500/10", glow: "bg-emerald-400/20", value: "group-hover:text-emerald-600" },
+} as const
+
 function StatCard({
   icon: Icon,
-  tone,
+  accent,
   label,
   value,
   hint,
@@ -92,34 +99,51 @@ function StatCard({
   delayMs = 0,
 }: {
   icon: LucideIcon
-  tone: string
+  accent: keyof typeof STAT_ACCENTS
   label: string
   value: number
   hint: string
   href?: string
   delayMs?: number
 }) {
+  const tone = STAT_ACCENTS[accent]
   const body = (
     <>
-      <span style={delay(delayMs + 180)} className={`dash-pop w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-2xl flex items-center justify-center ${tone}`}>
+      {/* Хулганаар очиход булангаас зөөлөн гэрэлтэнэ */}
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full blur-2xl opacity-0 scale-75 transition duration-500 group-hover:opacity-100 group-hover:scale-100 ${tone.glow}`}
+      />
+      <span
+        style={delay(delayMs + 180)}
+        className={`dash-pop relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-2xl flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6 ${tone.icon}`}
+      >
         <Icon className="w-5 h-5" />
       </span>
-      <div className="min-w-0">
+      <div className="relative min-w-0 flex-1">
         <p className="text-xs sm:text-sm text-gray-500 leading-snug">{label}</p>
-        <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
-          <CountUp value={String(value)} duration={1200} />
+        <p className={`text-xl sm:text-2xl font-bold text-gray-900 leading-tight transition-colors duration-300 ${tone.value}`}>
+          <CountUp value={String(value)} duration={1400} delay={delayMs + 250} />
         </p>
         <p className="hidden sm:block text-xs text-gray-400 mt-0.5">{hint}</p>
       </div>
+      {href && (
+        <ChevronRight
+          aria-hidden="true"
+          className="relative hidden sm:block w-4 h-4 shrink-0 self-center text-gray-300 opacity-0 -translate-x-1 transition duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-gray-500"
+        />
+      )}
     </>
   )
-  const className = "bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-5 flex flex-col sm:flex-row items-start gap-2.5 sm:gap-4 transition"
+  const className = `dash-in group relative overflow-hidden bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-5 flex flex-col sm:flex-row items-start gap-2.5 sm:gap-4 transition duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${tone.hover}`
   return href ? (
-    <Link href={href} style={delay(delayMs)} className={`dash-in ${className} hover:border-orange-200 hover:shadow-md`}>
+    <Link href={href} style={delay(delayMs)} className={className}>
       {body}
     </Link>
   ) : (
-    <div style={delay(delayMs)} className={`dash-in ${className}`}>{body}</div>
+    <div style={delay(delayMs)} className={className}>
+      {body}
+    </div>
   )
 }
 
@@ -233,7 +257,7 @@ export default function StaffView({ userId }: StaffViewProps) {
       <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
         <StatCard
           icon={Send}
-          tone="bg-orange-50 text-orange-600"
+          accent="orange"
           label="Илгээсэн анкет"
           value={stats.appliedCount}
           hint={stats.appliedThisWeek}
@@ -242,15 +266,16 @@ export default function StaffView({ userId }: StaffViewProps) {
         />
         <StatCard
           icon={Eye}
-          tone="bg-sky-50 text-sky-600"
+          accent="sky"
           label="CV-г тань үзсэн"
           value={cvViews}
           hint="Ажил олгогчид таны CV-г үзсэн тоо"
+          href="/dashboard/staff/cv"
           delayMs={380}
         />
         <StatCard
           icon={Building2}
-          tone="bg-emerald-50 text-emerald-600"
+          accent="emerald"
           label="Танилцсан байгууллага"
           value={stats.viewedCompaniesCount}
           hint="Сүүлийн 7 хоногт үзсэн байгууллага"
