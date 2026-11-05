@@ -21,6 +21,7 @@ import EmptyState from "@/components/common/EmptyState"
 import FoalLean from "@/components/common/FoalLean"
 import CountUp from "@/components/landing/CountUp"
 import { delay } from "./dashMotion"
+import StatCard, { ARROW_HOVER, CARD_HOVER, ICON_HOVER } from "./DashStatCard"
 import { getErrorMessage } from "@/lib/errors"
 import { Progress, STATUS, toRequestStatus } from "@/components/staff/requests/requestStatus"
 import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
@@ -80,71 +81,6 @@ function formatSalary(salaryStr: string) {
   const numericValue = salaryStr?.replace(/[^0-9]/g, "")
   if (!numericValue) return salaryStr || "Тохиролцоно"
   return `${Number(numericValue).toLocaleString()} ₮`
-}
-
-// Картын өнгө: хулганаар очиход хүрээ, гэрэлтэлт энэ өнгөөр тодорно
-const STAT_ACCENTS = {
-  orange: { icon: "bg-orange-50 text-orange-600", hover: "hover:border-orange-200 hover:shadow-orange-500/10", glow: "bg-orange-400/20", value: "group-hover:text-orange-600" },
-  sky: { icon: "bg-sky-50 text-sky-600", hover: "hover:border-sky-200 hover:shadow-sky-500/10", glow: "bg-sky-400/20", value: "group-hover:text-sky-600" },
-  emerald: { icon: "bg-emerald-50 text-emerald-600", hover: "hover:border-emerald-200 hover:shadow-emerald-500/10", glow: "bg-emerald-400/20", value: "group-hover:text-emerald-600" },
-} as const
-
-function StatCard({
-  icon: Icon,
-  accent,
-  label,
-  value,
-  hint,
-  href,
-  delayMs = 0,
-}: {
-  icon: LucideIcon
-  accent: keyof typeof STAT_ACCENTS
-  label: string
-  value: number
-  hint: string
-  href?: string
-  delayMs?: number
-}) {
-  const tone = STAT_ACCENTS[accent]
-  const body = (
-    <>
-      {/* Хулганаар очиход булангаас зөөлөн гэрэлтэнэ */}
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full blur-2xl opacity-0 scale-75 transition duration-500 group-hover:opacity-100 group-hover:scale-100 ${tone.glow}`}
-      />
-      <span
-        style={delay(delayMs + 180)}
-        className={`dash-pop relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-2xl flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6 ${tone.icon}`}
-      >
-        <Icon className="w-5 h-5" />
-      </span>
-      <div className="relative min-w-0 flex-1">
-        <p className="text-xs sm:text-sm text-gray-500 leading-snug">{label}</p>
-        <p className={`text-xl sm:text-2xl font-bold text-gray-900 leading-tight transition-colors duration-300 ${tone.value}`}>
-          <CountUp value={String(value)} duration={1400} delay={delayMs + 250} />
-        </p>
-        <p className="hidden sm:block text-xs text-gray-400 mt-0.5">{hint}</p>
-      </div>
-      {href && (
-        <ChevronRight
-          aria-hidden="true"
-          className="relative hidden sm:block w-4 h-4 shrink-0 self-center text-gray-300 opacity-0 -translate-x-1 transition duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-gray-500"
-        />
-      )}
-    </>
-  )
-  const className = `dash-in group relative overflow-hidden bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-5 flex flex-col sm:flex-row items-start gap-2.5 sm:gap-4 transition duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${tone.hover}`
-  return href ? (
-    <Link href={href} style={delay(delayMs)} className={className}>
-      {body}
-    </Link>
-  ) : (
-    <div style={delay(delayMs)} className={className}>
-      {body}
-    </div>
-  )
 }
 
 function SectionHeader({ title, href, linkLabel }: { title: string; href?: string; linkLabel?: string }) {
@@ -233,11 +169,13 @@ export default function StaffView({ userId }: StaffViewProps) {
 
       {/* ПРОФАЙЛ ДУУСГАХ САНАЛ */}
       {!profileDone && (
-        <section style={delay(240)} className="dash-in bg-orange-50/70 border border-orange-200 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+        <section style={delay(240)} className={`dash-in ${CARD_HOVER} hover:shadow-orange-500/10 bg-orange-50/70 border border-orange-200 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6`}>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-semibold text-gray-900">Профайлаа бөглөж дуусгаарай</h2>
-              <span className="text-sm font-bold text-orange-600">{profileProgress}%</span>
+              <span className="text-sm font-bold text-orange-600">
+                <CountUp value={`${profileProgress}%`} duration={1200} delay={600} />
+              </span>
             </div>
             <div className="mt-2 h-2 rounded-full bg-orange-100 overflow-hidden">
               <div className="dash-bar h-full rounded-full bg-orange-500 transition-all duration-500" style={{ width: `${profileProgress}%`, ...delay(650) }} />
@@ -307,7 +245,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                   <li key={job.id} style={delay(600 + i * 80)} className="dash-in">
                     <Link
                       href={`/dashboard/staff/jobs/${job.id}`}
-                      className="group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
+                      className={`group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 ${CARD_HOVER}`}
                     >
                       <CompanyLogo name={job.company} logoUrl={job.company_logo} />
                       <div className="min-w-0 flex-1">
@@ -323,7 +261,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                           {job.type && <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">{job.type}</span>}
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 transition" />
+                      <ChevronRight className={`w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 ${ARROW_HOVER}`} />
                     </Link>
                   </li>
                 ))}
@@ -355,7 +293,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                     <li key={app.id} style={delay(800 + i * 80)} className="dash-in">
                       <Link
                         href={`/dashboard/staff/requests/${app.id}`}
-                        className="group block bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
+                        className={`group block bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 ${CARD_HOVER}`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -365,7 +303,7 @@ export default function StaffView({ userId }: StaffViewProps) {
                             </p>
                           </div>
                           <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold ${info.badge}`}>
-                            <StatusIcon className="w-3.5 h-3.5" /> {info.label}
+                            <StatusIcon className={`w-3.5 h-3.5 ${ICON_HOVER}`} /> {info.label}
                           </span>
                         </div>
                         <div className="mt-3">
@@ -383,27 +321,29 @@ export default function StaffView({ userId }: StaffViewProps) {
         {/* БАРУУН */}
         <aside className="space-y-6 lg:sticky lg:top-6">
           {profileDone && (
-            <section style={delay(560)} className="dash-in bg-white border border-gray-100 rounded-3xl shadow-sm p-5">
+            <section style={delay(560)} className={`dash-in group bg-white border border-gray-100 rounded-3xl shadow-sm p-5 hover:border-emerald-200 hover:shadow-emerald-500/10 ${CARD_HOVER}`}>
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900">Профайлын бүрэн байдал</h2>
-                <span className="text-sm font-bold text-emerald-600">100%</span>
+                <span className="text-sm font-bold text-emerald-600">
+                  <CountUp value="100%" duration={1200} delay={850} />
+                </span>
               </div>
               <div style={delay(900)} className="dash-bar mt-3 h-2 rounded-full bg-emerald-500" />
               <p className="mt-2 text-xs text-emerald-600">Профайл бүрэн бөглөгдсөн байна.</p>
             </section>
           )}
 
-          <section style={delay(640)} className="dash-in bg-white border border-gray-100 rounded-3xl shadow-sm p-2">
+          <section style={delay(640)} className={`dash-in bg-white border border-gray-100 rounded-3xl shadow-sm p-2 hover:border-orange-100 ${CARD_HOVER}`}>
             <h2 className="px-3 pt-3 pb-2 text-sm font-semibold text-gray-900">Шууд холбоос</h2>
             <ul>
               {QUICK_LINKS.map(({ href, label, icon: Icon }, i) => (
                 <li key={href} style={delay(700 + i * 60)} className="dash-in">
                   <Link href={href} className="group flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-gray-50 transition">
-                    <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                    <span className={`w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center ${ICON_HOVER}`}>
                       <Icon className="w-4.5 h-4.5" />
                     </span>
                     <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900">{label}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-orange-500 transition" />
+                    <ChevronRight className={`w-4 h-4 text-gray-300 group-hover:text-orange-500 ${ARROW_HOVER}`} />
                   </Link>
                 </li>
               ))}
@@ -413,9 +353,9 @@ export default function StaffView({ userId }: StaffViewProps) {
           {tips && tips.length > 0 && (
             <section className="space-y-3">
               {tips.map((tip, index) => (
-                <article key={index} style={delay(820 + index * 90)} className="dash-in bg-amber-50/70 border border-amber-100 rounded-3xl p-5">
+                <article key={index} style={delay(820 + index * 90)} className={`dash-in group bg-amber-50/70 border border-amber-100 rounded-3xl p-5 hover:border-amber-200 hover:shadow-amber-500/10 ${CARD_HOVER}`}>
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-600 shrink-0" />
+                    <Lightbulb className={`w-5 h-5 text-amber-600 shrink-0 ${ICON_HOVER}`} />
                     <h3 className="font-semibold text-sm text-amber-900">{tip.title}</h3>
                   </div>
                   <p className="mt-2 text-sm text-amber-900/80 leading-relaxed line-clamp-4">{tip.content}</p>

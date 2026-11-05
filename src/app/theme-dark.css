@@ -142,6 +142,7 @@
   :where(html.dark) .hover\:bg-slate-800:hover { background-color: var(--dk-raised-hover); }
   :where(html.dark) .hover\:bg-white:hover { background-color: var(--dk-surface); }
   :where(html.dark) .hover\:bg-white\/95:hover { background-color: color-mix(in srgb, var(--dk-surface) 95%, transparent); }
+  :where(html.dark) .hover\:border-amber-200:hover { border-color: color-mix(in srgb, var(--color-amber-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-emerald-200:hover { border-color: color-mix(in srgb, var(--color-emerald-500) 36%, var(--dk-surface)); }
   :where(html.dark) .hover\:border-gray-200:hover { border-color: var(--dk-border-strong); }
   :where(html.dark) .hover\:border-orange-100:hover { border-color: color-mix(in srgb, var(--color-orange-500) 28%, var(--dk-surface)); }
