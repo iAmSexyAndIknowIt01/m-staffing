@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import PublicPageShell, { LegalSection } from "@/components/landing/PublicPageShell"
+import Reveal from "@/components/landing/Reveal"
 import { HAS_CONTACT_INFO, SITE_NAME } from "@/lib/siteInfo"
 import { PAID_PLAN_TYPES, PLANS } from "@/lib/planCatalog"
 
@@ -82,7 +83,7 @@ export default function FaqPage() {
       title="Түгээмэл асуулт"
       description={`${SITE_NAME}-ийг ашиглахтай холбоотой хамгийн их асуудаг асуултуудын хариулт.`}
     >
-      <nav aria-label="Асуултын бүлэг" className="flex flex-wrap gap-2 mb-10">
+      <nav aria-label="Асуултын бүлэг" style={{ "--d": 320 } as React.CSSProperties} className="dash-in flex flex-wrap gap-2 mb-10">
         {GROUPS.map((g) => (
           <a
             key={g.id}
@@ -110,7 +111,7 @@ export default function FaqPage() {
         </LegalSection>
       ))}
 
-      <div className="mt-10 rounded-2xl bg-orange-50/70 border border-orange-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Reveal className="mt-10 rounded-2xl bg-orange-50/70 border border-orange-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="font-semibold text-gray-900">Хариултаа олсонгүй юу?</p>
           <p className="mt-1 text-sm text-gray-600">
@@ -125,7 +126,7 @@ export default function FaqPage() {
         >
           {HAS_CONTACT_INFO ? "Холбоо барих" : "Тусламж хүсэх"}
         </Link>
-      </div>
+      </Reveal>
     </PublicPageShell>
   )
 }

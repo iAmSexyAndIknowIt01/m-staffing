@@ -28,8 +28,8 @@ export default function ContractReasonDialog({
   useDialogEscape(onClose, busy)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4" onClick={() => !busy && onClose()}>
-      <div role="dialog" aria-modal="true" className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4 animate-in fade-in duration-200" onClick={() => !busy && onClose()}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300" onClick={(e) => e.stopPropagation()}>
         <div>
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <p className="text-sm text-gray-500 mt-1">{description}</p>

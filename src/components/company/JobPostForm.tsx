@@ -717,10 +717,10 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
       {previewOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-100000 bg-slate-900/60 backdrop-blur-sm overflow-y-auto p-3 sm:p-6"
+            className="fixed inset-0 z-100000 bg-slate-900/60 backdrop-blur-sm overflow-y-auto p-3 sm:p-6 animate-in fade-in duration-200"
             onClick={() => setPreviewOpen(false)}
           >
-            <div className="max-w-5xl mx-auto" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Зарын урьдчилсан харагдац">
+            <div className="max-w-5xl mx-auto animate-in fade-in zoom-in-95 slide-in-from-bottom-6 duration-300" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Зарын урьдчилсан харагдац">
               <div className="sticky top-0 z-10 mb-3 flex items-center justify-between gap-3 rounded-2xl bg-white/95 backdrop-blur px-4 py-3 shadow-lg">
                 <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
                   <Eye className="w-4 h-4 text-orange-600" /> Ажил хайгчид ингэж харагдана

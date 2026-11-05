@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { validateNewPassword } from "@/lib/password"
+import { AuthBackdrop, stagger } from "@/components/auth/AuthMotion"
 
 type Step = "email" | "reset" | "done"
 
@@ -90,24 +91,21 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8">
-      {/* BG — нэвтрэх, бүртгүүлэх хуудастай ижил */}
-      <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
-      <div className="absolute top-[10%] left-[10%] w-175 h-175 rounded-full bg-orange-300/10 blur-[180px]" />
-      <div className="absolute inset-0 opacity-[0.5] bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)] bg-size-[70px_70px]" />
+      <AuthBackdrop />
 
       <Link
         href="/login"
-        className="fixed top-4 left-4 sm:top-8 sm:left-8 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base flex items-center gap-3 transition hover:-translate-y-1 z-30"
+        className="auth-intro fixed top-4 left-4 sm:top-8 sm:left-8 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base flex items-center gap-3 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10 z-30"
       >
         ← Нэвтрэх
       </Link>
 
-      <div className="relative z-10 glass w-full max-w-lg rounded-4xl p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
-        <p className="orange-text font-bold tracking-[6px] text-sm">MSTAFFING</p>
-        <h1 className="text-2xl sm:text-3xl font-black mt-4">Нууц үг сэргээх</h1>
+      <div className="auth-card relative z-10 glass w-full max-w-lg rounded-4xl p-6 sm:p-10 shadow-[0_40px_100px_rgba(255,122,0,.08)]">
+        <p style={stagger(350)} className="dash-in orange-text font-bold tracking-[6px] text-sm">MSTAFFING</p>
+        <h1 style={stagger(420)} className="dash-in text-2xl sm:text-3xl font-black mt-4">Нууц үг сэргээх</h1>
 
         {/* Алхмын заалт */}
-        <ol className="mt-6 flex items-center gap-2 text-xs font-semibold" aria-label="Алхам">
+        <ol style={stagger(490)} className="dash-in mt-6 flex items-center gap-2 text-xs font-semibold" aria-label="Алхам">
           {[
             ["email", "Имэйл"],
             ["reset", "Шинэ нууц үг"],
@@ -118,7 +116,7 @@ export default function ForgotPasswordPage() {
             return (
               <li key={key} className="flex items-center gap-2" aria-current={state === "current" ? "step" : undefined}>
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500 ${state === "current" ? "scale-110 ring-4 ring-orange-100" : ""} ${
                     state === "todo" ? "bg-gray-100 text-gray-400" : "bg-orange-500 text-white"
                   }`}
                 >
@@ -133,6 +131,9 @@ export default function ForgotPasswordPage() {
 
         {step === "email" && (
           <form
+            key="email"
+            style={stagger(560)}
+            className="dash-in"
             onSubmit={(e) => {
               e.preventDefault()
               requestCode()
@@ -155,7 +156,7 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            <button type="submit" className="orange-btn w-full mt-8 disabled:opacity-50" disabled={loading}>
+            <button type="submit" className="btn-shine orange-btn w-full mt-8 disabled:opacity-50" disabled={loading}>
               {loading ? "Түр хүлээнэ үү..." : "Код илгээх"}
             </button>
           </form>
@@ -163,6 +164,8 @@ export default function ForgotPasswordPage() {
 
         {step === "reset" && (
           <form
+            key="reset"
+            className="dash-in"
             onSubmit={(e) => {
               e.preventDefault()
               resetPassword()
@@ -211,7 +214,7 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            <button type="submit" className="orange-btn w-full mt-8 disabled:opacity-50" disabled={loading}>
+            <button type="submit" className="btn-shine orange-btn w-full mt-8 disabled:opacity-50" disabled={loading}>
               {loading ? "Түр хүлээнэ үү..." : "Нууц үг шинэчлэх"}
             </button>
 
@@ -230,8 +233,8 @@ export default function ForgotPasswordPage() {
         )}
 
         {step === "done" && (
-          <div>
-            <div className="mx-auto mt-8 flex items-center justify-center h-14 w-14 rounded-full bg-green-50">
+          <div key="done" className="dash-in">
+            <div className="dash-pop mx-auto mt-8 flex items-center justify-center h-14 w-14 rounded-full bg-green-50" style={stagger(200)}>
               <svg className="h-7 w-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -240,14 +243,14 @@ export default function ForgotPasswordPage() {
             <p className="mt-2 text-center text-xs text-gray-400">
               Аюулгүй байдлын үүднээс бусад төхөөрөмж дээрх нэвтрэлт таны бүртгэлээс гарсан.
             </p>
-            <Link href="/login" className="orange-btn w-full mt-8 block text-center">
+            <Link href="/login" className="btn-shine orange-btn w-full mt-8 block text-center">
               Нэвтрэх
             </Link>
           </div>
         )}
 
         {error && (
-          <p role="alert" className="mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          <p role="alert" className="dash-in mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}

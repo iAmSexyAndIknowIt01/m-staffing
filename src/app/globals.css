@@ -796,3 +796,31 @@ select:not([multiple]):not([size]) {
     animation: none !important;
   }
 }
+
+/* ===== Цонх, цэс гарч ирэх animation (animate-in + fade-in / zoom-in-95 / slide-in-from-*) =====
+   tw-animate-css-тэй ижил нэршил — plugin суулгаагүй тул энд тодорхойлов.
+   Хугацааг Tailwind-ын duration-* (--tw-duration)-аас авна. */
+@keyframes tw-enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-x, 0), var(--tw-enter-y, 0), 0) scale(var(--tw-enter-scale, 1));
+  }
+}
+
+.animate-in {
+  animation: tw-enter var(--tw-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fade-in { --tw-enter-opacity: 0; }
+.zoom-in { --tw-enter-scale: 0.9; }
+.zoom-in-95 { --tw-enter-scale: 0.95; }
+.slide-in-from-bottom-2 { --tw-enter-y: 0.5rem; }
+.slide-in-from-bottom-4 { --tw-enter-y: 1rem; }
+.slide-in-from-bottom-6 { --tw-enter-y: 1.5rem; }
+.slide-in-from-top-2 { --tw-enter-y: -0.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none !important;
+  }
+}
