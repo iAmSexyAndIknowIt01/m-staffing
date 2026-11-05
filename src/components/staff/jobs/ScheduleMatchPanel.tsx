@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { CalendarClock, ChevronDown, Loader2, RotateCcw, Save } from "lucide-react"
+import Link from "next/link"
+import { CalendarClock, Eraser, PencilLine } from "lucide-react"
 import WeeklyScheduleEditor from "@/components/common/WeeklyScheduleEditor"
-import { enabledDays, type WeeklySchedule } from "@/lib/weeklySchedule"
+import { emptySchedule, enabledDays, type WeeklySchedule } from "@/lib/weeklySchedule"
 
 export const MATCH_LEVELS = [
   { value: 100, label: "Бүрэн" },
@@ -11,60 +11,83 @@ export const MATCH_LEVELS = [
   { value: 50, label: "50%+" },
 ] as const
 
+// profile — профайлын «Ажиллах боломжтой цаг»-аар (зөвхөн уншина)
+// custom  — энэ хайлтад зориулж нэг удаа сонгосон өдөр, цаг (хадгалагдахгүй)
+export type ScheduleSearchMode = "profile" | "custom"
+
+export const SCHEDULE_MODES: { value: ScheduleSearchMode; label: string }[] = [
+  { value: "profile", label: "Миний цагт тохирох" },
+  { value: "custom", label: "Өдөр, цаг сонгох" },
+]
+
 interface ScheduleMatchPanelProps {
-  schedule: WeeklySchedule
-  // Профайлын «Ажиллах боломжтой цаг»-аар хайж байгаа эсэх (өөрчлөөгүй)
-  usingProfile: boolean
-  hasProfile: boolean
+  mode: ScheduleSearchMode
+  onMode: (mode: ScheduleSearchMode) => void
+  profileSchedule: WeeklySchedule
+  customSchedule: WeeklySchedule
+  onCustomChange: (next: WeeklySchedule) => void
   minMatch: number
-  matchCount: number
-  onChange: (next: WeeklySchedule) => void
   onMinMatch: (value: number) => void
-  onUseProfile: () => void
-  onSaveToProfile: () => Promise<void>
+  matchCount: number
 }
 
-// «Миний цагт тохирох» шүүлтүүрийн самбар: өдөр бүрийн цагаа энэ хайлтад зориулж өөрчилж, нийцлийн доод хувийг сонгоно
-export default function ScheduleMatchPanel({
-  schedule,
-  usingProfile,
-  hasProfile,
-  minMatch,
-  matchCount,
-  onChange,
-  onMinMatch,
-  onUseProfile,
-  onSaveToProfile,
-}: ScheduleMatchPanelProps) {
-  const days = enabledDays(schedule)
-  const [open, setOpen] = useState(days.length === 0)
-  const [saving, setSaving] = useState(false)
-  const expanded = open || days.length === 0
+function DaySummary({ schedule }: { schedule: WeeklySchedule }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {enabledDays(schedule).map(([key, label, day]) => (
+        <span key={key} className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-medium text-gray-800">
+          {label}
+          <span className="font-semibold tabular-nums text-orange-700">
+            {day.from || "--:--"}–{day.to || "--:--"}
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
 
-  const save = async () => {
-    setSaving(true)
-    try {
-      await onSaveToProfile()
-    } finally {
-      setSaving(false)
-    }
-  }
+// Ажлын зарыг өдөр, цагаар шүүх самбар
+export default function ScheduleMatchPanel({
+  mode,
+  onMode,
+  profileSchedule,
+  customSchedule,
+  onCustomChange,
+  minMatch,
+  onMinMatch,
+  matchCount,
+}: ScheduleMatchPanelProps) {
+  const hasProfile = enabledDays(profileSchedule).length > 0
+  const schedule = mode === "profile" ? profileSchedule : customSchedule
+  const hasDays = enabledDays(schedule).length > 0
 
   return (
-    <section aria-label="Миний ажиллах цаг" className="rounded-2xl border border-orange-100 bg-white p-4 sm:p-5 shadow-xs">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
-            <CalendarClock className="w-4 h-4 text-orange-600" aria-hidden="true" /> Миний ажиллах цаг
-          </h2>
-          <p className="mt-0.5 text-xs text-gray-500">
-            {usingProfile
-              ? "Профайлын «Ажиллах боломжтой цаг»-аар хайж байна. Энэ хайлтад зориулж өөрчилж болно."
-              : "Энэ хайлтад зориулж өөрчилсөн цаг. Профайл тань өөрчлөгдөөгүй."}
-          </p>
+    <section aria-label="Цагаар хайх" className="rounded-2xl border border-orange-100 bg-white p-4 sm:p-5 shadow-xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Хайх арга */}
+        <div role="radiogroup" aria-label="Цагаар хайх арга" className="inline-flex self-start rounded-xl border border-gray-200 bg-gray-50 p-1">
+          {SCHEDULE_MODES.map((m) => {
+            const active = mode === m.value
+            return (
+              <button
+                key={m.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => onMode(m.value)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                  active ? "bg-white text-orange-700 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                {m.value === "profile" ? <CalendarClock className="w-3.5 h-3.5" aria-hidden="true" /> : <PencilLine className="w-3.5 h-3.5" aria-hidden="true" />}
+                {m.label}
+              </button>
+            )
+          })}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Нийцлийн доод хувь */}
+        <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-gray-500">Нийцэл</span>
           <div role="radiogroup" aria-label="Нийцлийн доод хувь" className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5">
             {MATCH_LEVELS.map((level) => {
@@ -88,64 +111,53 @@ export default function ScheduleMatchPanel({
         </div>
       </div>
 
-      {/* Сонгосон өдрүүдийн товч */}
-      {days.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {days.map(([key, label, day]) => (
-            <span key={key} className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-medium text-gray-800">
-              {label}
-              <span className="font-semibold tabular-nums text-orange-700">
-                {day.from || "--:--"}–{day.to || "--:--"}
-              </span>
-            </span>
-          ))}
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={expanded}
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
-          >
-            {expanded ? "Хураах" : "Өдөр, цагаа засах"}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
-          </button>
-        </div>
-      )}
-
-      {expanded && (
-        <div className="mt-4">
-          {days.length === 0 && (
-            <p className="mb-3 text-xs text-gray-500">Ажиллаж болох өдрөө асааж, хэдээс хэдэн цаг хүртэл болохоо оруулна уу.</p>
-          )}
-          <WeeklyScheduleEditor value={schedule} onChange={onChange} />
-          <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
-            {!usingProfile && hasProfile && (
-              <button
-                type="button"
-                onClick={onUseProfile}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> Профайлын цагийг ашиглах
+      <div className="mt-4">
+        {mode === "profile" ? (
+          hasProfile ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <DaySummary schedule={profileSchedule} />
+              <Link href="/dashboard/staff/profile" className="shrink-0 text-xs font-semibold text-orange-600 hover:text-orange-700">
+                Профайл дээр засах
+              </Link>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              Профайлдаа ажиллах боломжтой цагаа оруулаагүй байна.{" "}
+              <Link href="/dashboard/staff/profile" className="font-semibold text-orange-600 hover:text-orange-700">
+                Профайлд оруулах
+              </Link>{" "}
+              эсвэл{" "}
+              <button type="button" onClick={() => onMode("custom")} className="font-semibold text-orange-600 hover:text-orange-700 cursor-pointer">
+                өдөр, цагаа сонгоод хайна уу
               </button>
-            )}
-            {!usingProfile && days.length > 0 && (
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-orange-600 text-xs font-semibold text-white hover:bg-orange-700 disabled:opacity-60 cursor-pointer"
-              >
-                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Save className="w-3.5 h-3.5" aria-hidden="true" />}
-                Профайлд хадгалах
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+              .
+            </div>
+          )
+        ) : (
+          <>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-500">Энэ хайлтад л ашиглана — профайл тань өөрчлөгдөхгүй.</p>
+              {hasDays && (
+                <button
+                  type="button"
+                  onClick={() => onCustomChange(emptySchedule())}
+                  className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-800 cursor-pointer"
+                >
+                  <Eraser className="w-3.5 h-3.5" aria-hidden="true" /> Цэвэрлэх
+                </button>
+              )}
+            </div>
+            <WeeklyScheduleEditor value={customSchedule} onChange={onCustomChange} offLabel="Сонгоогүй" />
+          </>
+        )}
+      </div>
 
       <p className="mt-3 text-xs text-gray-500" aria-live="polite">
-        {days.length === 0
-          ? "Цагаа оруулмагц тохирох хагас цагийн ажлууд шүүгдэнэ."
-          : `${matchCount} хагас цагийн ажил таны цагтай ${minMatch === 100 ? "бүрэн" : `${minMatch}%-аас дээш`} нийцэж байна. Хамгийн их нийцсэнээр нь эрэмбэлэв.`}
+        {!hasDays
+          ? mode === "custom"
+            ? "Өдөр, цагаа сонгомогц тохирох хагас цагийн ажлууд шүүгдэнэ."
+            : ""
+          : `${matchCount} хагас цагийн ажил ${minMatch === 100 ? "бүрэн" : `${minMatch}%-аас дээш`} нийцэж байна. Хамгийн их нийцсэнээр нь эрэмбэлэв.`}
       </p>
     </section>
   )

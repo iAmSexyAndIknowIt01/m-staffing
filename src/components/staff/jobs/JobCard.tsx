@@ -59,6 +59,8 @@ interface JobCardProps {
   onShare: (e: React.MouseEvent, job: Job) => void
   // Хагас цагийн зарын ажлын цаг ажилтны цагтай нийцсэн хувь (нийцээгүй бол null)
   matchPercent?: number | null
+  // «Таны цагт» эсвэл «Сонгосон цагт»
+  matchPrefix?: string
 }
 
 function getDaysAgo(dateString: string) {
@@ -96,6 +98,7 @@ export default function JobCard({
   getSalaryTypeText,
   formatSalary,
   matchPercent = null,
+  matchPrefix = "Таны цагт",
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
@@ -264,7 +267,7 @@ export default function JobCard({
           {matchPercent !== null && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-orange-700 bg-orange-50 rounded-full border border-orange-100">
               <CalendarClock className="w-3 h-3" aria-hidden="true" />
-              {matchPercent >= 100 ? "Таны цагт тохирно" : `Таны цагт ${matchPercent}% нийцнэ`}
+              {matchPercent >= 100 ? `${matchPrefix} тохирно` : `${matchPrefix} ${matchPercent}% нийцнэ`}
             </span>
           )}
 

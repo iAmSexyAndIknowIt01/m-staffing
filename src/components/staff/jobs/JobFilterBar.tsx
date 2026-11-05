@@ -14,8 +14,10 @@ interface JobFilterBarProps {
   filterApplied: string
   setFilterApplied: (val: string) => void
   categories: string[]
-  // «Миний цагт тохирох»: хагас цагийн зарын цаг ажилтны цагтай нийцсэн зарууд
+  // «Цагаар хайх»: хагас цагийн зарыг ажлын өдөр, цагаар нь шүүнэ
   fitSchedule: boolean
+  // Идэвхтэй шүүлтүүрийн шошго (хайх аргаас хамаарна)
+  fitLabel: string
   fitCount: number
   onToggleFit: () => void
   onClearFit: () => void
@@ -32,6 +34,7 @@ export default function JobFilterBar({
   setFilterApplied,
   categories,
   fitSchedule,
+  fitLabel,
   fitCount,
   onToggleFit,
   onClearFit,
@@ -150,7 +153,7 @@ export default function JobFilterBar({
           type="button"
           onClick={onToggleFit}
           aria-pressed={fitSchedule}
-          title="Хагас цагийн зарын ажлын өдөр, цаг таны ажиллах цагтай нийцсэн зарууд"
+          title="Хагас цагийн зарыг ажлын өдөр, цагаар нь шүүнэ"
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold border whitespace-nowrap transition-all duration-150 active:scale-95 shrink-0 cursor-pointer ${
             fitSchedule
               ? "bg-orange-600 text-white border-orange-600"
@@ -158,7 +161,7 @@ export default function JobFilterBar({
           }`}
         >
           <CalendarClock className="w-3.5 h-3.5" aria-hidden="true" />
-          Миний цагт тохирох
+          Цагаар хайх
           {fitCount > 0 && (
             <span className={`rounded-md px-1.5 text-[11px] tabular-nums ${fitSchedule ? "bg-white/20" : "bg-white text-orange-700"}`}>
               {fitCount}
@@ -227,8 +230,8 @@ export default function JobFilterBar({
           {fitSchedule && (
             <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 rounded-md text-xs text-orange-800 font-medium">
               <CalendarClock className="w-3 h-3 text-orange-600" />
-              <span>Миний цагт тохирох</span>
-              <button onClick={onClearFit} aria-label="Миний цагт тохирох шүүлтүүрийг арилгах" className="text-orange-400 hover:text-orange-600 ml-0.5">
+              <span>{fitLabel}</span>
+              <button onClick={onClearFit} aria-label="Цагаар хайх шүүлтүүрийг арилгах" className="text-orange-400 hover:text-orange-600 ml-0.5">
                 <X className="w-3 h-3" />
               </button>
             </div>

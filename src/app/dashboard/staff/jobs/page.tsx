@@ -4,8 +4,8 @@ import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
-import { decodeSchedule, encodeSchedule, enabledDays, scheduleError, scheduleMatch, toSchedule, type WeeklySchedule } from "@/lib/weeklySchedule"
-import ScheduleMatchPanel, { MATCH_LEVELS } from "@/components/staff/jobs/ScheduleMatchPanel"
+import { decodeSchedule, emptySchedule, encodeSchedule, enabledDays, scheduleMatch, toSchedule, type WeeklySchedule } from "@/lib/weeklySchedule"
+import ScheduleMatchPanel, { MATCH_LEVELS, type ScheduleSearchMode } from "@/components/staff/jobs/ScheduleMatchPanel"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
@@ -71,9 +71,11 @@ export default function StaffJobsPage() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
   const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
   const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
-  const [fitSchedule, setFitSchedule] = useState(searchParams.get("fit") === "1")
-  // Энэ хайлтад зориулж өөрчилсөн өдөр бүрийн цаг (null бол профайлын цагаар хайна)
-  const [customSchedule, setCustomSchedule] = useState<WeeklySchedule | null>(() => decodeSchedule(searchParams.get("sch")))
+  // Цагаар хайх: fit=1 — профайлын цагаар, fit=custom — нэг удаа сонгосон өдөр, цагаар
+  const [fitSchedule, setFitSchedule] = useState(() => ["1", "custom"].includes(searchParams.get("fit") || ""))
+  const [scheduleMode, setScheduleMode] = useState<ScheduleSearchMode>(() => (searchParams.get("fit") === "custom" ? "custom" : "profile"))
+  // Энэ хайлтад зориулж сонгосон өдөр, цаг (профайлд хадгалагдахгүй)
+  const [customSchedule, setCustomSchedule] = useState<WeeklySchedule>(() => decodeSchedule(searchParams.get("sch")) ?? emptySchedule())
   // Нийцлийн доод хувь (зарын ажлын цагийн хэдэн хувь нь миний цагтай давхцах)
   const [minMatch, setMinMatch] = useState(() => {
     const value = Number(searchParams.get("min"))
@@ -136,9 +138,9 @@ export default function StaffJobsPage() {
     }
 
     // Миний цагт тохирох
-    if (fitSchedule) params.set("fit", "1")
+    if (fitSchedule) params.set("fit", scheduleMode === "custom" ? "custom" : "1")
     else params.delete("fit")
-    const encoded = fitSchedule && customSchedule ? encodeSchedule(customSchedule) : ""
+    const encoded = fitSchedule && scheduleMode === "custom" ? encodeSchedule(customSchedule) : ""
     if (encoded) params.set("sch", encoded)
     else params.delete("sch")
     if (fitSchedule && minMatch !== 50) params.set("min", String(minMatch))
@@ -148,7 +150,7 @@ export default function StaffJobsPage() {
     const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
     // router.replace нь өөрчлөлт бүрт серверээс хуудсыг дахин татдаг тул URL-ийг шууд шинэчилнэ
     window.history.replaceState(window.history.state, "", newUrl)
-  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, customSchedule, minMatch])
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, scheduleMode, customSchedule, minMatch])
 
 
   useEffect(() => {
@@ -289,9 +291,8 @@ export default function StaffJobsPage() {
   }
 
   const profileSchedule = useMemo(() => toSchedule(availability), [availability])
-  const hasAvailability = enabledDays(profileSchedule).length > 0
-  // Хайлтад ашиглах цаг: өөрчилсөн бол түүнийг, үгүй бол профайлын цагийг
-  const effectiveSchedule = customSchedule ?? profileSchedule
+  // Хайлтад ашиглах цаг
+  const effectiveSchedule = scheduleMode === "custom" ? customSchedule : profileSchedule
   const hasSearchSchedule = enabledDays(effectiveSchedule).length > 0
 
   // Зар бүрийн нийцлийн хувь (хуваарьгүй зарт байхгүй)
@@ -369,29 +370,6 @@ export default function StaffJobsPage() {
     setCurrentPage(1)
   }
 
-  const saveScheduleToProfile = async () => {
-    if (!customSchedule) return
-    const problem = scheduleError(customSchedule)
-    if (problem) {
-      showDialogAlert(problem, { tone: "error" })
-      return
-    }
-    try {
-      const res = await fetch("/api/staff/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ availability: customSchedule }),
-      })
-      const result = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(result.error || "Хадгалахад алдаа гарлаа.")
-      setAvailability(customSchedule)
-      setCustomSchedule(null)
-      showDialogAlert("Ажиллах боломжтой цаг тань профайлд хадгалагдлаа.", { title: "Хадгалагдлаа", tone: "success" })
-    } catch (err) {
-      showDialogAlert(getErrorMessage(err, "Хадгалахад алдаа гарлаа."), { tone: "error" })
-    }
-  }
-
   const changePage = (page: number) => {
     setCurrentPage(page)
     flashFiltering(300)
@@ -455,22 +433,22 @@ export default function StaffJobsPage() {
         setFilterApplied={withPageReset(setFilterApplied)}
         categories={categories}
         fitSchedule={fitSchedule}
-        fitCount={matchingCount}
+        fitLabel={scheduleMode === "custom" ? "Сонгосон өдөр, цагаар" : "Миний цагт тохирох"}
+        fitCount={hasSearchSchedule ? matchingCount : 0}
         onToggleFit={toggleFitSchedule}
         onClearFit={() => withPageReset((v) => setFitSchedule(v === "1"))("")}
       />
 
       {fitSchedule && (
         <ScheduleMatchPanel
-          schedule={effectiveSchedule}
-          usingProfile={customSchedule === null}
-          hasProfile={hasAvailability}
+          mode={scheduleMode}
+          onMode={(mode) => withPageReset(() => setScheduleMode(mode))("")}
+          profileSchedule={profileSchedule}
+          customSchedule={customSchedule}
+          onCustomChange={changeSchedule}
           minMatch={minMatch}
-          matchCount={matchingCount}
-          onChange={changeSchedule}
           onMinMatch={(value) => withPageReset((v) => setMinMatch(Number(v)))(String(value))}
-          onUseProfile={() => withPageReset(() => setCustomSchedule(null))("")}
-          onSaveToProfile={saveScheduleToProfile}
+          matchCount={matchingCount}
         />
       )}
 
@@ -530,6 +508,7 @@ export default function StaffJobsPage() {
                   getJobTypeText={getJobTypeText}
                   getSalaryTypeText={getSalaryTypeText}
                   formatSalary={formatSalary}
+                  matchPrefix={scheduleMode === "custom" ? "Сонгосон цагт" : "Таны цагт"}
                   matchPercent={hasSearchSchedule && (matchScores.get(job.id) ?? -1) >= minMatch ? matchScores.get(job.id) : null}
                 />
 
