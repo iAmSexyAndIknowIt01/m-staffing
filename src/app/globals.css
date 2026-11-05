@@ -597,3 +597,104 @@ select:not([multiple]):not([size]) {
     opacity: 1 !important;
   }
 }
+
+/* ===== Dashboard нүүр нээгдэх animation =====
+   .dash-in — доороос blur-оос тодорч гарна; --d (ms)-ээр дараалуулна
+   .dash-hero — мэндчилгээний хэсэг: дэлгэгдэж нээгдээд гялбаа гүйнэ, гэрэлтэлт удаан хөвнө
+   .dash-pop — дүрс зөөлөн үсэрч гарна; .dash-bar — явцын мөр зүүнээс дүүрнэ */
+@keyframes dashIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes dashHeroIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); clip-path: inset(0 50% 0 50% round 2rem); }
+  to { opacity: 1; transform: none; clip-path: none; }
+}
+
+@keyframes dashSheen {
+  from { transform: translateX(-110%) skewX(-18deg); }
+  to { transform: translateX(110%) skewX(-18deg); }
+}
+
+@keyframes dashGlow {
+  from { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  to { transform: translate(-7rem, 5rem) scale(1.2); opacity: 1; }
+}
+
+@keyframes dashPop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(4deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes dashBar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.dash-in {
+  animation: dashIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+.dash-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  animation: dashHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -12rem;
+  right: -6rem;
+  width: 28rem;
+  height: 28rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(249 115 22 / 0.32), transparent 65%);
+  pointer-events: none;
+  animation: dashGlow 9s ease-in-out infinite alternate;
+}
+
+.dash-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.13) 50%, transparent 70%);
+  pointer-events: none;
+  transform: translateX(-110%);
+  animation: dashSheen 1.6s 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.dash-pop {
+  animation: dashPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+.dash-bar {
+  transform-origin: left;
+  animation: dashBar 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-in,
+  .dash-hero,
+  .dash-hero::before,
+  .dash-pop,
+  .dash-bar {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  .dash-hero::after {
+    display: none;
+  }
+}
