@@ -3,8 +3,9 @@
 import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { showAlert as showDialogAlert, showConfirm } from "@/components/common/AppDialog"
-import { enabledDays, scheduleFits, toSchedule } from "@/lib/weeklySchedule"
+import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
+import { decodeSchedule, encodeSchedule, enabledDays, scheduleError, scheduleMatch, toSchedule, type WeeklySchedule } from "@/lib/weeklySchedule"
+import ScheduleMatchPanel, { MATCH_LEVELS } from "@/components/staff/jobs/ScheduleMatchPanel"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
@@ -71,6 +72,13 @@ export default function StaffJobsPage() {
   const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
   const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
   const [fitSchedule, setFitSchedule] = useState(searchParams.get("fit") === "1")
+  // Энэ хайлтад зориулж өөрчилсөн өдөр бүрийн цаг (null бол профайлын цагаар хайна)
+  const [customSchedule, setCustomSchedule] = useState<WeeklySchedule | null>(() => decodeSchedule(searchParams.get("sch")))
+  // Нийцлийн доод хувь (зарын ажлын цагийн хэдэн хувь нь миний цагтай давхцах)
+  const [minMatch, setMinMatch] = useState(() => {
+    const value = Number(searchParams.get("min"))
+    return MATCH_LEVELS.some((l) => l.value === value) ? value : 50
+  })
   // Ажилтны ажиллах боломжтой цаг (mt_profile.availability)
   const [availability, setAvailability] = useState<unknown>(null)
   
@@ -130,11 +138,17 @@ export default function StaffJobsPage() {
     // Миний цагт тохирох
     if (fitSchedule) params.set("fit", "1")
     else params.delete("fit")
+    const encoded = fitSchedule && customSchedule ? encodeSchedule(customSchedule) : ""
+    if (encoded) params.set("sch", encoded)
+    else params.delete("sch")
+    if (fitSchedule && minMatch !== 50) params.set("min", String(minMatch))
+    else params.delete("min")
     
     const queryStr = params.toString()
     const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
-    router.replace(newUrl, { scroll: false })
-  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, router])
+    // router.replace нь өөрчлөлт бүрт серверээс хуудсыг дахин татдаг тул URL-ийг шууд шинэчилнэ
+    window.history.replaceState(window.history.state, "", newUrl)
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, customSchedule, minMatch])
 
 
   useEffect(() => {
@@ -274,20 +288,33 @@ export default function StaffJobsPage() {
     }
   }
 
-  const hasAvailability = useMemo(() => enabledDays(toSchedule(availability)).length > 0, [availability])
+  const profileSchedule = useMemo(() => toSchedule(availability), [availability])
+  const hasAvailability = enabledDays(profileSchedule).length > 0
+  // Хайлтад ашиглах цаг: өөрчилсөн бол түүнийг, үгүй бол профайлын цагийг
+  const effectiveSchedule = customSchedule ?? profileSchedule
+  const hasSearchSchedule = enabledDays(effectiveSchedule).length > 0
 
-  // Ажлын өдөр, цаг нь ажилтны боломжтой цагт бүрэн багтсан зарууд
-  const fittingJobIds = useMemo(
-    () => new Set(jobs.filter((job) => scheduleFits(job.work_schedule, availability)).map((job) => job.id)),
-    [jobs, availability]
+  // Зар бүрийн нийцлийн хувь (хуваарьгүй зарт байхгүй)
+  const matchScores = useMemo(() => {
+    const scores = new Map<string, number>()
+    for (const job of jobs) {
+      const score = scheduleMatch(job.work_schedule, effectiveSchedule)
+      if (score !== null) scores.set(job.id, score)
+    }
+    return scores
+  }, [jobs, effectiveSchedule])
+
+  const matchingCount = useMemo(
+    () => Array.from(matchScores.values()).filter((score) => score >= minMatch).length,
+    [matchScores, minMatch]
   )
 
-  // Ажиллах цагаа оруулаагүй бол URL-д fit=1 байсан ч шүүхгүй
-  const fitActive = fitSchedule && hasAvailability
+  // Цаг оруулаагүй бол самбар нээгдэх ч жагсаалтыг шүүхгүй
+  const fitActive = fitSchedule && hasSearchSchedule
 
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      if (fitActive && !fittingJobIds.has(job.id)) return false
+    const list = jobs.filter((job) => {
+      if (fitActive && (matchScores.get(job.id) ?? -1) < minMatch) return false
 
       const isJobApplied = job.is_applied
 
@@ -307,7 +334,11 @@ export default function StaffJobsPage() {
 
       return matchesSearch && matchesCategory && matchesType
     })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, fittingJobIds])
+    // Хамгийн их нийцсэн зар эхэнд (тэнцүү бол анхны дараалал хэвээр)
+    return fitActive
+      ? list.sort((a, b) => (matchScores.get(b.id) ?? 0) - (matchScores.get(a.id) ?? 0))
+      : list
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, matchScores, minMatch])
 
   // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
   const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
@@ -330,16 +361,35 @@ export default function StaffJobsPage() {
     flashFiltering(350)
   }
 
-  const toggleFitSchedule = async () => {
-    if (!fitActive && !hasAvailability) {
-      const go = await showConfirm(
-        "Ажиллах боломжтой өдөр, цагаа профайлдаа оруулбал таны цагт багтах хагас цагийн ажлуудыг шүүж харуулна.",
-        { title: "Ажиллах цагаа оруулаагүй байна", confirmLabel: "Профайл руу очих" }
-      )
-      if (go) router.push("/dashboard/staff/profile")
+  const toggleFitSchedule = () => withPageReset((v) => setFitSchedule(v === "1"))(fitSchedule ? "" : "1")
+
+  // Цаг бичих бүрт жагсаалт шууд шинэчлэгдэнэ (skeleton анивчуулахгүй)
+  const changeSchedule = (next: WeeklySchedule) => {
+    setCustomSchedule(next)
+    setCurrentPage(1)
+  }
+
+  const saveScheduleToProfile = async () => {
+    if (!customSchedule) return
+    const problem = scheduleError(customSchedule)
+    if (problem) {
+      showDialogAlert(problem, { tone: "error" })
       return
     }
-    withPageReset((v) => setFitSchedule(v === "1"))(fitActive ? "" : "1")
+    try {
+      const res = await fetch("/api/staff/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ availability: customSchedule }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(result.error || "Хадгалахад алдаа гарлаа.")
+      setAvailability(customSchedule)
+      setCustomSchedule(null)
+      showDialogAlert("Ажиллах боломжтой цаг тань профайлд хадгалагдлаа.", { title: "Хадгалагдлаа", tone: "success" })
+    } catch (err) {
+      showDialogAlert(getErrorMessage(err, "Хадгалахад алдаа гарлаа."), { tone: "error" })
+    }
   }
 
   const changePage = (page: number) => {
@@ -404,11 +454,25 @@ export default function StaffJobsPage() {
         filterApplied={filterApplied}
         setFilterApplied={withPageReset(setFilterApplied)}
         categories={categories}
-        fitSchedule={fitActive}
-        fitCount={fittingJobIds.size}
+        fitSchedule={fitSchedule}
+        fitCount={matchingCount}
         onToggleFit={toggleFitSchedule}
         onClearFit={() => withPageReset((v) => setFitSchedule(v === "1"))("")}
       />
+
+      {fitSchedule && (
+        <ScheduleMatchPanel
+          schedule={effectiveSchedule}
+          usingProfile={customSchedule === null}
+          hasProfile={hasAvailability}
+          minMatch={minMatch}
+          matchCount={matchingCount}
+          onChange={changeSchedule}
+          onMinMatch={(value) => withPageReset((v) => setMinMatch(Number(v)))(String(value))}
+          onUseProfile={() => withPageReset(() => setCustomSchedule(null))("")}
+          onSaveToProfile={saveScheduleToProfile}
+        />
+      )}
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
@@ -437,8 +501,7 @@ export default function StaffJobsPage() {
         <EmptyState
           illustration="search"
           title="Таны цагт тохирох ажил олдсонгүй"
-          description="Хагас цагийн зарын ажлын өдөр, цаг таны ажиллах боломжтой цагт бүрэн багтвал энд харагдана. Ажиллах цагаа өргөтгөх эсвэл бусад шүүлтүүрээ цөөлөөд үзээрэй."
-          action={{ label: "Ажиллах цагаа засах", href: "/dashboard/staff/profile" }}
+          description="Нийцлийн хувийг багасгах, ажиллах өдөр, цагаа өргөтгөх эсвэл бусад шүүлтүүрээ цөөлөөд үзээрэй."
         />
       ) : filteredJobs.length === 0 ? (
         <EmptyState
@@ -467,7 +530,7 @@ export default function StaffJobsPage() {
                   getJobTypeText={getJobTypeText}
                   getSalaryTypeText={getSalaryTypeText}
                   formatSalary={formatSalary}
-                  fitsSchedule={fittingJobIds.has(job.id)}
+                  matchPercent={hasSearchSchedule && (matchScores.get(job.id) ?? -1) >= minMatch ? matchScores.get(job.id) : null}
                 />
 
                 {adToShow && <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />}

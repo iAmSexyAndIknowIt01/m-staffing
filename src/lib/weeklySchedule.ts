@@ -65,15 +65,51 @@ export function compactSchedule(schedule: WeeklySchedule): Partial<WeeklySchedul
   return Object.fromEntries(enabledDays(schedule).map(([key, , day]) => [key, { enabled: true, from: day.from, to: day.to }]))
 }
 
-// Ажлын хуваарь ажилтны боломжтой цагт бүрэн багтах эсэх:
-// зарын өдөр бүрт ажилтан ажиллах боломжтой, тухайн өдрийн ажлын цаг нь боломжтой цагийн дотор байна.
-// Хуваарьгүй (хагас цагийн бус) зар тохирохгүй гэж үзнэ.
-export function scheduleFits(job: unknown, availability: unknown): boolean {
-  const jobDays = enabledDays(toSchedule(job))
-  if (jobDays.length === 0) return false
+const toMinutes = (time: string) => {
+  const [h, m] = time.split(":").map(Number)
+  return h * 60 + m
+}
+
+// Ажлын хуваарь ажилтны цагтай хэр нийцэж буйг хувиар (0–100) буцаана.
+// Зарын нийт ажлын минутаас ажилтны боломжтой цагтай давхцсан минутын эзлэх хувь:
+//   зар Даваа 09:00–16:00, ажилтан 09:20–15:00 → 340/420 ≈ 81%; 09:10–17:00 → 410/420 ≈ 98%.
+// Хуваарьгүй (хагас цагийн бус) зар эсвэл ажилтан цаг оруулаагүй бол null.
+export function scheduleMatch(job: unknown, availability: unknown): number | null {
+  const jobDays = enabledDays(toSchedule(job)).filter(([, , d]) => TIME_RE.test(d.from) && TIME_RE.test(d.to) && d.from < d.to)
+  if (jobDays.length === 0) return null
   const free = toSchedule(availability)
-  return jobDays.every(([key, , day]) => {
+  if (enabledDays(free).length === 0) return null
+  let total = 0
+  let overlap = 0
+  for (const [key, , day] of jobDays) {
+    const start = toMinutes(day.from)
+    const end = toMinutes(day.to)
+    total += end - start
     const slot = free[key]
-    return slot.enabled && !!slot.from && !!slot.to && !!day.from && !!day.to && slot.from <= day.from && day.to <= slot.to
-  })
+    if (!slot.enabled || !TIME_RE.test(slot.from) || !TIME_RE.test(slot.to)) continue
+    overlap += Math.max(0, Math.min(end, toMinutes(slot.to)) - Math.max(start, toMinutes(slot.from)))
+  }
+  return total > 0 ? Math.floor((overlap / total) * 100) : null
+}
+
+// URL-д хадгалах товч хэлбэр: "monday.0920-1500,saturday.1000-1600" (зөвхөн бүрэн бөглөсөн өдрүүд)
+export function encodeSchedule(schedule: WeeklySchedule): string {
+  return enabledDays(schedule)
+    .filter(([, , d]) => TIME_RE.test(d.from) && TIME_RE.test(d.to))
+    .map(([key, , d]) => `${key}.${d.from.replace(":", "")}-${d.to.replace(":", "")}`)
+    .join(",")
+}
+
+export function decodeSchedule(value: string | null | undefined): WeeklySchedule | null {
+  if (!value) return null
+  const schedule = emptySchedule()
+  const keys = new Set<string>(WEEK_DAYS.map(([key]) => key))
+  for (const part of value.split(",")) {
+    const match = /^([a-z]+)\.(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(part)
+    if (!match || !keys.has(match[1])) continue
+    const from = `${match[2]}:${match[3]}`
+    const to = `${match[4]}:${match[5]}`
+    if (TIME_RE.test(from) && TIME_RE.test(to)) schedule[match[1] as WeekDay] = { enabled: true, from, to }
+  }
+  return enabledDays(schedule).length > 0 ? schedule : null
 }

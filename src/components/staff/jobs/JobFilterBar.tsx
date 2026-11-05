@@ -14,7 +14,7 @@ interface JobFilterBarProps {
   filterApplied: string
   setFilterApplied: (val: string) => void
   categories: string[]
-  // «Миний цагт тохирох»: хагас цагийн зарын цаг ажилтны ажиллах боломжтой цагт багтсан эсэх
+  // «Миний цагт тохирох»: хагас цагийн зарын цаг ажилтны цагтай нийцсэн зарууд
   fitSchedule: boolean
   fitCount: number
   onToggleFit: () => void
@@ -150,7 +150,7 @@ export default function JobFilterBar({
           type="button"
           onClick={onToggleFit}
           aria-pressed={fitSchedule}
-          title="Хагас цагийн зарын ажлын өдөр, цаг таны ажиллах боломжтой цагт бүрэн багтсан зарууд"
+          title="Хагас цагийн зарын ажлын өдөр, цаг таны ажиллах цагтай нийцсэн зарууд"
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold border whitespace-nowrap transition-all duration-150 active:scale-95 shrink-0 cursor-pointer ${
             fitSchedule
               ? "bg-orange-600 text-white border-orange-600"
