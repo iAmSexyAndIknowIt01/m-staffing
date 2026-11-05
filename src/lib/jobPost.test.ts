@@ -1,3 +1,4 @@
+import { emptySchedule } from "./weeklySchedule"
 import { describe, expect, it } from "vitest"
 import {
   SALARY_NEGOTIABLE,
@@ -78,5 +79,12 @@ describe("jobFormErrors", () => {
   it("дутуу, богино талбаруудыг заана", () => {
     const errors = jobFormErrors({ ...valid, title: "", category: "", location: " ", salary: "", description: "Богино", requirements: "" })
     expect(Object.keys(errors).sort()).toEqual(["category", "description", "location", "requirements", "salary", "title"])
+  })
+
+  it("хагас цагийн зарт ажлын өдөр, цаг заавал", () => {
+    expect(jobFormErrors({ ...valid, jobType: "parttime" })).toHaveProperty("workSchedule")
+    const workSchedule = { ...emptySchedule(), saturday: { enabled: true, from: "10:00", to: "14:00" } }
+    expect(jobFormErrors({ ...valid, jobType: "parttime", workSchedule })).toEqual({})
+    expect(jobFormErrors({ ...valid, jobType: "fulltime" })).not.toHaveProperty("workSchedule")
   })
 })

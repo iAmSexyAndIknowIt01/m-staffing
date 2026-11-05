@@ -2,7 +2,8 @@ import { NextResponse, after } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { hasReachedJobLimit } from "@/lib/plans"
-import { jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { isPartTime, jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { compactSchedule, toSchedule } from "@/lib/weeklySchedule"
 import { JOB_POST_DAYS } from "@/lib/jobLifecycle"
 import { notifyJobOffer } from "@/lib/notifications"
 
@@ -25,13 +26,14 @@ export async function POST(request: Request) {
 
     // 2. Формоос ирсэн датаг хүлээн авах (salaryType нэмэгдсэн)
     const body = await request.json()
-    const { title, category, jobType, location, salary, salaryType, description, requirements } = body
+    const { title, category, jobType, location, salary, salaryType, description, requirements, workSchedule } = body
 
     // 3. Талбаруудыг формтой ижил дүрмээр шалгана (заавал, урт, цалин, байршил)
     const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
     const fieldErrors = jobFormErrors({
       title: str(title), category: str(category), jobType: str(jobType), location: str(location),
       salary: str(salary), salaryType: str(salaryType), description: str(description), requirements: str(requirements),
+      workSchedule: toSchedule(workSchedule),
     })
     const firstError = Object.values(fieldErrors)[0]
     if (firstError) {
@@ -70,6 +72,8 @@ export async function POST(request: Request) {
           salary_type: salaryType || "monthly", // 'monthly' эсвэл 'hourly'
           description: description.trim(),
           requirements: requirements.trim(),
+          // Хагас цагийн зарын долоо хоногийн ажлын цаг (бусад төрөлд хоосон)
+          work_schedule: isPartTime(jobType) ? compactSchedule(toSchedule(workSchedule)) : null,
           status: "active",
           // Нийтэлснээс хойш JOB_POST_DAYS хоног идэвхтэй (pg_cron дараа нь expired болгоно)
           expires_at: new Date(Date.now() + JOB_POST_DAYS * 24 * 60 * 60 * 1000).toISOString(),

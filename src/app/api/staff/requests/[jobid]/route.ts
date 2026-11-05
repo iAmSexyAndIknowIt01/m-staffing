@@ -44,6 +44,7 @@ export async function GET(
           salary,
           description,
           requirements,
+          work_schedule,
           created_at,
           mt_company (
             id,

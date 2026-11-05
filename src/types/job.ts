@@ -19,6 +19,8 @@ export interface JobDetail {
   salary: string
   description: string
   requirements: string
+  // Хагас цагийн зарын долоо хоногийн ажлын цаг (mt_openjob.work_schedule)
+  work_schedule?: unknown
   created_at: string
   is_applied: boolean
   mt_company?: JobCompany

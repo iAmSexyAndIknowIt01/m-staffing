@@ -1,11 +1,13 @@
 "use client";
-import { SALARY_NEGOTIABLE, getJobCategoryLabel } from "@/lib/jobPost";
+import { SALARY_NEGOTIABLE, getJobCategoryLabel, isPartTime } from "@/lib/jobPost";
+import { WEEK_DAYS, enabledDays, toSchedule } from "@/lib/weeklySchedule";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,
   Briefcase,
   Building2,
   Calendar,
+  CalendarClock,
   Check,
   CheckCircle2,
   ChevronRight,
@@ -33,6 +35,37 @@ function InfoRow({ icon, label, children }: { icon: ReactNode; label: string; ch
         <div className="mt-0.5 text-sm font-bold text-gray-800 break-words">{children}</div>
       </div>
     </div>
+  );
+}
+
+// Хагас цагийн зарын долоо хоногийн ажлын цаг
+function WorkScheduleSection({ value }: { value: unknown }) {
+  const schedule = toSchedule(value);
+  if (enabledDays(schedule).length === 0) return null;
+  return (
+    <section className="bg-white border border-gray-100 rounded-4xl shadow-sm p-6 sm:p-8">
+      <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+        <CalendarClock className="w-5 h-5 text-orange-500" aria-hidden="true" /> Ажлын өдөр, цаг
+      </h2>
+      <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {WEEK_DAYS.map(([key, label]) => {
+          const day = schedule[key];
+          return (
+            <li
+              key={key}
+              className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${
+                day.enabled ? "bg-orange-50 text-gray-900" : "bg-gray-50 text-gray-400"
+              }`}
+            >
+              <span className="font-medium">{label}</span>
+              <span className={day.enabled ? "font-semibold text-orange-700 tabular-nums" : ""}>
+                {day.enabled ? `${day.from} — ${day.to}` : "Ажилгүй"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
@@ -195,6 +228,7 @@ export default function JobDetailView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* ЗҮҮН: ҮҮРЭГ, ШААРДЛАГА */}
         <div className="lg:col-span-2 space-y-6">
+          {isPartTime(job.job_type) && <WorkScheduleSection value={job.work_schedule} />}
           <TextSection title="Ажлын үүрэг" text={job.description} empty="Ажлын үүргийн тайлбар оруулаагүй байна." />
           <TextSection title="Тавигдах шаардлага" text={job.requirements} empty="Тавигдах шаардлага оруулаагүй байна." />
         </div>
