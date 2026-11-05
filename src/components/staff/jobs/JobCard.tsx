@@ -3,7 +3,7 @@
 import React, { useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { SALARY_NEGOTIABLE } from "@/lib/jobPost"
-import { Check, Heart, Share2, MapPin } from "lucide-react"
+import { CalendarClock, Check, Heart, Share2, MapPin } from "lucide-react"
 
 const VISITED_JOBS_KEY = "visited_jobs"
 const VISITED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй
@@ -57,6 +57,8 @@ interface JobCardProps {
   getSalaryTypeText: (type: string) => string
   formatSalary: (salary: string) => string
   onShare: (e: React.MouseEvent, job: Job) => void
+  // Хагас цагийн зарын ажлын цаг ажилтны ажиллах боломжтой цагт багтсан
+  fitsSchedule?: boolean
 }
 
 function getDaysAgo(dateString: string) {
@@ -93,6 +95,7 @@ export default function JobCard({
   getJobTypeText,
   getSalaryTypeText,
   formatSalary,
+  fitsSchedule = false,
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
 
@@ -257,6 +260,12 @@ export default function JobCard({
           <span className="px-2.5 py-1 text-xs font-medium text-gray-500 bg-gray-50 rounded-full border border-gray-100">
             {getJobTypeText(job.job_type)}
           </span>
+
+          {fitsSchedule && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-orange-700 bg-orange-50 rounded-full border border-orange-100">
+              <CalendarClock className="w-3 h-3" aria-hidden="true" /> Таны цагт тохирно
+            </span>
+          )}
 
           {isJobApplied && (
             <span className="px-2.5 py-1 text-xs font-bold bg-red-50 text-red-600 rounded-full border border-red-100">

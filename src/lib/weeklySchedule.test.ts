@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { compactSchedule, emptySchedule, scheduleError, toSchedule } from "./weeklySchedule"
+import { compactSchedule, emptySchedule, scheduleError, scheduleFits, toSchedule } from "./weeklySchedule"
 
 describe("weeklySchedule", () => {
   it("DB-ийн утгыг 7 өдрийн хуваарь болгож, танихгүй түлхүүрийг хаяна", () => {
@@ -22,5 +22,18 @@ describe("weeklySchedule", () => {
   it("хадгалахад зөвхөн сонгосон өдрүүдийг үлдээнэ", () => {
     const s = { ...emptySchedule(), friday: { enabled: true, from: "18:00", to: "22:00" }, monday: { enabled: false, from: "08:00", to: "10:00" } }
     expect(compactSchedule(s)).toEqual({ friday: { enabled: true, from: "18:00", to: "22:00" } })
+  })
+
+  it("зарын цаг ажилтны боломжтой цагт бүрэн багтвал тохирно", () => {
+    const free = { saturday: { enabled: true, from: "09:00", to: "18:00" }, sunday: { enabled: true, from: "12:00", to: "20:00" } }
+    expect(scheduleFits({ saturday: { enabled: true, from: "10:00", to: "16:00" } }, free)).toBe(true)
+    expect(scheduleFits({ saturday: { enabled: true, from: "09:00", to: "18:00" } }, free)).toBe(true)
+    // Нэг өдөр нь багтахгүй
+    expect(scheduleFits({ saturday: { enabled: true, from: "10:00", to: "16:00" }, sunday: { enabled: true, from: "10:00", to: "14:00" } }, free)).toBe(false)
+    // Ажилтан тэр өдөр ажиллахгүй
+    expect(scheduleFits({ monday: { enabled: true, from: "10:00", to: "12:00" } }, free)).toBe(false)
+    // Хуваарьгүй зар, цаг оруулаагүй ажилтан
+    expect(scheduleFits(null, free)).toBe(false)
+    expect(scheduleFits({ saturday: { enabled: true, from: "10:00", to: "16:00" } }, {})).toBe(false)
   })
 })

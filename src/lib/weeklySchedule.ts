@@ -64,3 +64,16 @@ export function scheduleError(value: unknown): string | null {
 export function compactSchedule(schedule: WeeklySchedule): Partial<WeeklySchedule> {
   return Object.fromEntries(enabledDays(schedule).map(([key, , day]) => [key, { enabled: true, from: day.from, to: day.to }]))
 }
+
+// Ажлын хуваарь ажилтны боломжтой цагт бүрэн багтах эсэх:
+// зарын өдөр бүрт ажилтан ажиллах боломжтой, тухайн өдрийн ажлын цаг нь боломжтой цагийн дотор байна.
+// Хуваарьгүй (хагас цагийн бус) зар тохирохгүй гэж үзнэ.
+export function scheduleFits(job: unknown, availability: unknown): boolean {
+  const jobDays = enabledDays(toSchedule(job))
+  if (jobDays.length === 0) return false
+  const free = toSchedule(availability)
+  return jobDays.every(([key, , day]) => {
+    const slot = free[key]
+    return slot.enabled && !!slot.from && !!slot.to && !!day.from && !!day.to && slot.from <= day.from && day.to <= slot.to
+  })
+}

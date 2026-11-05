@@ -3,7 +3,8 @@
 import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
+import { showAlert as showDialogAlert, showConfirm } from "@/components/common/AppDialog"
+import { enabledDays, scheduleFits, toSchedule } from "@/lib/weeklySchedule"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
@@ -33,6 +34,7 @@ interface Job {
   salary: string
   description: string
   requirements: string
+  work_schedule?: unknown
   created_at: string
   is_applied: boolean
   mt_company?: Company
@@ -68,6 +70,9 @@ export default function StaffJobsPage() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
   const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
   const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
+  const [fitSchedule, setFitSchedule] = useState(searchParams.get("fit") === "1")
+  // Ажилтны ажиллах боломжтой цаг (mt_profile.availability)
+  const [availability, setAvailability] = useState<unknown>(null)
   
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
   const [ads, setAds] = useState<Ad[]>([]);
@@ -121,11 +126,15 @@ export default function StaffJobsPage() {
     } else {
       params.set("applied", filterApplied)
     }
+
+    // Миний цагт тохирох
+    if (fitSchedule) params.set("fit", "1")
+    else params.delete("fit")
     
     const queryStr = params.toString()
     const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
     router.replace(newUrl, { scroll: false })
-  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, router])
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, router])
 
 
   useEffect(() => {
@@ -228,6 +237,7 @@ export default function StaffJobsPage() {
         const jobsData = await jobsRes.json();
         if (!jobsRes.ok) throw new Error(jobsData.error || "Ажлын зар татахад алдаа гарлаа.");
         setJobs(jobsData.jobs || []);
+        setAvailability(jobsData.availability ?? null);
 
         // Сурталчилгаа татагдаагүй ч ажлын зарыг харуулна
         const adsData = adsRes.ok ? await adsRes.json() : {};
@@ -264,8 +274,21 @@ export default function StaffJobsPage() {
     }
   }
 
+  const hasAvailability = useMemo(() => enabledDays(toSchedule(availability)).length > 0, [availability])
+
+  // Ажлын өдөр, цаг нь ажилтны боломжтой цагт бүрэн багтсан зарууд
+  const fittingJobIds = useMemo(
+    () => new Set(jobs.filter((job) => scheduleFits(job.work_schedule, availability)).map((job) => job.id)),
+    [jobs, availability]
+  )
+
+  // Ажиллах цагаа оруулаагүй бол URL-д fit=1 байсан ч шүүхгүй
+  const fitActive = fitSchedule && hasAvailability
+
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
+      if (fitActive && !fittingJobIds.has(job.id)) return false
+
       const isJobApplied = job.is_applied
 
       if (filterApplied === "applied" && !isJobApplied) return false
@@ -284,7 +307,7 @@ export default function StaffJobsPage() {
 
       return matchesSearch && matchesCategory && matchesType
     })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied])
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, fittingJobIds])
 
   // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
   const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
@@ -305,6 +328,18 @@ export default function StaffJobsPage() {
     setter(val)
     setCurrentPage(1)
     flashFiltering(350)
+  }
+
+  const toggleFitSchedule = async () => {
+    if (!fitActive && !hasAvailability) {
+      const go = await showConfirm(
+        "Ажиллах боломжтой өдөр, цагаа профайлдаа оруулбал таны цагт багтах хагас цагийн ажлуудыг шүүж харуулна.",
+        { title: "Ажиллах цагаа оруулаагүй байна", confirmLabel: "Профайл руу очих" }
+      )
+      if (go) router.push("/dashboard/staff/profile")
+      return
+    }
+    withPageReset((v) => setFitSchedule(v === "1"))(fitActive ? "" : "1")
   }
 
   const changePage = (page: number) => {
@@ -369,6 +404,10 @@ export default function StaffJobsPage() {
         filterApplied={filterApplied}
         setFilterApplied={withPageReset(setFilterApplied)}
         categories={categories}
+        fitSchedule={fitActive}
+        fitCount={fittingJobIds.size}
+        onToggleFit={toggleFitSchedule}
+        onClearFit={() => withPageReset((v) => setFitSchedule(v === "1"))("")}
       />
 
       {error && (
@@ -394,6 +433,13 @@ export default function StaffJobsPage() {
             Жагсаалтыг шинэчилж байна...
           </p>
         </div>
+      ) : filteredJobs.length === 0 && fitActive ? (
+        <EmptyState
+          illustration="search"
+          title="Таны цагт тохирох ажил олдсонгүй"
+          description="Хагас цагийн зарын ажлын өдөр, цаг таны ажиллах боломжтой цагт бүрэн багтвал энд харагдана. Ажиллах цагаа өргөтгөх эсвэл бусад шүүлтүүрээ цөөлөөд үзээрэй."
+          action={{ label: "Ажиллах цагаа засах", href: "/dashboard/staff/profile" }}
+        />
       ) : filteredJobs.length === 0 ? (
         <EmptyState
           illustration="search"
@@ -421,6 +467,7 @@ export default function StaffJobsPage() {
                   getJobTypeText={getJobTypeText}
                   getSalaryTypeText={getSalaryTypeText}
                   formatSalary={formatSalary}
+                  fitsSchedule={fittingJobIds.has(job.id)}
                 />
 
                 {adToShow && <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />}
