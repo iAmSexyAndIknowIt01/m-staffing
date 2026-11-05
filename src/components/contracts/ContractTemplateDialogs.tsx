@@ -11,7 +11,7 @@ import { useContractTemplates } from "./templateApi"
 
 // Гэрээний ноорог дээрх загварын цонхнууд: загвар хэрэглэх, одоогийн нөхцлийг загвар болгох
 
-const overlayClass = "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4"
+const overlayClass = "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4 animate-in fade-in duration-200"
 const cancelClass = "text-sm font-bold px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-50"
 
 function templateSummary(t: ContractTemplate): string {
@@ -38,7 +38,7 @@ export function TemplatePickerDialog({ onApply, onClose }: TemplatePickerDialogP
         role="dialog"
         aria-modal="true"
         aria-labelledby="template-picker-title"
-        className="w-full max-w-lg bg-white rounded-3xl p-6 shadow-xl space-y-4 max-h-[85vh] flex flex-col"
+        className="w-full max-w-lg bg-white rounded-3xl p-6 shadow-xl space-y-4 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div>
@@ -111,7 +111,7 @@ export function SaveTemplateDialog({ defaultName, busy, error, onConfirm, onClos
         aria-modal="true"
         aria-labelledby="save-template-title"
         onSubmit={submit}
-        className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4"
+        className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div>

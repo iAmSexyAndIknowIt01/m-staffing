@@ -14,6 +14,7 @@ import {
 } from "@/components/company/billing/BillingModals"
 import { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPlanType, pricePerPost, type PaidPlanType } from "@/lib/planCatalog"
 import EmptyState from "@/components/common/EmptyState"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 // Багцын нэрийг каталогоос (хуучин нэхэмжлэхийн төрөл ч орно)
 const planName = (type: string) => (isPlanType(type) ? PLANS[type].name : type)
@@ -198,14 +199,14 @@ export default function BillingPage() {
             Шинэ компани {PLANS.free.jobLimit} зар үнэгүй нийтлэх туршилтын эрхтэй. Илүү олон зар нийтлэхэд доорх багцаас сонгоно уу.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="stagger-in grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan) => {
             const popular = plan.id === "standard"
             const saving = Math.round((1 - plan.perPost / basePerPost) * 100)
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white border p-6 rounded-3xl flex flex-col justify-between transition ${
+                className={`relative bg-white border p-6 rounded-3xl flex flex-col justify-between ${CARD_HOVER} ${
                   popular ? "border-orange-300 shadow-lg ring-1 ring-orange-200" : "border-gray-200 shadow-sm"
                 }`}
               >
@@ -284,7 +285,7 @@ export default function BillingPage() {
                   <th className="p-4 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 font-medium text-gray-700">
+              <tbody className="stagger-in divide-y divide-gray-50 font-medium text-gray-700">
                 {invoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-slate-50/50">
                     <td className="p-4 text-gray-400">{new Date(inv.created_at).toLocaleDateString()}</td>

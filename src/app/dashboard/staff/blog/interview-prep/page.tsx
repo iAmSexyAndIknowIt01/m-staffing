@@ -6,6 +6,7 @@ import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import BackLink from "@/components/common/BackLink"
 import EmptyState from "@/components/common/EmptyState"
+import { CARD_HOVER, ICON_HOVER } from "@/lib/cardMotion"
 
 interface Prep {
   id: string
@@ -52,11 +53,11 @@ export default function InterviewPrepPage() {
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Ажлын бэлтгэл</h1>
       </div>
 
-      <div className="space-y-6">
+      <div className="stagger-in space-y-6">
         {preps.map((prep) => (
-          <div key={prep.id} className="bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-orange-100 transition-all">
+          <div key={prep.id} className={`group bg-white border border-gray-100 p-6 md:p-8 rounded-4xl shadow-sm space-y-4 hover:border-orange-200 ${CARD_HOVER}`}>
             <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0"><Handshake className="w-6 h-6" /></span>
+              <span className={`w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 ${ICON_HOVER}`}><Handshake className="w-6 h-6" /></span>
               <div>
                 <h3 className="font-bold text-lg text-gray-900">{prep.title}</h3>
                 <p className="text-xs text-gray-400 font-medium">{prep.created_at}</p>

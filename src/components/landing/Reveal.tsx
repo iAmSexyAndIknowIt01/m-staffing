@@ -7,10 +7,11 @@ type Props = {
   className?: string
   // Харагдах хүртэл хүлээх хугацаа (ms) — картуудыг дараалуулж гаргахад
   delay?: number
+  id?: string
 }
 
 // Скроллоор дэлгэцэнд орох үед доороос зөөлөн гарч ирэх wrapper
-export default function Reveal({ children, className = "", delay = 0 }: Props) {
+export default function Reveal({ children, className = "", delay = 0, id }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
 
@@ -35,6 +36,7 @@ export default function Reveal({ children, className = "", delay = 0 }: Props) {
   return (
     <div
       ref={ref}
+      id={id}
       className={`reveal ${visible ? "is-visible" : ""} ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >

@@ -3,6 +3,7 @@
 import { Handshake, PenLine, Lightbulb } from "lucide-react"
 import { useState, useEffect } from "react"
 import BackLink from "@/components/common/BackLink"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 interface Tip {
   id: number
@@ -85,9 +86,9 @@ export default function CompanyTipsPage() {
           Энэ хэсэгт одоогоор зөвлөгөө ороогүй байна.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="stagger-in grid grid-cols-1 md:grid-cols-2 gap-6">
           {activeData.map((tip) => (
-            <div key={tip.id} className="bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col justify-between group hover:border-orange-100 hover:shadow-md transition-all">
+            <div key={tip.id} className={`bg-white border border-gray-100 p-6 rounded-4xl shadow-sm flex flex-col justify-between group hover:border-orange-200 ${CARD_HOVER}`}>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Lightbulb className="w-5 h-5" /></span>

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic"
 
 export default function DashboardTermsPage() {
   return (
-    <div className="max-w-4xl mx-auto w-full space-y-5 sm:space-y-6">
+    <div className="stagger-in max-w-4xl mx-auto w-full space-y-5 sm:space-y-6">
       <div>
         <Link
           href="/dashboard"

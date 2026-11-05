@@ -597,3 +597,230 @@ select:not([multiple]):not([size]) {
     opacity: 1 !important;
   }
 }
+
+/* ===== Dashboard нүүр нээгдэх animation =====
+   .dash-in — доороос blur-оос тодорч гарна; --d (ms)-ээр дараалуулна
+   .dash-hero — мэндчилгээний хэсэг: дэлгэгдэж нээгдээд гялбаа гүйнэ, гэрэлтэлт удаан хөвнө
+   .dash-pop — дүрс зөөлөн үсэрч гарна; .dash-bar — явцын мөр зүүнээс дүүрнэ */
+@keyframes dashIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes dashHeroIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); clip-path: inset(0 50% 0 50% round 2rem); }
+  to { opacity: 1; transform: none; clip-path: none; }
+}
+
+@keyframes dashSheen {
+  from { transform: translateX(-110%) skewX(-18deg); }
+  to { transform: translateX(110%) skewX(-18deg); }
+}
+
+@keyframes dashGlow {
+  from { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  to { transform: translate(-7rem, 5rem) scale(1.2); opacity: 1; }
+}
+
+@keyframes dashPop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(4deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes dashBar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.dash-in {
+  animation: dashIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+.dash-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  animation: dashHeroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -12rem;
+  right: -6rem;
+  width: 28rem;
+  height: 28rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(249 115 22 / 0.32), transparent 65%);
+  pointer-events: none;
+  animation: dashGlow 9s ease-in-out infinite alternate;
+}
+
+.dash-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.13) 50%, transparent 70%);
+  pointer-events: none;
+  transform: translateX(-110%);
+  animation: dashSheen 1.6s 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.dash-pop {
+  animation: dashPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+.dash-bar {
+  transform-origin: left;
+  animation: dashBar 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-in,
+  .dash-hero,
+  .dash-hero::before,
+  .dash-pop,
+  .dash-bar {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  .dash-hero::after {
+    display: none;
+  }
+}
+
+/* ===== Нэвтрэх / бүртгүүлэх хуудасны animation =====
+   .auth-grid — ар талын тор аажим гулсана
+   .auth-intro — зүүн талын текст гарч ирнэ; .auth-card — карт томорч тодорно, хүрээгээр гэрэл эргэлдэнэ */
+@property --auth-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes authGrid {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 70px 70px, 70px 70px; }
+}
+
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(10px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes authBorder {
+  to { --auth-angle: 360deg; }
+}
+
+.auth-grid {
+  animation: authGrid 18s linear infinite;
+}
+
+.auth-intro {
+  animation: dashIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-card {
+  position: relative;
+  animation: authCardIn 0.9s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--auth-angle), transparent 0 68%, rgb(255 122 0 / 0.6) 80%, rgb(255 190 110 / 0.5) 86%, transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: authBorder 7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-grid,
+  .auth-intro,
+  .auth-card,
+  .auth-card::before {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+/* ===== Ажил хайгч, компанийн хуудсууд: хэсгүүд, жагсаалтын мөрүүд дараалан гарна =====
+   .page-stagger — /dashboard/staff, /dashboard/company template.tsx; хуудасны үндсэн хэсгүүд (ачаалж дуусаад гарсан ч)
+   .stagger-in — жагсаалтын мөрүүд. Цонх (.fixed), өөрийн animation-тэй (animate-*, .dash-in) элементэд хүрэхгүй. */
+.page-stagger > * > :not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :not(.fixed, [class*="animate-"], .dash-in) {
+  animation: dashIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-stagger > * > :nth-child(2):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(2):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 70ms; }
+.page-stagger > * > :nth-child(3):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(3):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 140ms; }
+.page-stagger > * > :nth-child(4):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(4):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 210ms; }
+.page-stagger > * > :nth-child(5):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(5):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 280ms; }
+.page-stagger > * > :nth-child(6):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(6):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 350ms; }
+.page-stagger > * > :nth-child(7):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(7):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 420ms; }
+.page-stagger > * > :nth-child(8):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(8):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 490ms; }
+.page-stagger > * > :nth-child(9):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(9):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 560ms; }
+.page-stagger > * > :nth-child(10):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(10):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 630ms; }
+.page-stagger > * > :nth-child(n + 11):not(.fixed, [class*="animate-"], .dash-in),
+.stagger-in > :nth-child(n + 11):not(.fixed, [class*="animate-"], .dash-in) { animation-delay: 700ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-stagger > * > *,
+  .stagger-in > * {
+    animation: none !important;
+  }
+}
+
+/* ===== Цонх, цэс гарч ирэх animation (animate-in + fade-in / zoom-in-95 / slide-in-from-*) =====
+   tw-animate-css-тэй ижил нэршил — plugin суулгаагүй тул энд тодорхойлов.
+   Хугацааг Tailwind-ын duration-* (--tw-duration)-аас авна. */
+@keyframes tw-enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-x, 0), var(--tw-enter-y, 0), 0) scale(var(--tw-enter-scale, 1));
+  }
+}
+
+.animate-in {
+  animation: tw-enter var(--tw-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fade-in { --tw-enter-opacity: 0; }
+.zoom-in { --tw-enter-scale: 0.9; }
+.zoom-in-95 { --tw-enter-scale: 0.95; }
+.slide-in-from-bottom-2 { --tw-enter-y: 0.5rem; }
+.slide-in-from-bottom-4 { --tw-enter-y: 1rem; }
+.slide-in-from-bottom-6 { --tw-enter-y: 1.5rem; }
+.slide-in-from-top-2 { --tw-enter-y: -0.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none !important;
+  }
+}

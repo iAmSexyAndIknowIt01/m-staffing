@@ -40,7 +40,7 @@ export default function CompanySupportPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-5 sm:space-y-6">
+    <div className="stagger-in max-w-2xl mx-auto w-full space-y-5 sm:space-y-6">
       <div>
         <Link
           href="/dashboard"
