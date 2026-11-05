@@ -59,7 +59,7 @@ export default function ShareModal({ show, onClose, job, formatSalary, showAlert
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div 
-        className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-gray-100"
+        className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

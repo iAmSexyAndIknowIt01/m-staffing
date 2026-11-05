@@ -519,7 +519,7 @@ export default function StaffJobsPage() {
             />
           ) : (
             // Маш өргөн дэлгэцэд хоёр баганаар (карт хэт сунахаас сэргийлнэ)
-            <div className="grid grid-cols-1 gap-4 min-[1800px]:grid-cols-2">
+            <div className="stagger-in grid grid-cols-1 gap-4 min-[1800px]:grid-cols-2">
               {paginatedJobs.map((job, index) => {
                 const isJobApplied = job.is_applied;
                 const globalIndex = (currentPage - 1) * jobsPerPage + index;

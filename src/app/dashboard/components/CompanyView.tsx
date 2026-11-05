@@ -24,6 +24,9 @@ import { getErrorMessage } from "@/lib/errors"
 import { showAlert } from "@/components/common/AppDialog"
 import EmptyState from "@/components/common/EmptyState"
 import FoalLean from "@/components/common/FoalLean"
+import CountUp from "@/components/landing/CountUp"
+import { delay } from "./dashMotion"
+import StatCard, { ARROW_HOVER, CARD_HOVER, ICON_HOVER } from "./DashStatCard"
 import LoadingLayout from "@/components/common/LoadingLayout"
 
 interface TipData {
@@ -72,38 +75,6 @@ const QUICK_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard/company/search-staff", label: "Ажилтан хайх", icon: Search },
   { href: "/dashboard/company/profile", label: "Компанийн профайл", icon: Building2 },
 ]
-
-function StatCard({
-  icon: Icon,
-  tone,
-  label,
-  value,
-  hint,
-  href,
-}: {
-  icon: LucideIcon
-  tone: string
-  label: string
-  value: number
-  hint: string
-  href: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-5 flex flex-col sm:flex-row items-start gap-2.5 sm:gap-4 hover:border-orange-200 hover:shadow-md transition"
-    >
-      <span className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-2xl flex items-center justify-center ${tone}`}>
-        <Icon className="w-5 h-5" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-xs sm:text-sm text-gray-500 leading-snug">{label}</p>
-        <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{value}</p>
-        <p className="hidden sm:block text-xs text-gray-400 mt-0.5">{hint}</p>
-      </div>
-    </Link>
-  )
-}
 
 function SectionHeader({ title, href, linkLabel }: { title: string; href?: string; linkLabel?: string }) {
   return (
@@ -224,26 +195,28 @@ export default function CompanyView() {
   )
 
   return (
-    <div className="animate-fade-in space-y-6 sm:space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* ТОЛГОЙ */}
-      <section className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <section className="dash-hero bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
-          <p className="text-sm font-medium text-slate-300">
+          <p style={delay(200)} className="dash-in text-sm font-medium text-slate-300">
             {now.getMonth() + 1} сарын {now.getDate()}, {WEEKDAYS[now.getDay()]} гараг
           </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Компанийн удирдлага</h1>
-          <p className="mt-2 text-sm sm:text-base text-slate-300">
+          <h1 style={delay(280)} className="dash-in mt-1 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Компанийн удирдлага</h1>
+          <p style={delay(360)} className="dash-in mt-2 text-sm sm:text-base text-slate-300">
             {newApplicantsTotal > 0
               ? `Танай зарууд ${newApplicantsTotal} шинэ анкет хүлээн авсан байна.`
               : "Зар, анкет, багцаа эндээс удирдана."}
           </p>
         </div>
-        <FoalLean>{addJobButton}</FoalLean>
+        <div style={delay(440)} className="dash-in">
+          <FoalLean>{addJobButton}</FoalLean>
+        </div>
       </section>
 
       {/* ЛИМИТ ДҮҮРСЭН АНХААРУУЛГА */}
       {isLimitReached && (
-        <section className="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+        <section style={delay(240)} className={`dash-in bg-amber-50 border border-amber-200 rounded-3xl p-5 hover:shadow-amber-500/10 ${CARD_HOVER} flex flex-col sm:flex-row sm:items-center gap-4`}>
           <div className="flex-1">
             <h2 className="font-semibold text-amber-900">{isExpired ? "Багцын хугацаа дууссан" : "Зар нийтлэх эрх дууссан"}</h2>
             <p className="text-sm text-amber-800/80 mt-0.5">
@@ -265,27 +238,30 @@ export default function CompanyView() {
       <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
         <StatCard
           icon={Briefcase}
-          tone="bg-orange-50 text-orange-600"
+          accent="orange"
           label="Нээлттэй ажлын байр"
           value={stats.openJobsCount}
           hint={`Нийтлэх эрх ${remaining} үлдсэн`}
           href="/dashboard/company/post-job"
+          delayMs={300}
         />
         <StatCard
           icon={Inbox}
-          tone="bg-emerald-50 text-emerald-600"
+          accent="emerald"
           label="Ирсэн нийт анкет"
           value={stats.totalApplicantsCount}
           hint={newApplicantsTotal > 0 ? `${newApplicantsTotal} шинэ анкет` : "Бүх зарын анкет"}
           href="/dashboard/company/applicants"
+          delayMs={380}
         />
         <StatCard
           icon={CalendarCheck}
-          tone="bg-sky-50 text-sky-600"
+          accent="sky"
           label="Ярилцлагад урьсан"
           value={stats.interviewCount}
           hint="Ярилцлагын шатанд буй"
           href="/dashboard/company/applicants"
+          delayMs={460}
         />
       </div>
 
@@ -293,7 +269,7 @@ export default function CompanyView() {
         {/* ЗҮҮН */}
         <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           {/* ИДЭВХТЭЙ ЗАРУУД */}
-          <section>
+          <section style={delay(520)} className="dash-in">
             <SectionHeader
               title="Идэвхтэй зарууд"
               href={activeJobs.length > 0 ? "/dashboard/company/post-job" : undefined}
@@ -308,13 +284,13 @@ export default function CompanyView() {
               />
             ) : (
               <ul className="space-y-3">
-                {activeJobs.slice(0, 4).map((job) => (
-                  <li key={job.id}>
+                {activeJobs.slice(0, 4).map((job, i) => (
+                  <li key={job.id} style={delay(600 + i * 80)} className="dash-in">
                     <Link
                       href={`/dashboard/company/post-job/${job.id}/applicants`}
-                      className="group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 hover:shadow-md transition"
+                      className={`group flex items-center gap-4 bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 hover:border-orange-200 ${CARD_HOVER}`}
                     >
-                      <span className="w-11 h-11 shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                      <span className={`w-11 h-11 shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center ${ICON_HOVER}`}>
                         <Briefcase className="w-5 h-5" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -322,21 +298,21 @@ export default function CompanyView() {
                           <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition">{job.title}</h3>
                           {job.newApplicants > 0 && (
                             <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-600 text-white text-xs font-semibold">
-                              {job.newApplicants} шинэ
+                              <CountUp value={String(job.newApplicants)} duration={1000} delay={700 + i * 80} /> шинэ
                             </span>
                           )}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
-                            <Users className="w-3.5 h-3.5" /> {job.totalApplicants} анкет
+                            <Users className="w-3.5 h-3.5" /> <CountUp value={String(job.totalApplicants)} duration={1200} delay={700 + i * 80} /> анкет
                           </span>
                           <span className="inline-flex items-center gap-1">
-                            <BarChart3 className="w-3.5 h-3.5" /> {job.views} үзэлт
+                            <BarChart3 className="w-3.5 h-3.5" /> <CountUp value={String(job.views)} duration={1400} delay={700 + i * 80} /> үзэлт
                           </span>
                         </div>
                       </div>
                       <span className="hidden sm:inline text-sm font-semibold text-orange-600">Анкетууд</span>
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 transition" />
+                      <ChevronRight className={`w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 ${ARROW_HOVER}`} />
                     </Link>
                   </li>
                 ))}
@@ -345,7 +321,7 @@ export default function CompanyView() {
           </section>
 
           {/* СҮҮЛД ИРСЭН АНКЕТ */}
-          <section>
+          <section style={delay(720)} className="dash-in">
             <SectionHeader
               title="Сүүлд ирсэн анкетууд"
               href={recentApplicants.length > 0 ? "/dashboard/company/applicants" : undefined}
@@ -355,14 +331,14 @@ export default function CompanyView() {
               <EmptyState
                 compact illustration="folder" title="Ирсэн анкет алга" description="Шинэ анкет ирэхэд энд харагдана." />
             ) : (
-              <ul className="bg-white border border-gray-100 rounded-2xl shadow-sm divide-y divide-gray-100 overflow-hidden">
-                {recentApplicants.map((applicant) => (
-                  <li key={applicant.id}>
+              <ul className={`bg-white border border-gray-100 rounded-2xl shadow-sm divide-y divide-gray-100 overflow-hidden hover:border-orange-100 ${CARD_HOVER}`}>
+                {recentApplicants.map((applicant, i) => (
+                  <li key={applicant.id} style={delay(800 + i * 70)} className="dash-in">
                     <Link
                       href={`/dashboard/company/applicants/profile/?id=${applicant.id}`}
                       className="group flex items-center gap-4 p-4 sm:px-5 hover:bg-gray-50 transition"
                     >
-                      <span className="w-11 h-11 shrink-0 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                      <span className={`w-11 h-11 shrink-0 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center ring-2 ring-transparent group-hover:ring-orange-200 ${ICON_HOVER}`}>
                         {applicant.avatar ? (
                           <img src={applicant.avatar} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         ) : (
@@ -374,7 +350,7 @@ export default function CompanyView() {
                         <p className="text-sm text-gray-500 truncate">{applicant.role}</p>
                       </div>
                       <span className="text-xs text-gray-400 shrink-0">{applicant.time}</span>
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 transition" />
+                      <ChevronRight className={`w-5 h-5 text-gray-300 group-hover:text-orange-500 shrink-0 ${ARROW_HOVER}`} />
                     </Link>
                   </li>
                 ))}
@@ -386,7 +362,7 @@ export default function CompanyView() {
         {/* БАРУУН */}
         <aside className="space-y-6 lg:sticky lg:top-6">
           {/* БАГЦ */}
-          <section className="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-6">
+          <section style={delay(560)} className={`dash-in bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-6 hover:border-orange-100 ${CARD_HOVER}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-gray-500">Одоогийн багц</p>
@@ -405,13 +381,13 @@ export default function CompanyView() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Үлдсэн нийтлэх эрх</span>
                 <span className="font-semibold text-gray-900 tabular-nums">
-                  {remaining} / {limit}
+                  <CountUp value={String(remaining)} duration={1200} delay={850} /> / {limit}
                 </span>
               </div>
               <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? "bg-red-500" : "bg-orange-500"}`}
-                  style={{ width: `${limitPercent}%` }}
+                  className={`dash-bar h-full rounded-full transition-all duration-500 ${isLimitReached ? "bg-red-500" : "bg-orange-500"}`}
+                  style={{ width: `${limitPercent}%`, ...delay(850) }}
                 />
               </div>
               <p className="mt-3 text-xs text-gray-500">Дуусах огноо: <span className="font-medium text-gray-700">{subscription.expiresAt}</span></p>
@@ -426,17 +402,17 @@ export default function CompanyView() {
           </section>
 
           {/* ШУУД ХОЛБООС */}
-          <section className="bg-white border border-gray-100 rounded-3xl shadow-sm p-2">
+          <section style={delay(640)} className={`dash-in bg-white border border-gray-100 rounded-3xl shadow-sm p-2 hover:border-orange-100 ${CARD_HOVER}`}>
             <h2 className="px-3 pt-3 pb-2 text-sm font-semibold text-gray-900">Шууд холбоос</h2>
             <ul>
-              {QUICK_LINKS.map(({ href, label, icon: Icon }) => (
-                <li key={href}>
+              {QUICK_LINKS.map(({ href, label, icon: Icon }, i) => (
+                <li key={href} style={delay(700 + i * 60)} className="dash-in">
                   <Link href={href} className="group flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-gray-50 transition">
-                    <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                    <span className={`w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center ${ICON_HOVER}`}>
                       <Icon className="w-4.5 h-4.5" />
                     </span>
                     <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900">{label}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-orange-500 transition" />
+                    <ChevronRight className={`w-4 h-4 text-gray-300 group-hover:text-orange-500 ${ARROW_HOVER}`} />
                   </Link>
                 </li>
               ))}
@@ -444,12 +420,12 @@ export default function CompanyView() {
           </section>
 
           {/* ЗӨВЛӨГӨӨ */}
-          <section className="bg-amber-50/70 border border-amber-100 rounded-3xl p-5">
+          <section style={delay(820)} className={`dash-in group bg-amber-50/70 border border-amber-100 rounded-3xl p-5 hover:border-amber-200 hover:shadow-amber-500/10 ${CARD_HOVER}`}>
             {currentTip ? (
               <>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-600" />
+                    <Lightbulb className={`w-5 h-5 text-amber-600 ${ICON_HOVER}`} />
                     <span className="text-sm font-semibold text-amber-900">HR зөвлөгөө</span>
                   </div>
                   {tips.length > 1 && (

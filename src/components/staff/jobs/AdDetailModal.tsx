@@ -18,7 +18,7 @@ export default function AdDetailModal({ selectedAd, onClose }: AdDetailModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         
         {/* Модалын толгой хэсэг (Улбар шар дизайн) */}
         <div className="bg-orange-500 text-white p-6 relative">

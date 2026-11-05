@@ -10,6 +10,7 @@ import { confirmCreateContract, confirmStatusChange } from "@/components/company
 import EmptyState from "@/components/common/EmptyState"
 import Select from "@/components/common/Select"
 import Pagination from "@/components/staff/jobs/Pagination"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 interface Applicant {
   id: string
@@ -387,7 +388,7 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
                   <th className="px-5 py-3.5 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 text-sm">
+              <tbody className="stagger-in divide-y divide-gray-50 text-sm">
                 {pagedApplicants.map((app) => (
                   <tr key={app.id} className="hover:bg-gray-50/60 transition">
                     <td className="px-5 py-4 max-w-xs">
@@ -420,9 +421,9 @@ export default function ApplicantsList({ initialApplicants }: ApplicantsListProp
           </div>
 
           {/* УТАС: карт */}
-          <ul className="md:hidden space-y-3">
+          <ul className="stagger-in md:hidden space-y-3">
             {pagedApplicants.map((app) => (
-              <li key={app.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3">
+              <li key={app.id} className={`bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3 hover:border-orange-200 ${CARD_HOVER}`}>
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <Link href={profileHref(app.id)} className="font-bold text-gray-900 truncate block">

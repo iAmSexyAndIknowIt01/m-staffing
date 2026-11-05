@@ -134,7 +134,7 @@ export default function JobApplicantsList({ initialApplicants }: ListProps) {
                   <th className="px-6 py-4 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 text-sm">
+              <tbody className="stagger-in divide-y divide-gray-50 text-sm">
                 {filteredApplicants.map((app) => {
                   const currentStatus = app.status ? app.status.toLowerCase() : ""
                   return (

@@ -282,7 +282,7 @@ export default function ContractCandidates() {
                   <th className="px-6 py-5 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 text-sm">
+              <tbody className="stagger-in divide-y divide-gray-50 text-sm">
                 {paged.map((c) => (
                   <tr key={c.id} {...rowProps(c)} className="hover:bg-gray-50/50 transition cursor-pointer focus:outline-none focus-visible:bg-orange-50/50">
                     <td className="px-6 py-5">

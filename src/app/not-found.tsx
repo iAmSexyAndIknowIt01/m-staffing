@@ -3,7 +3,7 @@ import FoalIllustration from "@/components/common/FoalIllustration"
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+    <div className="stagger-in flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
       {/* Дүрслэл хэсэг */}
       <div className="mb-6 flex flex-col items-center">
         <FoalIllustration variant="search" size={220} />

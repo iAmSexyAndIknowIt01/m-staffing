@@ -41,12 +41,12 @@ export default function ConfirmDialog({
   const confirmClass = tone === "danger" ? "bg-rose-500 hover:bg-rose-600" : "bg-emerald-500 hover:bg-emerald-600"
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4" onClick={() => !busy && onClose()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs px-4 animate-in fade-in duration-200" onClick={() => !busy && onClose()}>
       <div
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4"
+        className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl space-y-4 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div>
