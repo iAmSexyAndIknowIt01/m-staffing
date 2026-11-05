@@ -38,6 +38,19 @@ const COMPANY_NAV: NavItem[] = [
   { href: "/dashboard/company/settings", label: "Тохиргоо", icon: Settings },
 ]
 
+// Хураалттай цэсэнд товчны нэрийг баруун талд нь гаргана (хулгана, гарын фокус)
+function CollapsedTip({ show, label }: { show: boolean; label: string }) {
+  if (!show) return null
+  return (
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute left-full top-1/2 z-60 ml-3 -translate-y-1/2 -translate-x-1 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-semibold text-white shadow-lg opacity-0 transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+    >
+      {label}
+    </span>
+  )
+}
+
 export default function DashboardShell({ userId, userRole, onLogout, children }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const pathname = usePathname()
@@ -125,12 +138,12 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
             )}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition mx-auto group border border-gray-200/50"
+              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 hover:border-orange-200 hover:shadow-md hover:shadow-orange-500/10 flex items-center justify-center transition duration-300 mx-auto group border border-gray-200/50"
               title={isCollapsed ? "Цэс нээх" : "Цэс хаах"}
               aria-label={isCollapsed ? "Цэс нээх" : "Цэс хаах"}
             >
               {isCollapsed ? (
-                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
+                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6">
                   <span className="text-white text-sm font-bold tracking-tighter leading-none select-none">
                     M
                   </span>
@@ -148,17 +161,30 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 <LinkNext
                   key={href}
                   href={href}
-                  title={isCollapsed ? label : undefined}
-                  className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 justify-center lg:justify-start ${
+                  aria-label={isCollapsed ? label : undefined}
+                  aria-current={active ? "page" : undefined}
+                  className={`group relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 ease-out justify-center lg:justify-start ${
                     active
                       ? "bg-orange-50 text-orange-600 font-semibold shadow-sm"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-orange-600"
+                      : "text-gray-500 hover:bg-orange-50/60 hover:text-orange-600 hover:shadow-sm"
                   }`}
                 >
-                  <span className={`p-1.5 rounded-xl block transition-colors ${active ? "bg-orange-100/60 text-orange-600" : "text-gray-400"}`}>
+                  {/* Зүүн талын заагч: идэвхтэй үед байнга, бусад үед хулганаар очиход гарна */}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute -left-4 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-orange-500 transition-transform duration-300 ease-out ${
+                      active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-75"
+                    }`}
+                  />
+                  <span
+                    className={`p-1.5 rounded-xl block transition duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6 ${
+                      active ? "bg-orange-100/60 text-orange-600" : "text-gray-400 group-hover:bg-white group-hover:text-orange-600 group-hover:shadow-sm"
+                    }`}
+                  >
                     <Icon className="w-5 h-5" strokeWidth={1.8} />
                   </span>
-                  {!isCollapsed && <span className="text-sm truncate">{label}</span>}
+                  {!isCollapsed && <span className="text-sm truncate transition-transform duration-300 group-hover:translate-x-0.5">{label}</span>}
+                  <CollapsedTip show={isCollapsed} label={label} />
                 </LinkNext>
               )
             })}
@@ -166,8 +192,8 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         </div>
 
         <div className="pt-4 border-t border-gray-100 space-y-4">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 min-w-10 rounded-xl bg-orange-500 flex items-center justify-center text-white">
+          <div className="group relative flex items-center gap-3 px-2">
+            <div className="w-10 h-10 min-w-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-sm shadow-orange-500/20 ring-2 ring-transparent ring-offset-2 ring-offset-white transition duration-300 ease-out group-hover:scale-105 group-hover:ring-orange-300 group-hover:shadow-lg group-hover:shadow-orange-500/30">
               {userRole === "staff" ? <User className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
             </div>
             {!isCollapsed && (
@@ -178,18 +204,20 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
                 <p className="text-xs text-gray-400 font-mono truncate">ID: {userId.slice(0, 10)}</p>
               </div>
             )}
+            <CollapsedTip show={isCollapsed} label={userRole === "staff" ? "Ажил хайгч" : "Ажил олгогч"} />
           </div>
           <ThemeToggle
             withLabel={!isCollapsed}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-900 transition"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm transition duration-300 [&_svg]:transition-transform [&_svg]:duration-500 hover:[&_svg]:rotate-45 hover:[&_svg]:scale-110"
           />
           <button
             onClick={() => onLogout()}
-            title={isCollapsed ? "Гарах" : undefined}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-red-500 bg-red-50/50 hover:bg-red-50 transition"
+            aria-label={isCollapsed ? "Гарах" : undefined}
+            className="group relative w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-sm font-semibold text-red-500 bg-red-50/50 hover:bg-red-50 hover:shadow-sm hover:shadow-red-500/10 transition duration-300"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOut className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1" />
             {!isCollapsed && <span className="truncate">Гарах</span>}
+            <CollapsedTip show={isCollapsed} label="Гарах" />
           </button>
         </div>
       </aside>
