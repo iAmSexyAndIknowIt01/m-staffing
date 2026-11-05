@@ -698,3 +698,65 @@ select:not([multiple]):not([size]) {
     display: none;
   }
 }
+
+/* ===== Нэвтрэх / бүртгүүлэх хуудасны animation =====
+   .auth-grid — ар талын тор аажим гулсана
+   .auth-intro — зүүн талын текст гарч ирнэ; .auth-card — карт томорч тодорно, хүрээгээр гэрэл эргэлдэнэ */
+@property --auth-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes authGrid {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 70px 70px, 70px 70px; }
+}
+
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(10px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes authBorder {
+  to { --auth-angle: 360deg; }
+}
+
+.auth-grid {
+  animation: authGrid 18s linear infinite;
+}
+
+.auth-intro {
+  animation: dashIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-card {
+  position: relative;
+  animation: authCardIn 0.9s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--auth-angle), transparent 0 68%, rgb(255 122 0 / 0.6) 80%, rgb(255 190 110 / 0.5) 86%, transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: authBorder 7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-grid,
+  .auth-intro,
+  .auth-card,
+  .auth-card::before {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}

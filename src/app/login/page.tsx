@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ShieldAlert, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import PasswordInput from "@/components/common/PasswordInput"
+import { AnimatedHeadline, AuthBackdrop, RoleToggle, stagger } from "@/components/auth/AuthMotion"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -99,18 +100,11 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-8 lg:py-0">
-      {/* BG — бүртгүүлэх хуудастай ижил */}
-      <div className="absolute inset-0 bg-linear-to-b from-white via-[#fffaf6] to-white" />
-
-      {/* GLOW */}
-      <div className="absolute top-[10%] left-[10%] w-175 h-175 rounded-full bg-orange-300/10 blur-[180px]" />
-
-      {/* GRID */}
-      <div className="absolute inset-0 opacity-[0.5] bg-[linear-gradient(to_right,rgba(255,140,0,.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,140,0,.35)_1px,transparent_1px)] bg-size-[70px_70px]" />
+      <AuthBackdrop />
 
       <Link
         href="/"
-        className="fixed top-4 left-4 sm:top-8 sm:left-8 z-20 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base transition hover:-translate-y-1"
+        className="auth-intro fixed top-4 left-4 sm:top-8 sm:left-8 z-20 glass rounded-full px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base transition hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10"
       >
         ← Нүүр хуудас
       </Link>
@@ -122,13 +116,11 @@ export default function LoginPage() {
           <div className="absolute -left-32 top-1/2 -translate-y-1/2 w-112.5 h-112.5 rounded-full bg-orange-300/20 blur-[140px]" />
 
           <div className="relative z-10">
-            <p className="orange-text font-bold tracking-[6px]">MSTAFFING</p>
+            <p className="auth-intro orange-text font-bold tracking-[6px]">MSTAFFING</p>
             <h1 className="mt-4 lg:mt-6 text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05]">
-              {role === "staff" ? "Ажлаа ол." : "Багаа бүрдүүл."}
-              <br />
-              Тавтай морил.
+              <AnimatedHeadline key={role} lines={[role === "staff" ? "Ажлаа ол." : "Багаа бүрдүүл.", "Тавтай морил."]} />
             </h1>
-            <p className="mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl leading-7 sm:leading-9">
+            <p key={role} style={stagger(550)} className="dash-in mt-4 lg:mt-8 text-gray-500 text-base sm:text-xl leading-7 sm:leading-9">
               {role === "staff"
                 ? "Өөрт тохирох ажлаа олоод шууд эхлээрэй."
                 : "Шилдэг ажилтнаа хурдан олоорой."}
@@ -137,30 +129,12 @@ export default function LoginPage() {
         </div>
 
         {/* RIGHT */}
-        <div className="glass rounded-4xl sm:rounded-4xl p-6 sm:p-10">
-          <div className="bg-orange-50 rounded-full p-2 flex">
-            <button
-              type="button"
-              onClick={() => setRole("staff")}
-              className={`flex-1 rounded-full py-3 transition ${
-                role === "staff" ? "bg-orange-500 text-white" : ""
-              }`}
-            >
-              Ажил Хайгч
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setRole("company")}
-              className={`flex-1 rounded-full py-3 transition ${
-                role === "company" ? "bg-orange-500 text-white" : ""
-              }`}
-            >
-              Ажил Олгогч
-            </button>
+        <div className="auth-card glass rounded-4xl sm:rounded-4xl p-6 sm:p-10">
+          <div style={stagger(350)} className="dash-in">
+            <RoleToggle role={role} onChange={setRole} />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black mt-8 sm:mt-10">
+          <h2 style={stagger(420)} className="dash-in text-2xl sm:text-3xl font-black mt-8 sm:mt-10">
             Нэвтрэх
           </h2>
 
@@ -171,7 +145,7 @@ export default function LoginPage() {
               login()
             }}
           >
-            <div className="mt-8">
+            <div style={stagger(480)} className="dash-in mt-8">
               <label htmlFor="login-email">Имэйл</label>
               <input
                 id="login-email"
@@ -194,7 +168,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="mt-6">
+            <div style={stagger(540)} className="dash-in mt-6">
               <label htmlFor="login-password">Нууц үг</label>
               <PasswordInput
                 id="login-password"
@@ -224,12 +198,8 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="
-                orange-btn
-                w-full
-                mt-10
-                disabled:opacity-50
-              "
+              style={stagger(600)}
+              className="dash-in btn-shine orange-btn w-full mt-10 disabled:opacity-50"
               disabled={loading}
             >
               {loading
@@ -240,7 +210,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-gray-500">
+          <p style={stagger(660)} className="dash-in mt-8 text-center text-gray-500">
             Бүртгэлгүй юу?
             <Link
               href="/register"
