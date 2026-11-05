@@ -14,7 +14,8 @@ export async function GET() {
       )
     }
 
-    // 1. Эхлээд зөвхөн ажлын байрууд болон хүсэлтүүдийг татна
+    // 1. Эхлээд зөвхөн ажлын байрууд болон хүсэлтүүдийг татна (ажилтны ажиллах боломжтой цагтай зэрэг)
+    const availabilityQuery = supabase.from("mt_profile").select("availability").eq("user_id", userId).maybeSingle()
     const { data: jobsData, error: jobsError } = await supabase
       .from("mt_openjob")
       .select(`
@@ -76,7 +77,13 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ success: true, jobs: formattedJobs }, { status: 200 })
+    // «Миний цагт тохирох» шүүлтүүрт. Татаж чадаагүй бол шүүлтүүр л ажиллахгүй, жагсаалт харагдана
+    const { data: profile } = await availabilityQuery
+
+    return NextResponse.json(
+      { success: true, jobs: formattedJobs, availability: profile?.availability ?? null },
+      { status: 200 }
+    )
 
   } catch (error) {
     console.error("Ажлын зарууд татахад алдаа гарлаа:", error)

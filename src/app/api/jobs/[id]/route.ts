@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { chargeJobCredit, getEffectiveSubscription } from "@/lib/plans"
-import { jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { isPartTime, jobFormErrors, jobPostError } from "@/lib/jobPost"
+import { compactSchedule, toSchedule } from "@/lib/weeklySchedule"
 import { isJobStatus, planStatusChange } from "@/lib/jobLifecycle"
 
 // ==========================================
@@ -80,13 +81,14 @@ export async function PUT(
 
     const body = await request.json()
     // Формоос salary_type болон salaryType-ийн аль алинаар ирж болохыг тооцов
-    const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements, confirmCredit } = body
+    const { title, category, salary, salaryType, salary_type, status, jobType, location, description, requirements, workSchedule, confirmCredit } = body
 
     // Баталгаажуулалт — шинэ зар нэмэхтэй ижил дүрэм (хуучин зарын ангиллыг хэвээр зөвшөөрнө)
     const str = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
     const fieldErrors = jobFormErrors({
       title: str(title), category: str(category), jobType: str(jobType), location: str(location),
       salary: str(salary), salaryType: str(salary_type || salaryType), description: str(description), requirements: str(requirements),
+      workSchedule: toSchedule(workSchedule),
     })
     const firstError = Object.values(fieldErrors)[0]
     if (firstError) {
@@ -161,6 +163,7 @@ export async function PUT(
         salary_type: salary_type || salaryType || "monthly", // Сонгосон цалингийн төрлийг хадгалах
         description,
         requirements,
+        work_schedule: isPartTime(jobType) ? compactSchedule(toSchedule(workSchedule)) : null,
         ...plan.update,
       })
       .eq("id", id)

@@ -1,3 +1,5 @@
+import { scheduleError, type WeeklySchedule } from "./weeklySchedule"
+
 // Ажлын зар (mt_openjob) үүсгэх/засах оролтын шалгалт.
 // salary_type нь гэрээ үүсгэхэд хуулагддаг тул зөвхөн мэдэгдэж буй утгыг зөвшөөрнө.
 
@@ -110,6 +112,11 @@ const JOB_TYPE_ALIASES: Record<string, string> = {
   internship: "intern",
 }
 
+// Хагас цагийн зарт долоо хоногийн ажлын цагийн хуваарь (mt_openjob.work_schedule) заавал
+export function isPartTime(value: string | null | undefined): boolean {
+  return !!value && (JOB_TYPE_ALIASES[value] ?? value) === "parttime"
+}
+
 export function getJobTypeLabel(value: string | null | undefined): string {
   if (!value) return ""
   const key = JOB_TYPE_ALIASES[value] ?? value
@@ -151,6 +158,8 @@ export interface JobFormValues {
   salaryType: string
   description: string
   requirements: string
+  // Зөвхөн хагас цагийн зарт
+  workSchedule?: WeeklySchedule
 }
 
 export type JobFormErrors = Partial<Record<keyof JobFormValues, string>>
@@ -171,6 +180,11 @@ export function jobFormErrors(v: JobFormValues): JobFormErrors {
 
   const salary = salaryError(v.salary)
   if (salary) errors.salary = salary
+
+  if (isPartTime(v.jobType)) {
+    const schedule = scheduleError(v.workSchedule)
+    if (schedule) errors.workSchedule = schedule
+  }
 
   for (const field of ["description", "requirements"] as const) {
     const text = v[field].trim()

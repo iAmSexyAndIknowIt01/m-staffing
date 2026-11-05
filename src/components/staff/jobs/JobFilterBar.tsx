@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { Search, X, CheckCircle2, ChevronDown } from "lucide-react"
+import { Search, X, CheckCircle2, ChevronDown, CalendarClock } from "lucide-react"
 import { getJobCategoryLabel, getJobTypeLabel } from "@/lib/jobPost"
 
 interface JobFilterBarProps {
@@ -14,6 +14,13 @@ interface JobFilterBarProps {
   filterApplied: string
   setFilterApplied: (val: string) => void
   categories: string[]
+  // «Цагаар хайх»: хагас цагийн зарыг ажлын өдөр, цагаар нь шүүнэ
+  fitSchedule: boolean
+  // Идэвхтэй шүүлтүүрийн шошго (хайх аргаас хамаарна)
+  fitLabel: string
+  fitCount: number
+  onToggleFit: () => void
+  onClearFit: () => void
 }
 
 export default function JobFilterBar({
@@ -26,6 +33,11 @@ export default function JobFilterBar({
   filterApplied,
   setFilterApplied,
   categories,
+  fitSchedule,
+  fitLabel,
+  fitCount,
+  onToggleFit,
+  onClearFit,
 }: JobFilterBarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -33,13 +45,15 @@ export default function JobFilterBar({
   const isFiltered = 
     selectedCategory !== "" || 
     selectedJobType !== "" || 
-    filterApplied !== "all"
+    filterApplied !== "all" ||
+    fitSchedule
 
   const handleClearAll = () => {
     setSearchQuery("")
     setSelectedCategory("")
     setSelectedJobType("")
     setFilterApplied("all")
+    onClearFit()
   }
 
   // Гадна дархад dropdown хаагдах логик
@@ -134,6 +148,28 @@ export default function JobFilterBar({
 
       {/* Шүүлтүүрийн Тагууд */}
       <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-1.5 py-0.5">
+        {/* Ажиллах боломжтой цагт тохирох зарууд */}
+        <button
+          type="button"
+          onClick={onToggleFit}
+          aria-pressed={fitSchedule}
+          title="Хагас цагийн зарыг ажлын өдөр, цагаар нь шүүнэ"
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold border whitespace-nowrap transition-all duration-150 active:scale-95 shrink-0 cursor-pointer ${
+            fitSchedule
+              ? "bg-orange-600 text-white border-orange-600"
+              : "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
+          }`}
+        >
+          <CalendarClock className="w-3.5 h-3.5" aria-hidden="true" />
+          Цагаар хайх
+          {fitCount > 0 && (
+            <span className={`rounded-md px-1.5 text-[11px] tabular-nums ${fitSchedule ? "bg-white/20" : "bg-white text-orange-700"}`}>
+              {fitCount}
+            </span>
+          )}
+        </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0 mx-0.5" aria-hidden="true" />
+
         {/* Ажлын төрлүүд */}
         {["fulltime", "parttime", "contract", "remote"].map((type) => (
           <button
@@ -186,6 +222,16 @@ export default function JobFilterBar({
             <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 rounded-md text-xs text-slate-800 font-medium">
               <span>{getJobCategoryLabel(selectedCategory)}</span>
               <button onClick={() => setSelectedCategory("")} className="text-slate-400 hover:text-slate-600 ml-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {fitSchedule && (
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 rounded-md text-xs text-orange-800 font-medium">
+              <CalendarClock className="w-3 h-3 text-orange-600" />
+              <span>{fitLabel}</span>
+              <button onClick={onClearFit} aria-label="Цагаар хайх шүүлтүүрийг арилгах" className="text-orange-400 hover:text-orange-600 ml-0.5">
                 <X className="w-3 h-3" />
               </button>
             </div>

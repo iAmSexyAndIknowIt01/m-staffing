@@ -39,6 +39,7 @@
   :where(html.dark) .bg-rose-50 { background-color: color-mix(in srgb, var(--color-rose-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-sky-50 { background-color: color-mix(in srgb, var(--color-sky-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-slate-100 { background-color: var(--dk-surface-3); }
+  :where(html.dark) .bg-slate-200 { background-color: var(--dk-surface-4); }
   :where(html.dark) .bg-slate-200\/60 { background-color: color-mix(in srgb, var(--dk-surface-4) 60%, transparent); }
   :where(html.dark) .bg-slate-50 { background-color: var(--dk-surface-2); }
   :where(html.dark) .bg-slate-50\/50 { background-color: color-mix(in srgb, var(--dk-surface-2) 50%, transparent); }
@@ -192,6 +193,7 @@
   :where(html.dark) .text-orange-600 { color: var(--color-orange-400); }
   :where(html.dark) .text-orange-700 { color: var(--color-orange-300); }
   :where(html.dark) .text-orange-700\! { color: var(--color-orange-300) !important; }
+  :where(html.dark) .text-orange-800 { color: var(--color-orange-300); }
   :where(html.dark) .text-orange-900 { color: var(--color-orange-200); }
   :where(html.dark) .text-pink-600 { color: var(--color-pink-400); }
   :where(html.dark) .text-pink-700 { color: var(--color-pink-300); }

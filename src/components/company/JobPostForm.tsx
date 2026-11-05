@@ -15,6 +15,8 @@ import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
 import { getErrorMessage } from "@/lib/errors"
 import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
 import { useIsClient } from "@/lib/useIsClient"
+import WeeklyScheduleEditor from "@/components/common/WeeklyScheduleEditor"
+import { emptySchedule, toSchedule } from "@/lib/weeklySchedule"
 import {
   CUSTOM_CATEGORY_MAX,
   JOB_CATEGORIES,
@@ -25,6 +27,7 @@ import {
   getJobCategoryLabel,
   isJobCategory,
   getJobTypeLabel,
+  isPartTime,
   jobFormErrors,
   salaryDigits,
   type JobFormValues,
@@ -44,6 +47,7 @@ const EMPTY: JobFormValues = {
   salaryType: "monthly",
   description: "",
   requirements: "",
+  workSchedule: emptySchedule(),
 }
 
 const STATUS_OPTIONS = [
@@ -102,6 +106,7 @@ interface JobPostFormProps {
     requirements?: string | null
     status?: string | null
     expires_at?: string | null
+    work_schedule?: unknown
   }
 }
 
@@ -119,6 +124,7 @@ function fromInitial(initial: JobPostFormProps["initial"]): { values: JobFormVal
       salaryType,
       description: initial.description ?? "",
       requirements: initial.requirements ?? "",
+      workSchedule: toSchedule(initial.work_schedule),
     },
     mode: negotiable ? "negotiable" : salaryType,
   }
@@ -133,7 +139,7 @@ function readDraft(): Draft | null {
     const raw = localStorage.getItem(DRAFT_KEY)
     if (!raw) return null
     const draft = JSON.parse(raw) as { values?: Partial<JobFormValues>; salaryMode?: SalaryMode }
-    const values = { ...EMPTY, ...draft.values }
+    const values = { ...EMPTY, ...draft.values, workSchedule: toSchedule(draft.values?.workSchedule) }
     const meaningful = (["title", "category", "location", "description", "requirements"] as const).some((f) => values[f].trim())
       || (values.salary && values.salary !== SALARY_NEGOTIABLE)
     return meaningful ? { values, salaryMode: draft.salaryMode ?? "monthly" } : null
@@ -264,7 +270,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
     e.preventDefault()
     setSubmitted(true)
     if (hasErrors) {
-      const order: Field[] = ["title", "category", "location", "salary", "description", "requirements"]
+      const order: Field[] = ["title", "category", "workSchedule", "location", "salary", "description", "requirements"]
       const first = order.find((f) => errors[f])
       if (first) document.getElementById(first === "category" && categoryChoice === "other" ? "job-category-custom" : `job-${first}`)?.focus()
       return
@@ -486,6 +492,25 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
             })}
           </div>
         </fieldset>
+
+        {/* Хагас цагийн ажлын цаг — ажилтны «Ажиллах боломжтой цаг»-тай ижил бүтэц, тохирох ажилтанд харагдана */}
+        {isPartTime(values.jobType) && (
+          <fieldset id="job-workSchedule" tabIndex={-1} aria-describedby="job-workSchedule-hint job-workSchedule-error" className="outline-none">
+            <legend className="block text-sm font-semibold text-gray-700 mb-1">
+              Ажлын өдөр, цаг <span className="text-red-500">*</span>
+            </legend>
+            <p id="job-workSchedule-hint" className="mb-3 text-xs text-gray-500">
+              Долоо хоногийн аль өдөр, хэдээс хэдэн цагт ажиллуулахаа сонгоно уу. Ажил хайгчдад зарын дэлгэрэнгүйд харагдана.
+            </p>
+            <WeeklyScheduleEditor
+              value={values.workSchedule ?? emptySchedule()}
+              offLabel="Ажилгүй"
+              invalid={!!visible("workSchedule")}
+              onChange={(next) => update({ workSchedule: next })}
+            />
+            <FieldError id="job-workSchedule-error" error={visible("workSchedule")} />
+          </fieldset>
+        )}
 
         {/* Байршил */}
         <div>
@@ -721,6 +746,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
                     salary: values.salary,
                     description: values.description,
                     requirements: values.requirements,
+                    work_schedule: isPartTime(values.jobType) ? values.workSchedule : null,
                     created_at: new Date().toISOString(),
                     is_applied: false,
                     mt_company: company ? { id: "", name: company.name, logo_url: company.logo_url } : undefined,

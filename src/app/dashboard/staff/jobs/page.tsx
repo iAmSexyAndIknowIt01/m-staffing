@@ -4,9 +4,12 @@ import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
+import { decodeSchedule, emptySchedule, encodeSchedule, enabledDays, scheduleFit, toSchedule, type ScheduleFit, type WeeklySchedule } from "@/lib/weeklySchedule"
+import ScheduleMatchPanel, { MATCH_LEVELS, type ScheduleSearchMode } from "@/components/staff/jobs/ScheduleMatchPanel"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import JobFilterBar from "@/components/staff/jobs/JobFilterBar"
+import JobFilterSidebar from "@/components/staff/jobs/JobFilterSidebar"
 import JobCard from "@/components/staff/jobs/JobCard"
 import AdCard from "@/components/staff/jobs/AdCard"
 import AdDetailModal from "@/components/staff/jobs/AdDetailModal"
@@ -33,6 +36,7 @@ interface Job {
   salary: string
   description: string
   requirements: string
+  work_schedule?: unknown
   created_at: string
   is_applied: boolean
   mt_company?: Company
@@ -68,6 +72,18 @@ export default function StaffJobsPage() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
   const [selectedJobType, setSelectedJobType] = useState(searchParams.get("type") || "")
   const [filterApplied, setFilterApplied] = useState(searchParams.get("applied") || "all")
+  // Цагаар хайх: fit=1 — профайлын цагаар, fit=custom — нэг удаа сонгосон өдөр, цагаар
+  const [fitSchedule, setFitSchedule] = useState(() => ["1", "custom"].includes(searchParams.get("fit") || ""))
+  const [scheduleMode, setScheduleMode] = useState<ScheduleSearchMode>(() => (searchParams.get("fit") === "custom" ? "custom" : "profile"))
+  // Энэ хайлтад зориулж сонгосон өдөр, цаг (профайлд хадгалагдахгүй)
+  const [customSchedule, setCustomSchedule] = useState<WeeklySchedule>(() => decodeSchedule(searchParams.get("sch")) ?? emptySchedule())
+  // Нийцлийн доод хувь (зарын ажлын цагийн хэдэн хувь нь миний цагтай давхцах)
+  const [minMatch, setMinMatch] = useState(() => {
+    const value = Number(searchParams.get("min"))
+    return MATCH_LEVELS.some((l) => l.value === value) ? value : 50
+  })
+  // Ажилтны ажиллах боломжтой цаг (mt_profile.availability)
+  const [availability, setAvailability] = useState<unknown>(null)
   
   const [selectedShareJob, setSelectedShareJob] = useState<Job | null>(null)
   const [ads, setAds] = useState<Ad[]>([]);
@@ -121,11 +137,21 @@ export default function StaffJobsPage() {
     } else {
       params.set("applied", filterApplied)
     }
+
+    // Миний цагт тохирох
+    if (fitSchedule) params.set("fit", scheduleMode === "custom" ? "custom" : "1")
+    else params.delete("fit")
+    const encoded = fitSchedule && scheduleMode === "custom" ? encodeSchedule(customSchedule) : ""
+    if (encoded) params.set("sch", encoded)
+    else params.delete("sch")
+    if (fitSchedule && minMatch !== 50) params.set("min", String(minMatch))
+    else params.delete("min")
     
     const queryStr = params.toString()
     const newUrl = queryStr ? `?${queryStr}` : window.location.pathname
-    router.replace(newUrl, { scroll: false })
-  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, router])
+    // router.replace нь өөрчлөлт бүрт серверээс хуудсыг дахин татдаг тул URL-ийг шууд шинэчилнэ
+    window.history.replaceState(window.history.state, "", newUrl)
+  }, [currentPage, searchQuery, selectedCategory, selectedJobType, filterApplied, fitSchedule, scheduleMode, customSchedule, minMatch])
 
 
   useEffect(() => {
@@ -228,6 +254,7 @@ export default function StaffJobsPage() {
         const jobsData = await jobsRes.json();
         if (!jobsRes.ok) throw new Error(jobsData.error || "Ажлын зар татахад алдаа гарлаа.");
         setJobs(jobsData.jobs || []);
+        setAvailability(jobsData.availability ?? null);
 
         // Сурталчилгаа татагдаагүй ч ажлын зарыг харуулна
         const adsData = adsRes.ok ? await adsRes.json() : {};
@@ -264,8 +291,33 @@ export default function StaffJobsPage() {
     }
   }
 
+  const profileSchedule = useMemo(() => toSchedule(availability), [availability])
+  // Хайлтад ашиглах цаг
+  const effectiveSchedule = scheduleMode === "custom" ? customSchedule : profileSchedule
+  const hasSearchSchedule = enabledDays(effectiveSchedule).length > 0
+
+  // Зар бүрийн нийцлийн хувь (хуваарьгүй зарт байхгүй)
+  // Зар бүрийн өдөр тус бүрийн нийцэл (хуваарьгүй зарт байхгүй)
+  const fits = useMemo(() => {
+    const map = new Map<string, ScheduleFit>()
+    for (const job of jobs) {
+      const fit = scheduleFit(job.work_schedule, effectiveSchedule, minMatch)
+      if (fit) map.set(job.id, fit)
+    }
+    return map
+  }, [jobs, effectiveSchedule, minMatch])
+
+  // Ажлын өдрүүдийн аль нэг нь таарвал тохирсон зар
+  const isMatch = (id: string) => (fits.get(id)?.days.length ?? 0) > 0
+  const matchingCount = useMemo(() => Array.from(fits.values()).filter((f) => f.days.length > 0).length, [fits])
+
+  // Цаг оруулаагүй бол самбар нээгдэх ч жагсаалтыг шүүхгүй
+  const fitActive = fitSchedule && hasSearchSchedule
+
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    const list = jobs.filter((job) => {
+      if (fitActive && !(fits.get(job.id)?.days.length)) return false
+
       const isJobApplied = job.is_applied
 
       if (filterApplied === "applied" && !isJobApplied) return false
@@ -284,7 +336,16 @@ export default function StaffJobsPage() {
 
       return matchesSearch && matchesCategory && matchesType
     })
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied])
+    // Хамгийн их нийцсэн зар эхэнд (тэнцүү бол анхны дараалал хэвээр)
+    return fitActive
+      ? list.sort((a, b) => {
+          const fa = fits.get(a.id)
+          const fb = fits.get(b.id)
+          // Олон өдөр таарсан нь, дараа нь хамгийн их нийцсэн нь эхэнд
+          return (fb?.days.length ?? 0) - (fa?.days.length ?? 0) || (fb?.best ?? 0) - (fa?.best ?? 0)
+        })
+      : list
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, fits])
 
   // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
   const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
@@ -305,6 +366,14 @@ export default function StaffJobsPage() {
     setter(val)
     setCurrentPage(1)
     flashFiltering(350)
+  }
+
+  const toggleFitSchedule = () => withPageReset((v) => setFitSchedule(v === "1"))(fitSchedule ? "" : "1")
+
+  // Цаг бичих бүрт жагсаалт шууд шинэчлэгдэнэ (skeleton анивчуулахгүй)
+  const changeSchedule = (next: WeeklySchedule) => {
+    setCustomSchedule(next)
+    setCurrentPage(1)
   }
 
   const changePage = (page: number) => {
@@ -344,7 +413,7 @@ export default function StaffJobsPage() {
   }
 
   return (
-    <div ref={jobsTopRef} className="space-y-8 min-h-screen pb-12">
+    <div ref={jobsTopRef} className="space-y-6 lg:space-y-8 min-h-screen pb-12">
       
       {/* ТОЛГОЙ ХЭСЭГ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -358,87 +427,144 @@ export default function StaffJobsPage() {
         </div>
       </div>
 
-      {/* ШҮҮЛТҮҮРИЙН КОМПОНЕНТ */}
-      <JobFilterBar
-        searchQuery={searchQuery}
-        setSearchQuery={withPageReset(setSearchQuery)}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={withPageReset(setSelectedCategory)}
-        selectedJobType={selectedJobType}
-        setSelectedJobType={withPageReset(setSelectedJobType)}
-        filterApplied={filterApplied}
-        setFilterApplied={withPageReset(setFilterApplied)}
-        categories={categories}
-      />
-
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
-          <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
+      {/* Том дэлгэцэд шүүлтүүр зүүн талд, утсан дээр жагсаалтын дээр */}
+      <div className="lg:grid lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[21rem_minmax(0,1fr)] lg:gap-6">
+        <div className="hidden lg:block">
+          <JobFilterSidebar
+            jobs={jobs}
+            searchQuery={searchQuery}
+            setSearchQuery={withPageReset(setSearchQuery)}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={withPageReset(setSelectedCategory)}
+            selectedJobType={selectedJobType}
+            setSelectedJobType={withPageReset(setSelectedJobType)}
+            filterApplied={filterApplied}
+            setFilterApplied={withPageReset(setFilterApplied)}
+            categories={categories}
+            fitSchedule={fitSchedule}
+            fitCount={hasSearchSchedule ? matchingCount : 0}
+            onToggleFit={toggleFitSchedule}
+            onClearFit={() => withPageReset((v) => setFitSchedule(v === "1"))("")}
+          />
         </div>
-      )}
 
-      {/* ЖАГСААЛТЫН ТӨЛӨВҮҮД */}
-      {isFiltering ? (
-        <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
-          <div className="relative flex items-center justify-center h-20 w-20">
-            <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-lg animate-pulse" />
-            <div className="absolute inset-0 border border-dashed border-orange-200 rounded-full animate-[spin_6s_linear_infinite]" />
-            <div className="absolute inset-1.5 border-t border-b border-orange-600 rounded-full animate-spin" />
-            <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold tracking-wider text-slate-900 uppercase animate-pulse">
-                mstaffing
-              </span>
-            </div>
+        <div className="min-w-0 space-y-6">
+          {/* ШҮҮЛТҮҮРИЙН КОМПОНЕНТ (утас, таблет) */}
+          <div className="lg:hidden">
+            <JobFilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={withPageReset(setSearchQuery)}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={withPageReset(setSelectedCategory)}
+              selectedJobType={selectedJobType}
+              setSelectedJobType={withPageReset(setSelectedJobType)}
+              filterApplied={filterApplied}
+              setFilterApplied={withPageReset(setFilterApplied)}
+              categories={categories}
+              fitSchedule={fitSchedule}
+              fitLabel={scheduleMode === "custom" ? "Сонгосон өдөр, цагаар" : "Миний цагт тохирох"}
+              fitCount={hasSearchSchedule ? matchingCount : 0}
+              onToggleFit={toggleFitSchedule}
+              onClearFit={() => withPageReset((v) => setFitSchedule(v === "1"))("")}
+            />
           </div>
-          <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mt-4 animate-pulse">
-            Жагсаалтыг шинэчилж байна...
-          </p>
-        </div>
-      ) : filteredJobs.length === 0 ? (
-        <EmptyState
-          illustration="search"
-          title="Хайлтад тохирох ажил олдсонгүй"
-          description="Хайлтын үгээ товчлох эсвэл шүүлтүүрээ цөөлөөд дахин хайгаарай."
-        />
-      ) : (
-        <div className="space-y-4">
-          {paginatedJobs.map((job, index) => {
-            const isJobApplied = job.is_applied;
-            const globalIndex = (currentPage - 1) * jobsPerPage + index;
-            const adIndex = Math.floor(globalIndex / 5) % ads.length;
-            const adToShow = ads.length > 0 && (globalIndex + 1) % 5 === 0 ? ads[adIndex] : null;
-            return (
-              <React.Fragment key={job.id}>
-                <JobCard
-                  job={job}
-                  isJobApplied={isJobApplied}
-                  isBookmarked={bookmarkedJobIds.includes(job.id)}
-                  onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
-                  onShare={handleShare}
-                  href={`/dashboard/staff/jobs/${job.id}`}
-                  onCompanyClick={handleCompanyClick}
-                  getCompanyLogoUrl={getCompanyLogoUrl}
-                  getJobTypeText={getJobTypeText}
-                  getSalaryTypeText={getSalaryTypeText}
-                  formatSalary={formatSalary}
-                />
 
-                {adToShow && <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />}
-              </React.Fragment>
-            )
-          })}
-        </div>
-      )}
+          {fitSchedule && (
+            <ScheduleMatchPanel
+              mode={scheduleMode}
+              onMode={(mode) => withPageReset(() => setScheduleMode(mode))("")}
+              profileSchedule={profileSchedule}
+              customSchedule={customSchedule}
+              onCustomChange={changeSchedule}
+              minMatch={minMatch}
+              onMinMatch={(value) => withPageReset((v) => setMinMatch(Number(v)))(String(value))}
+              matchCount={matchingCount}
+            />
+          )}
 
-      {/* ХУУДАСЛАЛТ */}
-      <Pagination
-        filteredJobsCount={filteredJobs.length}
-        totalPages={totalPages}
-        isFiltering={isFiltering}
-        currentPage={currentPage}
-        visiblePages={visiblePages}
-        setCurrentPage={changePage}
-      />
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl border border-red-100 text-center">
+              <AlertTriangle size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Алдаа гарлаа: {error}
+            </div>
+          )}
+
+          {/* ЖАГСААЛТЫН ТӨЛӨВҮҮД */}
+          {isFiltering ? (
+            <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm flex flex-col items-center justify-center min-h-87.5 animate-fade-in">
+              <div className="relative flex items-center justify-center h-20 w-20">
+                <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-lg animate-pulse" />
+                <div className="absolute inset-0 border border-dashed border-orange-200 rounded-full animate-[spin_6s_linear_infinite]" />
+                <div className="absolute inset-1.5 border-t border-b border-orange-600 rounded-full animate-spin" />
+                <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+                  <span className="text-xs font-bold tracking-wider text-slate-900 uppercase animate-pulse">
+                    mstaffing
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mt-4 animate-pulse">
+                Жагсаалтыг шинэчилж байна...
+              </p>
+            </div>
+          ) : filteredJobs.length === 0 && fitActive ? (
+            <EmptyState
+              illustration="search"
+              title="Таны цагт тохирох ажил олдсонгүй"
+              description="Нийцлийн хувийг багасгах, ажиллах өдөр, цагаа өргөтгөх эсвэл бусад шүүлтүүрээ цөөлөөд үзээрэй."
+            />
+          ) : filteredJobs.length === 0 ? (
+            <EmptyState
+              illustration="search"
+              title="Хайлтад тохирох ажил олдсонгүй"
+              description="Хайлтын үгээ товчлох эсвэл шүүлтүүрээ цөөлөөд дахин хайгаарай."
+            />
+          ) : (
+            // Маш өргөн дэлгэцэд хоёр баганаар (карт хэт сунахаас сэргийлнэ)
+            <div className="grid grid-cols-1 gap-4 min-[1800px]:grid-cols-2">
+              {paginatedJobs.map((job, index) => {
+                const isJobApplied = job.is_applied;
+                const globalIndex = (currentPage - 1) * jobsPerPage + index;
+                const adIndex = Math.floor(globalIndex / 5) % ads.length;
+                const adToShow = ads.length > 0 && (globalIndex + 1) % 5 === 0 ? ads[adIndex] : null;
+                return (
+                  <React.Fragment key={job.id}>
+                    <JobCard
+                      job={job}
+                      isJobApplied={isJobApplied}
+                      isBookmarked={bookmarkedJobIds.includes(job.id)}
+                      onToggleBookmark={(e) => handleToggleBookmark(e, job.id)}
+                      onShare={handleShare}
+                      href={`/dashboard/staff/jobs/${job.id}`}
+                      onCompanyClick={handleCompanyClick}
+                      getCompanyLogoUrl={getCompanyLogoUrl}
+                      getJobTypeText={getJobTypeText}
+                      getSalaryTypeText={getSalaryTypeText}
+                      formatSalary={formatSalary}
+                      matchPrefix={scheduleMode === "custom" ? "Сонгосон цагт" : "Таны цагт"}
+                      scheduleFit={hasSearchSchedule && isMatch(job.id) ? fits.get(job.id) : null}
+                    />
+
+                    {adToShow && (
+                      <div className="col-span-full">
+                        <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />
+                      </div>
+                    )}
+                  </React.Fragment>
+                )
+              })}
+            </div>
+          )}
+
+          {/* ХУУДАСЛАЛТ */}
+          <Pagination
+            filteredJobsCount={filteredJobs.length}
+            totalPages={totalPages}
+            isFiltering={isFiltering}
+            currentPage={currentPage}
+            visiblePages={visiblePages}
+            setCurrentPage={changePage}
+          />
+        </div>
+      </div>
 
       {/* МОДАЛ ЦОНХНУУД */}
       {/* Share Modal */}
