@@ -146,7 +146,7 @@ export default function JobDetailView({
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto pb-28 lg:pb-12 pt-2 sm:px-2 space-y-6 animate-fade-in">
+    <div className="stagger-in w-full max-w-5xl mx-auto pb-28 lg:pb-12 pt-2 sm:px-2 space-y-6">
       <div>
         <button
           onClick={onClose}

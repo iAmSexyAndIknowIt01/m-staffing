@@ -17,6 +17,8 @@ import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import { Progress, STATUS, formatDate, timeAgo, toRequestStatus, type RequestStatus } from "@/components/staff/requests/requestStatus"
+import { CARD_HOVER, ICON_HOVER } from "@/lib/cardMotion"
+import CountUp from "@/components/landing/CountUp"
 
 // /api/staff/requests-ийн буцаах мөр
 interface ApiRequestRow {
@@ -158,14 +160,16 @@ export default function StaffRequestsPage() {
       ) : (
         <>
           {/* ТОЙМ */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="stagger-in grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {stats.map(({ label, value, icon: Icon, tone }) => (
-              <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-                <span className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${tone}`}>
+              <div key={label} className={`group bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:border-orange-200 ${CARD_HOVER}`}>
+                <span className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${tone} ${ICON_HOVER}`}>
                   <Icon className="w-5 h-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xl font-bold text-gray-900 leading-none">{value}</p>
+                  <p className="text-xl font-bold text-gray-900 leading-none">
+                    <CountUp value={String(value)} duration={1200} delay={200} />
+                  </p>
                   <p className="text-xs text-gray-500 mt-1 leading-snug">{label}</p>
                 </div>
               </div>
@@ -217,7 +221,7 @@ export default function StaffRequestsPage() {
 
           {/* ЖАГСААЛТ */}
           {paginatedRequests.length > 0 ? (
-            <ul className="space-y-3">
+            <ul className="stagger-in space-y-3">
               {paginatedRequests.map((req) => {
                 const logoSrc = getCompanyLogoUrl(req.logoUrl)
                 const status = STATUS[req.status]
@@ -226,7 +230,7 @@ export default function StaffRequestsPage() {
                   <li key={req.id}>
                     <Link
                       href={`/dashboard/staff/requests/${req.id}`}
-                      className="group block bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition"
+                      className={`group block bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 ${CARD_HOVER}`}
                     >
                       <div className="flex items-start gap-3 sm:gap-4">
                         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">

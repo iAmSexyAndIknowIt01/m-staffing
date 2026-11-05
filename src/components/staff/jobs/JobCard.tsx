@@ -5,6 +5,7 @@ import Link from "next/link"
 import { SALARY_NEGOTIABLE } from "@/lib/jobPost"
 import type { ScheduleFit } from "@/lib/weeklySchedule"
 import { CalendarClock, Check, Heart, Share2, MapPin } from "lucide-react"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 const VISITED_JOBS_KEY = "visited_jobs"
 const VISITED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 хоногийн дотор дарсан бол бор хүрэн өнгөтэй
@@ -146,7 +147,7 @@ export default function JobCard({
   // өнгийг солидог тул border-l-red-500!-ээр (important) хоёр горимд ижил харагдуулна
   return (
     <div
-      className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md hover:border-orange-200 transition-all duration-200 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-orange-400 ${
+      className={`group relative bg-white border border-gray-100 rounded-2xl p-5 hover:border-orange-200 ${CARD_HOVER} has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-orange-400 ${
         isJobApplied ? "border-l-4 border-l-red-500!" : ""
       }`}
     >

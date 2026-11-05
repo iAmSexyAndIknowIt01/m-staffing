@@ -8,6 +8,7 @@ import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
 import { getJobCategoryLabel } from "@/lib/jobPost"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 interface Job {
   id: string
@@ -186,14 +187,14 @@ export default function RecommendedJobsPage() {
 
           {/* ЖАГСААЛТ */}
           {paginatedJobs.length > 0 ? (
-            <ul className="space-y-3">
+            <ul className="stagger-in space-y-3">
               {paginatedJobs.map((job) => {
                 const summary = excerpt(job.description)
                 return (
                   <li key={job.id}>
                     <Link
                       href={`/dashboard/staff/jobs/${job.id}`}
-                      className="group block bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition"
+                      className={`group block bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 ${CARD_HOVER}`}
                     >
                       <div className="flex items-start gap-3 sm:gap-4">
                         <CompanyLogo name={job.company} logoUrl={job.company_logo} className="w-11 h-11 sm:w-12 sm:h-12" />
