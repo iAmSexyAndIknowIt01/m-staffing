@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
-import { decodeSchedule, emptySchedule, encodeSchedule, enabledDays, scheduleMatch, toSchedule, type WeeklySchedule } from "@/lib/weeklySchedule"
+import { decodeSchedule, emptySchedule, encodeSchedule, enabledDays, scheduleFit, toSchedule, type ScheduleFit, type WeeklySchedule } from "@/lib/weeklySchedule"
 import ScheduleMatchPanel, { MATCH_LEVELS, type ScheduleSearchMode } from "@/components/staff/jobs/ScheduleMatchPanel"
 import Pagination from "@/components/staff/jobs/Pagination"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -296,26 +296,26 @@ export default function StaffJobsPage() {
   const hasSearchSchedule = enabledDays(effectiveSchedule).length > 0
 
   // Зар бүрийн нийцлийн хувь (хуваарьгүй зарт байхгүй)
-  const matchScores = useMemo(() => {
-    const scores = new Map<string, number>()
+  // Зар бүрийн өдөр тус бүрийн нийцэл (хуваарьгүй зарт байхгүй)
+  const fits = useMemo(() => {
+    const map = new Map<string, ScheduleFit>()
     for (const job of jobs) {
-      const score = scheduleMatch(job.work_schedule, effectiveSchedule)
-      if (score !== null) scores.set(job.id, score)
+      const fit = scheduleFit(job.work_schedule, effectiveSchedule, minMatch)
+      if (fit) map.set(job.id, fit)
     }
-    return scores
-  }, [jobs, effectiveSchedule])
+    return map
+  }, [jobs, effectiveSchedule, minMatch])
 
-  const matchingCount = useMemo(
-    () => Array.from(matchScores.values()).filter((score) => score >= minMatch).length,
-    [matchScores, minMatch]
-  )
+  // Ажлын өдрүүдийн аль нэг нь таарвал тохирсон зар
+  const isMatch = (id: string) => (fits.get(id)?.days.length ?? 0) > 0
+  const matchingCount = useMemo(() => Array.from(fits.values()).filter((f) => f.days.length > 0).length, [fits])
 
   // Цаг оруулаагүй бол самбар нээгдэх ч жагсаалтыг шүүхгүй
   const fitActive = fitSchedule && hasSearchSchedule
 
   const filteredJobs = useMemo(() => {
     const list = jobs.filter((job) => {
-      if (fitActive && (matchScores.get(job.id) ?? -1) < minMatch) return false
+      if (fitActive && !(fits.get(job.id)?.days.length)) return false
 
       const isJobApplied = job.is_applied
 
@@ -337,9 +337,14 @@ export default function StaffJobsPage() {
     })
     // Хамгийн их нийцсэн зар эхэнд (тэнцүү бол анхны дараалал хэвээр)
     return fitActive
-      ? list.sort((a, b) => (matchScores.get(b.id) ?? 0) - (matchScores.get(a.id) ?? 0))
+      ? list.sort((a, b) => {
+          const fa = fits.get(a.id)
+          const fb = fits.get(b.id)
+          // Олон өдөр таарсан нь, дараа нь хамгийн их нийцсэн нь эхэнд
+          return (fb?.days.length ?? 0) - (fa?.days.length ?? 0) || (fb?.best ?? 0) - (fa?.best ?? 0)
+        })
       : list
-  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, matchScores, minMatch])
+  }, [jobs, searchQuery, selectedCategory, selectedJobType, filterApplied, fitActive, fits])
 
   // Шүүлт/хуудас солигдох үед богино хугацаанд skeleton харуулна
   const [filteringFlash, setFilteringFlash] = useState<{ ms: number } | null>(null)
@@ -509,7 +514,7 @@ export default function StaffJobsPage() {
                   getSalaryTypeText={getSalaryTypeText}
                   formatSalary={formatSalary}
                   matchPrefix={scheduleMode === "custom" ? "Сонгосон цагт" : "Таны цагт"}
-                  matchPercent={hasSearchSchedule && (matchScores.get(job.id) ?? -1) >= minMatch ? matchScores.get(job.id) : null}
+                  scheduleFit={hasSearchSchedule && isMatch(job.id) ? fits.get(job.id) : null}
                 />
 
                 {adToShow && <AdCard ad={adToShow} onOpenModal={(ad) => setSelectedAd(ad as Ad)} />}

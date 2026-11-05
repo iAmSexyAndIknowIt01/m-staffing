@@ -70,26 +70,43 @@ const toMinutes = (time: string) => {
   return h * 60 + m
 }
 
-// Ажлын хуваарь ажилтны цагтай хэр нийцэж буйг хувиар (0–100) буцаана.
-// Зарын нийт ажлын минутаас ажилтны боломжтой цагтай давхцсан минутын эзлэх хувь:
-//   зар Даваа 09:00–16:00, ажилтан 09:20–15:00 → 340/420 ≈ 81%; 09:10–17:00 → 410/420 ≈ 98%.
-// Хуваарьгүй (хагас цагийн бус) зар эсвэл ажилтан цаг оруулаагүй бол null.
-export function scheduleMatch(job: unknown, availability: unknown): number | null {
+export interface ScheduleFit {
+  // Зарын ажлын өдрийн тоо
+  total: number
+  // Нийцлийн доод хувийг хангасан өдрүүд (Даваа, Бямба г.м.)
+  days: string[]
+  // Хамгийн их нийцсэн өдрийн хувь
+  best: number
+  // Таарсан өдрүүдийн хамгийн бага хувь (таарсан өдөргүй бол 0)
+  worst: number
+}
+
+// Зарын ажлын өдөр бүрийг ажилтны цагтай тус тусад нь харьцуулна.
+// Өдрийн нийцэл = тухайн өдрийн ажлын цагаас ажилтны боломжтой цагтай давхцсан хувь
+//   (Даваа 09:00–16:00, ажилтан 09:20–15:00 → 80%). minPercent-ийг хангасан өдөр «тохирсон».
+// Зарын аль нэг өдөр тохирвол зар тохирно. Хуваарьгүй зар эсвэл ажилтан цаг оруулаагүй бол null.
+export function scheduleFit(job: unknown, availability: unknown, minPercent: number): ScheduleFit | null {
   const jobDays = enabledDays(toSchedule(job)).filter(([, , d]) => TIME_RE.test(d.from) && TIME_RE.test(d.to) && d.from < d.to)
   if (jobDays.length === 0) return null
   const free = toSchedule(availability)
   if (enabledDays(free).length === 0) return null
-  let total = 0
-  let overlap = 0
-  for (const [key, , day] of jobDays) {
-    const start = toMinutes(day.from)
-    const end = toMinutes(day.to)
-    total += end - start
+  const days: string[] = []
+  let best = 0
+  let worst = 100
+  for (const [key, label, day] of jobDays) {
     const slot = free[key]
     if (!slot.enabled || !TIME_RE.test(slot.from) || !TIME_RE.test(slot.to)) continue
-    overlap += Math.max(0, Math.min(end, toMinutes(slot.to)) - Math.max(start, toMinutes(slot.from)))
+    const start = toMinutes(day.from)
+    const end = toMinutes(day.to)
+    const overlap = Math.max(0, Math.min(end, toMinutes(slot.to)) - Math.max(start, toMinutes(slot.from)))
+    const percent = Math.floor((overlap / (end - start)) * 100)
+    best = Math.max(best, percent)
+    if (percent > 0 && percent >= minPercent) {
+      days.push(label)
+      worst = Math.min(worst, percent)
+    }
   }
-  return total > 0 ? Math.floor((overlap / total) * 100) : null
+  return { total: jobDays.length, days, best, worst: days.length ? worst : 0 }
 }
 
 // URL-д хадгалах товч хэлбэр: "monday.0920-1500,saturday.1000-1600" (зөвхөн бүрэн бөглөсөн өдрүүд)

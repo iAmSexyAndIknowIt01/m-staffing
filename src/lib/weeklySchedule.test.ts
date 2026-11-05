@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { compactSchedule, emptySchedule, decodeSchedule, encodeSchedule, scheduleError, scheduleMatch, toSchedule } from "./weeklySchedule"
+import { compactSchedule, emptySchedule, decodeSchedule, encodeSchedule, scheduleError, scheduleFit, toSchedule } from "./weeklySchedule"
 
 describe("weeklySchedule", () => {
   it("DB-ийн утгыг 7 өдрийн хуваарь болгож, танихгүй түлхүүрийг хаяна", () => {
@@ -24,19 +24,27 @@ describe("weeklySchedule", () => {
     expect(compactSchedule(s)).toEqual({ friday: { enabled: true, from: "18:00", to: "22:00" } })
   })
 
-  it("давхцсан цагийн хувиар нийцлийг тооцно", () => {
-    const job = { monday: { enabled: true, from: "09:00", to: "16:00" } }
-    expect(scheduleMatch(job, { monday: { enabled: true, from: "09:00", to: "16:00" } })).toBe(100)
-    expect(scheduleMatch(job, { monday: { enabled: true, from: "08:00", to: "18:00" } })).toBe(100)
-    expect(scheduleMatch(job, { monday: { enabled: true, from: "09:20", to: "15:00" } })).toBe(80)
-    expect(scheduleMatch(job, { monday: { enabled: true, from: "09:10", to: "17:00" } })).toBe(97)
-    expect(scheduleMatch(job, { monday: { enabled: true, from: "17:00", to: "20:00" } })).toBe(0)
-    // Хоёр өдрийн нэгд нь л ажиллах боломжтой
-    const twoDays = { ...job, wednesday: { enabled: true, from: "09:00", to: "16:00" } }
-    expect(scheduleMatch(twoDays, { monday: { enabled: true, from: "09:00", to: "16:00" } })).toBe(50)
+  it("өдөр бүрийн нийцлийг тус тусад нь тооцно", () => {
+    const mon = { monday: { enabled: true, from: "09:00", to: "16:00" } }
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "09:00", to: "16:00" } }, 100)).toEqual({ total: 1, days: ["Даваа"], best: 100, worst: 100 })
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "08:00", to: "18:00" } }, 100)?.best).toBe(100)
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "09:20", to: "15:00" } }, 50)).toEqual({ total: 1, days: ["Даваа"], best: 80, worst: 80 })
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "09:10", to: "17:00" } }, 75)?.best).toBe(97)
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "09:20", to: "15:00" } }, 100)?.days).toEqual([])
+    expect(scheduleFit(mon, { monday: { enabled: true, from: "17:00", to: "20:00" } }, 50)?.days).toEqual([])
+  })
+
+  it("гурван өдрийн нэг нь л таарвал тохирно", () => {
+    const job = {
+      monday: { enabled: true, from: "09:27", to: "16:27" },
+      tuesday: { enabled: true, from: "09:27", to: "14:28" },
+      saturday: { enabled: true, from: "09:27", to: "16:27" },
+    }
+    const fit = scheduleFit(job, { saturday: { enabled: true, from: "09:00", to: "17:00" } }, 100)
+    expect(fit).toEqual({ total: 3, days: ["Бямба"], best: 100, worst: 100 })
     // Хуваарьгүй зар, цаг оруулаагүй ажилтан
-    expect(scheduleMatch(null, job)).toBeNull()
-    expect(scheduleMatch(job, {})).toBeNull()
+    expect(scheduleFit(null, job, 50)).toBeNull()
+    expect(scheduleFit(job, {}, 50)).toBeNull()
   })
 
   it("URL-д хадгалах хэлбэрт хувиргаж, буцааж уншина", () => {

@@ -3,6 +3,7 @@
 import React, { useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { SALARY_NEGOTIABLE } from "@/lib/jobPost"
+import type { ScheduleFit } from "@/lib/weeklySchedule"
 import { CalendarClock, Check, Heart, Share2, MapPin } from "lucide-react"
 
 const VISITED_JOBS_KEY = "visited_jobs"
@@ -57,10 +58,18 @@ interface JobCardProps {
   getSalaryTypeText: (type: string) => string
   formatSalary: (salary: string) => string
   onShare: (e: React.MouseEvent, job: Job) => void
-  // Хагас цагийн зарын ажлын цаг ажилтны цагтай нийцсэн хувь (нийцээгүй бол null)
-  matchPercent?: number | null
+  // Хагас цагийн зарын ажлын өдрүүдээс ажилтны цагтай таарсан нь (таараагүй бол null)
+  scheduleFit?: ScheduleFit | null
   // «Таны цагт» эсвэл «Сонгосон цагт»
   matchPrefix?: string
+}
+
+// «Таны цагт тохирно», «Таны цагт 80% нийцнэ», «Таны цагт бүх өдөр 75%+ нийцнэ», «Таны цагт 3-аас 1 өдөр (Бямба) тохирно»
+function scheduleFitText(fit: ScheduleFit, prefix: string): string {
+  if (fit.total === 1) return fit.best >= 100 ? `${prefix} тохирно` : `${prefix} ${fit.best}% нийцнэ`
+  if (fit.days.length === fit.total) return fit.worst >= 100 ? `${prefix} бүх өдөр тохирно` : `${prefix} бүх өдөр ${fit.worst}%+ нийцнэ`
+  const names = fit.days.length <= 2 ? ` (${fit.days.join(", ")})` : ""
+  return `${prefix} ${fit.total}-аас ${fit.days.length} өдөр${names} тохирно`
 }
 
 function getDaysAgo(dateString: string) {
@@ -97,7 +106,7 @@ export default function JobCard({
   getJobTypeText,
   getSalaryTypeText,
   formatSalary,
-  matchPercent = null,
+  scheduleFit = null,
   matchPrefix = "Таны цагт",
 }: JobCardProps) {
   const logoFullUrl = getCompanyLogoUrl(job.mt_company?.logo_url)
@@ -264,10 +273,13 @@ export default function JobCard({
             {getJobTypeText(job.job_type)}
           </span>
 
-          {matchPercent !== null && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-orange-700 bg-orange-50 rounded-full border border-orange-100">
+          {scheduleFit && scheduleFit.days.length > 0 && (
+            <span
+              title={`Таарсан өдөр: ${scheduleFit.days.join(", ")}`}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-orange-700 bg-orange-50 rounded-full border border-orange-100"
+            >
               <CalendarClock className="w-3 h-3" aria-hidden="true" />
-              {matchPercent >= 100 ? `${matchPrefix} тохирно` : `${matchPrefix} ${matchPercent}% нийцнэ`}
+              {scheduleFitText(scheduleFit, matchPrefix)}
             </span>
           )}
 
