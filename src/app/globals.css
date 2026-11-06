@@ -824,3 +824,16 @@ select:not([multiple]):not([size]) {
     animation: none !important;
   }
 }
+
+/* ===== Хуудасны scrollbar-ыг нуух =====
+   Гүйлгэх (хулганы дугуй, touchpad, гар, хүрэлт) хэвээр ажиллана.
+   Хуудасны хаана явааг дээд талын ScrollProgress мөр харуулна. */
+html,
+body {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}

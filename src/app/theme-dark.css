@@ -40,9 +40,7 @@
   :where(html.dark) .bg-sky-50 { background-color: color-mix(in srgb, var(--color-sky-500) 14%, var(--dk-surface)); }
   :where(html.dark) .bg-slate-100 { background-color: var(--dk-surface-3); }
   :where(html.dark) .bg-slate-200 { background-color: var(--dk-surface-4); }
-  :where(html.dark) .bg-slate-200\/60 { background-color: color-mix(in srgb, var(--dk-surface-4) 60%, transparent); }
   :where(html.dark) .bg-slate-50 { background-color: var(--dk-surface-2); }
-  :where(html.dark) .bg-slate-50\/50 { background-color: color-mix(in srgb, var(--dk-surface-2) 50%, transparent); }
   :where(html.dark) .bg-slate-800\/80 { background-color: color-mix(in srgb, var(--dk-raised-hover) 80%, transparent); }
   :where(html.dark) .bg-slate-900 { background-color: var(--dk-raised); }
   :where(html.dark) .bg-slate-900\/50 { background-color: color-mix(in srgb, var(--dk-raised) 50%, transparent); }
@@ -90,9 +88,7 @@
   :where(html.dark) .border-slate-100 { border-color: var(--dk-border); }
   :where(html.dark) .border-slate-200 { border-color: var(--dk-border-strong); }
   :where(html.dark) .border-slate-200\/50 { border-color: color-mix(in srgb, var(--dk-border-strong) 50%, transparent); }
-  :where(html.dark) .border-slate-200\/60 { border-color: color-mix(in srgb, var(--dk-border-strong) 60%, transparent); }
   :where(html.dark) .border-slate-200\/70 { border-color: color-mix(in srgb, var(--dk-border-strong) 70%, transparent); }
-  :where(html.dark) .border-slate-300\/40 { border-color: color-mix(in srgb, var(--dk-border-strong) 40%, transparent); }
   :where(html.dark) .border-violet-100 { border-color: color-mix(in srgb, var(--color-violet-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-violet-100\/50 { border-color: color-mix(in srgb, var(--color-violet-500) 28%, var(--dk-surface)); }
   :where(html.dark) .border-white { border-color: var(--dk-border); }
