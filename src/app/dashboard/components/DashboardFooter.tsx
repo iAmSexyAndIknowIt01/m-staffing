@@ -124,18 +124,11 @@ export default function DashboardFooter({ role }: { role?: string }) {
         </div>
 
         {/* Хуваах зураас, зохиогчийн эрх */}
-        <div className="mt-12 flex flex-col-reverse items-center gap-4 border-t border-white/10 pt-6 sm:flex-row sm:justify-between">
+        <div className="mt-12 border-t border-white/10 pt-6 text-center">
           <p className="text-xs text-white/50">© {year} {SITE_NAME}. Бүх эрх хуулиар хамгаалагдсан.</p>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Платформ төлөв</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-bold text-white/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              v1.0.0
-            </span>
-          </div>
         </div>
 
-        <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-5 text-white/45">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-xs leading-5 text-white/45">
           {SITE_NAME} нь Монголын ажил хайгч болон ажил олгогчдыг холбох цахим платформ юм. Энэхүү платформоор дамжуулан ажлын зар нийтлэх,
           ажилтан хайх, анкет илгээх, сонгон шалгаруулалтаа нэг дороос удирдах боломжтой.
         </p>
