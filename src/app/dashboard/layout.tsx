@@ -42,7 +42,7 @@ export default async function DashboardLayout({
       </div>
 
       {/* Зөвхөн dashboard дотор харагдах Footer */}
-      <DashboardFooter />
+      <DashboardFooter role={session.role} />
 
     </div>
   )
