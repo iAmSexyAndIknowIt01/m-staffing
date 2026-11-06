@@ -28,7 +28,7 @@ const HELP_LINKS: FooterLink[] = [
 ]
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">{children}</h2>
+  return <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-400/90">{children}</h2>
 }
 
 function FooterLinkItem({ href, label }: FooterLink) {
@@ -36,7 +36,7 @@ function FooterLinkItem({ href, label }: FooterLink) {
     <li>
       <Link
         href={href}
-        className="group inline-flex items-center gap-1 text-sm text-white/80 transition-colors duration-200 hover:text-orange-300"
+        className="group inline-flex items-center gap-1 text-sm text-white/80 transition-colors duration-200 hover:text-orange-400"
       >
         {label}
         <ArrowUpRight
@@ -48,17 +48,17 @@ function FooterLinkItem({ href, label }: FooterLink) {
   )
 }
 
-// Нэвтэрсний дараах (хянах самбарын) footer — бараан хөх дэвсгэр, баганатай холбоос, доод талд том нэр
+// Нэвтэрсний дараах (хянах самбарын) footer — системийн slate + улбар шар өнгө, баганатай холбоос, доод талд том нэр
 export default function DashboardFooter({ role }: { role?: string }) {
   const quickLinks = QUICK_LINKS[role === "company" ? "company" : "staff"]
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative mt-auto w-full shrink-0 overflow-hidden bg-[#071330] text-white">
-      {/* Дэвсгэрийн gradient, гэрэлтэлт */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-[#0b1d4a] via-[#071330] to-[#03060f]" aria-hidden="true" />
+    <footer className="relative mt-auto w-full shrink-0 overflow-hidden bg-slate-900 text-white">
+      {/* Дэвсгэр: dashboard-ийн мэндчилгээний хэсэгтэй ижил slate gradient, брэндийн улбар шар гэрэлтэлт */}
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-slate-800 via-slate-900 to-slate-950" aria-hidden="true" />
       <div className="pointer-events-none absolute -top-40 -left-24 h-96 w-96 rounded-full bg-orange-500/15 blur-[120px]" aria-hidden="true" />
-      <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-sky-500/10 blur-[120px]" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-40 right-0 h-96 w-96 rounded-full bg-amber-400/10 blur-[120px]" aria-hidden="true" />
 
       <div className="relative mx-auto max-w-7xl px-6 pt-14 sm:pt-16 lg:px-10">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
@@ -68,7 +68,7 @@ export default function DashboardFooter({ role }: { role?: string }) {
               <img src="/logo.png" alt="" width={44} height={44} className="h-11 w-11 rounded-xl" />
               <span>
                 <span className="block text-xl font-extrabold tracking-tight">{SITE_NAME}</span>
-                <span className="block text-xs text-white/50">Цаг бүр үнэ цэнэтэй</span>
+                <span className="block text-xs text-orange-300/80">Цаг бүр үнэ цэнэтэй</span>
               </span>
             </Link>
             <p className="mt-5 max-w-xs text-sm leading-6 text-white/55">
@@ -82,14 +82,14 @@ export default function DashboardFooter({ role }: { role?: string }) {
             <ul className="mt-5 space-y-3.5 text-sm text-white/80">
               {SITE_CONTACT.email && (
                 <li>
-                  <a href={`mailto:${SITE_CONTACT.email}`} className="inline-flex items-center gap-2.5 transition-colors hover:text-orange-300">
+                  <a href={`mailto:${SITE_CONTACT.email}`} className="inline-flex items-center gap-2.5 transition-colors hover:text-orange-400">
                     <Mail className="w-4 h-4 text-orange-400" aria-hidden="true" /> {SITE_CONTACT.email}
                   </a>
                 </li>
               )}
               {SITE_CONTACT.phone && (
                 <li>
-                  <a href={`tel:${SITE_CONTACT.phone}`} className="inline-flex items-center gap-2.5 transition-colors hover:text-orange-300">
+                  <a href={`tel:${SITE_CONTACT.phone}`} className="inline-flex items-center gap-2.5 transition-colors hover:text-orange-400">
                     <Phone className="w-4 h-4 text-orange-400" aria-hidden="true" /> {SITE_CONTACT.phone}
                   </a>
                 </li>
@@ -143,7 +143,7 @@ export default function DashboardFooter({ role }: { role?: string }) {
         {/* Доод талын том нэр — дээрээс доош бүдгэрнэ */}
         <div
           aria-hidden="true"
-          className="pointer-events-none mt-4 select-none text-center font-black leading-[0.8] tracking-tighter bg-linear-to-b from-white/35 via-white/12 to-transparent bg-clip-text text-transparent text-[18vw] lg:text-[12.5rem] translate-y-[12%]"
+          className="pointer-events-none mt-4 select-none text-center font-black leading-[0.8] tracking-tighter bg-linear-to-b from-orange-400/45 via-orange-500/15 to-transparent bg-clip-text text-transparent text-[18vw] lg:text-[12.5rem] translate-y-[12%]"
         >
           {SITE_NAME}
         </div>
