@@ -4,6 +4,7 @@ import "./globals.css";
 import FloatingThemeToggle from "@/components/theme/FloatingThemeToggle";
 import AppDialogHost from "@/components/common/AppDialog";
 import ScrollToTop from "@/components/common/ScrollToTop";
+import ScrollProgress from "@/components/common/ScrollProgress";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { getSiteOrigin } from "@/lib/url";
 
@@ -94,6 +95,7 @@ export default function RootLayout({
         <FloatingThemeToggle />
         <AppDialogHost />
         <ScrollToTop />
+        <ScrollProgress />
         
       </body>
     </html>
