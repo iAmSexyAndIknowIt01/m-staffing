@@ -15,7 +15,7 @@ export default function FloatingThemeToggle() {
 
   return (
     <ThemeToggle
-      className={`fixed ${position} z-40 w-11 h-11 rounded-full grid place-items-center bg-white/90 border border-gray-200 text-gray-700 shadow-sm backdrop-blur hover:text-orange-500 transition`}
+      className={`print:hidden fixed ${position} z-40 w-11 h-11 rounded-full grid place-items-center bg-white/90 border border-gray-200 text-gray-700 shadow-sm backdrop-blur hover:text-orange-500 transition`}
     />
   )
 }

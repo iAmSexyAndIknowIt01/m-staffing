@@ -42,7 +42,7 @@ export default function ScrollProgress() {
   }, [pathname])
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-100002 h-0.75">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-100002 h-0.75 print:hidden">
       <div
         ref={barRef}
         className="h-full origin-left bg-linear-to-r from-orange-500 via-orange-400 to-amber-300 shadow-[0_0_10px_rgba(249,115,22,0.6)] transition-opacity duration-300"
