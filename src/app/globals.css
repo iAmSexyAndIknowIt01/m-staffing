@@ -837,3 +837,16 @@ html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none;
 }
+
+/* ===== Хэвлэх (Үйлчилгээний нөхцөл, нууцлалын бодлого г.м.) =====
+   Скроллоор гарч ирдэг, хөдөлгөөнтэй элементүүдийг шууд харуулна */
+@media print {
+  .reveal,
+  .dash-in,
+  .animate-in {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+}
