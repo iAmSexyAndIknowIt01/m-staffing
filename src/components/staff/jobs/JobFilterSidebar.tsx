@@ -107,14 +107,18 @@ export default function JobFilterSidebar({
     const type: Record<string, number> = {}
     const category: Record<string, number> = {}
     let applied = 0
+    let inType = 0
     for (const job of jobs) {
       type[job.job_type] = (type[job.job_type] ?? 0) + 1
+      if (job.is_applied) applied++
+      // Ангиллын тоо зөвхөн сонгосон ажлын төрлийн зараас
+      if (selectedJobType && job.job_type !== selectedJobType) continue
+      inType++
       const key = job.category?.trim().toLowerCase()
       if (key) category[key] = (category[key] ?? 0) + 1
-      if (job.is_applied) applied++
     }
-    return { type, category, applied: { all: jobs.length, applied, not_applied: jobs.length - applied } as Record<string, number> }
-  }, [jobs])
+    return { type, category, inType, applied: { all: jobs.length, applied, not_applied: jobs.length - applied } as Record<string, number> }
+  }, [jobs, selectedJobType])
 
   // Зар байгаа төрлүүд (сонгосон нь 0 байсан ч харагдана)
   const jobTypes = JOB_TYPE_OPTIONS.filter((t) => counts.type[t.value] || selectedJobType === t.value)
@@ -246,9 +250,9 @@ export default function JobFilterSidebar({
       )}
 
       {sortedCategories.length > 0 && (
-        <Section title="Ангилал">
+        <Section title={selectedJobType ? `Ангилал · ${JOB_TYPE_OPTIONS.find((t) => t.value === selectedJobType)?.label ?? ""}` : "Ангилал"}>
           <div role="radiogroup" aria-label="Ангилал" className="space-y-0.5">
-            <OptionRow label="Бүх ангилал" count={jobs.length} selected={!selectedCategory} onClick={() => setSelectedCategory("")} />
+            <OptionRow label="Бүх ангилал" count={counts.inType} selected={!selectedCategory} onClick={() => setSelectedCategory("")} />
             {visibleCategories.map((cat) => {
               const selected = selectedCategory.toLowerCase() === cat
               return (

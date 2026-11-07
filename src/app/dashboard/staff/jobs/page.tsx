@@ -268,8 +268,10 @@ export default function StaffJobsPage() {
     fetchData();
   }, [])
 
+  // Ангилал: ажлын төрөл сонгосон бол зөвхөн тухайн төрлийн зарын ангиллууд
   const categories = useMemo(() => {
     const lowerCategories = jobs
+      .filter((j) => !selectedJobType || j.job_type === selectedJobType)
       .map((j) => j.category?.trim().toLowerCase())
       .filter(Boolean)
 
@@ -277,7 +279,7 @@ export default function StaffJobsPage() {
 
     // Утгыг (жижиг үсгээр) хадгалж, шүүлтүүр дээр монгол шошгоор харуулна
     return uniqueLower
-  }, [jobs])
+  }, [jobs, selectedJobType])
 
   const getJobTypeText = (type: string) => getJobTypeLabel(type)
 
@@ -368,6 +370,18 @@ export default function StaffJobsPage() {
     flashFiltering(350)
   }
 
+  // Ажлын төрөл солиход сонгосон ангилал тухайн төрөлд зар байхгүй бол ангиллыг цэвэрлэнэ
+  const changeJobType = (type: string) => {
+    setSelectedJobType(type)
+    if (
+      type &&
+      selectedCategory &&
+      !jobs.some((j) => j.job_type === type && j.category?.trim().toLowerCase() === selectedCategory.toLowerCase())
+    ) {
+      setSelectedCategory("")
+    }
+  }
+
   const toggleFitSchedule = () => withPageReset((v) => setFitSchedule(v === "1"))(fitSchedule ? "" : "1")
 
   // Цаг бичих бүрт жагсаалт шууд шинэчлэгдэнэ (skeleton анивчуулахгүй)
@@ -437,7 +451,7 @@ export default function StaffJobsPage() {
             selectedCategory={selectedCategory}
             setSelectedCategory={withPageReset(setSelectedCategory)}
             selectedJobType={selectedJobType}
-            setSelectedJobType={withPageReset(setSelectedJobType)}
+            setSelectedJobType={withPageReset(changeJobType)}
             filterApplied={filterApplied}
             setFilterApplied={withPageReset(setFilterApplied)}
             categories={categories}
@@ -457,7 +471,7 @@ export default function StaffJobsPage() {
               selectedCategory={selectedCategory}
               setSelectedCategory={withPageReset(setSelectedCategory)}
               selectedJobType={selectedJobType}
-              setSelectedJobType={withPageReset(setSelectedJobType)}
+              setSelectedJobType={withPageReset(changeJobType)}
               filterApplied={filterApplied}
               setFilterApplied={withPageReset(setFilterApplied)}
               categories={categories}
