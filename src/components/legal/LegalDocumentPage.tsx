@@ -6,30 +6,58 @@ import { LegalArticles, LegalLoadError, getLegalRows, sectionId, type LegalTable
 import { SITE_CONTACT, SITE_NAME } from "@/lib/siteInfo"
 import LegalToc from "./LegalToc"
 
-interface LegalDocumentPageProps {
-  table: LegalTable
-  title: string
-  description: string
+export type LegalDocKey = "terms" | "privacy"
+
+// Нийтийн (/terms, /privacy) болон хянах самбарын (/dashboard/terms, /dashboard/privacy) хуудас ижил агуулгатай
+export const LEGAL_DOCS: Record<LegalDocKey, { table: LegalTable; title: string; description: string }> = {
+  terms: {
+    table: "mt_terms",
+    title: "Үйлчилгээний нөхцөл",
+    description: `${SITE_NAME} платформд бүртгүүлж, ашиглахтай холбогдсон нөхцөл, хэрэглэгчийн эрх үүрэг.`,
+  },
+  privacy: {
+    table: "mt_privacy",
+    title: "Нууцлалын бодлого",
+    description: "Таны хувийн мэдээллийг хэрхэн цуглуулж, ашиглаж, хамгаалдаг тухай.",
+  },
 }
 
-// Үйлчилгээний нөхцөл, нууцлалын бодлогын нийтэд харагдах албан ёсны хуудас:
+interface LegalDocumentPageProps {
+  doc: LegalDocKey
+  // public — нүүрний navbar/footer-тэй; dashboard — хянах самбарын shell дотор
+  context?: "public" | "dashboard"
+}
+
+// Үйлчилгээний нөхцөл, нууцлалын бодлогын албан ёсны хуудас:
 // толгой хэсэг (замын мөр, гарчиг, мета), хажуугийн агуулга, хуудас мэт баримтын бие, холбоо барих хэсэг
-export default async function LegalDocumentPage({ table, title, description }: LegalDocumentPageProps) {
+export default async function LegalDocumentPage({ doc, context = "public" }: LegalDocumentPageProps) {
+  const { table, title, description } = LEGAL_DOCS[doc]
   const rows = await getLegalRows(table)
-  const otherDoc = table === "mt_terms" ? { href: "/privacy", label: "Нууцлалын бодлого" } : { href: "/terms", label: "Үйлчилгээний нөхцөл" }
+  const inDashboard = context === "dashboard"
+  const base = inDashboard ? "/dashboard" : ""
+  const other: LegalDocKey = doc === "terms" ? "privacy" : "terms"
+  const otherDoc = { href: `${base}/${other}`, label: LEGAL_DOCS[other].title }
 
   return (
     <>
-      <div className="print:hidden">
-        <Navbar />
-      </div>
+      {!inDashboard && (
+        <div className="print:hidden">
+          <Navbar />
+        </div>
+      )}
 
-      <div className="bg-slate-50 print:bg-white">
+      <div className={inDashboard ? "w-full" : "bg-slate-50 print:bg-white"}>
         {/* ТОЛГОЙ */}
-        <header className="border-b border-slate-200 bg-white pt-28 md:pt-36 pb-10 md:pb-12 print:pt-0">
-          <div className="mx-auto max-w-6xl px-5 md:px-8">
-            <nav aria-label="Замын мөр" className="dash-in flex items-center gap-1.5 text-xs font-medium text-slate-400 print:hidden">
-              <Link href="/" className="hover:text-slate-700">Нүүр</Link>
+        <header
+          className={
+            inDashboard
+              ? "rounded-2xl border border-slate-200 bg-white p-6 md:p-8 print:border-0 print:p-0"
+              : "border-b border-slate-200 bg-white pt-28 md:pt-36 pb-10 md:pb-12 print:pt-0"
+          }
+        >
+          <div className={inDashboard ? "" : "mx-auto max-w-6xl px-5 md:px-8"}>
+            <nav aria-label="Замын мөр" className="dash-in flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-medium text-slate-400 whitespace-nowrap print:hidden">
+              <Link href={inDashboard ? "/dashboard" : "/"} className="hover:text-slate-700">{inDashboard ? "Хянах самбар" : "Нүүр"}</Link>
               <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Хууль эрх зүй</span>
               <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -74,13 +102,13 @@ export default async function LegalDocumentPage({ table, title, description }: L
         </header>
 
         {/* АГУУЛГА + БАРИМТ */}
-        <div className="mx-auto max-w-6xl px-5 md:px-8 py-10 md:py-14 print:p-0">
+        <div className={inDashboard ? "pt-8 print:p-0" : "mx-auto max-w-6xl px-5 md:px-8 py-10 md:py-14 print:p-0"}>
           {rows.length === 0 ? (
             <LegalLoadError />
           ) : (
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12">
               <aside className="hidden lg:block print:hidden">
-                <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className={`sticky ${inDashboard ? "top-6 max-h-[calc(100vh-3rem)]" : "top-28 max-h-[calc(100vh-8rem)]"} overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
                   <LegalToc items={rows.map((row) => ({ id: sectionId(row), title: row.title }))} />
                 </div>
               </aside>
@@ -131,9 +159,11 @@ export default async function LegalDocumentPage({ table, title, description }: L
         </div>
       </div>
 
-      <div className="print:hidden">
-        <Footer />
-      </div>
+      {!inDashboard && (
+        <div className="print:hidden">
+          <Footer />
+        </div>
+      )}
     </>
   )
 }

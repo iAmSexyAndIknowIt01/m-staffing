@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic"
 
 export default function PrivacyPage() {
-  return <LegalDocumentPage table="mt_privacy" title="Нууцлалын бодлого" description={"Таны хувийн мэдээллийг хэрхэн цуглуулж, ашиглаж, хамгаалдаг тухай."} />
+  return <LegalDocumentPage doc="privacy" />
 }

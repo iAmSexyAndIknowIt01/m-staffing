@@ -77,28 +77,3 @@ export function LegalLoadError() {
     </p>
   )
 }
-
-// Хянах самбарын дотор харуулах хувилбар: агуулга дээр нь, заалтууд доор нь
-export default async function LegalDocument({ table }: { table: LegalTable }) {
-  const rows = await getLegalRows(table)
-  if (rows.length === 0) return <LegalLoadError />
-
-  return (
-    <div>
-      <nav aria-label="Агуулга" className="mb-8 rounded-xl border border-slate-200 bg-slate-50/70 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Агуулга</p>
-        <ol className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-          {rows.map((row, i) => (
-            <li key={row.id} className="flex gap-2">
-              <span className="w-5 shrink-0 tabular-nums text-slate-400">{i + 1}.</span>
-              <a href={`#${sectionId(row)}`} className="text-slate-600 hover:text-orange-600">
-                {row.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-      <LegalArticles rows={rows} />
-    </div>
-  )
-}

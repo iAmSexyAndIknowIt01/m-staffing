@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic"
 
 export default function TermsPage() {
-  return <LegalDocumentPage table="mt_terms" title="Үйлчилгээний нөхцөл" description={`${SITE_NAME} платформд бүртгүүлж, ашиглахтай холбогдсон нөхцөл, хэрэглэгчийн эрх үүрэг.`} />
+  return <LegalDocumentPage doc="terms" />
 }
