@@ -5,7 +5,6 @@ import Footer from "@/components/landing/Footer"
 import { LegalArticles, LegalLoadError, getLegalRows, sectionId, type LegalTable } from "@/components/landing/LegalDocument"
 import { SITE_CONTACT, SITE_NAME } from "@/lib/siteInfo"
 import LegalToc from "./LegalToc"
-import PrintButton from "./PrintButton"
 
 interface LegalDocumentPageProps {
   table: LegalTable
@@ -37,16 +36,13 @@ export default async function LegalDocumentPage({ table, title, description }: L
               <span className="text-slate-600" aria-current="page">{title}</span>
             </nav>
 
-            <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="mt-6">
               <div style={{ "--d": 100 } as React.CSSProperties} className="dash-in max-w-2xl">
                 <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-600">
                   <Scale className="w-4 h-4" aria-hidden="true" /> {SITE_NAME} · Хууль эрх зүйн баримт бичиг
                 </p>
                 <h1 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight text-slate-900">{title}</h1>
                 <p className="mt-3 text-base leading-relaxed text-slate-500">{description}</p>
-              </div>
-              <div style={{ "--d": 180 } as React.CSSProperties} className="dash-in">
-                <PrintButton />
               </div>
             </div>
 
