@@ -235,6 +235,22 @@ body {
   animation: scrollDot 1.8s ease-in-out infinite;
 }
 
+/* Улаанбаатарын skyline — 4 хуулбараас нэгийн өргөнөөр зүүн тийш гүйнэ */
+@keyframes skylineRun {
+  from { transform: translateX(0); }
+  to { transform: translateX(-25%); }
+}
+
+.animate-skyline {
+  animation: skylineRun 40s linear infinite;
+}
+
+/* Хоёр захыг бүдгэрүүлэх */
+.skyline-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+
 /* Navbar дээрээс бууж ирэх */
 @keyframes navIn {
   from { opacity: 0; transform: translateY(-24px); }
@@ -366,6 +382,7 @@ html.dark .text-shimmer-ink {
   .animate-orb,
   .animate-scroll-dot,
   .animate-nav-in,
+  .animate-skyline,
   .text-shimmer,
   .text-shimmer-light,
   .text-shimmer-ink,

@@ -1,6 +1,7 @@
 import { Zap } from "lucide-react"
 import Link from "next/link"
 import FooterPlatformLinks from "./FooterPlatformLinks"
+import UbSkyline from "./UbSkyline"
 
 export default function Footer() {
   return (
@@ -70,6 +71,8 @@ export default function Footer() {
       />
 
       <div className="relative z-10 max-w-350 mx-auto px-4 md:px-6 transform-gpu">
+        <UbSkyline className="mb-8 md:mb-12" />
+
         <div
           className="
             rounded-4xl
