@@ -6,6 +6,12 @@ import Stats from "@/components/landing/Stats"
 import CTA from "@/components/landing/CTA"
 import Footer from "@/components/landing/Footer"
 import ScrollProgress from "@/components/landing/ScrollProgress"
+import type { Metadata } from "next"
+
+// www болон www-гүй хаяг хоёулаа ажилладаг тул Google-д үндсэн хаягийг заана
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+}
 
 export default function Home() {
   return (

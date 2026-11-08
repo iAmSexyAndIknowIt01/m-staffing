@@ -8,6 +8,7 @@ import { CONTRACTS_ENABLED } from "@/lib/features"
 export const metadata: Metadata = {
   title: "Бидний тухай",
   description: `${SITE_NAME} — ажил хайгч болон ажил олгогчийг нэг дор холбох платформ.`,
+  alternates: { canonical: "/about" },
 }
 
 const PILLARS = [
