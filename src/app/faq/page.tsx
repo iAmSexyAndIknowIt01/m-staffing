@@ -8,6 +8,7 @@ import { PAID_PLAN_TYPES, PLANS } from "@/lib/planCatalog"
 export const metadata: Metadata = {
   title: "Түгээмэл асуулт",
   description: `${SITE_NAME}-ийн бүртгэл, анкет, зар нийтлэх, багц, мэдэгдлийн талаар түгээмэл асуудаг асуултууд.`,
+  alternates: { canonical: "/faq" },
 }
 
 const money = (n: number) => `${n.toLocaleString("en-US")}₮`

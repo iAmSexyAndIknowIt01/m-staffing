@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { MAIL_FROM, codeEmailHtml, transporter } from "@/lib/mailer";
+import { codeEmailHtml, sendCodeEmail } from "@/lib/mailer";
 import { escapeLikePattern, generateCode, hashCode, isCodeMatch, normalizeEmail } from "@/lib/authCode";
 import { getClientIp } from "@/lib/clientIp";
 import { MAIL_CODE_MAX_PER_IP, MAIL_CODE_WINDOW_MS, isRateLimited, recordRateEvent } from "@/lib/rateLimit";
@@ -76,8 +76,7 @@ export async function POST(req: Request) {
 
     await recordRateEvent("mail_code", ip)
 
-    await transporter.sendMail({
-      from: MAIL_FROM,
+    await sendCodeEmail({
       to: email,
       subject: "MStaffing - Бүртгэл баталгаажуулах код",
       html: codeEmailHtml(

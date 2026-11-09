@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
-import { MAIL_FROM, codeEmailHtml, transporter } from "@/lib/mailer"
+import { codeEmailHtml, sendCodeEmail } from "@/lib/mailer"
 import {
   RESET_CODE_TTL_MS,
   RESET_MAX_ATTEMPTS,
@@ -101,8 +101,7 @@ export async function POST(req: Request) {
     if (insertError) throw insertError
 
     try {
-      await transporter.sendMail({
-        from: MAIL_FROM,
+      await sendCodeEmail({
         to: email,
         subject: "MStaffing - Нууц үг сэргээх код",
         html: codeEmailHtml(
