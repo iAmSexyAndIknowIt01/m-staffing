@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer"
+import { getResendConfig, sendViaResend, type MailMessage } from "./resend"
 
 // Gmail SMTP. GMAIL_USER, GMAIL_APP_PASSWORD орчны хувьсагч шаардлагатай.
 export const transporter = nodemailer.createTransport({
@@ -10,6 +11,24 @@ export const transporter = nodemailer.createTransport({
 })
 
 export const MAIL_FROM = `"MStaffing" <${process.env.GMAIL_USER}>`
+
+// Баталгаажуулах код (OTP)-ыг илгээнэ.
+// RESEND_API_KEY байвал noreply@mstaffing.mn-ээс Resend-ээр явуулна.
+// Resend тохируулаагүй эсвэл алдаа өгвөл (жишээ нь Free багцын өдрийн 100 имэйлийн хязгаар)
+// код заавал хүрэх ёстой тул Gmail-ээр дахин илгээнэ.
+export async function sendCodeEmail(message: MailMessage): Promise<void> {
+  const resend = getResendConfig()
+  if (resend) {
+    try {
+      await sendViaResend(message, resend)
+      return
+    } catch (error) {
+      console.error("RESEND_SEND_ERROR (Gmail руу шилжинэ):", error)
+    }
+  }
+
+  await transporter.sendMail({ from: MAIL_FROM, ...message })
+}
 
 export function escapeHtml(value: string): string {
   return value
