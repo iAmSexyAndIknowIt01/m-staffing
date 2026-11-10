@@ -73,9 +73,12 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
         <LinkNext
           href="/dashboard"
           onClick={() => setMobileMenuOpen(false)}
-          className="font-bold tracking-wide text-orange-500 hover:opacity-80 transition"
+          aria-label="MStaffing"
+          className="flex items-center gap-0.5 font-bold tracking-wide text-orange-500 hover:opacity-80 transition"
         >
-          MStaffing
+          {/* «M» үсгийн оронд лого */}
+          <img src="/logo.png" alt="" width={28} height={28} className="w-7 h-7 shrink-0" />
+          <span>Staffing</span>
         </LinkNext>
 
         <div className="flex items-center gap-1">
