@@ -235,10 +235,10 @@ body {
   animation: scrollDot 1.8s ease-in-out infinite;
 }
 
-/* Улаанбаатарын skyline — 4 хуулбараас нэгийн өргөнөөр зүүн тийш гүйнэ */
+/* Улаанбаатарын skyline — N хуулбараас нэгийн өргөнөөр (--skyline-tiles) зүүн тийш гүйнэ */
 @keyframes skylineRun {
   from { transform: translateX(0); }
-  to { transform: translateX(-25%); }
+  to { transform: translateX(calc(-100% / var(--skyline-tiles, 4))); }
 }
 
 .animate-skyline {

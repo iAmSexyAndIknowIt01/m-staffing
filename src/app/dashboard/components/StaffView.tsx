@@ -19,6 +19,7 @@ import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
 import FoalLean from "@/components/common/FoalLean"
+import HeroSkyline from "./HeroSkyline"
 import CountUp from "@/components/landing/CountUp"
 import { delay } from "./dashMotion"
 import StatCard, { ARROW_HOVER, CARD_HOVER, ICON_HOVER } from "./DashStatCard"
@@ -143,8 +144,9 @@ export default function StaffView({ userId }: StaffViewProps) {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* МЭНДЧИЛГЭЭ */}
-      <section className="dash-hero bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div>
+      <section className="dash-hero bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 pb-20 sm:p-8 sm:pb-24 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <HeroSkyline />
+        <div className="relative z-1">
           <p style={delay(200)} className="dash-in text-sm font-medium text-slate-300">
             {now.getMonth() + 1} сарын {now.getDate()}, {WEEKDAYS[now.getDay()]} гараг
           </p>
@@ -155,7 +157,7 @@ export default function StaffView({ userId }: StaffViewProps) {
               : "Шинэ ажлын байр нэмэгдэхэд энд харагдана."}
           </p>
         </div>
-        <div style={delay(440)} className="dash-in">
+        <div style={delay(440)} className="dash-in relative z-1">
         <FoalLean>
           <Link
             href="/dashboard/staff/jobs"
