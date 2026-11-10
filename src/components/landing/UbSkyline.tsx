@@ -66,15 +66,26 @@ function SkylineTile() {
   )
 }
 
-export default function UbSkyline({ className = "" }: { className?: string }) {
+type UbSkylineProps = {
+  className?: string
+  // Өндөр, өнгө зэргийг дуудагч тал өгнө (жишээ: "h-24 md:h-32 text-white/35")
+  sizeClassName?: string
+  // Намхан байршилд tile нарийсдаг тул өргөн дэлгэцийг дүүргэхэд олон хуулбар хэрэгтэй
+  tiles?: number
+}
+
+export default function UbSkyline({ className = "", sizeClassName = "h-24 md:h-32 text-white/35", tiles = 4 }: UbSkylineProps) {
   return (
     <div
       role="img"
       aria-label="Улаанбаатар хотын дүрс"
-      className={`skyline-mask relative h-24 md:h-32 overflow-hidden text-white/35 ${className}`}
+      className={`skyline-mask relative overflow-hidden ${sizeClassName} ${className}`}
     >
-      <div className="animate-skyline flex h-full w-max transform-gpu">
-        {[0, 1, 2, 3].map((i) => (
+      <div
+        className="animate-skyline flex h-full w-max transform-gpu"
+        style={{ "--skyline-tiles": tiles } as React.CSSProperties}
+      >
+        {Array.from({ length: tiles }, (_, i) => (
           <SkylineTile key={i} />
         ))}
       </div>
