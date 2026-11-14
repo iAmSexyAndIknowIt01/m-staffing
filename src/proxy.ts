@@ -13,6 +13,14 @@ const ROLE_PATH = /^\/dashboard\/(company|staff)(\/|$)/
 export async function proxy(request: NextRequest) {
   const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)
 
+  // Нүүр хуудас: нэвтэрсэн хэрэглэгчийг өөрийн самбар руу шууд шилжүүлнэ
+  // (/dashboard нь ажил олгогчид компанийн, ажил хайгчид ажил хайгчийн самбарыг харуулна).
+  // Зочин бол landing-ийг хэвээр үзүүлнэ.
+  if (request.nextUrl.pathname === "/") {
+    if (!session) return NextResponse.next()
+    return NextResponse.redirect(new URL(session.isAdmin ? "/admin/dashboard" : "/dashboard", request.url))
+  }
+
   if (!session) {
     // Нэвтэрсний дараа анх очих гэсэн хуудас руугаа буцна
     const { pathname, search } = request.nextUrl
@@ -41,5 +49,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/admin/:path*"],
 }
