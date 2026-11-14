@@ -79,21 +79,21 @@ export default async function LegalDocumentPage({ doc, context = "public" }: Leg
               <div className="flex items-center gap-3 px-4 py-3">
                 <FileText className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-slate-400">Баримтын төрөл</dt>
+                  <dt className="text-xs uppercase tracking-wider text-slate-400">Баримтын төрөл</dt>
                   <dd className="font-medium text-slate-800">{title}</dd>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-4 py-3 border-t border-slate-200 sm:border-t-0 sm:border-l">
                 <Users className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-slate-400">Хамрах хүрээ</dt>
+                  <dt className="text-xs uppercase tracking-wider text-slate-400">Хамрах хүрээ</dt>
                   <dd className="font-medium text-slate-800">Ажил хайгч, ажил олгогч</dd>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-4 py-3 border-t border-slate-200 sm:border-t-0 sm:border-l">
                 <Scale className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-slate-400">Нийт заалт</dt>
+                  <dt className="text-xs uppercase tracking-wider text-slate-400">Нийт заалт</dt>
                   <dd className="font-medium text-slate-800 tabular-nums">{rows.length}</dd>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default async function LegalDocumentPage({ doc, context = "public" }: Leg
               >
                 {/* Баримтын толгой */}
                 <div className="border-b border-slate-200 px-6 py-6 md:px-10 md:py-8 text-center">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">{SITE_NAME} платформ</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">{SITE_NAME} платформ</p>
                   <p className="mt-2 text-xl md:text-2xl font-bold uppercase tracking-wide text-slate-900">{title}</p>
                   <div className="mx-auto mt-4 h-px w-16 bg-orange-500" aria-hidden="true" />
                 </div>

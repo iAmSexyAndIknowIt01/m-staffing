@@ -116,7 +116,7 @@ function StaffRow({ staff, backQuery }: { staff: Staff; backQuery: string }) {
               {DAYS_OF_WEEK.map((d) => (
                 <span
                   key={d.value}
-                  className={`w-7 h-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
+                  className={`w-7 h-6 rounded-md text-xs font-semibold flex items-center justify-center ${
                     available.has(d.value) ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-300"
                   }`}
                 >

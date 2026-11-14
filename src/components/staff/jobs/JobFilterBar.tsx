@@ -163,7 +163,7 @@ export default function JobFilterBar({
           <CalendarClock className="w-3.5 h-3.5" aria-hidden="true" />
           Цагаар хайх
           {fitCount > 0 && (
-            <span className={`rounded-md px-1.5 text-[11px] tabular-nums ${fitSchedule ? "bg-white/20" : "bg-white text-orange-700"}`}>
+            <span className={`rounded-md px-1.5 text-xs tabular-nums ${fitSchedule ? "bg-white/20" : "bg-white text-orange-700"}`}>
               {fitCount}
             </span>
           )}

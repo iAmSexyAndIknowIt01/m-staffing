@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ShieldAlert, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import PasswordInput from "@/components/common/PasswordInput"
+import { safeNextPath } from "@/lib/redirect"
 import { AnimatedHeadline, AuthBackdrop, RoleToggle, stagger } from "@/components/auth/AuthMotion"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -89,7 +90,9 @@ export default function LoginPage() {
         return
       }
 
-      window.location.href = data.redirect
+      // ?next= байвал (хамгаалалттай хуудаснаас шилжиж ирсэн) тэнд нь буцаана
+      const next = safeNextPath(new URLSearchParams(window.location.search).get("next"))
+      window.location.href = next ?? data.redirect
 
     } catch {
       setErrorMessage("Нэвтрэх үед системд алдаа гарлаа. Та дараа дахин оролдоно уу.")
@@ -190,7 +193,7 @@ export default function LoginPage() {
                 </p>
               )}
               <div className="mt-3 text-right">
-                <Link href="/forgot-password" className="orange-text text-sm hover:underline">
+                <Link href="/forgot-password" className="orange-text text-sm inline-flex min-h-6 items-center hover:underline">
                   Нууц үгээ мартсан уу?
                 </Link>
               </div>

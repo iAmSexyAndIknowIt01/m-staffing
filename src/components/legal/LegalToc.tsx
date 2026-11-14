@@ -40,7 +40,7 @@ export default function LegalToc({ items }: { items: TocItem[] }) {
 
   return (
     <nav aria-label="Баримт бичгийн агуулга">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Агуулга</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Агуулга</p>
       <ol className="mt-4 space-y-0.5 border-l border-slate-200">
         {items.map((item, i) => {
           const isActive = active === item.id
