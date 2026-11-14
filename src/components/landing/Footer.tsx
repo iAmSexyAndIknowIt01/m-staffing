@@ -1,6 +1,5 @@
 import { Zap } from "lucide-react"
 import Link from "next/link"
-import FooterPlatformLinks from "./FooterPlatformLinks"
 import UbSkyline from "./UbSkyline"
 
 export default function Footer() {
@@ -156,7 +155,15 @@ export default function Footer() {
                   text-gray-400
                 "
               >
-                <FooterPlatformLinks />
+                <Link href="/dashboard/staff/jobs" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
+                  Ажил хайх
+                </Link>
+                <Link href="/dashboard/company/search-staff" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
+                  Ажилтан хайх
+                </Link>
+                <Link href="/register" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
+                  Бүртгүүлэх
+                </Link>
               </div>
             </div>
 
