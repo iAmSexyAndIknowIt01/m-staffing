@@ -5,7 +5,6 @@ import Image from "next/image"
 import Link from "next/link"
 import Magnetic from "./Magnetic"
 import { hasFinePointer, prefersReducedMotion } from "./motion"
-import { useViewerRole } from "./useViewerRole"
 
 // Гарчгийн мөрүүд — үг бүр тусдаа blur-оос тодорч гарна
 const headlineLines = [
@@ -23,8 +22,6 @@ const headline = headlineLines.map((line) => ({
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
-  // Нэвтэрсэн бол өөрт хамааралгүй товчийн оронд «Хянах самбар» харуулна
-  const role = useViewerRole()
   const bgRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -163,19 +160,19 @@ export default function Hero() {
             <Magnetic className="w-full sm:w-auto">
               {/* Холбоос өөрөө товчны загвартай — дотор нь <button> хийвэл Tab хоёр удаа зогсдог */}
               <Link
-                href={role === "company" ? "/dashboard/company/search-staff" : "/dashboard/staff/jobs"}
+                href="/dashboard/staff/jobs"
                 className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base"
               >
-                {role === "company" ? "Ажилтан хайх" : "Ажил хайх"}
+                Ажил хайх
               </Link>
             </Magnetic>
 
             <Magnetic className="w-full sm:w-auto">
               <Link
-                href={role ? "/dashboard" : "/dashboard/company/search-staff"}
+                href="/dashboard/company/search-staff"
                 className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/30 border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
               >
-                {role ? "Хянах самбар" : "Ажилтан хайх"}
+                Ажилтан хайх
               </Link>
             </Magnetic>
           </div>

@@ -3,7 +3,6 @@
 import { AlertTriangle } from "lucide-react"
 import React, { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { showAlert as showDialogAlert } from "@/components/common/AppDialog"
 import { decodeSchedule, emptySchedule, encodeSchedule, enabledDays, scheduleFit, toSchedule, type ScheduleFit, type WeeklySchedule } from "@/lib/weeklySchedule"
 import ScheduleMatchPanel, { MATCH_LEVELS, type ScheduleSearchMode } from "@/components/staff/jobs/ScheduleMatchPanel"
 import Pagination from "@/components/staff/jobs/Pagination"
@@ -203,10 +202,6 @@ export default function StaffJobsPage() {
       document.body.style.overflow = "unset"
     }
   }, [selectedAd, selectedShareJob])
-
-  const showAlert = (message: string, title?: string) => {
-    showDialogAlert(message, { title, tone: title === "Амжилттай" ? "success" : "info" })
-  }
 
   const formatSalary = (salaryStr: string | null | undefined) => {
     if (!salaryStr) return "Тохиролцоно"
@@ -583,11 +578,11 @@ export default function StaffJobsPage() {
       {/* МОДАЛ ЦОНХНУУД */}
       {/* Share Modal */}
       <ShareModal
+        key={selectedShareJob?.id ?? "none"}
         show={!!selectedShareJob}
         onClose={() => setSelectedShareJob(null)}
         job={selectedShareJob}
         formatSalary={formatSalary}
-        showAlert={showAlert}
       />
       
       {selectedAd && (
