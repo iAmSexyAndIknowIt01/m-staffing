@@ -23,7 +23,7 @@ export function applyMissingMessage(missing: string[]): string {
 export async function loadStaffCompleteness(userId: string) {
   const [staff, profile, skills, experience, education] = await Promise.all([
     supabase.from("mt_staff").select("first_name, last_name, birth_date").eq("id", userId).maybeSingle(),
-    supabase.from("mt_profile").select("phone, bio, photo_url, gender, availability").eq("user_id", userId).maybeSingle(),
+    supabase.from("mt_profile").select("phone, bio, photo_url, gender, availability, agreement").eq("user_id", userId).maybeSingle(),
     supabase.from("tr_staff_skill").select("mt_skill (skill_type)").eq("staff_id", userId),
     supabase.from("tr_staff_experience").select("id", { count: "exact", head: true }).eq("staff_id", userId),
     supabase.from("tr_staff_education").select("id", { count: "exact", head: true }).eq("staff_id", userId),
@@ -33,7 +33,7 @@ export async function loadStaffCompleteness(userId: string) {
   const skillTypes = (skills.data || []).map((row) => one(row.mt_skill)?.skill_type)
   const availability = (profile.data?.availability || {}) as Record<string, { enabled?: boolean } | undefined>
 
-  return getStaffCompleteness({
+  const completeness = getStaffCompleteness({
     fullName: `${staff.data?.last_name || ""} ${staff.data?.first_name || ""}`,
     phone: profile.data?.phone || "",
     bio: profile.data?.bio || "",
@@ -48,4 +48,6 @@ export async function loadStaffCompleteness(userId: string) {
     educationCount: education.count ?? 0,
     enabledDays: WEEK_DAYS.filter((day) => Object.hasOwn(availability, day) && availability[day]?.enabled).length,
   })
+  // agreement — «ажил олгогчдод ил тод харуулах» зөвшөөрөл (хяналтын самбарын зөвлөмжид)
+  return { ...completeness, agreement: profile.data?.agreement === true }
 }
