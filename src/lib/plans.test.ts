@@ -36,9 +36,9 @@ beforeEach(() => {
 
 describe("PLANS", () => {
   it("zangia маягийн багцууд", () => {
-    expect(PLANS.starter).toMatchObject({ price: 800_000, jobLimit: 15 })
-    expect(PLANS.standard).toMatchObject({ price: 1_500_000, jobLimit: 50 })
-    expect(PLANS.premium).toMatchObject({ price: 2_800_000, jobLimit: 100 })
+    expect(PLANS.starter).toMatchObject({ price: 399_999, jobLimit: 15 })
+    expect(PLANS.standard).toMatchObject({ price: 999_999, jobLimit: 50 })
+    expect(PLANS.premium).toMatchObject({ price: 1_499_999, jobLimit: 100 })
     expect(PAID_PLAN_DAYS).toBe(365)
   })
 })
