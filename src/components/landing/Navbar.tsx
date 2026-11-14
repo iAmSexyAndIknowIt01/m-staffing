@@ -55,7 +55,7 @@ export default function Navbar() {
       className="fixed top-0 left-0 w-full z-50 transform-gpu animate-nav-in"
     >
       <div
-        className={`mx-auto px-4 md:px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${scrolled ? "max-w-275 pt-3" : "max-w-350 pt-4 md:pt-5"}`}
+        className={`mx-auto px-4 md:px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${scrolled ? "max-w-320 pt-3" : "max-w-350 pt-4 md:pt-5"}`}
       >
         <div
           className={`${scrolled ? "md:shadow-[0_20px_60px_rgba(0,0,0,.12)]! md:bg-white/80!" : ""} transition-all duration-500 h-16 rounded-full px-5 md:px-6 flex items-center justify-between gap-4 border border-gray-100 md:border-white/20 bg-white/95 md:bg-white/65 md:backdrop-blur-xl shadow-sm md:shadow-[0_20px_60px_rgba(255,120,0,.08)]`}
@@ -83,9 +83,9 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* CENTER - Компьютер дээр харагдана */}
+          {/* CENTER - Өргөн дэлгэц дээр харагдана. lg (1024px) дээр «Хянах самбар» товч navbar-аас хальдаг байсан тул xl-ээс эхэлнэ */}
           <nav
-            className="hidden lg:flex items-center gap-4 xl:gap-6"
+            className="hidden xl:flex items-center gap-5 2xl:gap-6"
           >
             {NAV_ITEMS.map((item) => {
               const active = item.id ? pathname === "/" && activeId === item.id : pathname === item.href
