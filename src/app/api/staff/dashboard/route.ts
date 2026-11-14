@@ -154,6 +154,7 @@ export async function GET() {
       },
       profileProgress: profileProgress,
       profileMissing: completeness.missing,
+      profileVisible: completeness.agreement,
       
       // 🌟 Зөвлөгөөнүүдийг массив хэлбэрээр илгээнэ
       tips: activeTips,
