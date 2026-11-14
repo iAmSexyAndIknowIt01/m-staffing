@@ -59,6 +59,8 @@ interface DashboardData {
     cvViewRate: string
   }
   profileProgress: number
+  // Дутуу хэсгүүд (жишээ: "төрсөн огноо")
+  profileMissing?: string[]
   recommendedJobs: Job[]
   recentApplications: Application[]
   tips?: {
@@ -137,7 +139,7 @@ export default function StaffView({ userId }: StaffViewProps) {
     )
   }
 
-  const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
+  const { stats, profileProgress, profileMissing, recommendedJobs, recentApplications, tips } = data
   const cvViews = Number(stats.cvViewRate.replace(/[^0-9]/g, "")) || 0
   const profileDone = profileProgress >= 100
 
@@ -182,7 +184,10 @@ export default function StaffView({ userId }: StaffViewProps) {
             <div className="mt-2 h-2 rounded-full bg-orange-100 overflow-hidden">
               <div className="dash-bar h-full rounded-full bg-orange-500 transition-all duration-500" style={{ width: `${profileProgress}%`, ...delay(650) }} />
             </div>
-            <p className="mt-2 text-sm text-gray-600">Бүрэн профайлтай ажил хайгч ажил олгогчдод илүү олон харагдаж, анкет илгээх боломжтой болно.</p>
+            {profileMissing && profileMissing.length > 0 && (
+              <p className="mt-2 text-sm font-medium text-orange-700">Дутуу: {profileMissing.join(", ")}</p>
+            )}
+            <p className="mt-1 text-sm text-gray-600">Бүрэн профайлтай ажил хайгч ажил олгогчдод илүү олон харагдаж, анкет илгээх боломжтой болно.</p>
           </div>
           <Link
             href="/dashboard/staff/profile"

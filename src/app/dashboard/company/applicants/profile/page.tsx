@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Briefcase, Clock, GraduationCap, Wrench, User, UserRound } from "lucide-react"
 import { useEffect, useState, Suspense, useRef } from "react"
+import { birthDateLabel } from "@/lib/birthDate"
 import { useSearchParams } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -43,6 +44,7 @@ type ProfileDataType = {
   fullName: string
   email: string
   phone: string
+  birthDate: string
   bio: string
   avatarUrl: string
   skills: { technical: string[]; languages: string[] }
@@ -65,6 +67,7 @@ const initialProfileState: ProfileDataType = {
   fullName: "",
   email: "",
   phone: "",
+  birthDate: "",
   bio: "",
   avatarUrl: "",
   skills: { technical: [], languages: [] },
@@ -122,6 +125,7 @@ function ApplicantProfileContent() {
             fullName: result.profile.full_name || "",
             email: result.profile.email || "",
             phone: result.profile.phone || "",
+            birthDate: result.profile.birth_date || "",
             bio: result.profile.bio || "",
             avatarUrl: result.profile.avatar_url || "",
             skills: result.profile.skills || { technical: [], languages: [] },
@@ -212,6 +216,13 @@ function ApplicantProfileContent() {
             <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл</label>
             <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-800 font-medium">
               {profile.email || "-"}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Төрсөн огноо</label>
+            <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-100 text-gray-800 font-medium">
+              {birthDateLabel(profile.birthDate) || "-"}
             </div>
           </div>
         </div>

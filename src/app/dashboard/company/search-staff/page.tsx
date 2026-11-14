@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { AlertCircle, Briefcase, CalendarDays, ChevronDown, ChevronRight, Loader2, RotateCw, Search, Send, SlidersHorizontal, User, X } from "lucide-react"
+import { AlertCircle, Briefcase, Cake, CalendarDays, ChevronDown, ChevronRight, Loader2, RotateCw, Search, Send, SlidersHorizontal, User, X } from "lucide-react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
@@ -15,6 +15,7 @@ interface Staff {
   id: string
   fullName: string
   gender: "male" | "female" | null
+  age: number | null
   experienceYears: number
   hasExperience: boolean
   headline: string | null
@@ -228,11 +229,16 @@ function StaffRow({ staff, backQuery, now }: { staff: Staff; backQuery: string; 
         </div>
 
         {/* 2-р мөр: хүйс, туршлага */}
-        {(gender || experience) && (
+        {(gender || staff.age !== null || experience) && (
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
             {gender && (
               <span className="inline-flex items-center gap-1.5">
                 <User className="w-4 h-4 text-gray-400" aria-hidden="true" /> {gender}
+              </span>
+            )}
+            {staff.age !== null && (
+              <span className="inline-flex items-center gap-1.5">
+                <Cake className="w-4 h-4 text-gray-400" aria-hidden="true" /> {staff.age} нас
               </span>
             )}
             {experience && (

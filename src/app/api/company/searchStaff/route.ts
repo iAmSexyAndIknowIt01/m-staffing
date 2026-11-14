@@ -5,6 +5,7 @@ import { one } from "@/lib/relation"
 import { selectInChunks } from "@/lib/chunk"
 import { isStaffProfileComplete } from "@/lib/staffProfileCompleteness"
 import { getLatestUnlocks } from "@/lib/staffContactAccess"
+import { calcAge } from "@/lib/birthDate"
 import type { AvailabilityDay } from "@/types/profile"
 
 const WEEK_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
@@ -49,7 +50,8 @@ export async function GET(request: Request) {
         agreement,
         mt_staff!inner (
           first_name,
-          last_name
+          last_name,
+          birth_date
         )
       `)
       .eq("agreement", true)
@@ -163,6 +165,7 @@ export async function GET(request: Request) {
           bio: profile.bio || "",
           avatarUrl: profile.photo_url || "",
           gender: profile.gender || "",
+          birthDate: one(profile.mt_staff)?.birth_date || "",
           skills,
           experienceCount: staffExp.length,
           educationCount: staffEdu.length,
@@ -182,6 +185,8 @@ export async function GET(request: Request) {
           // Утас, имэйлийг жагсаалтад өгөхгүй — профайл дээр эрх нээж харна
           bio: profile.bio,
           gender: profile.gender === "male" || profile.gender === "female" ? profile.gender : null,
+          // Төрсөн огнооноос тооцсон нас (оруулаагүй бол null)
+          age: calcAge(one(profile.mt_staff)?.birth_date || ""),
           agreement: profile.agreement,
           avatarUrl: profile.photo_url || "",
           headline: latestExp?.position?.trim() || null,
