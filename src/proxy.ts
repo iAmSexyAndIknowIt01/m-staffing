@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session"
 import { CONTRACTS_ENABLED } from "@/lib/features"
+import { loginPathFor } from "@/lib/redirect"
 
 const CONTRACT_PATH = /^\/dashboard\/(company|staff)\/contracts(\/|$)/
 // Ажил хайгч / ажил олгогчийн тусдаа хэсгүүд
@@ -13,7 +14,9 @@ export async function proxy(request: NextRequest) {
   const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url))
+    // Нэвтэрсний дараа анх очих гэсэн хуудас руугаа буцна
+    const { pathname, search } = request.nextUrl
+    return NextResponse.redirect(new URL(loginPathFor(pathname + search), request.url))
   }
 
   if (request.nextUrl.pathname.startsWith("/admin") && !session.isAdmin) {

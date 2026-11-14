@@ -22,6 +22,8 @@ export default function Magnetic({ children, className = "", strength = 0.3 }: P
     const x = (e.clientX - rect.left - rect.width / 2) * strength
     const y = (e.clientY - rect.top - rect.height / 2) * strength
 
+    // will-change-ийг зөвхөн хөдлөх үед өгнө — байнга байвал scroll-ын бүдгэрэлттэй давхцаж товч хагархай зурагдана
+    el.style.willChange = "transform"
     el.style.transition = "transform 150ms ease-out"
     el.style.transform = `translate3d(${x}px, ${y}px, 0)`
   }
@@ -31,13 +33,14 @@ export default function Magnetic({ children, className = "", strength = 0.3 }: P
     if (!el) return
     // Буцахдаа бага зэрэг "үсрэх" spring мэдрэмжтэй
     el.style.transition = "transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)"
-    el.style.transform = "translate3d(0, 0, 0)"
+    el.style.transform = ""
+    el.style.willChange = ""
   }
 
   return (
     <div
       ref={ref}
-      className={`will-change-transform ${className}`}
+      className={className}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
     >

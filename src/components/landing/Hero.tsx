@@ -44,8 +44,13 @@ export default function Hero() {
         bgRef.current.style.transform = `translate3d(0, ${y * 0.35}px, 0)`
       }
       if (contentRef.current) {
-        contentRef.current.style.transform = `translate3d(0, ${y * 0.18}px, 0)`
-        contentRef.current.style.opacity = String(Math.max(0, 1 - y / (h * 0.75)))
+        const opacity = Math.max(0, 1 - y / (h * 0.75))
+        const el = contentRef.current
+        // Бүхэл пиксел рүү дугуйлна — бутархай шилжилтэд товч, текст хагархай зурагддаг
+        el.style.transform = y > 0 ? `translate3d(0, ${Math.round(y * 0.18)}px, 0)` : ""
+        // Бүрэн тунгалаг үед opacity-г бүр арилгаж, layer-ийг дахин тусгаарлахгүй
+        el.style.opacity = opacity >= 1 ? "" : opacity.toFixed(3)
+        el.style.visibility = opacity <= 0 ? "hidden" : ""
       }
     }
 
@@ -105,7 +110,7 @@ export default function Hero() {
       {/* CONTENT */}
       <div
         ref={contentRef}
-        className="relative z-10 min-h-[calc(100vh-120px)] flex items-center justify-center px-4 transform-gpu will-change-transform"
+        className="relative z-10 min-h-[calc(100vh-120px)] flex items-center justify-center px-4"
       >
         <div
           className="max-w-225 mx-auto text-center"
@@ -117,7 +122,7 @@ export default function Hero() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-orange-400" />
             </span>
-            МОНГОЛ • АЖЛЫН ШИНЭ ОРЧИН
+            АЖИЛ ХАЙЛТЫН ШИНЭ ОРЧИН
           </p>
 
           <h1
@@ -156,22 +161,21 @@ export default function Hero() {
             className="mt-10 flex justify-center gap-4 flex-wrap animate-fade-up [animation-delay:900ms]"
           >
             <Magnetic className="w-full sm:w-auto">
-              <Link href={role === "company" ? "/dashboard/company/search-staff" : "/dashboard/staff/jobs"} className="block">
-                <button
-                  className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base"
-                >
-                  {role === "company" ? "Ажилтан хайх" : "Ажил хайх"}
-                </button>
+              {/* Холбоос өөрөө товчны загвартай — дотор нь <button> хийвэл Tab хоёр удаа зогсдог */}
+              <Link
+                href={role === "company" ? "/dashboard/company/search-staff" : "/dashboard/staff/jobs"}
+                className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base"
+              >
+                {role === "company" ? "Ажилтан хайх" : "Ажил хайх"}
               </Link>
             </Magnetic>
 
             <Magnetic className="w-full sm:w-auto">
-              <Link href={role ? "/dashboard" : "/dashboard/company/applicants"} className="block">
-                <button
-                  className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/30 border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
-                >
-                  {role ? "Хянах самбар" : "Ажилтан хайх"}
-                </button>
+              <Link
+                href={role ? "/dashboard" : "/dashboard/company/search-staff"}
+                className="w-full sm:w-55 h-13.5 rounded-2xl text-white bg-white/30 border border-white/20 flex items-center justify-center text-sm md:text-base backdrop-blur-none active:translate-y-0 hover:bg-white/95 hover:text-gray-900 hover:border-white hover:shadow-[0_0_35px_rgba(255,255,255,0.65)] transition-all duration-300"
+              >
+                {role ? "Хянах самбар" : "Ажилтан хайх"}
               </Link>
             </Magnetic>
           </div>

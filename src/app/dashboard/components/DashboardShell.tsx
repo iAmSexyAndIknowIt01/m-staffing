@@ -146,11 +146,14 @@ export default function DashboardShell({ userId, userRole, onLogout, children }:
               aria-label={isCollapsed ? "Цэс нээх" : "Цэс хаах"}
             >
               {isCollapsed ? (
-                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm shadow-orange-500/20 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6">
-                  <span className="text-white text-sm font-bold tracking-tighter leading-none select-none">
-                    M
-                  </span>
-                </div>
+                // «M» үсгийн оронд лого — утасны navbar-тай ижил
+                <img
+                  src="/logo.png"
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6"
+                />
               ) : (
                 <ChevronLeft className="w-5 h-5 text-orange-500 group-hover:-translate-x-0.5 transition-transform duration-200" strokeWidth={2.5} />
               )}
