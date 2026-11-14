@@ -1,7 +1,9 @@
 "use client"
 
-import { AlertTriangle, Briefcase, Clock, GraduationCap, Pencil, Wrench, User, UserRound } from "lucide-react"
-import { useEffect, useState, useRef } from "react"
+import { AlertTriangle, Briefcase, Clock, GraduationCap, Lock, Pencil, Wrench, User, UserRound } from "lucide-react"
+import { useCallback, useEffect, useState, useRef } from "react"
+import ContactUnlockButton, { type ContactAccessState } from "@/components/company/ContactUnlockButton"
+import { CONTACT_UNLOCK_HOURS } from "@/lib/staffContact"
 import { useSearchParams } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
 import BioModal from "@/components/profile/modals/BioModal"
@@ -36,6 +38,27 @@ const initialAvailability = {
   friday: { enabled: false, from: "", to: "" },
   saturday: { enabled: false, from: "", to: "" },
   sunday: { enabled: false, from: "", to: "" },
+}
+
+// Утас / имэйлийн мөр. Түгжээтэй үед нуусан утгыг бүдэг, түгжээний дүрстэй харуулна.
+function ContactValue({ label, value, locked, href }: { label: string; value: string; locked: boolean; href?: string }) {
+  return (
+    <div>
+      <p className="text-xs font-bold text-gray-400 uppercase mb-1">{label}</p>
+      <div
+        className={`flex items-center justify-between gap-2 w-full px-4 py-3 rounded-2xl border text-sm ${
+          locked ? "bg-gray-50 border-dashed border-gray-300 text-gray-400" : "bg-gray-50 border-gray-200 text-gray-800"
+        }`}
+      >
+        {href ? (
+          <a href={href} className="min-w-0 truncate font-medium text-orange-700 hover:underline">{value}</a>
+        ) : (
+          <span className={`min-w-0 truncate ${locked ? "tracking-wider select-none" : ""}`}>{value || "—"}</span>
+        )}
+        {locked && <Lock className="w-4 h-4 shrink-0 text-gray-400" aria-label="Нууцлагдсан" />}
+      </div>
+    </div>
+  )
 }
 
 export default function StaffProfilePage() {
@@ -95,6 +118,21 @@ export default function StaffProfilePage() {
   // reloadKey өөрчлөгдөхөд (хадгалсны дараа) дахин татна
   const [reloadKey, setReloadKey] = useState(0)
 
+  // Утас, имэйл харах эрх (null — компани биш, жишээ нь админ)
+  const [contactAccess, setContactAccess] = useState<ContactAccessState | null>(null)
+  const contactLocked = contactAccess?.status === "locked"
+
+  const handleContactUnlocked = useCallback(
+    (data: { access: ContactAccessState; phone: string; email: string }) => {
+      setContactAccess(data.access)
+      setPhone(data.phone)
+      setEmail(data.email)
+    },
+    []
+  )
+  // 10 цаг дуусахад профайлыг дахин татаж (сервер дахин нуусан утга өгнө)
+  const handleContactExpired = useCallback(() => setReloadKey((k) => k + 1), [])
+
   useEffect(() => {
     if (!staffId) return
 
@@ -115,7 +153,8 @@ export default function StaffProfilePage() {
           setAvatarUrl(result.profile.avatar_url || "")
           setGender(result.profile.gender || "") 
           setAgreement(!!result.profile.agreement)
-          
+          setContactAccess(result.profile.contact_access ?? null)
+
           setSkills({
             technical: result.profile.skills?.technical || [],
             languages: result.profile.skills?.languages || []
@@ -265,12 +304,21 @@ export default function StaffProfilePage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       {/* HEADER */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <BackLink href={backHref} label="Ажилтан хайх" className="mb-2" />
           <h1 className="text-3xl font-extrabold text-gray-900">Ажилтны профайл</h1>
           <p className="text-sm text-gray-400 mt-1">Ажил олгогчийн харах горим</p>
         </div>
+        {contactAccess && (
+          <ContactUnlockButton
+            staffId={staffId}
+            staffName={fullName}
+            access={contactAccess}
+            onUnlocked={handleContactUnlocked}
+            onExpired={handleContactExpired}
+          />
+        )}
       </div>
 
       {message && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl text-sm">{message}</div>}
@@ -325,36 +373,15 @@ export default function StaffProfilePage() {
             {validationErrors.fullName && <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>}
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Утас</label>
-            <input
-              type="text"
-              value={phone}
-              disabled
-              onChange={(e) => {
-                setPhone(e.target.value)
-                setValidationErrors((prev) => ({ ...prev, phone: "" }))
-              }}
-              className={`w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.phone ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
-            />
-            {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Имэйл</label>
-            <input
-              type="email"
-              value={email}
-              disabled
-              readOnly
-              onChange={(e) => {
-                setEmail(e.target.value)
-                setValidationErrors((prev) => ({ ...prev, email: "" }))
-              }}
-              className={`w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm ${validationErrors.email ? "border border-red-500 bg-red-50" : "border border-gray-200"}`}
-            />
-            {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
-          </div>
+          {/* Утас, имэйл: эрх нээгээгүй бол серверээс нуусан (masking) утга ирнэ */}
+          <ContactValue label="Утас" value={phone} locked={contactLocked} href={phone && !contactLocked ? `tel:${phone}` : undefined} />
+          <ContactValue label="Имэйл" value={email} locked={contactLocked} href={email && !contactLocked ? `mailto:${email}` : undefined} />
+          {contactLocked && (
+            <p className="-mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-gray-500">
+              <Lock className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+              «Ажиллах хүсэлт илгээх» товчийг дарж утас, имэйлийг {CONTACT_UNLOCK_HOURS} цагийн турш харна.
+            </p>
+          )}
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Хүйс</label>
             <select
