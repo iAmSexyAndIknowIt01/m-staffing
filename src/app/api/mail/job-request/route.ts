@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session"; // 🔥 Күүки уншихад ашиглана
 import { supabase } from "@/lib/supabase"; 
 import { one } from "@/lib/relation";
-import { MAIL_FROM, escapeHtml, transporter } from "@/lib/mailer";
+import { escapeHtml, sendEmail } from "@/lib/mailer";
 import { getNotificationSettings, settingsUrl } from "@/lib/notifications";
 
 export async function POST(req: Request) {
@@ -90,9 +90,8 @@ export async function POST(req: Request) {
     }
     const settingsHref = settingsUrl(req, "company");
 
-    // 4. Gmail-ээр ажил олгогч руу мэйл илгээх
-    await transporter.sendMail({
-      from: MAIL_FROM,
+    // 4. Ажил олгогч руу мэйл илгээх (noreply@mstaffing.mn, Resend → Gmail нөөц)
+    await sendEmail({
       to: companyEmail,
       subject: `[MStaffing] Шинэ анкет ирлээ - ${String(jobData.title ?? "").replace(/[\r\n]+/g, " ")}`,
       html: `
