@@ -13,9 +13,9 @@ export interface PlanInfo {
 
 export const PLANS: Record<PlanType, PlanInfo> = {
   free: { name: "Туршилтын эрх", price: 0, jobLimit: 3 },
-  starter: { name: "Эхлэл багц", price: 800_000, jobLimit: 15 },
-  standard: { name: "Стандарт багц", price: 1_500_000, jobLimit: 50 },
-  premium: { name: "Премиум багц", price: 2_800_000, jobLimit: 100 },
+  starter: { name: "Эхлэл багц", price: 399_999, jobLimit: 15 },
+  standard: { name: "Стандарт багц", price: 999_999, jobLimit: 50 },
+  premium: { name: "Премиум багц", price: 1_499_999, jobLimit: 100 },
 }
 
 export const PAID_PLAN_TYPES: PaidPlanType[] = ["starter", "standard", "premium"]

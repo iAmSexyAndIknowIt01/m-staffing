@@ -25,6 +25,7 @@ import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
 import EducationModal from "@/components/profile/modals/EducationModal"
 import { getErrorMessage } from "@/lib/errors"
+import { getStaffCompleteness } from "@/lib/staffProfileCompleteness"
 import LoadingLayout from "@/components/common/LoadingLayout"
 
 type Experience = {
@@ -67,36 +68,6 @@ const DAYS: [DayKey, string][] = [
 ]
 
 const GENDER_LABELS: Record<string, string> = { male: "Эрэгтэй", female: "Эмэгтэй" }
-
-// Профайлын бүрэн байдал: ажил олгогчид харагдах гол хэсгүүдээр тооцно
-function getCompleteness(p: {
-  fullName: string
-  phone: string
-  bio: string
-  avatarUrl: string
-  gender: string
-  skills: { technical: string[]; languages: string[] }
-  experience: unknown[]
-  education: unknown[]
-  enabledDays: number
-}) {
-  const checks: [boolean, string][] = [
-    [!!p.fullName.trim(), "нэр"],
-    [!!p.phone.trim(), "утас"],
-    [!!p.avatarUrl, "зураг"],
-    [!!p.gender, "хүйс"],
-    [!!p.bio.trim(), "танилцуулга"],
-    [p.skills.technical.length + p.skills.languages.length > 0, "ур чадвар"],
-    [p.experience.length > 0, "ажлын туршлага"],
-    [p.education.length > 0, "боловсрол"],
-    [p.enabledDays > 0, "ажиллах цаг"],
-  ]
-  const done = checks.filter(([ok]) => ok).length
-  return {
-    percent: Math.round((done / checks.length) * 100),
-    missing: checks.filter(([ok]) => !ok).map(([, label]) => label),
-  }
-}
 
 const inputClass = (hasError: boolean) =>
   `w-full h-11 px-4 bg-white rounded-xl text-sm outline-none border transition ${
@@ -482,7 +453,14 @@ export default function StaffProfilePage() {
   }
 
   const enabledDays = DAYS.filter(([key]) => availability?.[key]?.enabled)
-  const completeness = getCompleteness({ fullName, phone, bio, avatarUrl, gender, skills, experience, education, enabledDays: enabledDays.length })
+  const completeness = getStaffCompleteness({
+    fullName, phone, bio, avatarUrl, gender, skills,
+    experienceCount: experience.length,
+    educationCount: education.length,
+    enabledDays: enabledDays.length,
+  })
+  // Ажил олгогчдын «Ажилтан хайх» хэсэгт зөвхөн 100% бөглөж, зөвшөөрөл өгсөн профайл харагдана
+  const visibleToCompanies = agreement && completeness.missing.length === 0
   const busy = savingSection !== null
 
   return (
@@ -665,6 +643,11 @@ export default function StaffProfilePage() {
             ) : (
               <p className="mt-3 text-xs text-emerald-600">Профайл бүрэн бөглөгдсөн байна.</p>
             )}
+            <p className={`mt-2 text-xs leading-relaxed ${visibleToCompanies ? "text-emerald-600" : "text-gray-500"}`}>
+              {visibleToCompanies
+                ? "Таны профайл ажил олгогчдын хайлтад харагдаж байна."
+                : "Ажил олгогчдын хайлтад харагдахын тулд профайлаа 100% бөглөж, «ил тод харуулах» зөвшөөрлийг идэвхжүүлнэ үү."}
+            </p>
           </section>
         </aside>
 

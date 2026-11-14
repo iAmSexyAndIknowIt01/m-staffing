@@ -2,22 +2,8 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { one } from "@/lib/relation"
-
-async function companyCanViewStaff(companyId: string, staffId: string): Promise<boolean> {
-  const [profile, application] = await Promise.all([
-    supabase.from("mt_profile").select("agreement").eq("user_id", staffId).maybeSingle(),
-    supabase
-      .from("tr_job_request")
-      .select("id, mt_openjob!inner(user_id)")
-      .eq("applicant_id", staffId)
-      .eq("mt_openjob.user_id", companyId)
-      .limit(1)
-      .maybeSingle(),
-  ])
-  if (profile.error) throw profile.error
-  if (application.error) throw application.error
-  return profile.data?.agreement === true || application.data !== null
-}
+import { companyCanViewStaff, getContactAccess, type ContactAccess } from "@/lib/staffContactAccess"
+import { maskEmail, maskPhone } from "@/lib/staffContact"
 
 // GET PROFILE
 export async function GET(request: Request) {
@@ -158,11 +144,19 @@ export async function GET(request: Request) {
       isCurrent: edu.is_current,
     })) || []
 
+    // Компанид утас, имэйлийг эрх нээгээгүй бол нууж (masking) өгнө — бодит утга клиент рүү огт явахгүй
+    const rawEmail = profileData?.email || ""
+    const rawPhone = profileData?.phone || ""
+    const contactAccess: ContactAccess | null =
+      userRole === "company" && !session?.isAdmin ? await getContactAccess(session!.userId, userId) : null
+    const contactVisible = contactAccess === null || contactAccess.status !== "locked"
+
     // MERGE DATA
     const profile = {
       full_name: `${staffData?.last_name || ""} ${staffData?.first_name || ""}`.trim(),
-      email: profileData?.email || "",
-      phone: profileData?.phone || "",
+      email: contactVisible ? rawEmail : maskEmail(rawEmail),
+      phone: contactVisible ? rawPhone : maskPhone(rawPhone),
+      contact_access: contactAccess,
       bio: profileData?.bio || "",
       avatar_url: profileData?.photo_url || "",
       gender: profileData?.gender || "",
