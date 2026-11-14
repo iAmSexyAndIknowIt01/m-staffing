@@ -4,7 +4,6 @@ import { Building2, UserRound } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import Reveal from "./Reveal"
-import { useViewerRole } from "./useViewerRole"
 
 // Ажилтны замын өгөгдөл
 const staffSteps = [
@@ -57,7 +56,6 @@ const employerSteps = [
 export default function CTA() {
   // Идэвхтэй табыг хадгалах төлөв (staff эсвэл employer)
   const [activeRole, setActiveRole] = useState<"staff" | "employer">("staff")
-  const viewer = useViewerRole()
 
   // Сонгосон дүрээс хамаарч өгөгдлийг сонгох
   const currentSteps = activeRole === "staff" ? staffSteps : employerSteps
@@ -157,19 +155,18 @@ export default function CTA() {
 
           {/* BUTTONS */}
           <div className="mt-10 md:mt-14 flex justify-center gap-4 flex-wrap">
-            {/* Нэвтэрсэн бол өөрт хамааралгүй товчийн оронд «Хянах самбар» */}
             <Link
-              href={viewer === "company" ? "/dashboard/company/search-staff" : "/dashboard/staff/jobs"}
+              href="/dashboard/staff/jobs"
               className="orange-btn btn-shine w-full sm:w-55 h-13.5 flex items-center justify-center text-sm md:text-base"
             >
-              {viewer === "company" ? "Ажилтан хайх" : "Ажил хайх"}
+              Ажил хайх
             </Link>
 
             <Link
-              href={viewer ? "/dashboard" : "/dashboard/company/search-staff"}
+              href="/dashboard/company/search-staff"
               className="w-full sm:w-55 h-13.5 rounded-2xl text-gray-800 bg-gray-50 border border-gray-200 flex items-center justify-center text-sm md:text-base font-semibold backdrop-blur-none active:translate-y-0 hover:bg-white hover:text-gray-900 hover:border-orange-400/50 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] transition-all duration-300"
             >
-              {viewer ? "Хянах самбар" : "Ажилтан хайх"}
+              Ажилтан хайх
             </Link>
           </div>
         </Reveal>

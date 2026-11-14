@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useViewerRole } from "./useViewerRole"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 
 // Landing хуудасны section-ууд руу шилжих цэс. «Ажил хайх», «Ажилтан хайх» нь Hero/CTA-д товчоор байгаа тул энд оруулахгүй.
@@ -18,7 +17,6 @@ const NAV_ITEMS: { label: string; href: string; id?: string }[] = [
 
 export default function Navbar() {
   const pathname = usePathname()
-  const viewer = useViewerRole()
   const [activeId, setActiveId] = useState<string | null>(null)
   // Доош scroll хийсэн үед navbar нарийсч "island" хэлбэртэй болно
   const [scrolled, setScrolled] = useState(false)
@@ -55,7 +53,7 @@ export default function Navbar() {
       className="fixed top-0 left-0 w-full z-50 transform-gpu animate-nav-in"
     >
       <div
-        className={`mx-auto px-4 md:px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${scrolled ? "max-w-275 pt-3" : "max-w-350 pt-4 md:pt-5"}`}
+        className={`mx-auto px-4 md:px-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${scrolled ? "max-w-320 pt-3" : "max-w-350 pt-4 md:pt-5"}`}
       >
         <div
           className={`${scrolled ? "md:shadow-[0_20px_60px_rgba(0,0,0,.12)]! md:bg-white/80!" : ""} transition-all duration-500 h-16 rounded-full px-5 md:px-6 flex items-center justify-between gap-4 border border-gray-100 md:border-white/20 bg-white/95 md:bg-white/65 md:backdrop-blur-xl shadow-sm md:shadow-[0_20px_60px_rgba(255,120,0,.08)]`}
@@ -83,9 +81,9 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* CENTER - Компьютер дээр харагдана */}
+          {/* CENTER - Өргөн дэлгэц дээр харагдана. lg (1024px) дээр товч navbar-аас хальдаг байсан тул xl-ээс эхэлнэ */}
           <nav
-            className="hidden lg:flex items-center gap-4 xl:gap-6"
+            className="hidden xl:flex items-center gap-5 2xl:gap-6"
           >
             {NAV_ITEMS.map((item) => {
               const active = item.id ? pathname === "/" && activeId === item.id : pathname === item.href
@@ -111,10 +109,10 @@ export default function Navbar() {
           >
             <ThemeToggle className="w-10 h-10 md:w-11 md:h-11 rounded-full grid place-items-center text-gray-700 hover:text-orange-500 hover:bg-gray-100 transition" />
             <Link
-              href={viewer ? "/dashboard" : "/login"}
+              href="/login"
               className="orange-btn btn-shine h-10 md:h-11 px-5 md:px-7 text-xs md:text-sm flex items-center justify-center active:scale-100 md:hover:scale-[1.03] transition whitespace-nowrap"
             >
-              {viewer ? "Хянах самбар" : "Нэвтрэх"}
+              Нэвтрэх
             </Link>
           </div>
         </div>
