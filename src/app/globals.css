@@ -868,3 +868,57 @@ body::-webkit-scrollbar {
     animation: none !important;
   }
 }
+
+/* ===== «Линк хуулагдлаа» хөдөлгөөн (ShareModal) ===== */
+/* Ногоон шошго: пүршээр гарч ирээд, хэсэг байж, дээш бүдгэрч алга болно */
+@keyframes copiedToast {
+  0% { opacity: 0; transform: translateY(10px) scale(0.85); }
+  12% { opacity: 1; transform: translateY(-2px) scale(1.04); }
+  20% { transform: translateY(0) scale(1); }
+  82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+.animate-copied-toast {
+  animation: copiedToast 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Чагтын зураас зурагдаж буй мэт */
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+.animate-check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkDraw 0.45s 0.18s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/* Чагтын эргэн тойронд цацрах жижиг цэгүүд (--a өнцөг) */
+@keyframes copiedBurst {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-16px) scale(0.4); }
+}
+.animate-copied-burst {
+  animation: copiedBurst 0.6s 0.2s ease-out both;
+}
+
+/* Товчны дүрс солигдохдоо эргэж томорно */
+@keyframes iconPop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-45deg); }
+  70% { transform: scale(1.2) rotate(6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.animate-icon-pop {
+  animation: iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-copied-toast,
+  .animate-copied-burst,
+  .animate-icon-pop {
+    animation: none !important;
+  }
+  .animate-check-draw {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+}
