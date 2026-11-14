@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase"
 import { selectInChunks } from "@/lib/chunk"
-import { MAIL_FROM, noticeEmailHtml, transporter } from "@/lib/mailer"
+import { noticeEmailHtml, sendBulkEmail, sendEmail } from "@/lib/mailer"
 import { getAppOrigin } from "@/lib/url"
 import { getJobCategoryLabel } from "@/lib/jobPost"
 import {
@@ -11,14 +11,13 @@ import {
   type NotificationSettings,
 } from "@/lib/notificationCatalog"
 
-// Имэйл мэдэгдэл (nodemailer + Gmail SMTP). Хэрэглэгчийн тохиргоог (mt_notification_settings) шалгаж илгээнэ.
+// Имэйл мэдэгдэл (noreply@mstaffing.mn — Resend, нөөц нь Gmail; src/lib/mailer.ts). Хэрэглэгчийн тохиргоог (mt_notification_settings) шалгаж илгээнэ.
 // Мэйл илгээж чадаагүй ч үндсэн үйлдлийг (анкетын төлөв, төлбөр г.м.) буцаахгүй — зөвхөн лог бичнэ.
 
 const SETTINGS_COLUMNS = "application_status, job_offer, job_offer_categories, new_application, payment"
 
 // Gmail өдөрт ~500 хүлээн авагч зөвшөөрдөг тул нэг зарын санал хэт олон хүнд явахаас сэргийлнэ
 const JOB_OFFER_MAX_RECIPIENTS = 200
-const BCC_BATCH = 50
 
 export async function getNotificationSettings(userId: string): Promise<NotificationSettings> {
   const { data, error } = await supabase
@@ -68,8 +67,7 @@ export async function sendNotice({ req, userId, role, type, to, subject, lines, 
       const settings = await getNotificationSettings(userId)
       if (!settings[type]) return false
     }
-    await transporter.sendMail({
-      from: MAIL_FROM,
+    await sendEmail({
       to,
       subject: `[MStaffing] ${subject.replace(/[\r\n]+/g, " ")}`,
       html: noticeEmailHtml(subject, lines, link, settingsUrl(req, role)),
@@ -116,16 +114,8 @@ export async function notifyJobOffer(
     ]
     const html = noticeEmailHtml(subject, lines, appLink(req, `/dashboard/staff/jobs/${job.id}`, "Ажлын байрыг харах"), settingsUrl(req, "staff"))
 
-    // Хүлээн авагчид бие биеийнхээ хаягийг харахгүйн тулд BCC-ээр багцлан илгээнэ
-    for (let i = 0; i < emails.length; i += BCC_BATCH) {
-      await transporter.sendMail({
-        from: MAIL_FROM,
-        to: MAIL_FROM,
-        bcc: emails.slice(i, i + BCC_BATCH),
-        subject: `[MStaffing] ${subject.replace(/[\r\n]+/g, " ")}`,
-        html,
-      })
-    }
+    // Хүлээн авагчид бие биеийнхээ хаягийг харахгүй (Resend: хүн тус бүрд тусдаа, Gmail нөөц: BCC)
+    await sendBulkEmail(emails, `[MStaffing] ${subject.replace(/[\r\n]+/g, " ")}`, html)
   } catch (err) {
     console.error("JOB_OFFER_MAIL_ERROR:", err)
   }
