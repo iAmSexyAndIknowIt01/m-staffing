@@ -50,7 +50,8 @@ export async function GET(request: Request) {
       .from("mt_staff")
       .select(`
         first_name,
-        last_name
+        last_name,
+        birth_date
       `)
       .eq("id", userId)
       .single()
@@ -160,6 +161,7 @@ export async function GET(request: Request) {
       bio: profileData?.bio || "",
       avatar_url: profileData?.photo_url || "",
       gender: profileData?.gender || "",
+      birth_date: staffData?.birth_date || "",
       agreement: profileData?.agreement || false,
       skills: {
         technical: technicalSkills,

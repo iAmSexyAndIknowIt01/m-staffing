@@ -1,6 +1,7 @@
 "use client"
 
-import { ArrowLeft, Check, Download, Loader2, Mail, Phone, User } from "lucide-react"
+import { ArrowLeft, Cake, Check, Download, Loader2, Mail, Phone, User } from "lucide-react"
+import { birthDateLabel } from "@/lib/birthDate"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
@@ -16,6 +17,7 @@ interface ProfileData {
   bio: string
   avatar_url: string
   gender: string // <-- ШИНЭЭР НЭМЭВ
+  birth_date?: string
   skills: {
     technical: string[]
     languages: string[]
@@ -204,6 +206,10 @@ export default function StaffCVPage() {
                   {/* ХҮЙСНИЙ МЭДЭЭЛЭЛ */}
                   {profile.gender && (
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><User size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> {getGenderText(profile.gender)}</div>
+                  )}
+                  {/* ТӨРСӨН ОГНОО */}
+                  {profile.birth_date && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Cake size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /> Төрсөн: {birthDateLabel(profile.birth_date)}</div>
                   )}
                 </div>
               </div>

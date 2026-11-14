@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { normalizeHttpUrl } from "@/lib/url"
+import { applyMissingMessage, getApplyMissing } from "@/lib/staffCompletenessServer"
 
 export async function POST(request: Request) {
   try {
@@ -42,6 +43,12 @@ export async function POST(request: Request) {
     const expired = job?.expires_at ? new Date(job.expires_at).getTime() <= Date.now() : false
     if (!job || expired) {
       return NextResponse.json({ error: "Ажлын байр олдсонгүй эсвэл зар хаагдсан байна." }, { status: 404 })
+    }
+
+    // Профайл дутуу бол анкет хүлээж авахгүй (хөтөч талын profileCheck-ийг тойрохоос сэргийлнэ)
+    const missing = await getApplyMissing(userId)
+    if (missing.length > 0) {
+      return NextResponse.json({ error: applyMissingMessage(missing) }, { status: 400 })
     }
 
     // 3. ЖИНХЭНЭ МЭДЭЭЛЛИЙГ ТАТАХ: Нэвтэрсэн хэрэглэгчийн мэдээллийг хэрэглэгчийн хүснэгтээс уншина

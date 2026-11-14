@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   Briefcase,
+  Cake,
   Camera,
   CheckCircle2,
   Clock,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState, useRef } from "react"
 import { uploadImage } from "@/lib/uploadImage"
+import { MAX_AGE, MIN_AGE, birthDateLabel, parseBirthDate } from "@/lib/birthDate"
 import BioModal from "@/components/profile/modals/BioModal"
 import SkillsModal from "@/components/profile/modals/SkillsModal"
 import ExperienceModal from "@/components/profile/modals/ExperienceModal"
@@ -68,6 +70,15 @@ const DAYS: [DayKey, string][] = [
 ]
 
 const GENDER_LABELS: Record<string, string> = { male: "Эрэгтэй", female: "Эмэгтэй" }
+
+// Төрсөн огнооны сонголтын хязгаар (MIN_AGE–MAX_AGE нас)
+function isoYearsAgo(years: number) {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - years)
+  return d.toISOString().slice(0, 10)
+}
+const BIRTH_DATE_MAX = isoYearsAgo(MIN_AGE)
+const BIRTH_DATE_MIN = isoYearsAgo(MAX_AGE)
 
 const inputClass = (hasError: boolean) =>
   `w-full h-11 px-4 bg-white rounded-xl text-sm outline-none border transition ${
@@ -267,6 +278,7 @@ export default function StaffProfilePage() {
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [gender, setGender] = useState("")
+  const [birthDate, setBirthDate] = useState("")
   const [agreement, setAgreement] = useState(false)
   const [skills, setSkills] = useState<{ technical: string[]; languages: string[] }>({ technical: [], languages: [] })
   const [experience, setExperience] = useState<Experience[]>([])
@@ -274,8 +286,8 @@ export default function StaffProfilePage() {
   const [availability, setAvailability] = useState(initialAvailability)
 
   // Засаж буй картын түр утга (Болих дарахад хаягдана)
-  const [personalDraft, setPersonalDraft] = useState({ fullName: "", phone: "", gender: "", agreement: false })
-  const [personalErrors, setPersonalErrors] = useState<{ fullName?: string; phone?: string }>({})
+  const [personalDraft, setPersonalDraft] = useState({ fullName: "", phone: "", gender: "", birthDate: "", agreement: false })
+  const [personalErrors, setPersonalErrors] = useState<{ fullName?: string; phone?: string; birthDate?: string }>({})
   const [availabilityDraft, setAvailabilityDraft] = useState(initialAvailability)
 
   // ========================================
@@ -295,6 +307,7 @@ export default function StaffProfilePage() {
         setBio(result.profile.bio || "")
         setAvatarUrl(result.profile.avatar_url || "")
         setGender(result.profile.gender || "")
+        setBirthDate(result.profile.birth_date || "")
         setAgreement(!!result.profile.agreement)
         setSkills({
           technical: result.profile.skills?.technical || [],
@@ -383,7 +396,7 @@ export default function StaffProfilePage() {
   // ХУВИЙН МЭДЭЭЛЭЛ
   // ========================================
   const startPersonalEdit = () => {
-    setPersonalDraft({ fullName, phone, gender, agreement })
+    setPersonalDraft({ fullName, phone, gender, birthDate, agreement })
     setPersonalErrors({})
     setSectionErrors((prev) => ({ ...prev, personal: undefined }))
     setEditing("personal")
@@ -391,9 +404,11 @@ export default function StaffProfilePage() {
 
   const savePersonal = async (e: React.FormEvent) => {
     e.preventDefault()
-    const errors: { fullName?: string; phone?: string } = {}
+    const errors: { fullName?: string; phone?: string; birthDate?: string } = {}
     if (!personalDraft.fullName.trim()) errors.fullName = "Бүтэн нэрээ оруулна уу"
     if (!personalDraft.phone.trim()) errors.phone = "Утасны дугаараа оруулна уу"
+    const birth = parseBirthDate(personalDraft.birthDate)
+    if (!birth.ok) errors.birthDate = birth.error
     setPersonalErrors(errors)
     if (Object.keys(errors).length > 0) return
 
@@ -401,12 +416,14 @@ export default function StaffProfilePage() {
       fullName: personalDraft.fullName.trim(),
       phone: personalDraft.phone.trim(),
       gender: personalDraft.gender,
+      birthDate: personalDraft.birthDate || null,
       agreement: personalDraft.agreement,
     })
     if (ok) {
       setFullName(personalDraft.fullName.trim())
       setPhone(personalDraft.phone.trim())
       setGender(personalDraft.gender)
+      setBirthDate(personalDraft.birthDate)
       setAgreement(personalDraft.agreement)
       setEditing(null)
     }
@@ -454,7 +471,7 @@ export default function StaffProfilePage() {
 
   const enabledDays = DAYS.filter(([key]) => availability?.[key]?.enabled)
   const completeness = getStaffCompleteness({
-    fullName, phone, bio, avatarUrl, gender, skills,
+    fullName, phone, bio, avatarUrl, gender, birthDate, skills,
     experienceCount: experience.length,
     educationCount: education.length,
     enabledDays: enabledDays.length,
@@ -574,6 +591,20 @@ export default function StaffProfilePage() {
                       <option value="female">Эмэгтэй</option>
                     </select>
                   </Field>
+                  <Field label="Төрсөн огноо" htmlFor="profile-birth-date" error={personalErrors.birthDate}>
+                    <input
+                      id="profile-birth-date"
+                      type="date"
+                      value={personalDraft.birthDate}
+                      min={BIRTH_DATE_MIN}
+                      max={BIRTH_DATE_MAX}
+                      onChange={(e) => {
+                        setPersonalDraft((d) => ({ ...d, birthDate: e.target.value }))
+                        setPersonalErrors((er) => ({ ...er, birthDate: undefined }))
+                      }}
+                      className={inputClass(!!personalErrors.birthDate)}
+                    />
+                  </Field>
                   <Field label="Имэйл" htmlFor="profile-email" hint="Нэвтрэх имэйлийг энд өөрчлөх боломжгүй.">
                     <input id="profile-email" type="email" value={email} readOnly className={`${inputClass(false)} text-gray-500 cursor-not-allowed`} />
                   </Field>
@@ -618,6 +649,7 @@ export default function StaffProfilePage() {
                     <InfoLine icon={Phone} label="Утас" value={phone} />
                     <InfoLine icon={Mail} label="Имэйл" value={email} />
                     <InfoLine icon={UserRound} label="Хүйс" value={GENDER_LABELS[gender]} />
+                    <InfoLine icon={Cake} label="Төрсөн огноо" value={birthDateLabel(birthDate)} />
                   </dl>
                 </>
               )}

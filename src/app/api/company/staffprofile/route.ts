@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     // 4. STAFF NAME
     const { data: staffData, error: staffError } = await supabase
       .from("mt_staff")
-      .select("first_name, last_name")
+      .select("first_name, last_name, birth_date")
       .eq("id", realStaffId)
       .maybeSingle()
 
@@ -153,6 +153,7 @@ export async function GET(request: Request) {
         : "Ажил горилогч (Нэр бөглөөгүй)",
       email: profileData?.email || "",
       phone: profileData?.phone || "",
+      birth_date: staffData?.birth_date || "",
       bio: profileData?.bio || "",
       avatar_url: profileData?.photo_url || "", // Баазад байгаа бүтэн URL-ийг шууд онооно
       skills: {

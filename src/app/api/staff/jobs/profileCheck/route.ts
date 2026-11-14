@@ -1,57 +1,25 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
-import { supabase } from "@/lib/supabase"
+import { applyMissingMessage, getApplyMissing } from "@/lib/staffCompletenessServer"
 
+// Анкет илгээхийн өмнөх профайлын шалгалт. Профайл хуудастай ижил эх сурвалжаас
+// (mt_staff, mt_profile, tr_staff_skill, туршлага, боловсрол) уншина.
+// /api/jobRequest мөн ижил шалгалтыг серверт давтан хийнэ.
 export async function GET() {
   try {
     const session = await getSession()
     const userId = session?.userId
 
-    if (!userId) {
+    if (!userId || session.role !== "staff") {
       return NextResponse.json({ error: "Нэвтрэх шаардлагатай байна." }, { status: 401 })
     }
 
-    // ЗАССАН: .eq("id", userId)-ийг .eq("user_id", userId) болгов
-    const { data: profile, error: profileError } = await supabase
-      .from("mt_profile")
-      .select("email, phone, bio, skills, experience, education")
-      .eq("user_id", userId)
-      .maybeSingle() // single() нь дата олдохгүй үед 406 алдаа шиддэг тул maybeSingle() ашиглах нь найдвартай
-
-    if (profileError || !profile) {
-      return NextResponse.json({ 
-        isComplete: false, 
-        error: "Профайл мэдээлэл олдсонгүй. Та эхлээд профайлаа үүсгэнэ үү." 
-      })
+    const missing = await getApplyMissing(userId)
+    if (missing.length > 0) {
+      return NextResponse.json({ isComplete: false, missing, error: applyMissingMessage(missing) })
     }
 
-    // ЗАССАН: Таны mt_profile хүснэгтийн бодит багануудын нэрсээр солив
-    const requiredFields: (keyof typeof profile)[] = [
-      "email", 
-      "phone", 
-      "bio", 
-      "skills", 
-      "experience", 
-      "education"
-    ]
-
-    // Хоосон, null эсвэл зөвхөн space (зай) авсан талбаруудыг шүүнэ
-    const incompleteFields = requiredFields.filter(field => {
-      const value = profile[field]
-      return value === null || value === undefined || String(value).trim() === ""
-    })
-
-    // Хэрэв аль нэг багана нь бөглөгдөөгүй хоосон байвал
-    if (incompleteFields.length > 0) {
-      return NextResponse.json({ 
-        isComplete: false, 
-        error: "Анкет илгээхийн тулд профайл мэдээллээ (Имэйл, Утас, Танилцуулга, Ур чадвар, Туршлага, Боловсрол) бүрэн бөглөнө үү." 
-      })
-    }
-
-    // Бүх зүйл амжилттай бөглөгдсөн бол
     return NextResponse.json({ isComplete: true })
-
   } catch (error) {
     console.error("Profile Check Error:", error)
     return NextResponse.json({ error: "Серверт алдаа гарлаа." }, { status: 500 })
