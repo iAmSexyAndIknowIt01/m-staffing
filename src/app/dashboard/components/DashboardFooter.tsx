@@ -28,7 +28,7 @@ const HELP_LINKS: FooterLink[] = [
 ]
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-400/90">{children}</h2>
+  return <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-400/90">{children}</h2>
 }
 
 function FooterLinkItem({ href, label }: FooterLink) {

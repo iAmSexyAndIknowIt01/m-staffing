@@ -177,13 +177,13 @@ export default function Footer() {
                   text-gray-400
                 "
               >
-                <Link href="/about" className="hover:text-orange-400 transition">
+                <Link href="/about" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
                   Бидний тухай
                 </Link>
-                <Link href="/about#contact" className="hover:text-orange-400 transition">
+                <Link href="/about#contact" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
                   Холбоо барих
                 </Link>
-                <Link href="/faq" className="hover:text-orange-400 transition">
+                <Link href="/faq" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
                   Түгээмэл асуулт
                 </Link>
               </div>
@@ -247,22 +247,11 @@ export default function Footer() {
                   Хэдхэн минутын дотор ажил эсвэл ажилтантай холбоорой.
                 </p>
 
-                <Link href="/register">
-                  <button
-                    className="
-                      mt-5
-                      orange-btn
-                      w-full
-                      h-11.5
-                      md:h-12.5
-                      text-sm
-                      flex
-                      items-center
-                      justify-center
-                    "
-                  >
-                    Үнэгүй эхлэх
-                  </button>
+                <Link
+                  href="/register"
+                  className="mt-5 orange-btn w-full h-11.5 md:h-12.5 text-sm flex items-center justify-center"
+                >
+                  Үнэгүй эхлэх
                 </Link>
               </div>
             </div>
@@ -299,10 +288,10 @@ export default function Footer() {
                 text-gray-500
               "
             >
-              <Link href="/terms" className="hover:text-orange-400 transition">
+              <Link href="/terms" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
                 Үйлчилгээний нөхцөл
               </Link>
-              <Link href="/privacy" className="hover:text-orange-400 transition">
+              <Link href="/privacy" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
                 Нууцлалын бодлого
               </Link>
             </div>

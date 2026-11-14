@@ -30,7 +30,7 @@ export default async function AdminLayout({
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-orange-600 text-white font-bold flex items-center justify-center">M</span>
+            <img src="/logo.png" alt="" width={32} height={32} className="w-8 h-8 shrink-0" />
             <span className="text-base font-bold text-gray-900">MStaffing</span>
             <span className="text-xs font-semibold text-white bg-slate-900 px-1.5 py-0.5 rounded-md">Админ</span>
           </Link>

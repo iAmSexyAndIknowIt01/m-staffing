@@ -146,7 +146,7 @@ export default function JobFilterSidebar({
         <h2 className="flex items-center gap-2 text-base font-bold text-gray-900">
           <SlidersHorizontal className="w-4 h-4 text-orange-600" aria-hidden="true" /> Шүүлтүүр
           {activeCount > 0 && (
-            <span className="rounded-full bg-orange-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white tabular-nums">{activeCount}</span>
+            <span className="rounded-full bg-orange-600 px-1.5 py-0.5 text-xs font-bold leading-none text-white tabular-nums">{activeCount}</span>
           )}
         </h2>
         {activeCount > 0 && (
@@ -224,7 +224,7 @@ export default function JobFilterSidebar({
                   }`}
                 >
                   {opt.label}
-                  <span className="block text-[10px] font-medium text-gray-400 tabular-nums">{counts.applied[opt.value]}</span>
+                  <span className="block text-xs font-medium text-gray-400 tabular-nums">{counts.applied[opt.value]}</span>
                 </button>
               )
             })}

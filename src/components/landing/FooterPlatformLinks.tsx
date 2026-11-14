@@ -9,21 +9,21 @@ export default function FooterPlatformLinks() {
   return (
     <>
       {role !== "company" && (
-        <Link href="/dashboard/staff/jobs" className="hover:text-orange-400 transition">
+        <Link href="/dashboard/staff/jobs" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
           Ажил хайх
         </Link>
       )}
       {role !== "staff" && (
-        <Link href="/dashboard/company/search-staff" className="hover:text-orange-400 transition">
+        <Link href="/dashboard/company/search-staff" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
           Ажилтан хайх
         </Link>
       )}
       {role ? (
-        <Link href="/dashboard" className="hover:text-orange-400 transition">
+        <Link href="/dashboard" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
           Хянах самбар
         </Link>
       ) : (
-        <Link href="/register" className="hover:text-orange-400 transition">
+        <Link href="/register" className="inline-flex min-h-6 items-center hover:text-orange-400 transition">
           Бүртгүүлэх
         </Link>
       )}
