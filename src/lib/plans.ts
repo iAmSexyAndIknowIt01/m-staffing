@@ -48,14 +48,31 @@ function isMissingTable(error: { code?: string }): boolean {
   return error.code === "42P01" || error.code === "PGRST205"
 }
 
+export type CreditReason = "reopen" | "extend" | "contact_unlock"
+
+// 1 эрх хасна. Эрх үлдээгүй эсвэл багц дууссан бол { error } буцаана, амжилттай бол бүртгэлийн id.
+// contact_unlock — ажилтны утас, имэйлийг нээх (src/lib/staffContactAccess.ts)
+export async function chargeCredit(
+  userId: string,
+  reason: CreditReason,
+  jobId: string | null = null
+): Promise<{ error: string } | { usageId: string }> {
+  const sub = await getEffectiveSubscription(userId)
+  if (sub.status === "expired") return { error: "Таны багцын хугацаа дууссан байна. Шинэ багц худалдаж авна уу." }
+  if (sub.remaining <= 0) return { error: `Таны зар нийтлэх эрх (${sub.jobLimit}) дууссан байна. Шинэ багц худалдаж авна уу.` }
+  const { data, error } = await supabase
+    .from("tr_job_credit_usage")
+    .insert({ user_id: userId, job_id: jobId, reason })
+    .select("id")
+    .single()
+  if (error) throw error
+  return { usageId: data.id as string }
+}
+
 // Зар дахин нээх / сунгахад 1 эрх хасна. Эрх үлдээгүй эсвэл багц дууссан бол алдааны мессеж буцаана.
 export async function chargeJobCredit(userId: string, jobId: string, reason: "reopen" | "extend"): Promise<string | null> {
-  const sub = await getEffectiveSubscription(userId)
-  if (sub.status === "expired") return "Таны багцын хугацаа дууссан байна. Шинэ багц худалдаж авна уу."
-  if (sub.remaining <= 0) return `Таны зар нийтлэх эрх (${sub.jobLimit}) дууссан байна. Шинэ багц худалдаж авна уу.`
-  const { error } = await supabase.from("tr_job_credit_usage").insert({ user_id: userId, job_id: jobId, reason })
-  if (error) throw error
-  return null
+  const result = await chargeCredit(userId, reason, jobId)
+  return "error" in result ? result.error : null
 }
 
 // Компанийн одоогийн багц, ашигласан/үлдсэн эрх. Төлбөртэй багцын хугацаа дууссан бол үлдсэн эрх 0.
