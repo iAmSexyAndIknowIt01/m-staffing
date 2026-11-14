@@ -14,7 +14,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useCallback, useState, useEffect } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import EmptyState from "@/components/common/EmptyState"
@@ -26,6 +26,23 @@ import StatCard, { ARROW_HOVER, CARD_HOVER, ICON_HOVER } from "./DashStatCard"
 import { getErrorMessage } from "@/lib/errors"
 import { Progress, STATUS, toRequestStatus } from "@/components/staff/requests/requestStatus"
 import { CompanyLogo, VerifiedCompanyName } from "@/components/staff/jobs/CompanyIdentity"
+import ProfileTipModal from "@/components/staff/ProfileTipModal"
+
+// Профайлын зөвлөмжийн цонх: нэг нэвтрэлтэд (session) нэг удаа, «Дахин харуулахгүй» бол бүрмөсөн нуух
+const tipHiddenKey = (userId: string) => `mstaffing:profile-tip-hidden:${userId}`
+const tipShownKey = (userId: string) => `mstaffing:profile-tip-shown:${userId}`
+
+function shouldShowProfileTip(userId: string): boolean {
+  try {
+    if (localStorage.getItem(tipHiddenKey(userId)) === "1") return false
+    if (sessionStorage.getItem(tipShownKey(userId)) === "1") return false
+    sessionStorage.setItem(tipShownKey(userId), "1")
+    return true
+  } catch {
+    // Хувийн цонх г.м. storage хаалттай бол зөвлөмжийг харуулахгүй (давтан гарахаас сэргийлнэ)
+    return false
+  }
+}
 
 interface StaffViewProps {
   userId: string
@@ -59,6 +76,10 @@ interface DashboardData {
     cvViewRate: string
   }
   profileProgress: number
+  // Дутуу хэсгүүд (жишээ: "төрсөн огноо")
+  profileMissing?: string[]
+  // «Ажил олгогчдод ил тод харуулах» зөвшөөрөл
+  profileVisible?: boolean
   recommendedJobs: Job[]
   recentApplications: Application[]
   tips?: {
@@ -109,13 +130,31 @@ export default function StaffView({ userId }: StaffViewProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [now] = useState(() => new Date())
+  const [showTip, setShowTip] = useState(false)
+
+  const closeTip = useCallback(
+    (dontShowAgain: boolean) => {
+      setShowTip(false)
+      if (!dontShowAgain) return
+      try {
+        localStorage.setItem(tipHiddenKey(userId), "1")
+      } catch {
+        // storage хаалттай — энэ удаад л хаана
+      }
+    },
+    [userId]
+  )
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch(`/api/staff/dashboard?userId=${userId}`, { cache: "no-store" })
         if (!res.ok) throw new Error("Хянах самбарын мэдээллийг татаж чадсангүй.")
-        setData(await res.json())
+        const json: DashboardData = await res.json()
+        setData(json)
+        // Профайл дутуу эсвэл «ил тод харуулах» идэвхгүй бол нэвтэрсний дараа зөвлөмж харуулна
+        const needsTip = (json.profileMissing?.length ?? 0) > 0 || json.profileVisible === false
+        if (needsTip && shouldShowProfileTip(userId)) setShowTip(true)
       } catch (err) {
         setError(getErrorMessage(err))
       } finally {
@@ -137,12 +176,20 @@ export default function StaffView({ userId }: StaffViewProps) {
     )
   }
 
-  const { stats, profileProgress, recommendedJobs, recentApplications, tips } = data
+  const { stats, profileProgress, profileMissing, profileVisible, recommendedJobs, recentApplications, tips } = data
   const cvViews = Number(stats.cvViewRate.replace(/[^0-9]/g, "")) || 0
   const profileDone = profileProgress >= 100
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {showTip && (
+        <ProfileTipModal
+          percent={profileProgress}
+          missing={profileMissing ?? []}
+          visible={profileVisible !== false}
+          onClose={closeTip}
+        />
+      )}
       {/* МЭНДЧИЛГЭЭ */}
       <section className="dash-hero bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 pb-20 sm:p-8 sm:pb-24 flex flex-col md:flex-row md:items-center justify-between gap-5">
         <HeroSkyline />
@@ -182,7 +229,10 @@ export default function StaffView({ userId }: StaffViewProps) {
             <div className="mt-2 h-2 rounded-full bg-orange-100 overflow-hidden">
               <div className="dash-bar h-full rounded-full bg-orange-500 transition-all duration-500" style={{ width: `${profileProgress}%`, ...delay(650) }} />
             </div>
-            <p className="mt-2 text-sm text-gray-600">Бүрэн профайлтай ажил хайгч ажил олгогчдод илүү олон харагдаж, анкет илгээх боломжтой болно.</p>
+            {profileMissing && profileMissing.length > 0 && (
+              <p className="mt-2 text-sm font-medium text-orange-700">Дутуу: {profileMissing.join(", ")}</p>
+            )}
+            <p className="mt-1 text-sm text-gray-600">Бүрэн профайлтай ажил хайгч ажил олгогчдод илүү олон харагдаж, анкет илгээх боломжтой болно.</p>
           </div>
           <Link
             href="/dashboard/staff/profile"

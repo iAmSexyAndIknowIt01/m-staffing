@@ -4,6 +4,7 @@ import { AlertTriangle, Briefcase, Clock, GraduationCap, Lock, Pencil, Wrench, U
 import { useCallback, useEffect, useState, useRef } from "react"
 import ContactUnlockButton, { type ContactAccessState } from "@/components/company/ContactUnlockButton"
 import { CONTACT_UNLOCK_HOURS } from "@/lib/staffContact"
+import { birthDateLabel } from "@/lib/birthDate"
 import { useSearchParams } from "next/navigation"
 import { uploadImage } from "@/lib/uploadImage"
 import BioModal from "@/components/profile/modals/BioModal"
@@ -88,6 +89,7 @@ export default function StaffProfilePage() {
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [gender, setGender] = useState("") 
+  const [birthDate, setBirthDate] = useState("")
   const [agreement, setAgreement] = useState(false) 
   
   const [skills, setSkills] = useState<{
@@ -152,6 +154,7 @@ export default function StaffProfilePage() {
           setBio(result.profile.bio || "")
           setAvatarUrl(result.profile.avatar_url || "")
           setGender(result.profile.gender || "") 
+          setBirthDate(result.profile.birth_date || "")
           setAgreement(!!result.profile.agreement)
           setContactAccess(result.profile.contact_access ?? null)
 
@@ -394,6 +397,13 @@ export default function StaffProfilePage() {
               <option value="male">Эрэгтэй</option>
               <option value="female">Эмэгтэй</option>
             </select>
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase mb-1">Төрсөн огноо</p>
+            <div className="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-200 text-gray-800">
+              {birthDateLabel(birthDate) || <span className="text-gray-400">Оруулаагүй</span>}
+            </div>
           </div>
 
           <div 

@@ -7,6 +7,7 @@ const full: StaffCompletenessInput = {
   bio: "Бариста туршлагатай",
   avatarUrl: "https://example.com/a.png",
   gender: "male",
+  birthDate: "1998-05-20",
   skills: { technical: ["Касс"], languages: [] },
   experienceCount: 1,
   educationCount: 1,
@@ -22,12 +23,18 @@ describe("getStaffCompleteness", () => {
   it("дутуу хэсгийг нэрлэнэ", () => {
     const r = getStaffCompleteness({ ...full, avatarUrl: "", experienceCount: 0, bio: "   " })
     expect(r.missing).toEqual(["зураг", "танилцуулга", "ажлын туршлага"])
-    expect(r.percent).toBe(67)
+    expect(r.percent).toBe(70)
   })
 
   it("хэл эсвэл техник ур чадварын аль нэг нь хангалттай, null skills-ийг дутуу гэж үзнэ", () => {
     expect(isStaffProfileComplete({ ...full, skills: { technical: [], languages: ["Англи"] } })).toBe(true)
     expect(isStaffProfileComplete({ ...full, skills: null })).toBe(false)
+  })
+
+  it("төрсөн огноо оруулаагүй бол бүрэн биш", () => {
+    const r = getStaffCompleteness({ ...full, birthDate: "" })
+    expect(r.missing).toEqual(["төрсөн огноо"])
+    expect(r.percent).toBe(90)
   })
 
   it("ажиллах цаг сонгоогүй бол бүрэн биш", () => {

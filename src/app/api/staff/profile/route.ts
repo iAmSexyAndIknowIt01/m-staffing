@@ -11,6 +11,7 @@ import {
   parseExperience,
   parseSkillNames,
 } from "@/lib/staffProfile"
+import { parseBirthDate } from "@/lib/birthDate"
 
 // GET PROFILE
 export async function GET() {
@@ -31,7 +32,8 @@ export async function GET() {
       .from("mt_staff")
       .select(`
         first_name,
-        last_name
+        last_name,
+        birth_date
       `)
       .eq("id", userId)
       .single()
@@ -133,6 +135,7 @@ export async function GET() {
       bio: profileData?.bio || "",
       avatar_url: profileData?.photo_url || "",
       gender: profileData?.gender || "",
+      birth_date: staffData?.birth_date || "",
       agreement: profileData?.agreement || false,
       skills: {
         technical: technicalSkills,
@@ -238,6 +241,7 @@ const ALL_FIELDS = [
   "bio",
   "avatarUrl",
   "gender",
+  "birthDate",
   "agreement",
   "skills",
   "experience",
@@ -254,6 +258,7 @@ type ProfileValues = {
   bio?: string
   photoUrl?: string | null
   gender?: string | null
+  birthDate?: string | null
   agreement?: boolean
   skills?: unknown
   skillNames?: string[]
@@ -307,6 +312,13 @@ function validateProfileFields(body: Record<string, unknown>, fields: readonly P
     values.gender = (gender as string) || null
   }
 
+  // Илгээгээгүй бол (POST-ийн хуучин клиент г.м.) хадгалсан огноонд хүрэхгүй
+  if (has("birthDate") && "birthDate" in body) {
+    const parsed = parseBirthDate(body.birthDate)
+    if (!parsed.ok) return fail(parsed.error)
+    values.birthDate = parsed.value
+  }
+
   if (has("agreement")) {
     values.agreement = body.agreement === true
   }
@@ -358,16 +370,16 @@ function validateProfileFields(body: Record<string, unknown>, fields: readonly P
 
 // Шалгагдсан утгуудыг DB-д бичнэ. values-д байхгүй талбарт хүрэхгүй.
 async function applyProfileUpdate(userId: string, values: ProfileValues) {
+  // UPDATE STAFF (нэр, төрсөн огноо — mt_staff)
+  const staffUpdate: Record<string, unknown> = {}
   if (values.fullName !== undefined) {
-    // UPDATE STAFF NAME
     const splittedName = values.fullName.trim().split(/\s+/)
-    const { error: staffUpdateError } = await supabase
-      .from("mt_staff")
-      .update({
-        first_name: splittedName.slice(1).join(" "),
-        last_name: splittedName[0] || "",
-      })
-      .eq("id", userId)
+    staffUpdate.first_name = splittedName.slice(1).join(" ")
+    staffUpdate.last_name = splittedName[0] || ""
+  }
+  if (values.birthDate !== undefined) staffUpdate.birth_date = values.birthDate
+  if (Object.keys(staffUpdate).length > 0) {
+    const { error: staffUpdateError } = await supabase.from("mt_staff").update(staffUpdate).eq("id", userId)
     if (staffUpdateError) throw staffUpdateError
   }
 

@@ -1,6 +1,6 @@
 // Ажилтны профайл хэр бүрэн бөглөгдсөнийг тооцно.
-// Профайл хуудас (хувь, дутуу хэсэг харуулах) болон компанийн «Ажилтан хайх» (зөвхөн 100%-ийг харуулах)
-// хоёулаа энэ нэг дүрмийг хэрэглэнэ.
+// Профайл хуудас, хяналтын самбар (хувь, дутуу хэсэг харуулах) болон компанийн «Ажилтан хайх»
+// (зөвхөн 100%-ийг харуулах) бүгд энэ нэг дүрмийг хэрэглэнэ.
 
 export interface StaffCompletenessInput {
   fullName: string
@@ -8,6 +8,8 @@ export interface StaffCompletenessInput {
   bio: string
   avatarUrl: string
   gender: string
+  // "YYYY-MM-DD" (mt_staff.birth_date)
+  birthDate: string
   skills: { technical?: string[]; languages?: string[] } | null | undefined
   experienceCount: number
   educationCount: number
@@ -21,6 +23,7 @@ export function getStaffCompleteness(p: StaffCompletenessInput) {
     [!!p.phone.trim(), "утас"],
     [!!p.avatarUrl, "зураг"],
     [!!p.gender, "хүйс"],
+    [!!p.birthDate, "төрсөн огноо"],
     [!!p.bio.trim(), "танилцуулга"],
     [skillCount > 0, "ур чадвар"],
     [p.experienceCount > 0, "ажлын туршлага"],

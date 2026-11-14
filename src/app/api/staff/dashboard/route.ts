@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
 import { selectInChunks } from "@/lib/chunk";
 import { getJobTypeLabel } from "@/lib/jobPost";
+import { loadStaffCompleteness } from "@/lib/staffCompletenessServer";
 
 export const revalidate = 0;
 
@@ -28,16 +29,15 @@ export async function GET() {
     const [
       jobRequestsCountResponse, 
       jobRequestsThisWeekResponse, 
-      profileResponse,
       recentApplicationsResponse,
       companyViewsCountResponse,
       cvViewsCountResponse,
       blogTipsResponse,         // 🌟 tips-д зориулсан query
-      interviewPrepResponse     // 🌟 interview-prep-д зориулсан query
+      interviewPrepResponse,    // 🌟 interview-prep-д зориулсан query
+      completeness              // Профайлын бүрэн байдал (профайл хуудастай ижил дүрэм)
     ] = await Promise.all([
       supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId),
       supabase.from("tr_job_request").select("*", { count: "exact", head: true }).eq("applicant_id", userId).gte("created_at", startOfWeekISO),
-      supabase.from("mt_profile").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("tr_job_request").select("id, status, created_at, job_id").eq("applicant_id", userId).order("created_at", { ascending: false }),
       supabase.from("tr_company_views").select("*", { count: "exact", head: true }).eq("viewer_id", userId).gte("created_at", startOfWeekISO),
       supabase.from("tr_cv_views").select("*", { count: "exact", head: true }).eq("staff_id", userId),
@@ -57,7 +57,9 @@ export async function GET() {
         .eq("detail_url", "dashboard/staff/blog/interview-prep")
         .order("id", { ascending: false })
         .limit(1)
-        .maybeSingle()
+        .maybeSingle(),
+
+      loadStaffCompleteness(userId)
     ]);
 
     // Хэрэглэгчийн анкет илгээсэн ажлын байрнуудын ID-г массив болгож авна
@@ -109,20 +111,8 @@ export async function GET() {
       return acc;
     }, {} as Record<string, (typeof relatedJobs)[number]>);
 
-    // Профайл хувь бодох логик
-    const profile = profileResponse.data;
-    let profileProgress = 0;
-    if (profile) {
-      const targetFields = ["email", "phone", "bio", "skills", "experience", "education", "availability", "photo_url"];
-      let filledFieldsCount = 0;
-      targetFields.forEach(field => {
-        const val = profile[field];
-        if (val !== null && val !== "" && (typeof val !== "object" || Object.keys(val).length > 0)) {
-          filledFieldsCount++;
-        }
-      });
-      profileProgress = Math.round((filledFieldsCount / targetFields.length) * 100);
-    }
+    // Профайл хувь: профайл хуудас, «Ажилтан хайх»-тай ижил дүрмээр (src/lib/staffProfileCompleteness.ts)
+    const profileProgress = completeness.percent;
 
     const formatDate = (dateString: string) => {
       if (!dateString) return "";
@@ -163,6 +153,8 @@ export async function GET() {
         cvViewRate: cvViewsCountResponse.count ? `${cvViewsCountResponse.count} удаа` : "0 удаа",
       },
       profileProgress: profileProgress,
+      profileMissing: completeness.missing,
+      profileVisible: completeness.agreement,
       
       // 🌟 Зөвлөгөөнүүдийг массив хэлбэрээр илгээнэ
       tips: activeTips,
