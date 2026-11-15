@@ -1,5 +1,9 @@
 // Ажлын зарын «Ажлын үүрэг, тодорхойлолт», «Тавигдах шаардлага»-ын бэлэн загварууд.
 // Ангилал бүрт хэд хэдэн албан тушаалын загвар; жагсаалтад байхгүй (Бусад) үед ерөнхий загварууд.
+// Нэмэлт загварууд jobTemplatesExtra.ts-д. Сонгосон ажлын төрөлд (хагас цаг, дадлага г.м.)
+// adaptTemplateToJobType нэмэлт мөр залгана.
+
+import { EXTRA_GENERAL, EXTRA_TEMPLATES } from "./jobTemplatesExtra"
 
 export interface JobTemplate {
   id: string
@@ -15,7 +19,7 @@ const t = (id: string, title: string, description: string[], requirements: strin
   requirements: requirements.map((line) => `• ${line}`).join("\n"),
 })
 
-const GENERAL: JobTemplate[] = [
+const BASE_GENERAL: JobTemplate[] = [
   t(
     "general-staff",
     "Ерөнхий ажилтан",
@@ -48,7 +52,7 @@ const GENERAL: JobTemplate[] = [
   ),
 ]
 
-export const JOB_TEMPLATES: Record<string, JobTemplate[]> = {
+const BASE_TEMPLATES: Record<string, JobTemplate[]> = {
   retail: [
     t(
       "retail-cashier",
@@ -507,7 +511,80 @@ export const JOB_TEMPLATES: Record<string, JobTemplate[]> = {
   ],
 }
 
+const GENERAL: JobTemplate[] = [...BASE_GENERAL, ...EXTRA_GENERAL.map((raw) => t(...raw))]
+
+export const JOB_TEMPLATES: Record<string, JobTemplate[]> = Object.fromEntries(
+  Object.entries(BASE_TEMPLATES).map(([category, list]) => [
+    category,
+    [...list, ...(EXTRA_TEMPLATES[category] ?? []).map((raw) => t(...raw))],
+  ])
+)
+
 // Ангилалд тохирох загварууд; жагсаалтад байхгүй бол ерөнхий загвар
 export function getJobTemplates(category: string): JobTemplate[] {
   return [...(JOB_TEMPLATES[category] ?? []), ...GENERAL]
+}
+
+// ----------------------------------------------------------------------------
+// Ажлын төрөлд тааруулах (JOB_TYPES: fulltime, parttime, contract, intern, remote)
+// ----------------------------------------------------------------------------
+
+export const JOB_TYPE_TEMPLATE_LINES: Record<string, { label: string; description: string[]; requirements: string[] }> = {
+  fulltime: {
+    label: "Бүтэн цагийн",
+    description: ["Байгууллагын дотоод журам, ажлын цагийн хуваарийг мөрдөж ажиллах"],
+    requirements: ["Урт хугацаанд тогтвортой ажиллах сонирхолтой"],
+  },
+  parttime: {
+    label: "Хагас цагийн",
+    description: ["Тохиролцсон цагийн хуваарийн дагуу ээлжээр ажиллах"],
+    requirements: ["Долоо хоногт тогтмол хуваарьтай ажиллах боломжтой", "Оюутан, сурагч хамрагдах боломжтой"],
+  },
+  contract: {
+    label: "Гэрээт",
+    description: ["Гэрээнд заасан хугацаа, ажлын хүрээнд үр дүнг хүлээлгэн өгөх"],
+    requirements: ["Тодорхой хугацааны гэрээгээр ажиллах боломжтой", "Ижил төстэй ажил гүйцэтгэж байсан бол давуу тал"],
+  },
+  intern: {
+    label: "Дадлагын",
+    description: [
+      "Туршлагатай ажилтны удирдлага дор ажлын дадлага хийх",
+      "Дадлагын хугацаанд ажлын үйл явцтай танилцаж, тайлан бичих",
+    ],
+    requirements: ["Холбогдох чиглэлээр суралцаж буй оюутан эсвэл шинэ төгсөгч", "Суралцах хүсэл эрмэлзэлтэй"],
+  },
+  remote: {
+    label: "Зайнаас ажиллах",
+    description: ["Ажлаа зайнаас гүйцэтгэж, онлайнаар тогтмол тайлагнах"],
+    requirements: ["Өөрийн компьютер, тогтвортой интернэттэй", "Цагаа бие даан зохицуулах чадвартай"],
+  },
+}
+
+const LINE_BREAK = "\n"
+
+export interface AdaptedTemplate extends JobTemplate {
+  // Ажлын төрлөөс нэмэгдсэн мөрүүд (урьдчилсан харагдацад ялгаж харуулна)
+  added: { description: string[]; requirements: string[] }
+  jobTypeLabel: string | null
+}
+
+// Загварт сонгосон ажлын төрлийн мөрүүдийг залгана. Ижил мөр аль хэдийн байвал давтахгүй.
+export function adaptTemplateToJobType(template: JobTemplate, jobType: string): AdaptedTemplate {
+  const extra = JOB_TYPE_TEMPLATE_LINES[jobType]
+  if (!extra) return { ...template, added: { description: [], requirements: [] }, jobTypeLabel: null }
+
+  const append = (text: string, lines: string[]) => {
+    const fresh = lines.filter((line) => !text.includes(line))
+    const bullets = fresh.map((line) => `• ${line}`)
+    return { text: fresh.length ? [text, ...bullets].join(LINE_BREAK) : text, fresh }
+  }
+  const description = append(template.description, extra.description)
+  const requirements = append(template.requirements, extra.requirements)
+  return {
+    ...template,
+    description: description.text,
+    requirements: requirements.text,
+    added: { description: description.fresh, requirements: requirements.fresh },
+    jobTypeLabel: extra.label,
+  }
 }
