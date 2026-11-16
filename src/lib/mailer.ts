@@ -1,8 +1,13 @@
 import nodemailer from "nodemailer"
-import { getResendConfig, sendViaResend, type MailMessage } from "./resend"
+import { RESEND_BATCH_LIMIT, getResendConfig, sendBatchViaResend, sendViaResend, type MailMessage } from "./resend"
 
-// Gmail SMTP. GMAIL_USER, GMAIL_APP_PASSWORD орчны хувьсагч шаардлагатай.
-export const transporter = nodemailer.createTransport({
+// Системийн БҮХ имэйл энэ файлын sendEmail / sendBulkEmail-ээр явна:
+//   1. RESEND_API_KEY байвал noreply@mstaffing.mn (RESEND_FROM)-ээс Resend-ээр
+//   2. Resend тохируулаагүй эсвэл алдаа өгвөл (жишээ нь Free багцын өдрийн хязгаар) Gmail SMTP-ээр нөөцөөр
+//      (Gmail нь өөрийн хаягаасаа л илгээх тул нөөц үед илгээгч нь GMAIL_USER байна)
+
+// Gmail SMTP (нөөц). GMAIL_USER, GMAIL_APP_PASSWORD орчны хувьсагч шаардлагатай.
+const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.GMAIL_USER,
@@ -10,13 +15,11 @@ export const transporter = nodemailer.createTransport({
   },
 })
 
-export const MAIL_FROM = `"MStaffing" <${process.env.GMAIL_USER}>`
+const GMAIL_FROM = `"MStaffing" <${process.env.GMAIL_USER}>`
+const GMAIL_BCC_BATCH = 50
 
-// Баталгаажуулах код (OTP)-ыг илгээнэ.
-// RESEND_API_KEY байвал noreply@mstaffing.mn-ээс Resend-ээр явуулна.
-// Resend тохируулаагүй эсвэл алдаа өгвөл (жишээ нь Free багцын өдрийн 100 имэйлийн хязгаар)
-// код заавал хүрэх ёстой тул Gmail-ээр дахин илгээнэ.
-export async function sendCodeEmail(message: MailMessage): Promise<void> {
+// Нэг хүлээн авагчид имэйл илгээнэ (код, мэдэгдэл, гэрээ г.м.)
+export async function sendEmail(message: MailMessage): Promise<void> {
   const resend = getResendConfig()
   if (resend) {
     try {
@@ -27,7 +30,36 @@ export async function sendCodeEmail(message: MailMessage): Promise<void> {
     }
   }
 
-  await transporter.sendMail({ from: MAIL_FROM, ...message })
+  await transporter.sendMail({ from: GMAIL_FROM, ...message })
+}
+
+// Баталгаажуулах код (OTP) — sendEmail-тэй ижил (хуучин нэрийг хадгалав)
+export const sendCodeEmail = sendEmail
+
+// Олон хүнд ижил имэйл (ажлын санал г.м.). Хүн бүр зөвхөн өөрийн хаягийг харна:
+// Resend-ээр бол хүн тус бүрд тусдаа имэйл (batch), Gmail нөөцөөр бол BCC.
+export async function sendBulkEmail(recipients: string[], subject: string, html: string): Promise<void> {
+  const resend = getResendConfig()
+  for (let i = 0; i < recipients.length; i += RESEND_BATCH_LIMIT) {
+    const chunk = recipients.slice(i, i + RESEND_BATCH_LIMIT)
+    if (resend) {
+      try {
+        await sendBatchViaResend(chunk.map((to) => ({ to, subject, html })), resend)
+        continue
+      } catch (error) {
+        console.error("RESEND_BATCH_ERROR (Gmail руу шилжинэ):", error)
+      }
+    }
+    for (let j = 0; j < chunk.length; j += GMAIL_BCC_BATCH) {
+      await transporter.sendMail({
+        from: GMAIL_FROM,
+        to: GMAIL_FROM,
+        bcc: chunk.slice(j, j + GMAIL_BCC_BATCH),
+        subject,
+        html,
+      })
+    }
+  }
 }
 
 export function escapeHtml(value: string): string {

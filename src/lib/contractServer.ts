@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase"
-import { MAIL_FROM, noticeEmailHtml, transporter } from "@/lib/mailer"
+import { noticeEmailHtml, sendEmail } from "@/lib/mailer"
 import { EXPIRY_REMINDER_DAYS, LIVE_STATUSES, addDaysISO, daysUntil, effectiveStatus, todayISO } from "@/lib/contracts"
 import { getAppOrigin } from "@/lib/url"
 import { one } from "@/lib/relation"
@@ -190,7 +190,7 @@ export function contractLink(req: Request, path: string): { href: string; label:
 export async function sendContractMail(to: string | null | undefined, subject: string, lines: string[], link?: { href: string; label: string }) {
   if (!to) return
   try {
-    await transporter.sendMail({ from: MAIL_FROM, to, subject, html: noticeEmailHtml(subject, lines, link) })
+    await sendEmail({ to, subject, html: noticeEmailHtml(subject, lines, link) })
   } catch (err) {
     console.error("CONTRACT_MAIL_ERROR:", err)
   }

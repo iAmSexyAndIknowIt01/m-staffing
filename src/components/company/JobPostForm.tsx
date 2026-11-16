@@ -9,7 +9,7 @@ import Select from "@/components/common/Select"
 import Combobox from "@/components/common/Combobox"
 import JobDetailView from "@/components/staff/jobs/JobDetailView"
 import JobTemplatePicker from "@/components/company/JobTemplatePicker"
-import { getJobTemplates, type JobTemplate } from "@/lib/jobTemplates"
+import { JOB_TYPE_TEMPLATE_LINES, adaptTemplateToJobType, getJobTemplates, type JobTemplate } from "@/lib/jobTemplates"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
 import { getErrorMessage } from "@/lib/errors"
@@ -340,6 +340,8 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   const customCategory = categoryChoice === "other" && values.category !== "other" ? values.category : ""
   const templates = getJobTemplates(categoryChoice)
   const categoryLabel = categoryChoice && categoryChoice !== "other" ? getJobCategoryLabel(categoryChoice) : "Ерөнхий загварууд"
+  // Загварт сонгосон ажлын төрлийн мөрүүдийг нэмнэ (хагас цаг, дадлага г.м.)
+  const jobTypeLabel = JOB_TYPE_TEMPLATE_LINES[values.jobType]?.label ?? null
 
   // Загвар ашиглах: бичсэн текст байвал солих эсэхийг асууна; нэр хоосон бол загварын нэрийг оруулна
   const applyTemplate = async (template: JobTemplate) => {
@@ -351,9 +353,10 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
       })
       if (!ok) return
     }
+    const adapted = adaptTemplateToJobType(template, values.jobType)
     update({
-      description: template.description,
-      requirements: template.requirements,
+      description: adapted.description,
+      requirements: adapted.requirements,
       ...(values.title.trim() ? {} : { title: template.title }),
     })
     setTouched((prev) => ({ ...prev, description: true, requirements: true }))
@@ -623,9 +626,14 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
                 <p className="text-sm font-semibold text-gray-900">Бэлэн загвараас эхлэх</p>
                 <p className="text-xs text-gray-500">
                   {categoryChoice && categoryChoice !== "other"
-                    ? `«${categoryLabel}» ангилалд тохирох үүрэг, шаардлагын загвар`
+                    ? `«${categoryLabel}» ангилалд тохирох ${templates.length} загвар`
                     : "Ангиллаа сонговол тухайн салбарт тохирох загварууд гарна"}
                 </p>
+                {jobTypeLabel && (
+                  <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-orange-200">
+                    <Sparkles className="w-3 h-3" aria-hidden="true" /> «{jobTypeLabel}» ажилд тааруулж бөглөнө
+                  </p>
+                )}
               </div>
             </div>
             <button
@@ -633,11 +641,11 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
               onClick={() => setTemplatePickerId("")}
               className="shrink-0 self-start sm:self-auto text-sm font-semibold text-orange-700 hover:text-orange-800"
             >
-              Бүгдийг үзэх
+              Бүгдийг үзэх ({templates.length})
             </button>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {templates.slice(0, 4).map((tpl) => (
+            {templates.slice(0, 6).map((tpl) => (
               <button
                 key={tpl.id}
                 type="button"
@@ -654,6 +662,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
           <JobTemplatePicker
             templates={templates}
             categoryLabel={categoryLabel}
+            jobType={values.jobType}
             initialId={templatePickerId || undefined}
             onClose={() => setTemplatePickerId(null)}
             onApply={applyTemplate}
