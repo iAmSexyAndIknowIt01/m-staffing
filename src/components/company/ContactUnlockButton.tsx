@@ -5,6 +5,9 @@ import Link from "next/link"
 import { CheckCircle2, Clock, Loader2, Send } from "lucide-react"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { CONTACT_UNLOCK_HOURS, formatRemaining } from "@/lib/staffContact"
+import { TOKEN_COSTS, formatTokens } from "@/lib/planCatalog"
+
+const COST = TOKEN_COSTS.contact_unlock
 
 export type ContactAccessState =
   | { status: "applicant" }
@@ -21,13 +24,13 @@ interface Props {
   onExpired: () => void
 }
 
-// Ажилтны профайлын баруун дээд буланд: «Ажиллах хүсэлт илгээх» → 1 эрх хасаж утас, имэйлийг 10 цаг нээнэ
+// Ажилтны профайлын баруун дээд буланд: «Ажиллах хүсэлт илгээх» → M токен хасаж утас, имэйлийг 10 цаг нээнэ
 export default function ContactUnlockButton({ staffId, staffName, access, onUnlocked, onExpired }: Props) {
   const [remaining, setRemaining] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(() => Date.now())
 
-  // Үлдсэн эрхийн тоо (товчны доор харуулна)
+  // Үлдсэн M токен (товчны доор харуулна)
   useEffect(() => {
     if (access.status !== "locked") return
     let cancelled = false
@@ -56,8 +59,8 @@ export default function ContactUnlockButton({ staffId, staffName, access, onUnlo
   }, [expiresAt, onExpired])
 
   const handleClick = async () => {
-    if (remaining === 0) {
-      await showAlert("Танд үлдсэн эрх байхгүй байна. «Төлбөр, багц» хэсгээс шинэ багц худалдаж авна уу.", {
+    if (remaining !== null && remaining < COST) {
+      await showAlert(`Хүсэлт илгээхэд ${formatTokens(COST)} хэрэгтэй, танд ${formatTokens(remaining)} үлдсэн байна. «Төлбөр, багц» хэсгээс шинэ багц худалдаж авна уу.`, {
         title: "Эрх хүрэлцэхгүй",
         tone: "warning",
       })
@@ -65,15 +68,15 @@ export default function ContactUnlockButton({ staffId, staffName, access, onUnlo
     }
 
     const ok = await showConfirm(
-      `Ажиллах хүсэлт илгээхэд таны зар нийтлэх эрхээс 1 эрх хасагдана. Үүний дараа ажилтны утас, имэйлийг ${CONTACT_UNLOCK_HOURS} цагийн турш харах боломжтой.`,
+      `Ажиллах хүсэлт илгээхэд ${formatTokens(COST)} хасагдана. Үүний дараа ажилтны утас, имэйлийг ${CONTACT_UNLOCK_HOURS} цагийн турш харах боломжтой.`,
       {
-        title: "1 эрх хасагдана",
+        title: `${formatTokens(COST)} хасагдана`,
         confirmLabel: "Зөвшөөрч байна",
         cancelLabel: "Болих",
         icon: Send,
         subject: {
           name: staffName || "Ажилтан",
-          details: remaining !== null ? [`Одоо үлдсэн эрх: ${remaining}`, `Хасагдсаны дараа: ${Math.max(remaining - 1, 0)}`] : undefined,
+          details: remaining !== null ? [`Одоо үлдсэн: ${formatTokens(remaining)}`, `Хасагдсаны дараа: ${formatTokens(remaining - COST)}`] : undefined,
         },
       }
     )
@@ -134,11 +137,11 @@ export default function ContactUnlockButton({ staffId, staffName, access, onUnlo
         Ажиллах хүсэлт илгээх
       </button>
       <p className="text-xs text-gray-500">
-        1 эрх хасагдана
+        {formatTokens(COST)} хасагдана
         {remaining !== null && (
           <>
-            {" · "}Үлдсэн эрх: <span className={`font-semibold ${remaining === 0 ? "text-red-600" : "text-gray-700"}`}>{remaining}</span>
-            {remaining === 0 && (
+            {" · "}Үлдсэн: <span className={`font-semibold ${remaining < COST ? "text-red-600" : "text-gray-700"}`}>{formatTokens(remaining)}</span>
+            {remaining < COST && (
               <>
                 {" · "}
                 <Link href="/dashboard/company/billing" className="font-semibold text-orange-600 hover:underline">Багц авах</Link>

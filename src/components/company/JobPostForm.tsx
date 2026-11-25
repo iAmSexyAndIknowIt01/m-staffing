@@ -9,6 +9,7 @@ import Select from "@/components/common/Select"
 import Combobox from "@/components/common/Combobox"
 import JobDetailView from "@/components/staff/jobs/JobDetailView"
 import JobTemplatePicker from "@/components/company/JobTemplatePicker"
+import { TOKEN_COSTS, formatTokens } from "@/lib/planCatalog"
 import { JOB_TYPE_TEMPLATE_LINES, adaptTemplateToJobType, getJobTemplates, type JobTemplate } from "@/lib/jobTemplates"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { getCompanyLogoUrl } from "@/components/staff/jobs/CompanyIdentity"
@@ -168,7 +169,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
   // Нээлттэй загвар сонгох цонх: эхлээд харуулах загварын id ("" бол эхнийх), null бол хаалттай
   const [templatePickerId, setTemplatePickerId] = useState<string | null>(null)
   const [company, setCompany] = useState<{ name: string; logo_url: string | null } | null>(null)
-  const [limitInfo, setLimitInfo] = useState<{ approved: boolean; reached: boolean; limit: number; expired: boolean } | null>(null)
+  const [limitInfo, setLimitInfo] = useState<{ approved: boolean; reached: boolean; limit: number; expired: boolean; remaining: number; cost: number } | null>(null)
   const doneRef = useRef(false)
 
   const errors = jobFormErrors(values)
@@ -195,6 +196,8 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
             reached: !!result.job_limit?.reached,
             limit: result.job_limit?.limit ?? 0,
             expired: !!result.job_limit?.expired,
+            remaining: result.job_limit?.remaining ?? 0,
+            cost: result.job_limit?.cost ?? TOKEN_COSTS.post,
           })
         }
       })
@@ -297,12 +300,15 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
       let response = await send()
       let result = await response.json()
 
-      // Хаагдсан/хугацаа дууссан зарыг дахин нээх — 1 нийтлэх эрх хасагдахыг зөвшөөрүүлнэ
+      // Хаагдсан/хугацаа дууссан зарыг дахин нээх — M токен хасагдахыг зөвшөөрүүлнэ
       if (response.status === 409 && result.requiresCredit) {
         const remaining = typeof result.remaining === "number" ? result.remaining : null
-        if (remaining === 0) throw new Error("Зар нийтлэх эрх дууссан байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.")
+        const cost = typeof result.cost === "number" ? result.cost : TOKEN_COSTS.reopen
+        if (remaining !== null && remaining < cost) {
+          throw new Error(`Зарыг дахин нээхэд ${formatTokens(cost)} хэрэгтэй, танд ${formatTokens(remaining)} үлдсэн байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.`)
+        }
         const ok = await showConfirm(
-          `Зарыг дахин нээж ${JOB_POST_DAYS} хоногоор идэвхжүүлэхэд 1 нийтлэх эрх хасагдана.${remaining !== null ? ` Үлдэх эрх: ${remaining - 1}.` : ""}`,
+          `Зарыг дахин нээж ${JOB_POST_DAYS} хоногоор идэвхжүүлэхэд ${formatTokens(cost)} хасагдана.${remaining !== null ? ` Үлдэх: ${formatTokens(remaining - cost)}.` : ""}`,
           { title: "Зарыг дахин нээх үү?", confirmLabel: "Дахин нээх" }
         )
         if (!ok) return
@@ -388,7 +394,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
                 ? "Таны компани админаар баталгаажаагүй байна. Баталгаажсаны дараа зар нийтлэх боломжтой болно."
                 : limitInfo.expired
                   ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
-                  : `Таны зар нийтлэх эрх (${limitInfo.limit}) дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`}
+                  : `Зар нийтлэхэд ${formatTokens(limitInfo.cost)} хэрэгтэй, танд ${formatTokens(limitInfo.remaining)} үлдсэн байна. Багц худалдаж авна уу.`}
             </p>
             {limitInfo.approved && (
               <a href="/dashboard/company/billing" className="mt-2 inline-block font-semibold text-amber-900 underline">
@@ -603,7 +609,7 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
               if (reopening) {
                 return (
                   <p className="mt-1.5 text-xs text-amber-700">
-                    Дахин нээхэд 1 нийтлэх эрх хасагдаж, зар {JOB_POST_DAYS} хоног идэвхтэй болно.
+                    Дахин нээхэд {formatTokens(TOKEN_COSTS.reopen)} хасагдаж, зар {JOB_POST_DAYS} хоног идэвхтэй болно.
                   </p>
                 )
               }
@@ -700,6 +706,13 @@ export default function JobPostForm({ mode, jobId, initial }: JobPostFormProps) 
         {submitted && hasErrors && (
           <p role="alert" className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
             <XCircle className="w-4 h-4 shrink-0" /> Улаанаар тэмдэглэсэн талбаруудыг засна уу.
+          </p>
+        )}
+
+        {mode === "create" && limitInfo && !blocked && (
+          <p className="text-right text-xs text-gray-500">
+            Нийтлэхэд <b className="font-semibold text-gray-700">{formatTokens(limitInfo.cost)}</b> хасагдана · Үлдсэн:{" "}
+            <b className="font-semibold text-gray-700">{formatTokens(limitInfo.remaining)}</b>
           </p>
         )}
 

@@ -5,7 +5,7 @@ import { selectInChunks } from "@/lib/chunk"
 
 // Компани ажилтны утас, имэйлийг харах эрх.
 //   - Компанийн зарт анкет илгээсэн ажилтан → үнэгүй (ажилтан өөрөө хандсан)
-//   - Бусад тохиолдолд «Ажиллах хүсэлт илгээх» товчоор 1 эрх зарцуулж CONTACT_UNLOCK_HOURS цаг нээнэ
+//   - Бусад тохиолдолд «Ажиллах хүсэлт илгээх» товчоор M токен (TOKEN_COSTS.contact_unlock) зарцуулж CONTACT_UNLOCK_HOURS цаг нээнэ
 //     (tr_staff_contact_unlock, migration 20261115000000_staff_contact_unlock)
 
 export type ContactAccess =
@@ -89,7 +89,7 @@ export async function getContactAccess(companyId: string, staffId: string): Prom
   return { status: "locked" }
 }
 
-// 1 эрх хасаж холбоо барих мэдээллийг нээнэ. Аль хэдийн нээлттэй бол дахин хасахгүй.
+// M токен хасаж холбоо барих мэдээллийг нээнэ. Аль хэдийн нээлттэй бол дахин хасахгүй.
 export async function unlockStaffContact(
   companyId: string,
   staffId: string
@@ -108,7 +108,7 @@ export async function unlockStaffContact(
     credit_usage_id: charge.usageId,
   })
   if (error) {
-    // Нээж чадаагүй бол хассан эрхийг буцаана
+    // Нээж чадаагүй бол хассан токеныг буцаана
     await supabase.from("tr_job_credit_usage").delete().eq("id", charge.usageId)
     throw error
   }

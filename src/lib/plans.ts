@@ -1,24 +1,33 @@
 import { supabase } from "@/lib/supabase"
-import { PAID_PLAN_DAYS, PLANS, isPlanType, type PlanType } from "@/lib/planCatalog"
+import { PAID_PLAN_DAYS, PLANS, TOKEN_COSTS, formatTokens, isPlanType, type PlanType, type TokenAction } from "@/lib/planCatalog"
 
-// Багцын каталогийг (үнэ, эрхийн тоо) planCatalog.ts-ээс авна — клиент ч мөн тэндээс импортолно
-export { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPaidPlanType, isPlanType, pricePerPost } from "@/lib/planCatalog"
-export type { PaidPlanType, PlanType } from "@/lib/planCatalog"
+// Багцын каталогийг (үнэ, токен, үйлдлийн үнэ) planCatalog.ts-ээс авна — клиент ч мөн тэндээс импортолно
+export {
+  PAID_PLAN_DAYS,
+  PAID_PLAN_TYPES,
+  PLANS,
+  TOKEN_COSTS,
+  formatTokens,
+  isPaidPlanType,
+  isPlanType,
+} from "@/lib/planCatalog"
+export type { PaidPlanType, PlanType, TokenAction } from "@/lib/planCatalog"
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-// Zangia маягийн «зар нийтлэх эрх»:
-// - Төлбөртэй багц: худалдаж авснаас хойш PAID_PLAN_DAYS хоногт job_limit ширхэг зар нийтэлнэ.
-// - Туршилтын (free) эрх: хугацаагүй, нийт job_limit ширхэг зар.
-// Ашигласан эрх = тухайн хугацаанд үүсгэсэн зарын тоо + зар дахин нээсэн/сунгасан тоо (tr_job_credit_usage).
-// Зар хаагдсан ч эрх буцаж ирэхгүй.
+// M токен:
+// - Төлбөртэй багц: худалдаж авснаас хойш PAID_PLAN_DAYS хоногт token_limit токен.
+// - Туршилтын (free) эрх: хугацаагүй, нийт token_limit токен.
+// Ашигласан токен = тухайн хугацаанд tr_job_credit_usage.tokens-ийн нийлбэр
+// (зар нийтлэх, дахин нээх, сунгах, ажилтанд хүсэлт илгээх бүр мөр үүсгэнэ).
+// Зар хаагдсан, устгагдсан ч зарцуулсан токен буцаж ирэхгүй.
 
 export interface EffectiveSubscription {
   planType: PlanType
   status: "active" | "expired"
-  // Нийт нийтлэх эрх
-  jobLimit: number
-  // Ашигласан, үлдсэн эрх
+  // Нийт M токен
+  tokenLimit: number
+  // Ашигласан, үлдсэн M токен
   used: number
   remaining: number
   expiresAt: string | null
@@ -30,56 +39,61 @@ function periodStart(expiresAt: string | null): string | null {
   return new Date(new Date(expiresAt).getTime() - PAID_PLAN_DAYS * DAY_MS).toISOString()
 }
 
-async function countPostedJobs(userId: string, since: string | null): Promise<number> {
-  let jobs = supabase.from("mt_openjob").select("id", { count: "exact", head: true }).eq("user_id", userId)
-  let renewals = supabase.from("tr_job_credit_usage").select("id", { count: "exact", head: true }).eq("user_id", userId)
-  if (since) {
-    jobs = jobs.gte("created_at", since)
-    renewals = renewals.gte("created_at", since)
-  }
-  const [jobResult, renewalResult] = await Promise.all([jobs, renewals])
-  if (jobResult.error) throw jobResult.error
-  // Migration (20261101000000_job_post_expiry) ажиллаагүй бол хүснэгт байхгүй — зөвхөн зарын тоогоор тооцно
-  if (renewalResult.error && !isMissingTable(renewalResult.error)) throw renewalResult.error
-  return (jobResult.count ?? 0) + (renewalResult.count ?? 0)
+async function tokenUsage(userId: string, since: string | null): Promise<number> {
+  const { data, error } = await supabase.rpc("company_token_usage", { p_user: userId, p_since: since })
+  if (error) throw error
+  return Number(data ?? 0)
 }
 
-function isMissingTable(error: { code?: string }): boolean {
-  return error.code === "42P01" || error.code === "PGRST205"
-}
-
-export type CreditReason = "reopen" | "extend" | "contact_unlock"
-
-// 1 эрх хасна. Эрх үлдээгүй эсвэл багц дууссан бол { error } буцаана, амжилттай бол бүртгэлийн id.
-// contact_unlock — ажилтны утас, имэйлийг нээх (src/lib/staffContactAccess.ts)
-export async function chargeCredit(
+// Үйлдлийн үнээр 1 мөр бүртгэнэ. Токен хүрэлцэхгүй эсвэл багц дууссан бол { error }, амжилттай бол бүртгэлийн id.
+export async function chargeTokens(
   userId: string,
-  reason: CreditReason,
+  action: TokenAction,
   jobId: string | null = null
 ): Promise<{ error: string } | { usageId: string }> {
+  const cost = TOKEN_COSTS[action]
   const sub = await getEffectiveSubscription(userId)
   if (sub.status === "expired") return { error: "Таны багцын хугацаа дууссан байна. Шинэ багц худалдаж авна уу." }
-  if (sub.remaining <= 0) return { error: `Таны зар нийтлэх эрх (${sub.jobLimit}) дууссан байна. Шинэ багц худалдаж авна уу.` }
+  if (sub.remaining < cost) {
+    return {
+      error: `M токен хүрэлцэхгүй байна (үлдсэн ${formatTokens(sub.remaining)}, шаардлагатай ${formatTokens(cost)}). Шинэ багц худалдаж авна уу.`,
+    }
+  }
   const { data, error } = await supabase
     .from("tr_job_credit_usage")
-    .insert({ user_id: userId, job_id: jobId, reason })
+    .insert({ user_id: userId, job_id: jobId, reason: action, tokens: cost })
     .select("id")
     .single()
   if (error) throw error
   return { usageId: data.id as string }
 }
 
-// Зар дахин нээх / сунгахад 1 эрх хасна. Эрх үлдээгүй эсвэл багц дууссан бол алдааны мессеж буцаана.
+// Зар үүсгэсний дараа «зар нийтлэх» бүртгэлийг тухайн зартай холбоно
+export async function linkUsageToJob(usageId: string, jobId: string): Promise<void> {
+  const { error } = await supabase.from("tr_job_credit_usage").update({ job_id: jobId }).eq("id", usageId)
+  if (error) throw error
+}
+
+// Үйлдэл амжилтгүй болбол зарцуулсан токеныг буцаана (бүртгэлийг устгана)
+export async function refundUsage(usageId: string): Promise<void> {
+  const { error } = await supabase.from("tr_job_credit_usage").delete().eq("id", usageId)
+  if (error) console.error("TOKEN_REFUND_ERROR:", error)
+}
+
+// Хуучин нэр: ажилтанд хүсэлт илгээх г.м. (src/lib/staffContactAccess.ts)
+export const chargeCredit = chargeTokens
+
+// Зар дахин нээх / сунгахад токен хасна. Хүрэлцэхгүй эсвэл багц дууссан бол алдааны мессеж буцаана.
 export async function chargeJobCredit(userId: string, jobId: string, reason: "reopen" | "extend"): Promise<string | null> {
-  const result = await chargeCredit(userId, reason, jobId)
+  const result = await chargeTokens(userId, reason, jobId)
   return "error" in result ? result.error : null
 }
 
-// Компанийн одоогийн багц, ашигласан/үлдсэн эрх. Төлбөртэй багцын хугацаа дууссан бол үлдсэн эрх 0.
+// Компанийн одоогийн багц, ашигласан/үлдсэн токен. Төлбөртэй багцын хугацаа дууссан бол үлдсэн 0.
 export async function getEffectiveSubscription(userId: string): Promise<EffectiveSubscription> {
   const { data, error } = await supabase
     .from("mt_company_subscriptions")
-    .select("plan_type, status, job_limit, expires_at")
+    .select("plan_type, status, token_limit, expires_at")
     .eq("user_id", userId)
     .maybeSingle()
 
@@ -88,45 +102,51 @@ export async function getEffectiveSubscription(userId: string): Promise<Effectiv
   const planType: PlanType = isPlanType(data?.plan_type) ? data.plan_type : "free"
 
   if (!data || planType === "free") {
-    // Туршилтын эрх: бүртгүүлэхэд хадгалсан тоо (хуучин компаниудад өмнөх 10) эсвэл одоогийн анхдагч
-    const jobLimit = data?.job_limit ?? PLANS.free.jobLimit
-    const used = await countPostedJobs(userId, null)
-    return { planType: "free", status: "active", jobLimit, used, remaining: Math.max(jobLimit - used, 0), expiresAt: null }
+    // Туршилтын эрх: бүртгүүлэхэд хадгалсан хэмжээ (хуучин компаниудад өмнөх 10 зар = 10,000) эсвэл анхдагч
+    const tokenLimit = data?.token_limit ?? PLANS.free.tokens
+    const used = await tokenUsage(userId, null)
+    return { planType: "free", status: "active", tokenLimit, used, remaining: Math.max(tokenLimit - used, 0), expiresAt: null }
   }
 
-  const jobLimit = data.job_limit ?? PLANS[planType].jobLimit
+  const tokenLimit = data.token_limit ?? PLANS[planType].tokens
   const expired =
     data.status !== "active" || (data.expires_at !== null && new Date(data.expires_at).getTime() < Date.now())
-  const used = await countPostedJobs(userId, periodStart(data.expires_at))
+  const used = await tokenUsage(userId, periodStart(data.expires_at))
 
   return {
     planType,
     status: expired ? "expired" : "active",
-    jobLimit,
+    tokenLimit,
     used,
-    remaining: expired ? 0 : Math.max(jobLimit - used, 0),
+    remaining: expired ? 0 : Math.max(tokenLimit - used, 0),
     expiresAt: data.expires_at,
   }
 }
 
-// Шинэ зар нийтлэх эрх дууссан эсэх
+// Шинэ зар нийтлэх токен хүрэлцэхгүй эсэх
 export async function hasReachedJobLimit(
   userId: string
-): Promise<{ reached: boolean; limit: number; remaining: number; expired: boolean }> {
+): Promise<{ reached: boolean; limit: number; remaining: number; expired: boolean; cost: number }> {
   const sub = await getEffectiveSubscription(userId)
-  return { reached: sub.remaining <= 0, limit: sub.jobLimit, remaining: sub.remaining, expired: sub.status === "expired" }
+  return {
+    reached: sub.status === "expired" || sub.remaining < TOKEN_COSTS.post,
+    limit: sub.tokenLimit,
+    remaining: sub.remaining,
+    expired: sub.status === "expired",
+    cost: TOKEN_COSTS.post,
+  }
 }
 
-// Төлбөр баталгаажихад шинэ багцын эрх, дуусах огноо.
-// Хүчинтэй багцын үлдсэн эрхийг шинэ багц руу шилжүүлж, хугацааг худалдан авсан өдрөөс 1 жил болгоно.
+// Төлбөр баталгаажихад шинэ багцын токен, дуусах огноо.
+// Хүчинтэй багцын үлдсэн токеныг шинэ багц руу шилжүүлж, хугацааг худалдан авсан өдрөөс 1 жил болгоно.
 export function computePaidPackage(
   current: Pick<EffectiveSubscription, "status" | "remaining"> | null,
   planType: Exclude<PlanType, "free">,
   now: Date = new Date()
-): { jobLimit: number; expiresAt: Date } {
+): { tokenLimit: number; expiresAt: Date } {
   const carryOver = current && current.status === "active" ? current.remaining : 0
   return {
-    jobLimit: carryOver + PLANS[planType].jobLimit,
+    tokenLimit: carryOver + PLANS[planType].tokens,
     expiresAt: new Date(now.getTime() + PAID_PLAN_DAYS * DAY_MS),
   }
 }

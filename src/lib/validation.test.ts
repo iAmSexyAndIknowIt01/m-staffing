@@ -72,15 +72,15 @@ describe("computePaidPackage", () => {
   const now = new Date("2026-10-07T00:00:00Z")
   const yearLater = now.getTime() + PAID_PLAN_DAYS * DAY_MS
 
-  it("хүчинтэй багцын үлдсэн эрхийг шинэ багц руу шилжүүлж, хугацааг 1 жил болгоно", () => {
-    const pkg = computePaidPackage({ status: "active", remaining: 4 }, "starter", now)
-    expect(pkg.jobLimit).toBe(4 + PLANS.starter.jobLimit)
+  it("хүчинтэй багцын үлдсэн токеныг шинэ багц руу шилжүүлж, хугацааг 1 жил болгоно", () => {
+    const pkg = computePaidPackage({ status: "active", remaining: 4_500 }, "starter", now)
+    expect(pkg.tokenLimit).toBe(4_500 + PLANS.starter.tokens)
     expect(pkg.expiresAt.getTime()).toBe(yearLater)
   })
 
-  it("хугацаа дууссан эсвэл багцгүй үед зөвхөн шинэ багцын эрх", () => {
-    expect(computePaidPackage({ status: "expired", remaining: 0 }, "premium", now).jobLimit).toBe(PLANS.premium.jobLimit)
-    expect(computePaidPackage(null, "standard", now)).toEqual({ jobLimit: PLANS.standard.jobLimit, expiresAt: new Date(yearLater) })
+  it("хугацаа дууссан эсвэл багцгүй үед зөвхөн шинэ багцын токен", () => {
+    expect(computePaidPackage({ status: "expired", remaining: 0 }, "premium", now).tokenLimit).toBe(PLANS.premium.tokens)
+    expect(computePaidPackage(null, "standard", now)).toEqual({ tokenLimit: PLANS.standard.tokens, expiresAt: new Date(yearLater) })
   })
 })
 

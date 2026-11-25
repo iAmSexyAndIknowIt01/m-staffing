@@ -1,23 +1,41 @@
 "use client"
 
-import { ArrowLeft, Check, ChevronDown, Lightbulb } from "lucide-react"
+import { ArrowLeft, Check, ChevronDown, Coins, FileText, Lightbulb, Receipt, RotateCcw, Send } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import LoadingLayout from "@/components/common/LoadingLayout"
 import {
-  INVOICE_STATUS,
   InvoiceDetailModal,
   PurchaseModal,
   type BankAccount,
   type InvoiceRow,
   type PurchasePlan,
 } from "@/components/company/billing/BillingModals"
-import { PAID_PLAN_DAYS, PAID_PLAN_TYPES, PLANS, isPlanType, pricePerPost, type PaidPlanType } from "@/lib/planCatalog"
+import {
+  PAID_PLAN_DAYS,
+  PAID_PLAN_TYPES,
+  PLANS,
+  TOKEN_ACTION_LABELS,
+  TOKEN_COSTS,
+  actionsFor,
+  formatTokens,
+  priceForAction,
+  pricePerThousandTokens,
+  type PaidPlanType,
+  type TokenAction,
+} from "@/lib/planCatalog"
 import EmptyState from "@/components/common/EmptyState"
-import { CARD_HOVER } from "@/lib/cardMotion"
+import {
+  HistoryHeader,
+  InvoiceTable,
+  TokenUsageTable,
+  planName,
+  type TokenUsageRow,
+} from "@/components/company/billing/HistoryTables"
 
-// Багцын нэрийг каталогоос (хуучин нэхэмжлэхийн төрөл ч орно)
-const planName = (type: string) => (isPlanType(type) ? PLANS[type].name : type)
+// Billing хуудсанд харуулах сүүлийн мөрийн тоо (бүгдийг дэлгэрэнгүй хуудсаас)
+const PREVIEW_ROWS = 10
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 // Бүх төлбөртэй багцад нийтлэг боломжууд
 const PLAN_FEATURES = [
@@ -29,15 +47,26 @@ const PLAN_FEATURES = [
 interface SubscriptionInfo {
   plan_type: string
   status: string
-  job_limit: number
+  // M токен
+  token_limit: number
   used: number
   remaining: number
   expires_at: string | null
 }
 
+// Үйлдлийн үнийн карт (billing хуудасны дээд хэсэг)
+const COST_ITEMS: { action: TokenAction; icon: typeof FileText; note: string }[] = [
+  { action: "post", icon: FileText, note: "Шинэ ажлын зар" },
+  { action: "contact_unlock", icon: Send, note: "Утас, имэйл 10 цаг нээгдэнэ" },
+  { action: "reopen", icon: RotateCcw, note: "Дахин нээх, хугацаа сунгах" },
+]
+
 export default function BillingPage() {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null)
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
+  const [usage, setUsage] = useState<TokenUsageRow[]>([])
+  const [usageTotal, setUsageTotal] = useState(0)
+  const [invoiceTotal, setInvoiceTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   // Худалдаж авах цонх (сонгосон багц) болон түүхийн дэлгэрэнгүй цонх
   const [purchasePlan, setPurchasePlan] = useState<PurchasePlan | null>(null)
@@ -59,18 +88,27 @@ export default function BillingPage() {
           setSub({
             plan_type: resultSub.subscription.planType || "free",
             status: resultSub.subscription.status === "Идэвхтэй" ? "active" : "expired",
-            job_limit: resultSub.subscription.jobLimit,
+            token_limit: resultSub.subscription.tokenLimit ?? 0,
             used: resultSub.subscription.used ?? 0,
             remaining: resultSub.subscription.remaining ?? 0,
             expires_at: resultSub.subscription.expiresAt === "Хугацаагүй" ? null : resultSub.subscription.expiresAt
           })
         }
 
-        const resInv = await fetch("/api/company/billing/upgrade")
+        const [resInv, resUsage] = await Promise.all([
+          fetch(`/api/company/billing/upgrade?limit=${PREVIEW_ROWS}`),
+          fetch(`/api/company/billing/tokens?limit=${PREVIEW_ROWS}`),
+        ])
         const resultInv = await resInv.json()
         if (resultInv.success) {
           setInvoices(resultInv.invoices)
+          setInvoiceTotal(resultInv.total ?? resultInv.invoices.length)
           setBank(resultInv.bank ?? null)
+        }
+        const resultUsage = await resUsage.json().catch(() => null)
+        if (resultUsage?.success) {
+          setUsage(resultUsage.usage ?? [])
+          setUsageTotal(resultUsage.total ?? 0)
         }
       } catch (err) {
         console.error("Дата татахад алдаа гарлаа:", err)
@@ -88,13 +126,17 @@ export default function BillingPage() {
   const plans = PAID_PLAN_TYPES.map((id: PaidPlanType) => ({
     id,
     name: PLANS[id].name,
-    credits: PLANS[id].jobLimit,
+    tokens: PLANS[id].tokens,
     price: `${PLANS[id].price.toLocaleString()} ₮`,
-    perPost: pricePerPost(id),
+    perThousand: pricePerThousandTokens(id),
+    perPost: priceForAction(id, "post"),
+    perRequest: priceForAction(id, "contact_unlock"),
   }))
-  const basePerPost = pricePerPost("starter")
+  const basePerThousand = pricePerThousandTokens("starter")
   const expired = sub?.status === "expired"
-  const usedPercent = sub && sub.job_limit > 0 ? Math.min(100, Math.round((sub.used / sub.job_limit) * 100)) : 0
+  const remaining = sub?.remaining ?? 0
+  const usedPercent = sub && sub.token_limit > 0 ? Math.min(100, Math.round((sub.used / sub.token_limit) * 100)) : 0
+  const cannotPost = expired || remaining < TOKEN_COSTS.post
 
   return (
     <div className="animate-fade-in space-y-8 p-1 relative">
@@ -125,19 +167,19 @@ export default function BillingPage() {
           <div className="px-5 pb-5 pt-1 text-xs text-amber-950 space-y-2.5 border-t border-amber-200/50 leading-relaxed font-medium animate-fade-in">
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Багц бүр нь тодорхой тооны зар нийтлэх эрх юм. Шинэ зар нийтлэх бүрт 1 эрх хасагдана.</p>
+              <p>Багц бүр нь тодорхой хэмжээний M токен юм. Зар нийтлэхэд {formatTokens(TOKEN_COSTS.post)}, ажилтанд хүсэлт илгээхэд {formatTokens(TOKEN_COSTS.contact_unlock)} хасагдана.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Зараа хаасан ч ашигласан эрх буцаж ирэхгүй. Хаасан зараа дахин идэвхжүүлэхэд эрх хасагдахгүй.</p>
+              <p>Зараа хаасан ч зарцуулсан токен буцаж ирэхгүй. Хаагдсан зарыг дахин нээх, хугацааг сунгахад {formatTokens(TOKEN_COSTS.reopen)} хасагдана.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Багц худалдаж авснаас хойш 365 хоног хүчинтэй. Хугацаа дуусахад ашиглаагүй эрх хүчингүй болно.</p>
+              <p>Багц худалдаж авснаас хойш 365 хоног хүчинтэй. Хугацаа дуусахад ашиглаагүй токен хүчингүй болно.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
-              <p>Хүчинтэй багцтай үед шинэ багц авбал үлдсэн эрх шинэ багц дээр нэмэгдэж, хугацаа шинэ багцаас эхэлж тоологдоно.</p>
+              <p>Хүчинтэй багцтай үед шинэ багц авбал үлдсэн токен шинэ багц дээр нэмэгдэж, хугацаа шинэ багцаас эхэлж тоологдоно.</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-amber-600 font-bold">•</span>
@@ -169,13 +211,13 @@ export default function BillingPage() {
         <div className="bg-slate-800/80 border border-slate-700/50 p-4 rounded-2xl">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase">Үлдсэн нийтлэх эрх</p>
+              <p className="text-xs font-bold text-slate-400 uppercase">Үлдсэн M токен</p>
               <p className="mt-1 text-3xl font-extrabold text-white tabular-nums">
-                {sub?.remaining ?? 0}
-                <span className="text-base font-semibold text-slate-400"> / {sub?.job_limit ?? 0} зар</span>
+                {remaining.toLocaleString("en-US")}
+                <span className="text-base font-semibold text-slate-400"> / {(sub?.token_limit ?? 0).toLocaleString("en-US")}</span>
               </p>
             </div>
-            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200">{sub?.used ?? 0}</b></p>
+            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200">{(sub?.used ?? 0).toLocaleString("en-US")}</b></p>
           </div>
           <div className="mt-3 h-2 rounded-full bg-slate-700 overflow-hidden" aria-hidden="true">
             <div
@@ -183,26 +225,45 @@ export default function BillingPage() {
               style={{ width: `${expired ? 100 : usedPercent}%` }}
             />
           </div>
-          {(expired || (sub && sub.remaining <= 0)) && (
-            <p className="mt-3 text-xs text-red-300">
-              {expired ? "Багцын хугацаа дууссан тул шинэ зар нийтлэх боломжгүй." : "Нийтлэх эрх дууссан."} Доорх багцаас сонгоно уу.
+          {!expired && (
+            <p className="mt-3 text-xs text-slate-300">
+              ≈ <b className="text-white">{actionsFor(remaining, "post")}</b> зар нийтлэх эсвэл{" "}
+              <b className="text-white">{actionsFor(remaining, "contact_unlock")}</b> ажилтанд хүсэлт илгээх боломжтой
             </p>
           )}
+          {cannotPost && (
+            <p className="mt-2 text-xs text-red-300">
+              {expired ? "Багцын хугацаа дууссан тул токен зарцуулах боломжгүй." : "Зар нийтлэхэд токен хүрэлцэхгүй байна."} Доорх багцаас сонгоно уу.
+            </p>
+          )}
+        </div>
+
+        {/* Үйлдлийн үнэ */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {COST_ITEMS.map(({ action, icon: Icon, note }) => (
+            <div key={action} className="flex items-center gap-3 rounded-2xl border border-slate-700/50 bg-slate-800/50 p-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-500/15 text-orange-300">
+                <Icon className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs text-slate-400">{TOKEN_ACTION_LABELS[action]}</p>
+                <p className="text-sm font-bold text-white">{formatTokens(TOKEN_COSTS[action])}</p>
+                <p className="text-xs text-slate-500 truncate">{note}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* БАГЦУУДЫН СОНГОЛТ */}
       <div className="space-y-4">
         <div className="px-1">
-          <h3 className="text-xl font-bold text-gray-900">Зар нийтлэх багц</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            Шинэ компани {PLANS.free.jobLimit} зар үнэгүй нийтлэх туршилтын эрхтэй. Илүү олон зар нийтлэхэд доорх багцаас сонгоно уу.
-          </p>
+          <h3 className="text-xl font-bold text-gray-900">M токен багц</h3>
         </div>
         <div className="stagger-in grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan) => {
             const popular = plan.id === "standard"
-            const saving = Math.round((1 - plan.perPost / basePerPost) * 100)
+            const saving = Math.round((1 - plan.perThousand / basePerThousand) * 100)
             return (
               <div
                 key={plan.id}
@@ -223,21 +284,32 @@ export default function BillingPage() {
                     )}
                   </div>
                   <div>
-                    <p className="text-4xl font-extrabold text-gray-900 tracking-tight">
-                      {plan.credits}
-                      <span className="text-base font-semibold text-gray-500"> зар</span>
+                    <p className="flex items-baseline gap-1.5 text-4xl font-extrabold text-gray-900 tracking-tight">
+                      {plan.tokens.toLocaleString("en-US")}
+                      <span className="text-base font-semibold text-gray-500">M токен</span>
                     </p>
                     <p className="mt-1 text-2xl font-bold text-orange-600">{plan.price}</p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Нэг зар ≈ {plan.perPost.toLocaleString()} ₮
-                      {saving > 0 && <span className="ml-1.5 font-semibold text-emerald-600">{saving}% хэмнэлт</span>}
-                    </p>
+                    <div className="mt-2 space-y-1 text-xs text-gray-500">
+                      <p>
+                        1 зар ({TOKEN_COSTS.post.toLocaleString("en-US")} токен) ≈{" "}
+                        <b className="font-semibold text-gray-700">{plan.perPost.toLocaleString("en-US")} ₮</b>
+                      </p>
+                      <p>
+                        1 хүсэлт ({TOKEN_COSTS.contact_unlock.toLocaleString("en-US")} токен) ≈{" "}
+                        <b className="font-semibold text-gray-700">{plan.perRequest.toLocaleString("en-US")} ₮</b>
+                      </p>
+                      {saving > 0 && <p className="font-semibold text-emerald-600">{saving}% хэмнэлт</p>}
+                    </div>
                   </div>
                   <hr className="border-gray-100" />
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
                       <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                      <span>{plan.credits} ажлын байрны зар нийтлэх эрх</span>
+                      <span>≈ {actionsFor(plan.tokens, "post")} зар нийтлэх</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>эсвэл ≈ {actionsFor(plan.tokens, "contact_unlock")} ажилтанд хүсэлт илгээх</span>
                     </li>
                     {PLAN_FEATURES.map((feature) => (
                       <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
@@ -249,7 +321,7 @@ export default function BillingPage() {
                 </div>
 
                 <button
-                  onClick={() => setPurchasePlan({ id: plan.id, name: plan.name, credits: plan.credits, price: plan.price })}
+                  onClick={() => setPurchasePlan({ id: plan.id, name: plan.name, tokens: plan.tokens, price: plan.price })}
                   className={`mt-8 w-full h-12 rounded-xl font-semibold text-sm transition ${
                     popular ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-600/20" : "bg-slate-900 text-white hover:bg-slate-800"
                   }`}
@@ -262,9 +334,24 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* ТӨЛБӨРИЙН ТҮҮХ ХЭСЭГ */}
+      {/* M ТОКЕН ЗАРЦУУЛАЛТЫН ТҮҮХ: сүүлийн 10, бүгдийг дэлгэрэнгүй хуудаснаас */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 px-1">Төлбөр төлөлтийн түүх</h3>
+        <HistoryHeader icon={Coins} title="Токен зарцуулалт" total={usageTotal} href="/dashboard/company/billing/tokens" />
+        {usage.length === 0 ? (
+          <EmptyState
+            compact
+            illustration="folder"
+            title="Зарцуулалт алга"
+            description="Зар нийтлэх, ажилтанд хүсэлт илгээхэд зарцуулсан токен энд харагдана."
+          />
+        ) : (
+          <TokenUsageTable rows={usage} scrollable />
+        )}
+      </div>
+
+      {/* ТӨЛБӨРИЙН ТҮҮХ: сүүлийн 10, бүгдийг дэлгэрэнгүй хуудаснаас */}
+      <div className="space-y-4">
+        <HistoryHeader icon={Receipt} title="Төлбөр төлөлтийн түүх" total={invoiceTotal} href="/dashboard/company/billing/invoices" />
         {invoices.length === 0 ? (
           <EmptyState
             compact
@@ -273,43 +360,7 @@ export default function BillingPage() {
             description="Багц худалдаж авахад нэхэмжлэх, төлбөрийн явц энд харагдана."
           />
         ) : (
-          <div className="bg-white border border-gray-100 rounded-4xl overflow-x-auto shadow-sm">
-            <table className="w-full min-w-140 text-left text-xs">
-              <thead className="bg-slate-50 text-gray-500 uppercase font-bold border-b border-gray-100">
-                <tr>
-                  <th className="p-4">Огноо</th>
-                  <th className="p-4">Гүйлгээний утга</th>
-                  <th className="p-4">Багц</th>
-                  <th className="p-4">Төлөх дүн</th>
-                  <th className="p-4 text-center">Төлөв</th>
-                  <th className="p-4 text-right">Үйлдэл</th>
-                </tr>
-              </thead>
-              <tbody className="stagger-in divide-y divide-gray-50 font-medium text-gray-700">
-                {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/50">
-                    <td className="p-4 text-gray-400">{new Date(inv.created_at).toLocaleDateString()}</td>
-                    <td className="p-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
-                    <td className="p-4">{planName(inv.plan_type)}</td>
-                    <td className="p-4 font-bold">{inv.amount.toLocaleString()} ₮</td>
-                    <td className="p-4 text-center">
-                      <span className={`px-2.5 py-1 rounded-full border text-xs font-semibold ${(INVOICE_STATUS[inv.status] ?? INVOICE_STATUS.pending).className}`}>
-                        {(INVOICE_STATUS[inv.status] ?? INVOICE_STATUS.pending).label}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button 
-                        onClick={() => setSelectedInvoice(inv)}
-                        className="text-xs font-bold text-orange-600 bg-orange-50/60 hover:bg-orange-600 hover:text-white px-3 py-1.5 rounded-xl transition duration-150"
-                      >
-                        Дэлгэрэнгүй
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <InvoiceTable rows={invoices} onDetail={setSelectedInvoice} scrollable />
         )}
       </div>
 

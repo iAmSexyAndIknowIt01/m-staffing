@@ -10,6 +10,7 @@ import { getJobCategoryLabel, getJobTypeLabel as getJobTypeText } from "@/lib/jo
 import FoalIllustration from "@/components/common/FoalIllustration"
 import { showAlert, showConfirm } from "@/components/common/AppDialog"
 import { daysLeft, JOB_POST_DAYS } from "@/lib/jobLifecycle"
+import { TOKEN_COSTS, formatTokens } from "@/lib/planCatalog"
 
 interface JobItem {
   id: string
@@ -143,7 +144,7 @@ export default function PostJobPage() {
     }
   }, [])
 
-  // «Сунгах» / «Дахин нээх» — 1 нийтлэх эрх хасагдахыг анхааруулж, зөвшөөрвөл хийнэ
+  // «Сунгах» / «Дахин нээх» — M токен хасагдахыг анхааруулж, зөвшөөрвөл хийнэ
   const [renewingId, setRenewingId] = useState<string | null>(null)
   const handleRenew = async (job: JobItem) => {
     if (renewingId) return
@@ -156,8 +157,9 @@ export default function PostJobPage() {
       if (res.ok && data.job_limit) remaining = data.job_limit.expired ? 0 : data.job_limit.remaining
     } catch {}
 
-    if (remaining === 0) {
-      showAlert("Зар нийтлэх эрх дууссан эсвэл багцын хугацаа дууссан байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.", {
+    const cost = extend ? TOKEN_COSTS.extend : TOKEN_COSTS.reopen
+    if (remaining !== null && remaining < cost) {
+      showAlert(`${extend ? "Сунгахад" : "Дахин нээхэд"} ${formatTokens(cost)} хэрэгтэй, танд ${formatTokens(remaining)} үлдсэн (эсвэл багцын хугацаа дууссан) байна. «Багц, төлбөр» хэсгээс багц худалдаж авна уу.`, {
         tone: "warning",
         title: extend ? "Сунгах боломжгүй" : "Дахин нээх боломжгүй",
       })
@@ -165,8 +167,8 @@ export default function PostJobPage() {
     }
 
     const ok = await showConfirm(
-      `${extend ? "Зарын хугацааг" : "Зарыг дахин нээж"} ${JOB_POST_DAYS} хоногоор ${extend ? "сунгахад" : "идэвхжүүлэхэд"} 1 нийтлэх эрх хасагдана.${
-        remaining !== null ? ` Үлдэх эрх: ${remaining - 1}.` : ""
+      `${extend ? "Зарын хугацааг" : "Зарыг дахин нээж"} ${JOB_POST_DAYS} хоногоор ${extend ? "сунгахад" : "идэвхжүүлэхэд"} ${formatTokens(cost)} хасагдана.${
+        remaining !== null ? ` Үлдэх: ${formatTokens(remaining - cost)}.` : ""
       }`,
       {
         title: extend ? "Зарын хугацааг сунгах уу?" : "Зарыг дахин нээх үү?",

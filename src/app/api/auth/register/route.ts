@@ -117,7 +117,8 @@ export async function POST(req: Request) {
             user_id: user.id,
             plan_type: "free",
             status: "active",
-            job_limit: PLANS.free.jobLimit,
+            // Токен автоматаар олгохгүй (0) — админ гараар нэмнэ
+            token_limit: PLANS.free.tokens,
             expires_at: null,
           })
         if (subError) throw subError

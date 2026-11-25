@@ -100,7 +100,7 @@ export async function PUT(req: Request) {
       }
       const planType = invoice.plan_type
 
-      // Хүчинтэй багцын үлдсэн эрх шинэ багц руу шилжинэ; хугацаа өнөөдрөөс 1 жил
+      // Хүчинтэй багцын үлдсэн M токен шинэ багц руу шилжинэ; хугацаа өнөөдрөөс 1 жил
       let current
       try {
         current = await getEffectiveSubscription(invoice.user_id)
@@ -113,7 +113,7 @@ export async function PUT(req: Request) {
         )
       }
 
-      const { jobLimit, expiresAt } = computePaidPackage(current, planType)
+      const { tokenLimit, expiresAt } = computePaidPackage(current, planType)
 
       // Багцын мөр байхгүй байсан ч үүсгэнэ (user_id нь unique)
       const { error: subError } = await supabase
@@ -123,7 +123,7 @@ export async function PUT(req: Request) {
             user_id: invoice.user_id,
             plan_type: planType,
             status: "active",
-            job_limit: jobLimit,
+            token_limit: tokenLimit,
             expires_at: expiresAt.toISOString(),
           },
           { onConflict: "user_id" }
@@ -154,7 +154,7 @@ export async function PUT(req: Request) {
         subject: status === "paid" ? "Төлбөр баталгаажиж, багц идэвхжлээ" : "Нэхэмжлэх цуцлагдлаа",
         lines:
           status === "paid"
-            ? [`${invoice.invoice_number} гүйлгээний утгатай ${amount} төлбөр баталгаажлаа.`, `${planName} идэвхжиж, зар нийтлэх эрх нэмэгдлээ.`]
+            ? [`${invoice.invoice_number} гүйлгээний утгатай ${amount} төлбөр баталгаажлаа.`, `${planName} идэвхжиж, M токен нэмэгдлээ.`]
             : [
                 `${invoice.invoice_number} гүйлгээний утгатай ${amount} нэхэмжлэх цуцлагдлаа.`,
                 "Төлбөр шилжүүлсэн бол гүйлгээний баримттайгаа бидэнтэй холбогдоно уу.",

@@ -22,6 +22,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
 import { showAlert } from "@/components/common/AppDialog"
+import { formatTokens } from "@/lib/planCatalog"
 import EmptyState from "@/components/common/EmptyState"
 import FoalLean from "@/components/common/FoalLean"
 import HeroSkyline from "./HeroSkyline"
@@ -45,7 +46,9 @@ interface DashboardData {
   subscription: {
     planName: string
     status: string
-    jobLimit: number
+    // M токен
+    tokenLimit: number
+    postCost: number
     used: number
     remaining: number
     expiresAt: string
@@ -159,12 +162,14 @@ export default function CompanyView() {
   }
 
   const { stats, activeJobs, recentApplicants, subscription, tips = [] } = data
-  // Багц нь «зар нийтлэх эрх»: нийтлэх бүрт 1 эрх хасагдана
-  const limit = Math.max(subscription.jobLimit, 0)
+  // Багц нь M токен: зар нийтлэх, ажилтанд хүсэлт илгээх бүрт тодорхой хэмжээ хасагдана
+  const limit = Math.max(subscription.tokenLimit ?? 0, 0)
   const used = subscription.used ?? 0
   const remaining = subscription.remaining ?? 0
+  const postCost = subscription.postCost ?? 1000
   const isExpired = subscription.status !== "Идэвхтэй"
-  const isLimitReached = remaining <= 0
+  // Шинэ зар нийтлэхэд токен хүрэлцэхгүй
+  const isLimitReached = isExpired || remaining < postCost
   const limitPercent = limit > 0 && !isExpired ? Math.min((used / limit) * 100, 100) : 100
   const currentTip = tips[activeTipIndex]
   const newApplicantsTotal = activeJobs.reduce((sum, job) => sum + (job.newApplicants || 0), 0)
@@ -176,13 +181,13 @@ export default function CompanyView() {
         showAlert(
           isExpired
             ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
-            : `Таны зар нийтлэх эрх (${limit}) дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`,
-          { tone: "warning", title: isExpired ? "Багцын хугацаа дууссан" : "Нийтлэх эрх дууссан" }
+            : `Зар нийтлэхэд ${formatTokens(postCost)} хэрэгтэй, танд ${formatTokens(remaining)} үлдсэн байна. Багц худалдаж авна уу.`,
+          { tone: "warning", title: isExpired ? "Багцын хугацаа дууссан" : "M токен хүрэлцэхгүй" }
         )
       }
       className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-white/10 border border-white/15 text-slate-300 text-sm font-semibold"
     >
-      <Lock className="w-4 h-4" /> {isExpired ? "Багц дууссан" : "Эрх дууссан"}
+      <Lock className="w-4 h-4" /> {isExpired ? "Багц дууссан" : "Токен дууссан"}
     </button>
   ) : (
     <button
@@ -220,11 +225,11 @@ export default function CompanyView() {
       {isLimitReached && (
         <section style={delay(240)} className={`dash-in bg-amber-50 border border-amber-200 rounded-3xl p-5 hover:shadow-amber-500/10 ${CARD_HOVER} flex flex-col sm:flex-row sm:items-center gap-4`}>
           <div className="flex-1">
-            <h2 className="font-semibold text-amber-900">{isExpired ? "Багцын хугацаа дууссан" : "Зар нийтлэх эрх дууссан"}</h2>
+            <h2 className="font-semibold text-amber-900">{isExpired ? "Багцын хугацаа дууссан" : "M токен хүрэлцэхгүй байна"}</h2>
             <p className="text-sm text-amber-800/80 mt-0.5">
               {isExpired
                 ? "Шинэ зар нийтлэхийн тулд багц худалдаж авна уу. Одоо байгаа зарууд хэвээр харагдана."
-                : `Таны ${limit} зар нийтлэх эрх бүрэн ашиглагдсан. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу.`}
+                : `Танд ${formatTokens(remaining)} үлдсэн бөгөөд зар нийтлэхэд ${formatTokens(postCost)} хэрэгтэй. Багц худалдаж авна уу.`}
             </p>
           </div>
           <Link
@@ -381,9 +386,9 @@ export default function CompanyView() {
 
             <div className="mt-5">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Үлдсэн нийтлэх эрх</span>
+                <span className="text-gray-500">Үлдсэн M токен</span>
                 <span className="font-semibold text-gray-900 tabular-nums">
-                  <CountUp value={String(remaining)} duration={1200} delay={850} /> / {limit}
+                  <CountUp value={remaining.toLocaleString("en-US")} duration={1200} delay={850} /> / {limit.toLocaleString("en-US")}
                 </span>
               </div>
               <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -392,7 +397,10 @@ export default function CompanyView() {
                   style={{ width: `${limitPercent}%`, ...delay(850) }}
                 />
               </div>
-              <p className="mt-3 text-xs text-gray-500">Дуусах огноо: <span className="font-medium text-gray-700">{subscription.expiresAt}</span></p>
+              <p className="mt-2 text-xs text-gray-500">
+                ≈ {Math.floor(remaining / postCost)} зар нийтлэх боломжтой
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Дуусах огноо: <span className="font-medium text-gray-700">{subscription.expiresAt}</span></p>
             </div>
 
             <Link
