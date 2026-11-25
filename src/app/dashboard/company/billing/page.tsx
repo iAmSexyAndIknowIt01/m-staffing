@@ -36,6 +36,10 @@ import {
 // Billing хуудсанд харуулах сүүлийн мөрийн тоо (бүгдийг дэлгэрэнгүй хуудсаас)
 const PREVIEW_ROWS = 10
 import { CARD_HOVER } from "@/lib/cardMotion"
+import CountUp from "@/components/landing/CountUp"
+
+// Тоог 0-ээс тоолж өсгөнө (дэлгэцэнд орж ирэхэд)
+const fmt = (value: number, suffix = "") => `${Math.max(0, Math.round(value)).toLocaleString("en-US")}${suffix}`
 
 // Бүх төлбөртэй багцад нийтлэг боломжууд
 const PLAN_FEATURES = [
@@ -213,11 +217,14 @@ export default function BillingPage() {
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase">Үлдсэн M токен</p>
               <p className="mt-1 text-3xl font-extrabold text-white tabular-nums">
-                {remaining.toLocaleString("en-US")}
-                <span className="text-base font-semibold text-slate-400"> / {(sub?.token_limit ?? 0).toLocaleString("en-US")}</span>
+                <CountUp value={fmt(remaining)} duration={1400} delay={200} />
+                <span className="text-base font-semibold text-slate-400">
+                  {" / "}
+                  <CountUp value={fmt(sub?.token_limit ?? 0)} duration={1400} delay={200} />
+                </span>
               </p>
             </div>
-            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200">{(sub?.used ?? 0).toLocaleString("en-US")}</b></p>
+            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200"><CountUp value={fmt(sub?.used ?? 0)} duration={1200} delay={300} /></b></p>
           </div>
           <div className="mt-3 h-2 rounded-full bg-slate-700 overflow-hidden" aria-hidden="true">
             <div
@@ -227,8 +234,8 @@ export default function BillingPage() {
           </div>
           {!expired && (
             <p className="mt-3 text-xs text-slate-300">
-              ≈ <b className="text-white">{actionsFor(remaining, "post")}</b> зар нийтлэх эсвэл{" "}
-              <b className="text-white">{actionsFor(remaining, "contact_unlock")}</b> ажилтанд хүсэлт илгээх боломжтой
+              ≈ <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "post"))} duration={1200} delay={400} /></b> зар нийтлэх эсвэл{" "}
+              <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "contact_unlock"))} duration={1200} delay={400} /></b> ажилтанд хүсэлт илгээх боломжтой
             </p>
           )}
           {cannotPost && (
@@ -285,18 +292,20 @@ export default function BillingPage() {
                   </div>
                   <div>
                     <p className="flex items-baseline gap-1.5 text-4xl font-extrabold text-gray-900 tracking-tight">
-                      {plan.tokens.toLocaleString("en-US")}
+                      <CountUp value={fmt(plan.tokens)} duration={1400} />
                       <span className="text-base font-semibold text-gray-500">M токен</span>
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-orange-600">{plan.price}</p>
+                    <p className="mt-1 text-2xl font-bold text-orange-600">
+                      <CountUp value={fmt(PLANS[plan.id].price, " ₮")} duration={1400} delay={100} />
+                    </p>
                     <div className="mt-2 space-y-1 text-xs text-gray-500">
                       <p>
                         1 зар ({TOKEN_COSTS.post.toLocaleString("en-US")} токен) ≈{" "}
-                        <b className="font-semibold text-gray-700">{plan.perPost.toLocaleString("en-US")} ₮</b>
+                        <b className="font-semibold text-gray-700"><CountUp value={fmt(plan.perPost, " ₮")} duration={1200} delay={200} /></b>
                       </p>
                       <p>
                         1 хүсэлт ({TOKEN_COSTS.contact_unlock.toLocaleString("en-US")} токен) ≈{" "}
-                        <b className="font-semibold text-gray-700">{plan.perRequest.toLocaleString("en-US")} ₮</b>
+                        <b className="font-semibold text-gray-700"><CountUp value={fmt(plan.perRequest, " ₮")} duration={1200} delay={200} /></b>
                       </p>
                       {saving > 0 && <p className="font-semibold text-emerald-600">{saving}% хэмнэлт</p>}
                     </div>
@@ -305,11 +314,11 @@ export default function BillingPage() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
                       <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                      <span>≈ {actionsFor(plan.tokens, "post")} зар нийтлэх</span>
+                      <span>≈ <CountUp value={fmt(actionsFor(plan.tokens, "post"))} duration={1200} delay={250} /> зар нийтлэх</span>
                     </li>
                     <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
                       <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                      <span>эсвэл ≈ {actionsFor(plan.tokens, "contact_unlock")} ажилтанд хүсэлт илгээх</span>
+                      <span>эсвэл ≈ <CountUp value={fmt(actionsFor(plan.tokens, "contact_unlock"))} duration={1200} delay={250} /> ажилтанд хүсэлт илгээх</span>
                     </li>
                     {PLAN_FEATURES.map((feature) => (
                       <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
