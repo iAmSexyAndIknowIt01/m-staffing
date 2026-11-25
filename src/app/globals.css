@@ -933,3 +933,23 @@ body::-webkit-scrollbar {
 @media (prefers-reduced-motion: reduce) {
   .ring-fill { animation: none; }
 }
+
+/* ===== Түүхийн хүснэгт (billing/tokens, billing/invoices) =====
+   .row-in — мөр доороос зөөлөн гарч ирнэ (хоцрогдлыг --d, ms-ээр); «Цааш үзэх»-ийн шинэ мөрүүд ч мөн
+   .skeleton-shimmer — ачаалж байх үеийн гялалзах орлуулагч */
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.row-in {
+  animation: rowIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-in, .skeleton-shimmer { animation: none; }
+}

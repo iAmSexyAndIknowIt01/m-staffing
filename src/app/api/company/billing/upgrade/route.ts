@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { randomInt } from "crypto"
 import { PLANS, isPaidPlanType } from "@/lib/plans"
+import { parsePaging } from "@/lib/paging"
 
 const INVOICE_NUMBER_REGEX = /^MSTAFF-\d{6}$/
 
@@ -19,8 +20,12 @@ function getBankAccount() {
   return { bankName, accountNumber, accountName }
 }
 
+const INVOICE_STATUSES = ["paid", "pending", "decline"]
+
 // 1. ТӨЛБӨРИЙН ТҮҮХ ТАТАХ (GET)
-export async function GET() {
+//   ?status=paid|pending|decline, ?plan=starter|standard|premium — шүүлтүүр
+//   ?limit=10&offset=0 — хуудаслалт (өгөөгүй бол бүгдийг буцаана)
+export async function GET(request: Request) {
   try {
     const session = await getSession()
     const userId = session?.userId
@@ -29,16 +34,28 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    const { data: invoices, error } = await supabase
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get("status") ?? ""
+    const plan = searchParams.get("plan") ?? ""
+
+    let query = supabase
       .from("mt_company_invoices")
-      .select("id, invoice_number, plan_type, amount, status, created_at")
+      .select("id, invoice_number, plan_type, amount, status, created_at", { count: "exact" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false }) // Шинэ нь дээрээ харагдана
+    if (INVOICE_STATUSES.includes(status)) query = query.eq("status", status)
+    if (isPaidPlanType(plan)) query = query.eq("plan_type", plan)
+    if (searchParams.has("limit")) {
+      const { limit, offset } = parsePaging(searchParams)
+      query = query.range(offset, offset + limit - 1)
+    }
+
+    const { data: invoices, error, count } = await query
 
     if (error) throw error
 
     // Төлбөрийн түүхийн «Дэлгэрэнгүй» цонхонд харуулах данс (тохируулаагүй бол null)
-    return NextResponse.json({ success: true, invoices, bank: getBankAccount() })
+    return NextResponse.json({ success: true, invoices, total: count ?? 0, bank: getBankAccount() })
   } catch (error) {
     console.error("Fetch Invoices Error:", error)
     return NextResponse.json({ success: false, error: "Түүх татахад алдаа гарлаа." }, { status: 500 })

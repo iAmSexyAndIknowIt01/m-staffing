@@ -3,7 +3,7 @@ import Link from "next/link"
 import PublicPageShell, { LegalSection } from "@/components/landing/PublicPageShell"
 import Reveal from "@/components/landing/Reveal"
 import { HAS_CONTACT_INFO, SITE_NAME } from "@/lib/siteInfo"
-import { PAID_PLAN_TYPES, PLANS } from "@/lib/planCatalog"
+import { PAID_PLAN_TYPES, PLANS, TOKEN_COSTS, formatTokens } from "@/lib/planCatalog"
 
 export const metadata: Metadata = {
   title: "Түгээмэл асуулт",
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 
 const money = (n: number) => `${n.toLocaleString("en-US")}₮`
 
-// Багцын үнэ, эрхийг тохиргооноос авна — үнэ өөрчлөгдөхөд хариулт ч шинэчлэгдэнэ
-const planSummary = PAID_PLAN_TYPES.map((t) => `${PLANS[t].name} — ${PLANS[t].jobLimit} зар, ${money(PLANS[t].price)}`).join("; ")
+// Багцын үнэ, токеныг тохиргооноос авна — үнэ өөрчлөгдөхөд хариулт ч шинэчлэгдэнэ
+const planSummary = PAID_PLAN_TYPES.map((t) => `${PLANS[t].name} — ${formatTokens(PLANS[t].tokens)}, ${money(PLANS[t].price)}`).join("; ")
 
 const GROUPS: { id: string; title: string; items: { q: string; a: string }[] }[] = [
   {
@@ -23,7 +23,7 @@ const GROUPS: { id: string; title: string; items: { q: string; a: string }[] }[]
     items: [
       {
         q: "Бүртгүүлэхэд төлбөр шаардлагатай юу?",
-        a: `Ажил хайгчийн бүртгэл, анкет илгээх үйлчилгээ үнэгүй. Ажил олгогч ${PLANS.free.jobLimit} зар үнэгүй нийтэлж эхлээд, илүү олон зар нийтлэх шаардлагатай бол багц худалдаж авна.`,
+        a: `Ажил хайгчийн бүртгэл, анкет илгээх үйлчилгээ үнэгүй. Ажил олгогч M токен багц худалдаж авч зар нийтлэх, ажилтанд хүсэлт илгээх боломжтой.`,
       },
       {
         q: "Нууц үгээ мартсан бол яах вэ?",
@@ -67,7 +67,7 @@ const GROUPS: { id: string; title: string; items: { q: string; a: string }[] }[]
       },
       {
         q: "Багцууд ямар үнэтэй вэ?",
-        a: `${planSummary}. Төлбөртэй багц худалдаж авсан өдрөөс хойш 1 жил хүчинтэй бөгөөд зар нийтлэх бүрт 1 эрх хасагдана.`,
+        a: `${planSummary}. Төлбөртэй багц худалдаж авсан өдрөөс хойш 1 жил хүчинтэй. Зар нийтлэх, дахин нээх, сунгахад ${formatTokens(TOKEN_COSTS.post)}, ажилтанд хүсэлт илгээхэд ${formatTokens(TOKEN_COSTS.contact_unlock)} хасагдана.`,
       },
       {
         q: "Ирсэн анкетуудыг хаанаас харах вэ?",

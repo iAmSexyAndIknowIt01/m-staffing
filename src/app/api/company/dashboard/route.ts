@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { PLANS, getEffectiveSubscription } from "@/lib/plans"
+import { PLANS, TOKEN_COSTS, getEffectiveSubscription } from "@/lib/plans"
 import { one } from "@/lib/relation"
 
 export async function GET() {
@@ -13,7 +13,7 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Нэвтрээгүй байна." }, { status: 401 })
     }
 
-    // 1. Компанийн одоогийн багц, ашигласан/үлдсэн нийтлэх эрх
+    // 1. Компанийн одоогийн багц, ашигласан/үлдсэн M токен
     const subscriptionData = await getEffectiveSubscription(userId)
 
     // 2. Нээлттэй ажлын байрны тоо
@@ -132,7 +132,9 @@ export async function GET() {
         planType: subscriptionData.planType,
         planName: PLANS[subscriptionData.planType].name,
         status: subscriptionData.status === "active" ? "Идэвхтэй" : "Идэвхгүй",
-        jobLimit: subscriptionData.jobLimit,
+        tokenLimit: subscriptionData.tokenLimit,
+        // Шинэ зар нийтлэхэд хэрэгтэй токен (хяналтын самбарт «хэдэн зар нийтэлж болох»)
+        postCost: TOKEN_COSTS.post,
         used: subscriptionData.used,
         remaining: subscriptionData.remaining,
         expiresAt: subscriptionData.expiresAt ? new Date(subscriptionData.expiresAt).toLocaleDateString("mn-MN") : "Хугацаагүй"

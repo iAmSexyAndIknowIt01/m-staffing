@@ -6,7 +6,7 @@
 //   closed  — ажил олгогч өөрөө хаасан
 //   expired — хугацаа дуусч pg_cron (public.expire_job_posts) автоматаар хаасан
 //
-// closed/expired зарыг дахин нээх, идэвхтэй зарыг «Сунгах» нь 1 нийтлэх эрх хасч, JOB_POST_DAYS хоног нэмнэ.
+// closed/expired зарыг дахин нээх, идэвхтэй зарыг «Сунгах» нь M токен (TOKEN_COSTS) хасч, JOB_POST_DAYS хоног нэмнэ.
 
 export const JOB_POST_DAYS = 30
 const DAY_MS = 24 * 60 * 60 * 1000

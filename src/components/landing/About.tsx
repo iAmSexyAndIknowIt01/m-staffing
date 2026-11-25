@@ -2,7 +2,7 @@ import { CalendarCheck, Eye, LayoutGrid, Megaphone, Target, Wallet, type LucideI
 import Reveal from "./Reveal"
 import CountUp from "./CountUp"
 import { JOB_CATEGORIES } from "@/lib/jobPost"
-import { PLANS } from "@/lib/planCatalog"
+import { TOKEN_COSTS } from "@/lib/planCatalog"
 
 const STATEMENTS: { index: string; icon: LucideIcon; title: string; text: string }[] = [
   {
@@ -22,9 +22,9 @@ const STATEMENTS: { index: string; icon: LucideIcon; title: string; text: string
 // Бүтээгдэхүүний бодит тоо (код дээрх тохиргооноос) — тохиргоо өөрчлөгдөхөд энд ч автоматаар шинэчлэгдэнэ
 const FACTS: { icon: LucideIcon; value: string; label: string }[] = [
   { icon: Wallet, value: "0₮", label: "Ажил хайгчдад бүх үйлчилгээ үнэгүй" },
-  { icon: Megaphone, value: String(PLANS.free.jobLimit), label: "Байгууллагад үнэгүй зар нийтлэх эрх" },
+  { icon: Megaphone, value: TOKEN_COSTS.post.toLocaleString("en-US"), label: "M токеноор нэг зар нийтэлнэ" },
   { icon: LayoutGrid, value: String(JOB_CATEGORIES.length), label: "Ажлын ангилал" },
-  { icon: CalendarCheck, value: "1 жил", label: "Багцын эрхийн хүчинтэй хугацаа" },
+  { icon: CalendarCheck, value: "1 жил", label: "Багцын токены хүчинтэй хугацаа" },
 ]
 
 export default function About() {

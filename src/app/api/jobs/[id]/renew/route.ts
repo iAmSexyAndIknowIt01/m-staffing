@@ -5,7 +5,7 @@ import { chargeJobCredit } from "@/lib/plans"
 import { planRenewal } from "@/lib/jobLifecycle"
 
 // «Сунгах» (идэвхтэй зар +30 хоног) эсвэл «Дахин нээх» (хаагдсан/хугацаа дууссан зар).
-// Аль аль нь 1 нийтлэх эрх хасна — клиент үүнийг хэрэглэгчээр баталгаажуулсны дараа дуудна.
+// Аль аль нь M токен (TOKEN_COSTS.reopen / extend) хасна — клиент үүнийг хэрэглэгчээр баталгаажуулсны дараа дуудна.
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
