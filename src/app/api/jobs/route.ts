@@ -1,7 +1,7 @@
 import { NextResponse, after } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { hasReachedJobLimit } from "@/lib/plans"
+import { chargeTokens, linkUsageToJob, refundUsage } from "@/lib/plans"
 import { isPartTime, jobFormErrors, jobPostError } from "@/lib/jobPost"
 import { compactSchedule, toSchedule } from "@/lib/weeklySchedule"
 import { JOB_POST_DAYS } from "@/lib/jobLifecycle"
@@ -45,17 +45,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: inputError }, { status: 400 })
     }
 
-    // 4. Зар нийтлэх эрх шалгах (нийтлэх бүрт 1 эрх хасагдана)
-    const { reached, limit, expired } = await hasReachedJobLimit(userId)
-    if (reached) {
-      return NextResponse.json(
-        {
-          error: expired
-            ? "Таны багцын хугацаа дууссан байна. Шинэ зар нийтлэхийн тулд багц худалдаж авна уу."
-            : `Таны зар нийтлэх эрх (${limit}) дууссан байна. Шинэ багц худалдаж авна уу.`,
-        },
-        { status: 403 }
-      )
+    // 4. Зар нийтлэх M токен хасах (TOKEN_COSTS.post). Зар үүсэхгүй бол доор буцаана.
+    const charge = await chargeTokens(userId, "post")
+    if ("error" in charge) {
+      return NextResponse.json({ error: charge.error }, { status: 403 })
     }
 
     // 5. ДАТАБЕЙС РҮҮ ХАДГАЛАХ ХЭСЭГ
@@ -82,8 +75,13 @@ export async function POST(request: Request) {
       .select()
 
     if (error) {
+      await refundUsage(charge.usageId)
       throw error
     }
+
+    // Зарцуулсан токеныг тухайн зартай холбоно (холбож чадаагүй ч токен зарцуулагдсан хэвээр)
+    const createdId = data?.[0]?.id
+    if (createdId) await linkUsageToJob(charge.usageId, String(createdId)).catch((e) => console.error("TOKEN_LINK_ERROR:", e))
 
     // Энэ ангиллын «Шинэ ажлын санал» авахаар тохируулсан ажил хайгчдад хариуны дараа имэйлээр мэдэгдэнэ
     const created = data?.[0]

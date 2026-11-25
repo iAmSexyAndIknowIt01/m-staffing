@@ -1,5 +1,6 @@
 "use client"
 
+import { formatTokens } from "@/lib/planCatalog"
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import {
@@ -263,7 +264,8 @@ function SwipeToConfirm({ onConfirm, busy, label }: { onConfirm: () => void; bus
 export interface PurchasePlan {
   id: string
   name: string
-  credits: number
+  // Багцаар олгох M токен
+  tokens: number
   price: string
 }
 
@@ -337,7 +339,7 @@ export function PurchaseModal({
         id="purchase-title"
         icon={CreditCard}
         title={step === "done" ? "Хүсэлт илгээгдлээ" : "Багц худалдаж авах"}
-        subtitle={step === "done" ? undefined : `${plan.name} · ${plan.credits} зар нийтлэх эрх`}
+        subtitle={step === "done" ? undefined : `${plan.name} · ${formatTokens(plan.tokens)}`}
         onClose={close}
         onBack={step === "confirm" ? () => setStep("pay") : undefined}
         busy={submitting}
@@ -373,7 +375,7 @@ export function PurchaseModal({
             <div className="flex items-end justify-between gap-3 rounded-2xl bg-slate-900 text-white p-4">
               <div>
                 <p className="text-xs text-slate-400">{plan.name}</p>
-                <p className="text-sm text-slate-300 mt-0.5">{plan.credits} зар · {validityText}</p>
+                <p className="text-sm text-slate-300 mt-0.5">{formatTokens(plan.tokens)} · {validityText}</p>
               </div>
               <p className="text-2xl font-extrabold text-orange-400 tabular-nums">{plan.price}</p>
             </div>

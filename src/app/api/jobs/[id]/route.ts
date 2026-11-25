@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
-import { chargeJobCredit, getEffectiveSubscription } from "@/lib/plans"
+import { TOKEN_COSTS, chargeJobCredit, formatTokens, getEffectiveSubscription } from "@/lib/plans"
 import { isPartTime, jobFormErrors, jobPostError } from "@/lib/jobPost"
 import { compactSchedule, toSchedule } from "@/lib/weeklySchedule"
 import { isJobStatus, planStatusChange } from "@/lib/jobLifecycle"
@@ -119,20 +119,21 @@ export async function PUT(
       return NextResponse.json({ error: "Ажлын байр олдсонгүй." }, { status: 404 })
     }
 
-    // Төлөвийн шилжилт: хугацааг тооцож, хаагдсан/хугацаа дууссан зарыг дахин нээхэд 1 эрх хасна
+    // Төлөвийн шилжилт: хугацааг тооцож, хаагдсан/хугацаа дууссан зарыг дахин нээхэд M токен хасна
     const plan = planStatusChange(current, status ?? current.status)
     if ("error" in plan) {
       return NextResponse.json({ error: plan.error }, { status: 400 })
     }
 
     if (plan.chargesCredit) {
-      // Хэрэглэгч эрх хасагдахыг зөвшөөрөөгүй бол хадгалахгүй — клиент баталгаажуулах цонх харуулна
+      // Хэрэглэгч токен хасагдахыг зөвшөөрөөгүй бол хадгалахгүй — клиент баталгаажуулах цонх харуулна
       if (confirmCredit !== true) {
         const sub = await getEffectiveSubscription(userId)
         return NextResponse.json(
           {
-            error: "Зарыг дахин нээхэд 1 нийтлэх эрх хасагдана.",
+            error: `Зарыг дахин нээхэд ${formatTokens(TOKEN_COSTS.reopen)} хасагдана.`,
             requiresCredit: true,
+            cost: TOKEN_COSTS.reopen,
             remaining: sub.status === "expired" ? 0 : sub.remaining,
           },
           { status: 409 }

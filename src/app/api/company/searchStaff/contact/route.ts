@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { supabase } from "@/lib/supabase"
 import { companyCanViewStaff, unlockStaffContact } from "@/lib/staffContactAccess"
-import { getEffectiveSubscription } from "@/lib/plans"
+import { TOKEN_COSTS, getEffectiveSubscription } from "@/lib/plans"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// «Ажиллах хүсэлт илгээх»: 1 зар нийтлэх эрх хасаж ажилтны утас, имэйлийг 10 цаг нээнэ.
-// Аль хэдийн нээлттэй (эсвэл анкет илгээсэн ажилтан) бол эрх хасахгүй.
+// «Ажиллах хүсэлт илгээх»: TOKEN_COSTS.contact_unlock M токен хасаж ажилтны утас, имэйлийг 10 цаг нээнэ.
+// Аль хэдийн нээлттэй (эсвэл анкет илгээсэн ажилтан) бол токен хасахгүй.
 export async function POST(request: Request) {
   try {
     const session = await getSession()
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Товч дээр харуулах үлдсэн эрх
+// Товч дээр харуулах үлдсэн M токен, хүсэлтийн үнэ
 export async function GET() {
   try {
     const session = await getSession()
@@ -61,6 +61,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       remainingCredits: subscription.remaining,
+      cost: TOKEN_COSTS.contact_unlock,
       expired: subscription.status === "expired",
     })
   } catch (error) {

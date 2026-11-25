@@ -10,6 +10,7 @@ import Select from "@/components/common/Select"
 import Pagination from "@/components/staff/jobs/Pagination"
 import PageHelp from "@/components/common/PageHelp"
 import { formatRemaining } from "@/lib/staffContact"
+import { TOKEN_COSTS, formatTokens } from "@/lib/planCatalog"
 
 interface Staff {
   id: string
@@ -270,9 +271,9 @@ const SEARCH_STAFF_HELP: React.ReactNode[] = [
   <>Ажилтныг <b className="font-semibold text-gray-800">нэрээр</b> хайна. Ур чадвар, албан тушаал, мэргэжил, хүйс, туршлага, ажиллах өдөр, цагаар нарийвчлахдаа <b className="font-semibold text-gray-800">«Шүүлтүүр»</b> товчийг дарна.</>,
   <>Ажиллах өдөр, цагийг хамт сонговол тухайн өдөр тэр цагт ажиллах боломжтой хүмүүс гарна. Ногоон өдрүүд нь ажилтны ажиллах боломжтой өдрүүд.</>,
   <>Ажилтан дээр дарж туршлага, боловсрол, бүх ур чадвар зэрэг бүтэн профайлыг нь харна.</>,
-  <>Утас, имэйл нууцлагдсан байна. Профайл дээрх <b className="font-semibold text-gray-800">«Ажиллах хүсэлт илгээх»</b> товчийг дарахад <b className="font-semibold text-gray-800">1 зар нийтлэх эрх хасагдаж</b>, утас, имэйлийг 10 цагийн турш харна.</>,
+  <>Утас, имэйл нууцлагдсан байна. Профайл дээрх <b className="font-semibold text-gray-800">«Ажиллах хүсэлт илгээх»</b> товчийг дарахад <b className="font-semibold text-gray-800">{formatTokens(TOKEN_COSTS.contact_unlock)} хасагдаж</b>, утас, имэйлийг 10 цагийн турш харна.</>,
   <>Хүсэлт илгээсэн ажилтны нэрийн хажууд <b className="font-semibold text-gray-800">«Хүсэлт илгээсэн»</b> тэмдэг, утас, имэйл харагдах үлдсэн хугацаа гарна. «Шүүлтүүр» дотроос зөвхөн хүсэлт илгээсэн ажилтнуудаа харж болно.</>,
-  <>Хайх, профайл үзэхэд эрх хасагдахгүй. Танай зарт анкет илгээсэн ажилтны утас, имэйл үнэгүй харагдана.</>,
+  <>Хайх, профайл үзэхэд токен хасагдахгүй. Танай зарт анкет илгээсэн ажилтны утас, имэйл үнэгүй харагдана.</>,
 ]
 
 // Ажиллах цагийн сонголт (06:00–22:00); API "HH:MM" хэлбэрээр хүлээж авна
