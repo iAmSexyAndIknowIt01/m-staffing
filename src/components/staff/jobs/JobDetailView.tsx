@@ -158,18 +158,20 @@ export default function JobDetailView({
 
       {/* ТОЛГОЙ ХЭСЭГ — staff хянах самбарын banner-тай ижил */}
       <section className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 sm:p-8">
-        <div className="flex flex-col md:flex-row md:items-start gap-5">
+        {/* Компьютер дээр лого картын агуулгын өндөртэй тэнцүү дөрвөлжин болно */}
+        <div className="flex flex-col md:flex-row md:items-stretch gap-5 md:gap-6">
           <button
             type="button"
             onClick={(e) => handleCompanyClick(e, company)}
             disabled={!companyId}
-            className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform disabled:cursor-default disabled:hover:scale-100"
+            className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-auto md:h-auto md:min-h-28 md:aspect-square md:self-stretch shrink-0 bg-white rounded-2xl md:rounded-3xl shadow-lg shadow-slate-950/30 ring-1 ring-white/10 hover:scale-[1.03] transition-transform disabled:cursor-default disabled:hover:scale-100"
             title={companyId ? "Байгууллагын профайл үзэх" : undefined}
           >
+            {/* absolute — зураг өөрийн хэмжээгээр картыг өндөрсгөхгүй, картын өндрийг дагана */}
             {logoUrl ? (
-              <img src={logoUrl} alt={`${companyName} лого`} className="w-full h-full object-contain rounded-xl" />
+              <img src={logoUrl} alt={`${companyName} лого`} className="absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] object-contain rounded-xl md:rounded-2xl" />
             ) : (
-              <Building2 className="w-8 h-8 text-orange-300" strokeWidth={1.5} />
+              <Building2 className="absolute inset-0 m-auto w-1/2 h-1/2 text-orange-300" strokeWidth={1.5} />
             )}
           </button>
 
@@ -191,12 +193,12 @@ export default function JobDetailView({
                 <button
                   type="button"
                   onClick={(e) => handleCompanyClick(e, company)}
-                  className="text-sm sm:text-base font-bold text-slate-300 hover:text-white hover:underline transition"
+                  className="text-sm sm:text-base font-bold text-[#1877F2] hover:text-[#4294FF] hover:underline underline-offset-4 transition"
                 >
                   {companyName}
                 </button>
               ) : (
-                <p className="text-sm sm:text-base font-bold text-slate-300/80">{companyName}</p>
+                <p className="text-sm sm:text-base font-bold text-[#1877F2]">{companyName}</p>
               )}
               {company && <VerifiedBadge className="w-4 h-4" />}
             </div>
