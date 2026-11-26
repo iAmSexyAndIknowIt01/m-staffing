@@ -9,6 +9,7 @@ import CompanyProfileEditForm from "@/components/company/CompanyProfileEditForm"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
 import { getProfileCompleteness } from "@/lib/companyProfileCompleteness"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import { DEFAULT_COVER, toCompanyCover } from "@/lib/companyCovers"
 
 interface CompanyProfileData {
   company_name: string
@@ -22,6 +23,7 @@ interface CompanyProfileData {
   facebook_url?: string
   linkedin_url?: string
   logo_url?: string
+  cover_style?: string
 }
 
 export default function CompanyProfilePage() {
@@ -41,6 +43,7 @@ export default function CompanyProfilePage() {
     facebook_url: "",
     linkedin_url: "",
     logo_url: "",
+    cover_style: DEFAULT_COVER,
   })
   
   const [initialData, setInitialData] = useState<CompanyProfileData | null>(null)
@@ -72,6 +75,7 @@ export default function CompanyProfilePage() {
             facebook_url: result.data.facebook_url || "",
             linkedin_url: result.data.linkedin_url || "",
             logo_url: result.data.logo_url || "",
+            cover_style: toCompanyCover(result.data.cover_style),
           }
           setFormData(profile)
           setInitialData(profile)

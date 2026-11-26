@@ -1,8 +1,10 @@
 "use client"
 
 import { useRef, type FormEvent, type ReactNode } from "react"
-import { Building2, Camera, Loader2 } from "lucide-react"
+import { Building2, Camera, Check, Loader2 } from "lucide-react"
 import type { CompanyProfileInfo } from "./CompanyProfileView"
+import CompanyCover from "./CompanyCover"
+import { COMPANY_COVERS, toCompanyCover } from "@/lib/companyCovers"
 
 interface Props {
   value: CompanyProfileInfo
@@ -74,9 +76,8 @@ export default function CompanyProfileEditForm({
     <form onSubmit={onSubmit} className="space-y-6">
       {/* ТОЛГОЙ: лого солих + үйлдлүүд */}
       <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="h-24 sm:h-28 bg-slate-900 relative">
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-orange-500" />
-        </div>
+        {/* Сонгосон cover шууд харагдана */}
+        <CompanyCover cover={value.cover_style} className="h-32 sm:h-44" />
 
         <div className="px-5 sm:px-8 pb-6">
           <div className="relative flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 -mt-12 sm:-mt-14">
@@ -118,6 +119,36 @@ export default function CompanyProfileEditForm({
           </div>
         </div>
       </section>
+
+      <Section title="Cover загвар" description="Профайлын дээд хэсэгт харагдах зураг. Сонгосон загвар дээрх толгойд шууд харагдана.">
+        <div role="radiogroup" aria-label="Cover загвар" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {COMPANY_COVERS.map((cover) => {
+            const selected = toCompanyCover(value.cover_style) === cover.id
+            return (
+              <button
+                key={cover.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => onChange({ ...value, cover_style: cover.id })}
+                className={`group relative overflow-hidden rounded-xl border-2 text-left transition active:scale-[0.98] ${
+                  selected ? "border-orange-500 ring-4 ring-orange-500/15" : "border-slate-200 hover:border-orange-300"
+                }`}
+              >
+                <CompanyCover cover={cover.id} className="h-16" small />
+                <span className="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700">
+                  {cover.label}
+                  {selected && (
+                    <span className="grid h-4 w-4 place-items-center rounded-full bg-orange-500 text-white">
+                      <Check className="w-3 h-3" strokeWidth={3} />
+                    </span>
+                  )}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </Section>
 
       <Section title="Үндсэн мэдээлэл">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -181,7 +212,7 @@ export default function CompanyProfileEditForm({
         <button
           type="submit"
           disabled={busy}
-          className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-sm font-semibold text-white shadow-sm transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
+          className="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:opacity-50 inline-flex items-center justify-center gap-2"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           {saving ? "Хадгалж байна..." : "Өөрчлөлтийг хадгалах"}
