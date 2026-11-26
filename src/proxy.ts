@@ -4,9 +4,9 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session"
 import { CONTRACTS_ENABLED } from "@/lib/features"
 import { loginPathFor } from "@/lib/redirect"
 
+import { foreignRoleSection } from "@/lib/rolePaths"
+
 const CONTRACT_PATH = /^\/dashboard\/(company|staff)\/contracts(\/|$)/
-// Ажил хайгч / ажил олгогчийн тусдаа хэсгүүд
-const ROLE_PATH = /^\/dashboard\/(company|staff)(\/|$)/
 
 // Нэвтрээгүй хэрэглэгчийг dashboard, admin хуудас руу оруулахгүй.
 // Эрхийн нарийн шалгалтыг API болон layout тус бүр өөрөө хийнэ.
@@ -33,10 +33,11 @@ export async function proxy(request: NextRequest) {
 
   // Өөр төрлийн бүртгэлийн хэсэгт (ж: ажил олгогч «Ажил хайх») орвол өөрийн самбар руу шилжүүлж,
   // яагаад шилжсэнийг тайлбарлах мэдэгдэл харуулна (dashboard-ын RoleNotice)
-  const rolePath = request.nextUrl.pathname.match(ROLE_PATH)
-  if (rolePath && rolePath[1] !== session.role) {
+  // (компанийн нийтийн профайл зэрэг хоёуланд нь нээлттэй хуудсыг rolePaths.ts-д тодорхойлсон)
+  const foreign = foreignRoleSection(request.nextUrl.pathname, session.role)
+  if (foreign) {
     const url = new URL("/dashboard", request.url)
-    url.searchParams.set("notice", rolePath[1] === "staff" ? "staff-only" : "company-only")
+    url.searchParams.set("notice", foreign === "staff" ? "staff-only" : "company-only")
     return NextResponse.redirect(url)
   }
 

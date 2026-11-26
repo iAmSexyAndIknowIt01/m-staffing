@@ -9,6 +9,7 @@ export default function CompanySupportPage() {
   const [category, setCategory] = useState("system")
   const [title, setTitle] = useState("")
   const [message, setMessage] = useState("")
+  const [phone, setPhone] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
@@ -21,7 +22,7 @@ export default function CompanySupportPage() {
       const res = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, title, message })
+        body: JSON.stringify({ category, title, message, phone })
       })
       const result = await res.json()
 
@@ -85,6 +86,24 @@ export default function CompanySupportPage() {
               placeholder="Жишээ нь: Багцын лимит шинэчлэгдсэнгүй"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="support-phone" className="block text-sm font-semibold text-gray-700">Холбогдох утасны дугаар</label>
+            <input
+              id="support-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              required
+              maxLength={20}
+              pattern="\+?[\d\s\-]{8,20}"
+              title="8-аас доошгүй оронтой утасны дугаар оруулна уу"
+              placeholder="Жишээ нь: 9911 2233"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/15 transition"
             />
           </div>
