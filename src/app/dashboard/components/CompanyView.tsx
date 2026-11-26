@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
+import TokenIntroModal, { hasSeenTokenIntro } from "@/components/company/billing/TokenIntroModal"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
@@ -52,6 +53,9 @@ interface DashboardData {
     used: number
     remaining: number
     expiresAt: string
+    // Хамгийн түрүүнд дуусах токены огноо (ISO), 30 хоногт дуусах үлдэгдэл
+    nextExpiry?: string | null
+    expiringSoon?: number
   }
   activeJobs: Array<{
     id: string
@@ -99,6 +103,8 @@ export default function CompanyView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTipIndex, setActiveTipIndex] = useState(0)
+  // M токен системийн танилцуулга — нэг удаа автоматаар гарна
+  const [showTokenIntro, setShowTokenIntro] = useState(false)
   const [checkingApproval, setCheckingApproval] = useState(false)
   const [now] = useState(() => new Date())
 
@@ -115,6 +121,7 @@ export default function CompanyView() {
         const result = await res.json()
         if (!result.success) throw new Error(result.error || "Алдаа гарлаа.")
         setData(result)
+        if (!hasSeenTokenIntro()) setShowTokenIntro(true)
       } catch (err) {
         setError(getErrorMessage(err))
         isFetched.current = false
@@ -202,6 +209,7 @@ export default function CompanyView() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {showTokenIntro && <TokenIntroModal onClose={() => setShowTokenIntro(false)} />}
       {/* ТОЛГОЙ */}
       <section className="dash-hero bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-4xl text-white shadow-xl shadow-slate-950/10 p-6 pb-20 sm:p-8 sm:pb-24 flex flex-col md:flex-row md:items-center justify-between gap-5">
         <HeroSkyline />
@@ -400,7 +408,17 @@ export default function CompanyView() {
               <p className="mt-2 text-xs text-gray-500">
                 ≈ {Math.floor(remaining / postCost)} зар нийтлэх боломжтой
               </p>
-              <p className="mt-1 text-xs text-gray-500">Дуусах огноо: <span className="font-medium text-gray-700">{subscription.expiresAt}</span></p>
+              <p className="mt-1 text-xs text-gray-500">
+                Ойрын дуусах огноо:{" "}
+                <span className="font-medium text-gray-700">
+                  {subscription.nextExpiry ? new Date(subscription.nextExpiry).toLocaleDateString("mn-MN") : "Хугацаагүй"}
+                </span>
+              </p>
+              {(subscription.expiringSoon ?? 0) > 0 && (
+                <p className="mt-1 text-xs font-medium text-amber-700">
+                  {formatTokens(subscription.expiringSoon ?? 0)} 30 хоногийн дотор дуусна
+                </p>
+              )}
             </div>
 
             <Link

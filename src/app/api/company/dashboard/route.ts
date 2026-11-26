@@ -137,6 +137,9 @@ export async function GET() {
         postCost: TOKEN_COSTS.post,
         used: subscriptionData.used,
         remaining: subscriptionData.remaining,
+        // Хамгийн түрүүнд дуусах токены огноо, 30 хоногт дуусах үлдэгдэл
+        nextExpiry: subscriptionData.nextExpiry,
+        expiringSoon: subscriptionData.expiringSoon,
         expiresAt: subscriptionData.expiresAt ? new Date(subscriptionData.expiresAt).toLocaleDateString("mn-MN") : "Хугацаагүй"
       },
       activeJobs,
