@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Компанийн мэдээллийг ID-аар нь баазаас хайна (Энд эрх шаардахгүй, хэн ч үзэж болно)
     const { data, error } = await supabase
       .from("mt_company")
-      .select("id, company_name, email, phone, website, tagline, description, industry, company_size, facebook_url, linkedin_url, logo_url")
+      .select("id, company_name, email, phone, website, tagline, description, industry, company_size, facebook_url, linkedin_url, logo_url, cover_style")
       .eq("id", id)
       .maybeSingle()
 

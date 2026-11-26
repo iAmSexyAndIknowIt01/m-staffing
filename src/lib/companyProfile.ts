@@ -1,4 +1,5 @@
 import { normalizeHttpUrl } from "@/lib/url"
+import { isCompanyCover } from "@/lib/companyCovers"
 
 // Компанийн профайл засах оролтыг шалгаж, mt_company-д бичих утгыг буцаана.
 // /api/company/profile болон /api/company/profile/[id] хоёулаа үүнийг ашиглана.
@@ -14,6 +15,8 @@ export interface CompanyProfileUpdate {
   facebook_url: string | null
   linkedin_url: string | null
   logo_url: string | null
+  // Cover загвар (src/lib/companyCovers.ts). Илгээгээгүй бол хадгалсан утгад хүрэхгүй.
+  cover_style?: string
 }
 
 type Result = { ok: true; data: CompanyProfileUpdate } | { ok: false; error: string }
@@ -61,6 +64,11 @@ export function parseCompanyProfile(input: unknown): Result {
     const value = normalizeHttpUrl(body[field])
     if (value === undefined) return { ok: false, error: `${label} холбоос буруу байна.` }
     data[field] = value
+  }
+
+  if ("cover_style" in body) {
+    if (!isCompanyCover(body.cover_style)) return { ok: false, error: "Cover загвар буруу байна." }
+    data.cover_style = body.cover_style
   }
 
   return { ok: true, data: data as CompanyProfileUpdate }

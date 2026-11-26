@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react"
 import type { CompanyPublicJob } from "@/lib/companyJobs"
+import CompanyCover from "./CompanyCover"
 
 export interface CompanyProfileInfo {
   company_name: string
@@ -28,6 +29,8 @@ export interface CompanyProfileInfo {
   facebook_url?: string
   linkedin_url?: string
   logo_url?: string
+  // Cover загвар (src/lib/companyCovers.ts)
+  cover_style?: string
 }
 
 interface Props {
@@ -143,9 +146,7 @@ export default function CompanyProfileView({ profile, jobs, jobHref, actions }: 
     <div className="space-y-6">
       {/* ТОЛГОЙ ХЭСЭГ */}
       <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="h-24 sm:h-28 bg-slate-900 relative">
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-orange-500" />
-        </div>
+        <CompanyCover cover={profile.cover_style} className="h-32 sm:h-44" />
 
         <div className="px-5 sm:px-8 pb-6">
           <div className="relative flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 -mt-12 sm:-mt-14">
