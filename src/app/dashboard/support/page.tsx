@@ -28,8 +28,11 @@ export default function CompanySupportPage() {
 
       if (res.ok && result.success) {
         setStatusMsg({ type: "success", text: result.message })
+        // Амжилттай илгээсний дараа бүх талбарыг анхны төлөвт нь оруулна
+        setCategory("system")
         setTitle("")
         setMessage("")
+        setPhone("")
       } else {
         setStatusMsg({ type: "error", text: result.error || "Алдаа гарлаа." })
       }
