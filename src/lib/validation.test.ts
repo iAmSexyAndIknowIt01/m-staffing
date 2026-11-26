@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { getClientIp } from "./clientIp"
 import { normalizeHttpUrl } from "./url"
 import { canCompanySetStatus } from "./jobRequest"
-import { PAID_PLAN_DAYS, PLANS, computePaidPackage, isPlanType } from "./plans"
+import { PAID_PLAN_DAYS, isPlanType, purchaseExpiry } from "./plans"
 import { parseEducation, parseExperience, parseSkillNames } from "./staffProfile"
 import { parseCompanyProfile } from "./companyProfile"
 import { jobPostError } from "./jobPost"
@@ -68,19 +68,10 @@ describe("canCompanySetStatus", () => {
   })
 })
 
-describe("computePaidPackage", () => {
-  const now = new Date("2026-10-07T00:00:00Z")
-  const yearLater = now.getTime() + PAID_PLAN_DAYS * DAY_MS
-
-  it("хүчинтэй багцын үлдсэн токеныг шинэ багц руу шилжүүлж, хугацааг 1 жил болгоно", () => {
-    const pkg = computePaidPackage({ status: "active", remaining: 4_500 }, "starter", now)
-    expect(pkg.tokenLimit).toBe(4_500 + PLANS.starter.tokens)
-    expect(pkg.expiresAt.getTime()).toBe(yearLater)
-  })
-
-  it("хугацаа дууссан эсвэл багцгүй үед зөвхөн шинэ багцын токен", () => {
-    expect(computePaidPackage({ status: "expired", remaining: 0 }, "premium", now).tokenLimit).toBe(PLANS.premium.tokens)
-    expect(computePaidPackage(null, "standard", now)).toEqual({ tokenLimit: PLANS.standard.tokens, expiresAt: new Date(yearLater) })
+describe("purchaseExpiry", () => {
+  it("худалдан авсан багц өнөөдрөөс 1 жил хүчинтэй", () => {
+    const now = new Date("2026-10-07T00:00:00Z")
+    expect(purchaseExpiry(now).getTime()).toBe(now.getTime() + PAID_PLAN_DAYS * DAY_MS)
   })
 })
 
