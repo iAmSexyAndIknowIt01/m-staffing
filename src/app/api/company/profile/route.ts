@@ -18,7 +18,7 @@ export async function GET() {
     // logo_url-ийг select хэсэгт нэмж оруулсан
     const { data, error } = await supabase
       .from("mt_company")
-      .select("company_name, email, phone, website, tagline, description, industry, company_size, facebook_url, linkedin_url, logo_url")
+      .select("company_name, email, phone, website, tagline, description, industry, company_size, facebook_url, linkedin_url, logo_url, cover_style")
       .eq("id", companyId)
       .single()
 
