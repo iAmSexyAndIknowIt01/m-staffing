@@ -20,14 +20,25 @@ export async function POST(request: Request) {
 
     // 2. ФОРМЫН ӨГӨГДӨЛ ХҮЛЭЭЖ АВАХ
     const body = await request.json()
-    const { category, title, message } = body
+    const { category, title, message, phone } = body
 
     if (
       typeof category !== "string" || typeof title !== "string" || typeof message !== "string" ||
-      !category.trim() || !title.trim() || !message.trim()
+      typeof phone !== "string" ||
+      !category.trim() || !title.trim() || !message.trim() || !phone.trim()
     ) {
       return NextResponse.json(
         { error: "Бүх талбарыг бүрэн бөглөнө үү." },
+        { status: 400 }
+      )
+    }
+
+    // Цифр, зай, +, - тэмдэгт зөвшөөрнө; 8-15 цифртэй байна.
+    const phoneTrimmed = phone.trim()
+    const phoneDigits = phoneTrimmed.replace(/\D/g, "")
+    if (!/^\+?[\d\s-]+$/.test(phoneTrimmed) || phoneDigits.length < 8 || phoneDigits.length > 15) {
+      return NextResponse.json(
+        { error: "Утасны дугаар буруу байна." },
         { status: 400 }
       )
     }
@@ -52,6 +63,7 @@ export async function POST(request: Request) {
             category: category.trim(),
             title: title.trim(),
             message: message.trim(),
+            phone: phoneTrimmed,
             status: "pending",
             flag: userRole
           }
