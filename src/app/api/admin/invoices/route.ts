@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { getSession } from "@/lib/session"
 import { selectInChunks } from "@/lib/chunk"
-import { computePaidPackage, getEffectiveSubscription, isPaidPlanType } from "@/lib/plans"
+import { grantPurchasedTokens, isPaidPlanType, purchaseExpiry } from "@/lib/plans"
 import { PLANS, isPlanType } from "@/lib/planCatalog"
 import { appLink, sendNotice } from "@/lib/notifications"
 
@@ -100,12 +100,13 @@ export async function PUT(req: Request) {
       }
       const planType = invoice.plan_type
 
-      // Хүчинтэй багцын үлдсэн M токен шинэ багц руу шилжинэ; хугацаа өнөөдрөөс 1 жил
-      let current
+      // Худалдан авсан токеныг 1 жилийн хугацаатай ШИНЭ багц болгон олгоно.
+      // Өмнөх багцуудын хугацаа сунгагдахгүй (тус бүр өөрийн огноогоор дуусна).
       try {
-        current = await getEffectiveSubscription(invoice.user_id)
-      } catch (currentSubError) {
-        console.error("Subscription fetch error:", currentSubError)
+        await grantPurchasedTokens(invoice.user_id, planType, invoice.id)
+      } catch (grantError) {
+        // Токен олгогдоогүй бол нэхэмжлэхийг "paid" болгож үлдээхгүй — дахин оролдох боломжтой болгоно
+        console.error("Token grant error:", grantError)
         await supabase.from("mt_company_invoices").update({ status: "pending" }).eq("id", invoice_id)
         return NextResponse.json(
           { success: false, error: "Багц идэвхжүүлэхэд алдаа гарлаа. Дахин оролдоно уу." },
@@ -113,9 +114,7 @@ export async function PUT(req: Request) {
         )
       }
 
-      const { tokenLimit, expiresAt } = computePaidPackage(current, planType)
-
-      // Багцын мөр байхгүй байсан ч үүсгэнэ (user_id нь unique)
+      // Харуулах багцын нэр, сүүлийн худалдан авалтын дуусах огноо (мөр байхгүй байсан ч үүсгэнэ)
       const { error: subError } = await supabase
         .from("mt_company_subscriptions")
         .upsert(
@@ -123,21 +122,14 @@ export async function PUT(req: Request) {
             user_id: invoice.user_id,
             plan_type: planType,
             status: "active",
-            token_limit: tokenLimit,
-            expires_at: expiresAt.toISOString(),
+            token_limit: 0,
+            expires_at: purchaseExpiry().toISOString(),
           },
           { onConflict: "user_id" }
         )
 
-      if (subError) {
-        // Багц идэвхжээгүй бол нэхэмжлэхийг "paid" болгож үлдээхгүй — дахин оролдох боломжтой болгоно
-        console.error("Subscription update error:", subError)
-        await supabase.from("mt_company_invoices").update({ status: "pending" }).eq("id", invoice_id)
-        return NextResponse.json(
-          { success: false, error: "Багц идэвхжүүлэхэд алдаа гарлаа. Дахин оролдоно уу." },
-          { status: 500 }
-        )
-      }
+      // Токен аль хэдийн олгогдсон тул энд алдаа гарсан ч нэхэмжлэхийг буцаахгүй (зөвхөн нэр, огноо)
+      if (subError) console.error("Subscription update error:", subError)
     }
 
     // Компанид имэйлээр мэдэгдэнэ (тохиргоогоор унтраасан бол илгээхгүй)

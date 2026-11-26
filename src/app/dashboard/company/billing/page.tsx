@@ -1,9 +1,13 @@
 "use client"
 
-import { ArrowLeft, Check, ChevronDown, Coins, FileText, Lightbulb, Receipt, RotateCcw, Send } from "lucide-react"
+import type { CSSProperties } from "react"
+import { AlertTriangle, ArrowLeft, Check, ChevronRight, Coins, FileText, Receipt, RotateCcw, Send, Sparkles } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import TokenIntroModal, { hasSeenTokenIntro } from "@/components/company/billing/TokenIntroModal"
 import LoadingLayout from "@/components/common/LoadingLayout"
+import EmptyState from "@/components/common/EmptyState"
+import CountUp from "@/components/landing/CountUp"
 import {
   InvoiceDetailModal,
   PurchaseModal,
@@ -11,6 +15,7 @@ import {
   type InvoiceRow,
   type PurchasePlan,
 } from "@/components/company/billing/BillingModals"
+import { InvoiceTable, TokenUsageTable, planName, type TokenUsageRow } from "@/components/company/billing/HistoryTables"
 import {
   PAID_PLAN_DAYS,
   PAID_PLAN_TYPES,
@@ -24,91 +29,110 @@ import {
   type PaidPlanType,
   type TokenAction,
 } from "@/lib/planCatalog"
-import EmptyState from "@/components/common/EmptyState"
-import {
-  HistoryHeader,
-  InvoiceTable,
-  TokenUsageTable,
-  planName,
-  type TokenUsageRow,
-} from "@/components/company/billing/HistoryTables"
+import { EXPIRY_WARNING_DAYS, LOT_SOURCE_LABELS, daysUntilExpiry, isLotActive, type TokenLot } from "@/lib/tokenLots"
+import { CARD_HOVER } from "@/lib/cardMotion"
 
 // Billing хуудсанд харуулах сүүлийн мөрийн тоо (бүгдийг дэлгэрэнгүй хуудсаас)
 const PREVIEW_ROWS = 10
-import { CARD_HOVER } from "@/lib/cardMotion"
-import CountUp from "@/components/landing/CountUp"
 
-// Тоог 0-ээс тоолж өсгөнө (дэлгэцэнд орж ирэхэд)
-const fmt = (value: number, suffix = "") => `${Math.max(0, Math.round(value)).toLocaleString("en-US")}${suffix}`
-
-// Бүх төлбөртэй багцад нийтлэг боломжууд
-const PLAN_FEATURES = [
-  `Худалдаж авснаас хойш ${PAID_PLAN_DAYS / 365} жил хүчинтэй`,
-  "Ирсэн анкетуудыг шүүж удирдах",
-  "Ажил хайгчдын профайл, CV үзэх",
-  "Зарын хандалт, статистик",
-]
-interface SubscriptionInfo {
-  plan_type: string
-  status: string
-  // M токен
-  token_limit: number
-  used: number
-  remaining: number
-  expires_at: string | null
+// "2027-10-27T…" → "2027.10.27"
+const ymd = (iso: string) => {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`
 }
 
-// Үйлдлийн үнийн карт (billing хуудасны дээд хэсэг)
-const COST_ITEMS: { action: TokenAction; icon: typeof FileText; note: string }[] = [
-  { action: "post", icon: FileText, note: "Шинэ ажлын зар" },
-  { action: "contact_unlock", icon: Send, note: "Утас, имэйл 10 цаг нээгдэнэ" },
-  { action: "reopen", icon: RotateCcw, note: "Дахин нээх, хугацаа сунгах" },
+// CountUp-д өгөх тоон текст
+const fmt = (value: number, suffix = "") => `${Math.max(0, Math.round(value)).toLocaleString("en-US")}${suffix}`
+
+// Бүх багцад нийтлэг боломжууд (картуудад давтахгүй, нэг удаа харуулна)
+const PLAN_FEATURES = [
+  `Худалдаж авснаас хойш ${PAID_PLAN_DAYS / 365} жил хүчинтэй`,
+  "Анкет шүүж удирдах",
+  "Ажилтны профайл, CV үзэх",
+  "Зарын статистик",
 ]
+
+// Үйлдлийн үнэ (хар карт дотор нэг мөрөөр)
+const COST_ITEMS: { action: TokenAction; icon: typeof FileText }[] = [
+  { action: "post", icon: FileText },
+  { action: "contact_unlock", icon: Send },
+  { action: "reopen", icon: RotateCcw },
+]
+
+interface SubscriptionInfo {
+  status: "active" | "expired"
+  remaining: number
+  // Хамгийн түрүүнд дуусах токены огноо, 30 хоногт дуусах үлдэгдэл
+  next_expiry: string | null
+  expiring_soon: number
+}
+
+// Багцын нэр, олгосон огнооны тайлбар (эх сурвалжаар нь)
+function lotTitle(lot: TokenLot) {
+  if ((lot.source === "migration" || lot.source === "purchase") && lot.planType) return planName(lot.planType)
+  return LOT_SOURCE_LABELS[lot.source] ?? lot.source
+}
+
+function lotDateLabel(lot: TokenLot) {
+  if (lot.source === "migration") return `Өмнөх үлдэгдэл · M токенд шилжүүлсэн ${ymd(lot.createdAt)}`
+  if (lot.source === "purchase") return `Худалдаж авсан: ${ymd(lot.createdAt)}`
+  return `Олгосон: ${ymd(lot.createdAt)}`
+}
+
+type HistoryTab = "usage" | "invoices"
 
 export default function BillingPage() {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null)
+  const [lots, setLots] = useState<TokenLot[]>([])
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
+  const [invoiceTotal, setInvoiceTotal] = useState(0)
   const [usage, setUsage] = useState<TokenUsageRow[]>([])
   const [usageTotal, setUsageTotal] = useState(0)
-  const [invoiceTotal, setInvoiceTotal] = useState(0)
+  const [bank, setBank] = useState<BankAccount | null>(null)
   const [loading, setLoading] = useState(true)
-  // Худалдаж авах цонх (сонгосон багц) болон түүхийн дэлгэрэнгүй цонх
+  const [historyTab, setHistoryTab] = useState<HistoryTab>("usage")
+  // Худалдаж авах цонх (сонгосон багц) болон нэхэмжлэхийн дэлгэрэнгүй цонх
   const [purchasePlan, setPurchasePlan] = useState<PurchasePlan | null>(null)
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null)
-  const [bank, setBank] = useState<BankAccount | null>(null)
-  const [isNoticeOpen, setIsNoticeOpen] = useState(false)
+  // M токен системийн танилцуулга (анх удаа автоматаар, дараа нь товчоор)
+  const [showTokenIntro, setShowTokenIntro] = useState(false)
   const isFetched = useRef(false)
 
-  // 1. Өгөгдөл татах (Багц болон Төлбөрийн түүх)
   useEffect(() => {
     async function fetchData() {
       if (isFetched.current) return
       isFetched.current = true
 
       try {
-        const resSub = await fetch("/api/company/dashboard")
+        const [resSub, resInv, resUsage, resLots] = await Promise.all([
+          fetch("/api/company/dashboard"),
+          fetch(`/api/company/billing/upgrade?limit=${PREVIEW_ROWS}`),
+          fetch(`/api/company/billing/tokens?limit=${PREVIEW_ROWS}`),
+          fetch("/api/company/billing/lots"),
+        ])
+
         const resultSub = await resSub.json()
         if (resultSub.success && resultSub.subscription) {
+          if (!hasSeenTokenIntro()) setShowTokenIntro(true)
           setSub({
-            plan_type: resultSub.subscription.planType || "free",
             status: resultSub.subscription.status === "Идэвхтэй" ? "active" : "expired",
-            token_limit: resultSub.subscription.tokenLimit ?? 0,
-            used: resultSub.subscription.used ?? 0,
             remaining: resultSub.subscription.remaining ?? 0,
-            expires_at: resultSub.subscription.expiresAt === "Хугацаагүй" ? null : resultSub.subscription.expiresAt
+            next_expiry: resultSub.subscription.nextExpiry ?? null,
+            expiring_soon: resultSub.subscription.expiringSoon ?? 0,
           })
         }
 
-        const [resInv, resUsage] = await Promise.all([
-          fetch(`/api/company/billing/upgrade?limit=${PREVIEW_ROWS}`),
-          fetch(`/api/company/billing/tokens?limit=${PREVIEW_ROWS}`),
-        ])
+        const resultLots = await resLots.json().catch(() => null)
+        if (resultLots?.success) setLots(resultLots.lots ?? [])
+
         const resultInv = await resInv.json()
         if (resultInv.success) {
           setInvoices(resultInv.invoices)
           setInvoiceTotal(resultInv.total ?? resultInv.invoices.length)
           setBank(resultInv.bank ?? null)
         }
+
         const resultUsage = await resUsage.json().catch(() => null)
         if (resultUsage?.success) {
           setUsage(resultUsage.usage ?? [])
@@ -139,134 +163,146 @@ export default function BillingPage() {
   const basePerThousand = pricePerThousandTokens("starter")
   const expired = sub?.status === "expired"
   const remaining = sub?.remaining ?? 0
-  const usedPercent = sub && sub.token_limit > 0 ? Math.min(100, Math.round((sub.used / sub.token_limit) * 100)) : 0
   const cannotPost = expired || remaining < TOKEN_COSTS.post
+  // Хүчинтэй багцуудыг эхэнд, дууссаныг сүүлд
+  const sortedLots = [...lots].sort((a, b) => Number(isLotActive(b)) - Number(isLotActive(a)))
 
   return (
     <div className="animate-fade-in space-y-8 p-1 relative">
-      {/* Толгой хэсэг */}
+      {/* ТОЛГОЙ */}
       <div className="space-y-2">
         <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition">
           <ArrowLeft className="w-4 h-4" /> Хянах самбар
         </Link>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Багц болон Төлбөр тооцоо</h1>
-        <p className="text-gray-500 text-sm">Танай байгууллагын систем ашиглах эрх болон багцын мэдээлэл.</p>
-      </div>
-
-      {/* Төлбөр төлөлт болон буцаалтын тухай санамж (Dropdown) */}
-      <div className="bg-amber-50/60 border border-amber-200/80 rounded-3xl overflow-hidden transition-all duration-200">
-        <button
-          onClick={() => setIsNoticeOpen(!isNoticeOpen)}
-          aria-expanded={isNoticeOpen}
-          className="w-full p-4 flex items-center justify-between text-left font-bold text-xs text-amber-900 hover:bg-amber-100/50 transition"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-base"><Lightbulb size="1em" className="inline-block shrink-0 align-[-0.125em]" aria-hidden="true" /></span>
-            <span>Багц хэрхэн ажилладаг вэ? (Анхаарах зүйлс)</span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Багц, төлбөр</h1>
+            <p className="text-gray-500 text-sm">M токены үлдэгдэл, багц худалдан авалт, түүх.</p>
           </div>
-          <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 text-amber-700 ${isNoticeOpen ? "rotate-180" : ""}`} aria-hidden="true" />
-        </button>
-
-        {isNoticeOpen && (
-          <div className="px-5 pb-5 pt-1 text-xs text-amber-950 space-y-2.5 border-t border-amber-200/50 leading-relaxed font-medium animate-fade-in">
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <p>Багц бүр нь тодорхой хэмжээний M токен юм. Зар нийтлэхэд {formatTokens(TOKEN_COSTS.post)}, ажилтанд хүсэлт илгээхэд {formatTokens(TOKEN_COSTS.contact_unlock)} хасагдана.</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <p>Зараа хаасан ч зарцуулсан токен буцаж ирэхгүй. Хаагдсан зарыг дахин нээх, хугацааг сунгахад {formatTokens(TOKEN_COSTS.reopen)} хасагдана.</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <p>Багц худалдаж авснаас хойш 365 хоног хүчинтэй. Хугацаа дуусахад ашиглаагүй токен хүчингүй болно.</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <p>Хүчинтэй багцтай үед шинэ багц авбал үлдсэн токен шинэ багц дээр нэмэгдэж, хугацаа шинэ багцаас эхэлж тоологдоно.</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <p>Төлбөр шилжүүлэхдээ дансны дугаар, гүйлгээний утгыг сайтар шалгана уу. Баталгаажсан төлбөрийг буцаах боломжгүй.</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ОДООГИЙН ТӨЛӨВ */}
-      <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg space-y-5">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Одоогийн багц</p>
-            <h2 className="text-2xl font-extrabold text-orange-400">{planName(sub?.plan_type || "free")}</h2>
-            <p className="text-xs text-slate-300">
-              Дуусах хугацаа: <b className="text-white">{sub?.expires_at || "Хугацаагүй"}</b>
-            </p>
-          </div>
-          <span
-            className={`text-sm font-bold px-3 py-1 rounded-lg ${
-              expired ? "bg-red-500/20 text-red-300" : "bg-emerald-500/20 text-emerald-400"
-            }`}
+          <button
+            type="button"
+            onClick={() => setShowTokenIntro(true)}
+            className="group self-start sm:self-auto inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-700 hover:bg-orange-100 hover:border-orange-300 active:scale-95 transition"
           >
-            {expired ? "Хугацаа дууссан" : "Идэвхтэй"}
-          </span>
-        </div>
-
-        <div className="bg-slate-800/80 border border-slate-700/50 p-4 rounded-2xl">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase">Үлдсэн M токен</p>
-              <p className="mt-1 text-3xl font-extrabold text-white tabular-nums">
-                <CountUp value={fmt(remaining)} duration={1400} delay={200} />
-                <span className="text-base font-semibold text-slate-400">
-                  {" / "}
-                  <CountUp value={fmt(sub?.token_limit ?? 0)} duration={1400} delay={200} />
-                </span>
-              </p>
-            </div>
-            <p className="text-xs text-slate-400 text-right">Ашигласан: <b className="text-slate-200"><CountUp value={fmt(sub?.used ?? 0)} duration={1200} delay={300} /></b></p>
-          </div>
-          <div className="mt-3 h-2 rounded-full bg-slate-700 overflow-hidden" aria-hidden="true">
-            <div
-              className={`h-full rounded-full ${usedPercent >= 90 || expired ? "bg-red-400" : "bg-orange-400"}`}
-              style={{ width: `${expired ? 100 : usedPercent}%` }}
-            />
-          </div>
-          {!expired && (
-            <p className="mt-3 text-xs text-slate-300">
-              ≈ <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "post"))} duration={1200} delay={400} /></b> зар нийтлэх эсвэл{" "}
-              <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "contact_unlock"))} duration={1200} delay={400} /></b> ажилтанд хүсэлт илгээх боломжтой
-            </p>
-          )}
-          {cannotPost && (
-            <p className="mt-2 text-xs text-red-300">
-              {expired ? "Багцын хугацаа дууссан тул токен зарцуулах боломжгүй." : "Зар нийтлэхэд токен хүрэлцэхгүй байна."} Доорх багцаас сонгоно уу.
-            </p>
-          )}
-        </div>
-
-        {/* Үйлдлийн үнэ */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {COST_ITEMS.map(({ action, icon: Icon, note }) => (
-            <div key={action} className="flex items-center gap-3 rounded-2xl border border-slate-700/50 bg-slate-800/50 p-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-500/15 text-orange-300">
-                <Icon className="w-4 h-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs text-slate-400">{TOKEN_ACTION_LABELS[action]}</p>
-                <p className="text-sm font-bold text-white">{formatTokens(TOKEN_COSTS[action])}</p>
-                <p className="text-xs text-slate-500 truncate">{note}</p>
-              </div>
-            </div>
-          ))}
+            <Sparkles className="w-4 h-4 transition-transform group-hover:rotate-12" aria-hidden="true" /> M токен хэрхэн ажилладаг вэ?
+          </button>
         </div>
       </div>
 
-      {/* БАГЦУУДЫН СОНГОЛТ */}
-      <div className="space-y-4">
-        <div className="px-1">
-          <h3 className="text-xl font-bold text-gray-900">M токен багц</h3>
+      {showTokenIntro && <TokenIntroModal onClose={() => setShowTokenIntro(false)} />}
+
+      {/* 1. ТАНЫ M ТОКЕН: үлдэгдэл + багц бүрийн задаргаа + үйлдлийн үнэ */}
+      <section className="dash-hero rounded-4xl bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 sm:p-8 text-white shadow-xl shadow-slate-950/10">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-orange-500/20 blur-3xl" />
+
+        <div className="relative grid gap-6 lg:grid-cols-5">
+          {/* Үлдэгдэл */}
+          <div className="lg:col-span-2 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Үлдсэн M токен</p>
+            <p className="text-5xl font-extrabold tabular-nums tracking-tight">
+              <CountUp value={fmt(remaining)} duration={1400} delay={200} />
+            </p>
+            {!expired && (
+              <p className="text-sm text-slate-300">
+                ≈ <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "post"))} duration={1200} delay={350} /></b> зар нийтлэх эсвэл{" "}
+                <b className="text-white"><CountUp value={fmt(actionsFor(remaining, "contact_unlock"))} duration={1200} delay={350} /></b> ажилтанд хүсэлт
+              </p>
+            )}
+            {cannotPost && (
+              <p className="inline-flex items-start gap-2 rounded-xl bg-red-500/15 px-3 py-2 text-xs text-red-200">
+                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                {expired ? "Багцын хугацаа дууссан." : "Зар нийтлэхэд токен хүрэлцэхгүй."} Доороос токен нэмж авна уу.
+              </p>
+            )}
+            {sub && sub.expiring_soon > 0 && sub.next_expiry && (
+              <p className="inline-flex items-start gap-2 rounded-xl bg-amber-400/15 px-3 py-2 text-xs text-amber-200">
+                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                {formatTokens(sub.expiring_soon)} {EXPIRY_WARNING_DAYS} хоногт ({ymd(sub.next_expiry)}) дуусна — эхэлж энэ зарцуулагдана.
+              </p>
+            )}
+
+            {/* Үйлдлийн үнэ */}
+            <ul className="flex flex-wrap gap-2 pt-2">
+              {COST_ITEMS.map(({ action, icon: Icon }) => (
+                <li key={action} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
+                  <Icon className="w-3.5 h-3.5 text-orange-300" aria-hidden="true" />
+                  {TOKEN_ACTION_LABELS[action]}
+                  <b className="text-white tabular-nums">{TOKEN_COSTS[action].toLocaleString("en-US")}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Багц бүрийн задаргаа */}
+          <div className="lg:col-span-3">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Токены багцууд</p>
+              <p className="hidden sm:block text-xs text-slate-500">Эрт дуусахаас нь эхэлж зарцуулна</p>
+            </div>
+            {sortedLots.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-white/15 px-4 py-6 text-center text-sm text-slate-400">
+                Токен алга. Доороос багц сонгож токен нэмж авна уу.
+              </p>
+            ) : (
+              <ul className="space-y-2.5">
+                {sortedLots.map((lot, i) => {
+                  const active = isLotActive(lot)
+                  const days = daysUntilExpiry(lot.expiresAt)
+                  const soon = active && days !== null && days <= EXPIRY_WARNING_DAYS && lot.remaining > 0
+                  const percent = lot.tokens > 0 ? Math.round((lot.remaining / lot.tokens) * 100) : 0
+                  return (
+                    <li
+                      key={lot.id}
+                      style={{ "--d": 200 + i * 70 } as CSSProperties}
+                      className={`row-in rounded-2xl border border-white/10 bg-white/5 p-4 ${active ? "" : "opacity-50"}`}
+                    >
+                      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold truncate">{lotTitle(lot)}</p>
+                          <p className="text-xs text-slate-400">{lotDateLabel(lot)}</p>
+                        </div>
+                        <div className="flex items-baseline justify-between gap-3 sm:block sm:shrink-0 sm:text-right">
+                          <p className="font-bold tabular-nums whitespace-nowrap">
+                            {lot.remaining.toLocaleString("en-US")}
+                            <span className="text-xs font-medium text-slate-400"> / {lot.tokens.toLocaleString("en-US")}</span>
+                          </p>
+                          <p className={`text-xs font-semibold whitespace-nowrap ${!active ? "text-slate-500" : soon ? "text-amber-300" : "text-emerald-300"}`}>
+                            {!active
+                              ? `Дууссан: ${ymd(lot.expiresAt!)}`
+                              : days === null
+                                ? "Хугацаагүй"
+                                : `${ymd(lot.expiresAt!)} · ${days} хоног`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 h-1.5 rounded-full bg-white/10 overflow-hidden" aria-hidden="true">
+                        <div
+                          className={`dash-bar h-full rounded-full ${!active ? "bg-slate-500" : soon ? "bg-amber-400" : "bg-orange-400"}`}
+                          style={{ width: `${active ? percent : 100}%`, "--d": 300 + i * 70 } as CSSProperties}
+                        />
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
         </div>
+      </section>
+
+      {/* 2. ТОКЕН НЭМЖ АВАХ */}
+      <section className="space-y-4">
+        <div className="px-1">
+          <h2 className="text-xl font-bold text-gray-900">Токен нэмж авах</h2>
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-500">
+            {PLAN_FEATURES.map((feature) => (
+              <li key={feature} className="inline-flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-500" aria-hidden="true" /> {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <div className="stagger-in grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan) => {
             const popular = plan.id === "standard"
@@ -274,7 +310,7 @@ export default function BillingPage() {
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white border p-6 rounded-3xl flex flex-col justify-between ${CARD_HOVER} ${
+                className={`relative bg-white border p-6 rounded-3xl flex flex-col ${CARD_HOVER} ${
                   popular ? "border-orange-300 shadow-lg ring-1 ring-orange-200" : "border-gray-200 shadow-sm"
                 }`}
               >
@@ -283,55 +319,36 @@ export default function BillingPage() {
                     Түгээмэл сонголт
                   </span>
                 )}
-                <div className="space-y-5">
-                  <div className="flex justify-between items-start gap-2">
-                    <h4 className="font-bold text-lg text-gray-900">{plan.name}</h4>
-                    {sub?.plan_type === plan.id && !expired && (
-                      <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">Ашиглаж буй</span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="flex items-baseline gap-1.5 text-4xl font-extrabold text-gray-900 tracking-tight">
-                      <CountUp value={fmt(plan.tokens)} duration={1400} />
-                      <span className="text-base font-semibold text-gray-500">M токен</span>
-                    </p>
-                    <p className="mt-1 text-2xl font-bold text-orange-600">
-                      <CountUp value={fmt(PLANS[plan.id].price, " ₮")} duration={1400} delay={100} />
-                    </p>
-                    <div className="mt-2 space-y-1 text-xs text-gray-500">
-                      <p>
-                        1 зар ({TOKEN_COSTS.post.toLocaleString("en-US")} токен) ≈{" "}
-                        <b className="font-semibold text-gray-700"><CountUp value={fmt(plan.perPost, " ₮")} duration={1200} delay={200} /></b>
-                      </p>
-                      <p>
-                        1 хүсэлт ({TOKEN_COSTS.contact_unlock.toLocaleString("en-US")} токен) ≈{" "}
-                        <b className="font-semibold text-gray-700"><CountUp value={fmt(plan.perRequest, " ₮")} duration={1200} delay={200} /></b>
-                      </p>
-                      {saving > 0 && <p className="font-semibold text-emerald-600">{saving}% хэмнэлт</p>}
-                    </div>
-                  </div>
-                  <hr className="border-gray-100" />
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                      <span>≈ <CountUp value={fmt(actionsFor(plan.tokens, "post"))} duration={1200} delay={250} /> зар нийтлэх</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 text-sm text-gray-700 font-medium">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                      <span>эсвэл ≈ <CountUp value={fmt(actionsFor(plan.tokens, "contact_unlock"))} duration={1200} delay={250} /> ажилтанд хүсэлт илгээх</span>
-                    </li>
-                    {PLAN_FEATURES.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-lg text-gray-900">{plan.name}</h3>
+                  {saving > 0 && (
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{saving}% хэмнэлт</span>
+                  )}
                 </div>
+                <p className="mt-4 flex items-baseline gap-1.5 text-4xl font-extrabold text-gray-900 tracking-tight">
+                  <CountUp value={fmt(plan.tokens)} duration={1400} />
+                  <span className="text-base font-semibold text-gray-500">M токен</span>
+                </p>
+                <p className="mt-1 text-2xl font-bold text-orange-600">
+                  <CountUp value={fmt(PLANS[plan.id].price, " ₮")} duration={1400} delay={100} />
+                </p>
+
+                <dl className="mt-5 grid grid-cols-2 gap-2 text-center">
+                  <div className="rounded-2xl bg-gray-50 px-3 py-2.5">
+                    <dt className="text-xs text-gray-500">1 зар</dt>
+                    <dd className="mt-0.5 text-sm font-bold text-gray-800 whitespace-nowrap">≈ {plan.perPost.toLocaleString("en-US")} ₮</dd>
+                    <dd className="text-xs text-gray-400">нийт ≈ {actionsFor(plan.tokens, "post")} зар</dd>
+                  </div>
+                  <div className="rounded-2xl bg-gray-50 px-3 py-2.5">
+                    <dt className="text-xs text-gray-500">1 хүсэлт</dt>
+                    <dd className="mt-0.5 text-sm font-bold text-gray-800 whitespace-nowrap">≈ {plan.perRequest.toLocaleString("en-US")} ₮</dd>
+                    <dd className="text-xs text-gray-400">нийт ≈ {actionsFor(plan.tokens, "contact_unlock")} хүсэлт</dd>
+                  </div>
+                </dl>
 
                 <button
                   onClick={() => setPurchasePlan({ id: plan.id, name: plan.name, tokens: plan.tokens, price: plan.price })}
-                  className={`mt-8 w-full h-12 rounded-xl font-semibold text-sm transition ${
+                  className={`mt-6 w-full h-12 rounded-xl font-semibold text-sm transition active:scale-[0.98] ${
                     popular ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-600/20" : "bg-slate-900 text-white hover:bg-slate-800"
                   }`}
                 >
@@ -341,37 +358,64 @@ export default function BillingPage() {
             )
           })}
         </div>
-      </div>
+        <p className="px-1 text-xs text-gray-400">
+          Төлбөр шилжүүлэхдээ дансны дугаар, гүйлгээний утгыг сайтар шалгана уу. Токен төлбөр баталгаажмагц нэмэгдэх бөгөөд баталгаажсан төлбөрийг буцаах боломжгүй.
+        </p>
+      </section>
 
-      {/* M ТОКЕН ЗАРЦУУЛАЛТЫН ТҮҮХ: сүүлийн 10, бүгдийг дэлгэрэнгүй хуудаснаас */}
-      <div className="space-y-4">
-        <HistoryHeader icon={Coins} title="Токен зарцуулалт" total={usageTotal} href="/dashboard/company/billing/tokens" />
-        {usage.length === 0 ? (
-          <EmptyState
-            compact
-            illustration="folder"
-            title="Зарцуулалт алга"
-            description="Зар нийтлэх, ажилтанд хүсэлт илгээхэд зарцуулсан токен энд харагдана."
-          />
-        ) : (
-          <TokenUsageTable rows={usage} scrollable />
-        )}
-      </div>
+      {/* 3. ТҮҮХ: токен зарцуулалт / төлбөр (табаар) */}
+      <section className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+          <div role="tablist" aria-label="Түүх" className="inline-flex rounded-2xl bg-gray-100 p-1">
+            {(
+              [
+                { id: "usage", label: "Токен зарцуулалт", icon: Coins, total: usageTotal },
+                { id: "invoices", label: "Төлбөр", icon: Receipt, total: invoiceTotal },
+              ] as const
+            ).map((tab) => {
+              const active = historyTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setHistoryTab(tab.id)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    active ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <tab.icon className={`w-4 h-4 ${active ? "text-orange-500" : ""}`} aria-hidden="true" />
+                  {tab.label}
+                  {tab.total > 0 && (
+                    <span className={`rounded-full px-1.5 text-xs ${active ? "bg-orange-100 text-orange-700" : "bg-gray-200 text-gray-500"}`}>{tab.total}</span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          <Link
+            href={historyTab === "usage" ? "/dashboard/company/billing/tokens" : "/dashboard/company/billing/invoices"}
+            className="group self-start sm:self-auto inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
+          >
+            Бүгдийг харах <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </Link>
+        </div>
 
-      {/* ТӨЛБӨРИЙН ТҮҮХ: сүүлийн 10, бүгдийг дэлгэрэнгүй хуудаснаас */}
-      <div className="space-y-4">
-        <HistoryHeader icon={Receipt} title="Төлбөр төлөлтийн түүх" total={invoiceTotal} href="/dashboard/company/billing/invoices" />
-        {invoices.length === 0 ? (
-          <EmptyState
-            compact
-            illustration="folder"
-            title="Төлбөрийн түүх алга"
-            description="Багц худалдаж авахад нэхэмжлэх, төлбөрийн явц энд харагдана."
-          />
-        ) : (
-          <InvoiceTable rows={invoices} onDetail={setSelectedInvoice} scrollable />
-        )}
-      </div>
+        <div key={historyTab} role="tabpanel" className="animate-fade-in">
+          {historyTab === "usage" ? (
+            usage.length === 0 ? (
+              <EmptyState compact illustration="folder" title="Зарцуулалт алга" description="Зар нийтлэх, ажилтанд хүсэлт илгээхэд зарцуулсан токен энд харагдана." />
+            ) : (
+              <TokenUsageTable rows={usage} scrollable batch={PREVIEW_ROWS} />
+            )
+          ) : invoices.length === 0 ? (
+            <EmptyState compact illustration="folder" title="Төлбөрийн түүх алга" description="Багц худалдаж авахад нэхэмжлэх, төлбөрийн явц энд харагдана." />
+          ) : (
+            <InvoiceTable rows={invoices} onDetail={setSelectedInvoice} scrollable batch={PREVIEW_ROWS} />
+          )}
+        </div>
+      </section>
 
       {purchasePlan && (
         <PurchaseModal
